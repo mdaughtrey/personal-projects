@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+                                            
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+                                            
+  <meta name="Author" content="Mark McClelland">
+                                            
+  <meta name="GENERATOR" content="Mozilla/4.61 [en] (OS/2; U) [Netscape]"><title>Linux OV511/OV518 Driver: Installation Instructions</title></head><body>
+                      
+<center><b><font size="+2">OV511 Installation Instructions:</font></b></center>
+                      
+<hr width="100%"> 
+<ul>
+  <li><span style="font-weight: bold;">Instrucciones para la instalaci&oacute;n en Espa&ntilde;ol (por </span><strong style="font-weight: bold;"><a href="http://www.iespana.es/pacodebian/">Paco Aldarias Raya</a>):&nbsp; <a href="http://www.iespana.es/pacodebian/webcam.html">html</a> | <a href="http://www.iespana.es/pacodebian/webcam.pdf">pdf</a> | <a href="http://www.iespana.es/pacodebian/webcam.tex">tex</a></strong></li>
+</ul>
+<b><i><a href="mailto:mark@alpha.dyndns.org"></a>     </i></b>           
+<p><b><big>Before you start:</big></b><br>
+        </p>
+               
+<p><font color="#990000">Many kernels and Linux distributions already come 
+with ov511 preinstalled.    To check whether it is installed, run "modprobe 
+ov511" as root. If you don't   get any errors, then the driver is already 
+installed. Skip to the   "<b>Loading and Using the Driver</b>" section below.<br>
+</font></p>
+<p><font color="#990000"></font></p>
+
+               
+<p>These built-in drivers usually work, but may not be the most recent version.
+    You may need to install a more recent driver if:<br>
+        </p>
+               
+<ul>
+             <li>You want to use an OV518 camera (<b>Creative WebCam Mini</b>, model PD0040 or <b>Philips PCVC720K</b>). Note: These cameras <b>REQUIRE</b>
+  the ov518_decomp module to be loaded.<br>
+   </li>
+   <li>You want to use compression support for higher frame rates  (requires 
+  version 1.41)</li>
+             <li>You have a device that is not supported by older drivers 
+(Lifeview   CapView, camera with OV6620 sensor, etc...)</li>
+             <li>You enjoy having the latest version of everything :-)<br>
+          </li>
+               
+</ul>
+              <b><font size="+1">Installing the driver:</font></b> 
+<ol>
+   <li>Make sure you have a compiler and kernel source that matches your
+currently running kernel.<br>
+   </li>
+   <li>Be sure that your kernel supports USB. If it doesn't, see my <a href="kernel_install.html">
+ kernel installation instructions</a>.</li>
+   <li><a href="download.html">Download the </a><a href="download.html">latest 
+driver</a>.</li>
+   <li>Decompress it. For example, "<tt>tar xvzf ov511-1.58.tar.gz</tt>".</li>
+   <li>Change to the directory that got created, e.g. "<tt>cd ov511-1.58</tt>
+".</li>
+   <li>Run "<tt>make</tt>". If you get errors about include files, edit Makefile 
+and set "<tt>INCLUDEDIR=/<i>path_to_kernel_source</i>/include</tt>".</li>
+   <li>If you have a 2.4 or 2.5 kernel, run "<tt>make install</tt>". That will list the available install options for your kernel. Run whichever one matches your kernel best.</li>
+ 
+</ol>
+ <b><font size="+1">Loading and using the driver:</font></b>            
+                                                                  
+<ol>
+                       <li>Become root. Eg: "<tt>su -</tt>"<br>
+   </li>
+   <li>Load USB support:<br>
+   </li>
+   
+  <ol>
+     <li>See which type of USB controller you have with "<tt>lspci</tt>".</li>
+     <li>For UHCI controllers, either "<tt>modprobe usb-uhci</tt>" <b>OR</b>
+  "<tt>modprobe uhci</tt>". They are equivalent, but one might work better 
+for you than the other.</li>
+     <li>For OHCI controllers, "<tt>modprobe usb-ohci</tt>".</li>
+     <li>If these modules don't exist, it's possible that USB is built into 
+your kernel. Also, on 2.5 kernels, the drivers are called uhci-hcd and ohci-hcd.<br>
+     </li>
+   
+  </ol>
+                        <li> Make sure that USB is working: Check that <tt>
+  /proc/bus/usb/devices</tt>         exists and contains data. If it doesn't
+ exist, don't worry: "Preliminary USB device filesystem" is probably not
+enabled in your kernel config, or usbdevfs isn't mounted. This won't affect
+the ov511 driver, but it makes problems harder to diagnose.</li>
+                        <li> Load <tt>ov511</tt>: "<tt>modprobe ov511</tt>".  This  should also automatically   load the "videodev" (Video4Linux) module
+  if you  have one.</li>
+                        <li> Make sure the driver is working: When you run
+ the   "<tt>dmesg</tt>"   command, you should see some messages from ov511
+ telling   you which kind of  bridge and sensor chips your camera uses. If
+ you see errors  from ov511, report  them to me.</li>
+                        <li> Check that <tt>/dev/video0</tt>      exists. 
+If it doesn't, you can create it with "<tt>mknod /dev/video0   c 81 0</tt>
+". If you have another video device, you camera might be on      <tt>/dev/video1</tt>
+  (change the last argument to <tt>mknod</tt> to 1 in that case).</li>
+                     <li>Some applications look for the device at <tt>  /dev/video</tt>
+ . In some operating systems (e.g. RedHat 7.1),                  
+   <tt>  /dev/video</tt>     might be a directory and not  a device node
+or a symbolic  link. You will   have to manually specify the  device as <tt>
+ /dev/video0</tt>   when you use  your video application.<br>
+            </li>
+                        <li> Give users (besides root) permission to use
+the   camera.  This requires   read and write access to <tt>/dev/video0</tt>
+ . You   can grant this permission  with "<tt>chmod  666 /dev/video0</tt>
+". If you don't want everyone on your system to be able to use the camera,
+use the "chown" command <u>instead</u> to make /dev/video0 belong to you.</li>
+                        <li> Download an application from <a href="http://alpha.dyndns.org/ov511/apps.html">
+          http://alpha.dyndns.org/ov511/apps.html</a>      and test it. I 
+recommend   Xawtv and Vidcat. (Note: vidcat might not work on cameras with OV6620 or OV6630 sensors).</li>
+                                                                        
+            
+</ol>
+           <b><font size="+1">Using Compression Support:<br>
+ <br>
+</font></b><font color="#990000"><span style="font-weight: bold;">This information is only valid for the stable
+driver series (1.xx). For 2.xx drivers, please see the README that
+comes with the driver.</span><br>
+</font><br>
+<font size="+1"><small>Compression support will give you better
+frame rates with OV511 cameras, and is <b>REQUIRED</b> with OV518 cameras.
+It requires lots of CPU power, and reduces the image quality somewhat, though.
+If you want/need it, do the following: <br>
+<br>
+(<b>NOTE</b>: for OV518 cameras, substitute </small></font><font size="+1"><small><tt>
+ov518_decomp</tt> for </small></font><font size="+1"><small><tt>ov511_decomp</tt>
+)</small></font>                                                        
+                   
+<ol>
+                                              <li>Make sure you installed
+the latest driver using the above instructions. The driver that comes with
+kernels and operating systems by default has no compression support.<br>
+  </li>
+  <li>Add the following line to your <tt>/etc/modules.conf</tt>    . This
+will load the decompressor after ov511 is loaded, and unload the  decompressor
+before ov511 is unloaded:</li>
+                                                                         
+</ol>
+                                                                         
+<blockquote>                                                             
+                 
+  <blockquote><tt>above ov511 ov511_decomp</tt></blockquote>
+                         </blockquote>
+                                                                        
+                    
+    <ol start="3">
+                        <li>If you want compression enabled by default all
+ of  the time, add the following line to <tt>/etc/modules.conf</tt>:</li>
+                                                                        
+                    
+    </ol>
+                                                                        
+                    
+    <blockquote>                                                         
+                                         
+      <blockquote>                                                       
+                                                     
+        <pre wrap="">options ov511 compress=1</pre>
+                             </blockquote>
+                             </blockquote>
+                                                                        
+                                        
+        <ol start="4">
+                                                              <li> Load <tt>
+ov511.</tt>If you didn't make  compression  the default in <tt>/etc/modules.conf</tt>
+, load it with the             <tt>compress=1</tt> option (<tt>modprobe 
+ ov511 compress=1</tt>). If it is already loaded, remove it first with "<tt>
+rmmod ov511</tt>"</li>
+                               <li>When you unload ov511, you must do it
+with   modprobe (<tt>modprobe -r ov511</tt>). With rmmod, you will get "ov511: 
+Device or  resource busy", since it doesn't remove <tt>ov511_decomp</tt> automatically.</li>
+                                                                        
+                                                                       
+        </ol>
+                                                                        
+                                                                        
+    
+        <br>
+<b><i>Please send any corrections to this page to <a href="mailto:mark@alpha.dyndns.org">
+          mark@alpha.dyndns.org</a><br>
+<br>
+<br>
+</i></b>
+<br>
+</body></html>

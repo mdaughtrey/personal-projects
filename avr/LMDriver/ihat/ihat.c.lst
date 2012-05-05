@@ -1,0 +1,476 @@
+
+ihat.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000258  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  0000028c  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000000  00000000  00000000  0000028c  2**0
+                  ALLOC
+  3 .stab         00000b64  00000000  00000000  0000028c  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      00000e48  00000000  00000000  00000df0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .progmem.data 000001fb  00000000  00000000  00001c38  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+Disassembly of section .text:
+
+00000000 <spiOut>:
+unsigned char txStrShiftUpDown[] PROGMEM = { "s0u1s1d1s0u2s1d2s0u3s1d3s0u4s1d4s0u5s1d5s0u6s1d6a A !0!1" };
+unsigned char txStrShiftLeftRight[] PROGMEM = { "s0l1s1r1s0l2s1r2s0l3s1r3s0l4s1r4a A !0!1" };
+
+// msb first, sck low on idle, sample on leading edge
+void spiOut(unsigned char dataleft, unsigned char dataright)
+{
+   0:	28 2f       	mov	r18, r24
+    // set the SS lines
+    PORTC &= ~LEFT_SS;
+   2:	43 98       	cbi	0x08, 3	; 8
+    PORTC &= ~RIGHT_SS;
+   4:	45 98       	cbi	0x08, 5	; 8
+   6:	30 e0       	ldi	r19, 0x00	; 0
+
+    unsigned char ii;
+    for (ii = 0; ii < 8; ii++)
+    {
+        if (dataright & 0x80) { PORTC |= RIGHT_MOSI; } 
+   8:	67 ff       	sbrs	r22, 7
+   a:	00 c0       	rjmp	.+0      	; 0xc <spiOut+0xc>
+   c:	44 9a       	sbi	0x08, 4	; 8
+   e:	00 c0       	rjmp	.+0      	; 0x10 <spiOut+0x10>
+        else { PORTC &= ~RIGHT_MOSI; }
+  10:	44 98       	cbi	0x08, 4	; 8
+
+        if (dataleft & 0x80) { PORTC |= LEFT_MOSI; } 
+  12:	27 ff       	sbrs	r18, 7
+  14:	00 c0       	rjmp	.+0      	; 0x16 <spiOut+0x16>
+  16:	42 9a       	sbi	0x08, 2	; 8
+  18:	00 c0       	rjmp	.+0      	; 0x1a <spiOut+0x1a>
+        else { PORTC &= ~LEFT_MOSI; }
+  1a:	42 98       	cbi	0x08, 2	; 8
+    can be achieved.
+*/
+void
+_delay_loop_1(uint8_t __count)
+{
+	__asm__ volatile (
+  1c:	85 ed       	ldi	r24, 0xD5	; 213
+  1e:	98 2f       	mov	r25, r24
+  20:	9a 95       	dec	r25
+  22:	01 f4       	brne	.+0      	; 0x24 <spiOut+0x24>
+
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC |= BOTH_SCK;
+  24:	41 9a       	sbi	0x08, 1	; 8
+  26:	8a 95       	dec	r24
+  28:	01 f4       	brne	.+0      	; 0x2a <spiOut+0x2a>
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC &= ~BOTH_SCK;
+  2a:	41 98       	cbi	0x08, 1	; 8
+    // set the SS lines
+    PORTC &= ~LEFT_SS;
+    PORTC &= ~RIGHT_SS;
+
+    unsigned char ii;
+    for (ii = 0; ii < 8; ii++)
+  2c:	3f 5f       	subi	r19, 0xFF	; 255
+  2e:	38 30       	cpi	r19, 0x08	; 8
+  30:	01 f0       	breq	.+0      	; 0x32 <spiOut+0x32>
+
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC |= BOTH_SCK;
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC &= ~BOTH_SCK;
+        dataleft <<= 1;
+  32:	22 0f       	add	r18, r18
+        dataright <<= 1;
+  34:	66 0f       	add	r22, r22
+  36:	00 c0       	rjmp	.+0      	; 0x38 <spiOut+0x38>
+    }
+    // reset the SS lines
+    PORTC |= LEFT_SS;
+  38:	43 9a       	sbi	0x08, 3	; 8
+    PORTC |= RIGHT_SS;
+  3a:	45 9a       	sbi	0x08, 5	; 8
+  3c:	08 95       	ret
+
+0000003e <stringOut>:
+}
+
+void stringOut(unsigned char * stringPtr)
+{
+    unsigned char data = pgm_read_byte_near(stringPtr++);
+  3e:	fc 01       	movw	r30, r24
+  40:	84 91       	lpm	r24, Z
+    while (data)
+  42:	88 23       	and	r24, r24
+  44:	01 f4       	brne	.+0      	; 0x46 <stringOut+0x8>
+  46:	08 95       	ret
+
+00000048 <pickTransform>:
+    //    _delay_ms(1);
+    }
+}
+
+unsigned char pickTransform(int random, unsigned char ** ptr)
+{
+  48:	fb 01       	movw	r30, r22
+    switch (random % 6)
+  4a:	66 e0       	ldi	r22, 0x06	; 6
+  4c:	70 e0       	ldi	r23, 0x00	; 0
+  4e:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  52:	82 30       	cpi	r24, 0x02	; 2
+  54:	91 05       	cpc	r25, r1
+  56:	01 f0       	breq	.+0      	; 0x58 <pickTransform+0x10>
+  58:	83 30       	cpi	r24, 0x03	; 3
+  5a:	91 05       	cpc	r25, r1
+  5c:	04 f4       	brge	.+0      	; 0x5e <pickTransform+0x16>
+  5e:	00 97       	sbiw	r24, 0x00	; 0
+  60:	01 f0       	breq	.+0      	; 0x62 <pickTransform+0x1a>
+  62:	01 97       	sbiw	r24, 0x01	; 1
+  64:	01 f4       	brne	.+0      	; 0x66 <pickTransform+0x1e>
+  66:	00 c0       	rjmp	.+0      	; 0x68 <pickTransform+0x20>
+  68:	84 30       	cpi	r24, 0x04	; 4
+  6a:	91 05       	cpc	r25, r1
+  6c:	01 f0       	breq	.+0      	; 0x6e <pickTransform+0x26>
+  6e:	84 30       	cpi	r24, 0x04	; 4
+  70:	91 05       	cpc	r25, r1
+  72:	04 f0       	brlt	.+0      	; 0x74 <pickTransform+0x2c>
+  74:	05 97       	sbiw	r24, 0x05	; 5
+  76:	01 f0       	breq	.+0      	; 0x78 <pickTransform+0x30>
+  78:	80 e0       	ldi	r24, 0x00	; 0
+  7a:	90 e0       	ldi	r25, 0x00	; 0
+  7c:	08 95       	ret
+    {
+        case 0: *ptr = txStrShiftUp; return sizeof(txStrShiftUp);
+  7e:	80 e0       	ldi	r24, 0x00	; 0
+  80:	90 e0       	ldi	r25, 0x00	; 0
+  82:	00 c0       	rjmp	.+0      	; 0x84 <pickTransform+0x3c>
+        case 1: *ptr = txStrShiftDown; return sizeof(txStrShiftDown);
+  84:	80 e0       	ldi	r24, 0x00	; 0
+  86:	90 e0       	ldi	r25, 0x00	; 0
+  88:	91 83       	std	Z+1, r25	; 0x01
+  8a:	80 83       	st	Z, r24
+  8c:	89 e3       	ldi	r24, 0x39	; 57
+  8e:	90 e0       	ldi	r25, 0x00	; 0
+  90:	08 95       	ret
+        case 2: *ptr = txStrShiftLeft; return sizeof(txStrShiftLeft);
+  92:	80 e0       	ldi	r24, 0x00	; 0
+  94:	90 e0       	ldi	r25, 0x00	; 0
+  96:	00 c0       	rjmp	.+0      	; 0x98 <pickTransform+0x50>
+        case 3: *ptr = txStrShiftRight; return sizeof(txStrShiftRight);
+  98:	80 e0       	ldi	r24, 0x00	; 0
+  9a:	90 e0       	ldi	r25, 0x00	; 0
+  9c:	00 c0       	rjmp	.+0      	; 0x9e <pickTransform+0x56>
+        case 4: *ptr = txStrShiftLeftRight; return sizeof(txStrShiftLeftRight);
+  9e:	80 e0       	ldi	r24, 0x00	; 0
+  a0:	90 e0       	ldi	r25, 0x00	; 0
+  a2:	91 83       	std	Z+1, r25	; 0x01
+  a4:	80 83       	st	Z, r24
+  a6:	89 e2       	ldi	r24, 0x29	; 41
+  a8:	90 e0       	ldi	r25, 0x00	; 0
+  aa:	08 95       	ret
+        case 5: *ptr = txStrShiftUpDown; return sizeof(txStrShiftUpDown);
+  ac:	80 e0       	ldi	r24, 0x00	; 0
+  ae:	90 e0       	ldi	r25, 0x00	; 0
+  b0:	91 83       	std	Z+1, r25	; 0x01
+  b2:	80 83       	st	Z, r24
+  b4:	89 e3       	ldi	r24, 0x39	; 57
+  b6:	90 e0       	ldi	r25, 0x00	; 0
+    }
+    return 0;
+}
+  b8:	08 95       	ret
+
+000000ba <main>:
+
+
+int main(void)
+{
+  ba:	c0 e0       	ldi	r28, 0x00	; 0
+  bc:	d0 e0       	ldi	r29, 0x00	; 0
+  be:	de bf       	out	0x3e, r29	; 62
+  c0:	cd bf       	out	0x3d, r28	; 61
+    milliseconds can be achieved.
+ */
+void
+_delay_loop_2(uint16_t __count)
+{
+	__asm__ volatile (
+  c2:	80 e2       	ldi	r24, 0x20	; 32
+  c4:	9e e4       	ldi	r25, 0x4E	; 78
+  c6:	01 97       	sbiw	r24, 0x01	; 1
+  c8:	01 f4       	brne	.+0      	; 0xca <main+0x10>
+    unsigned long x = 0;
+    // A little settling time...
+    _delay_ms(10);
+    // initialize
+    DDRC = 0x3e; // 0011 1110  both ss,mosi,sck  
+  ca:	8e e3       	ldi	r24, 0x3E	; 62
+  cc:	87 b9       	out	0x07, r24	; 7
+    PORTC = 0x28; // 0010 1000
+  ce:	88 e2       	ldi	r24, 0x28	; 40
+  d0:	88 b9       	out	0x08, r24	; 8
+
+    spiOut('*', '*');
+  d2:	6a e2       	ldi	r22, 0x2A	; 42
+  d4:	8a e2       	ldi	r24, 0x2A	; 42
+  d6:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  da:	28 ee       	ldi	r18, 0xE8	; 232
+  dc:	33 e0       	ldi	r19, 0x03	; 3
+  de:	88 ec       	ldi	r24, 0xC8	; 200
+  e0:	90 e0       	ldi	r25, 0x00	; 0
+  e2:	01 97       	sbiw	r24, 0x01	; 1
+  e4:	01 f4       	brne	.+0      	; 0xe6 <main+0x2c>
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  e6:	21 50       	subi	r18, 0x01	; 1
+  e8:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  ea:	01 f4       	brne	.+0      	; 0xec <main+0x32>
+    _delay_ms(100);
+    spiOut('L', 'L');
+  ec:	6c e4       	ldi	r22, 0x4C	; 76
+  ee:	8c e4       	ldi	r24, 0x4C	; 76
+  f0:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+    spiOut('0', '0');
+  f4:	60 e3       	ldi	r22, 0x30	; 48
+  f6:	80 e3       	ldi	r24, 0x30	; 48
+  f8:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+    spiOut('1', '1');
+  fc:	61 e3       	ldi	r22, 0x31	; 49
+  fe:	81 e3       	ldi	r24, 0x31	; 49
+ 100:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+    spiOut('l', 'l');
+ 104:	6c e6       	ldi	r22, 0x6C	; 108
+ 106:	8c e6       	ldi	r24, 0x6C	; 108
+ 108:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+    spiOut('0', '0');
+ 10c:	60 e3       	ldi	r22, 0x30	; 48
+ 10e:	80 e3       	ldi	r24, 0x30	; 48
+ 110:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+    spiOut('1', '1');
+ 114:	61 e3       	ldi	r22, 0x31	; 49
+ 116:	81 e3       	ldi	r24, 0x31	; 49
+ 118:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 11c:	ee 24       	eor	r14, r14
+ 11e:	ff 24       	eor	r15, r15
+ 120:	87 01       	movw	r16, r14
+
+        // Pick a random transform...
+        unsigned char ii;
+        unsigned char jj;
+        x = x * 1664525L + 1013904223L;
+        ii = pickTransform(x >> 17 & 0x7fff, &ptr);
+ 122:	4e 01       	movw	r8, r28
+ 124:	08 94       	sec
+ 126:	81 1c       	adc	r8, r1
+ 128:	91 1c       	adc	r9, r1
+    spiOut('1', '1');
+    while (1)
+    {
+        // Pick a random message...
+        unsigned char * ptr = text;
+        x = x * 1664525L + 1013904223L;
+ 12a:	c8 01       	movw	r24, r16
+ 12c:	b7 01       	movw	r22, r14
+ 12e:	2d e0       	ldi	r18, 0x0D	; 13
+ 130:	36 e6       	ldi	r19, 0x66	; 102
+ 132:	49 e1       	ldi	r20, 0x19	; 25
+ 134:	50 e0       	ldi	r21, 0x00	; 0
+ 136:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 13a:	7b 01       	movw	r14, r22
+ 13c:	8c 01       	movw	r16, r24
+ 13e:	8f e5       	ldi	r24, 0x5F	; 95
+ 140:	93 ef       	ldi	r25, 0xF3	; 243
+ 142:	ae e6       	ldi	r26, 0x6E	; 110
+ 144:	bc e3       	ldi	r27, 0x3C	; 60
+ 146:	e8 0e       	add	r14, r24
+ 148:	f9 1e       	adc	r15, r25
+ 14a:	0a 1f       	adc	r16, r26
+ 14c:	1b 1f       	adc	r17, r27
+        ptr += (x >> 17 & 0x7fff) % (sizeof(text)/4) * 4;
+ 14e:	c8 01       	movw	r24, r16
+ 150:	b7 01       	movw	r22, r14
+ 152:	41 e1       	ldi	r20, 0x11	; 17
+ 154:	96 95       	lsr	r25
+ 156:	87 95       	ror	r24
+ 158:	77 95       	ror	r23
+ 15a:	67 95       	ror	r22
+ 15c:	4a 95       	dec	r20
+ 15e:	01 f4       	brne	.+0      	; 0x160 <main+0xa6>
+ 160:	25 e3       	ldi	r18, 0x35	; 53
+ 162:	30 e0       	ldi	r19, 0x00	; 0
+ 164:	40 e0       	ldi	r20, 0x00	; 0
+ 166:	50 e0       	ldi	r21, 0x00	; 0
+ 168:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 16c:	32 e0       	ldi	r19, 0x02	; 2
+ 16e:	66 0f       	add	r22, r22
+ 170:	77 1f       	adc	r23, r23
+ 172:	88 1f       	adc	r24, r24
+ 174:	99 1f       	adc	r25, r25
+ 176:	3a 95       	dec	r19
+ 178:	01 f4       	brne	.+0      	; 0x17a <main+0xc0>
+ 17a:	fb 01       	movw	r30, r22
+ 17c:	e0 50       	subi	r30, 0x00	; 0
+ 17e:	f0 40       	sbci	r31, 0x00	; 0
+        
+        unsigned char data1 = pgm_read_byte_near(ptr++);
+ 180:	9f 01       	movw	r18, r30
+ 182:	2f 5f       	subi	r18, 0xFF	; 255
+ 184:	3f 4f       	sbci	r19, 0xFF	; 255
+ 186:	b4 90       	lpm	r11, Z
+        unsigned char data2 = pgm_read_byte_near(ptr++);
+ 188:	c9 01       	movw	r24, r18
+ 18a:	01 96       	adiw	r24, 0x01	; 1
+ 18c:	f9 01       	movw	r30, r18
+ 18e:	a4 90       	lpm	r10, Z
+        unsigned char data3 = pgm_read_byte_near(ptr++);
+ 190:	9c 01       	movw	r18, r24
+ 192:	2f 5f       	subi	r18, 0xFF	; 255
+ 194:	3f 4f       	sbci	r19, 0xFF	; 255
+ 196:	fc 01       	movw	r30, r24
+ 198:	d4 90       	lpm	r13, Z
+        unsigned char data4 = pgm_read_byte_near(ptr++);
+ 19a:	2f 5f       	subi	r18, 0xFF	; 255
+ 19c:	3f 4f       	sbci	r19, 0xFF	; 255
+ 19e:	3a 83       	std	Y+2, r19	; 0x02
+ 1a0:	29 83       	std	Y+1, r18	; 0x01
+ 1a2:	21 50       	subi	r18, 0x01	; 1
+ 1a4:	30 40       	sbci	r19, 0x00	; 0
+ 1a6:	f9 01       	movw	r30, r18
+ 1a8:	c4 90       	lpm	r12, Z
+
+        spiOut('a', 'a');
+ 1aa:	61 e6       	ldi	r22, 0x61	; 97
+ 1ac:	81 e6       	ldi	r24, 0x61	; 97
+ 1ae:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+        spiOut(data1, data3);
+ 1b2:	6d 2d       	mov	r22, r13
+ 1b4:	8b 2d       	mov	r24, r11
+ 1b6:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+        spiOut('A', 'A');
+ 1ba:	61 e4       	ldi	r22, 0x41	; 65
+ 1bc:	81 e4       	ldi	r24, 0x41	; 65
+ 1be:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+        spiOut(data2, data4);
+ 1c2:	6c 2d       	mov	r22, r12
+ 1c4:	8a 2d       	mov	r24, r10
+ 1c6:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 1ca:	20 e3       	ldi	r18, 0x30	; 48
+ 1cc:	35 e7       	ldi	r19, 0x75	; 117
+ 1ce:	88 ec       	ldi	r24, 0xC8	; 200
+ 1d0:	90 e0       	ldi	r25, 0x00	; 0
+ 1d2:	01 97       	sbiw	r24, 0x01	; 1
+ 1d4:	01 f4       	brne	.+0      	; 0x1d6 <main+0x11c>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 1d6:	21 50       	subi	r18, 0x01	; 1
+ 1d8:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 1da:	01 f4       	brne	.+0      	; 0x1dc <main+0x122>
+        _delay_ms(3000);
+
+        // Pick a random transform...
+        unsigned char ii;
+        unsigned char jj;
+        x = x * 1664525L + 1013904223L;
+ 1dc:	c8 01       	movw	r24, r16
+ 1de:	b7 01       	movw	r22, r14
+ 1e0:	2d e0       	ldi	r18, 0x0D	; 13
+ 1e2:	36 e6       	ldi	r19, 0x66	; 102
+ 1e4:	49 e1       	ldi	r20, 0x19	; 25
+ 1e6:	50 e0       	ldi	r21, 0x00	; 0
+ 1e8:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 1ec:	7b 01       	movw	r14, r22
+ 1ee:	8c 01       	movw	r16, r24
+ 1f0:	8f e5       	ldi	r24, 0x5F	; 95
+ 1f2:	93 ef       	ldi	r25, 0xF3	; 243
+ 1f4:	ae e6       	ldi	r26, 0x6E	; 110
+ 1f6:	bc e3       	ldi	r27, 0x3C	; 60
+ 1f8:	e8 0e       	add	r14, r24
+ 1fa:	f9 1e       	adc	r15, r25
+ 1fc:	0a 1f       	adc	r16, r26
+ 1fe:	1b 1f       	adc	r17, r27
+        ii = pickTransform(x >> 17 & 0x7fff, &ptr);
+ 200:	d8 01       	movw	r26, r16
+ 202:	c7 01       	movw	r24, r14
+ 204:	21 e1       	ldi	r18, 0x11	; 17
+ 206:	b6 95       	lsr	r27
+ 208:	a7 95       	ror	r26
+ 20a:	97 95       	ror	r25
+ 20c:	87 95       	ror	r24
+ 20e:	2a 95       	dec	r18
+ 210:	01 f4       	brne	.+0      	; 0x212 <main+0x158>
+ 212:	9f 77       	andi	r25, 0x7F	; 127
+ 214:	b4 01       	movw	r22, r8
+ 216:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 21a:	c8 2e       	mov	r12, r24
+ 21c:	dd 24       	eor	r13, r13
+ 21e:	00 c0       	rjmp	.+0      	; 0x220 <main+0x166>
+
+        for (jj = 0; jj < ii; jj++)
+        {
+            data1 = pgm_read_byte_near(ptr++);
+ 220:	e9 81       	ldd	r30, Y+1	; 0x01
+ 222:	fa 81       	ldd	r31, Y+2	; 0x02
+ 224:	31 96       	adiw	r30, 0x01	; 1
+ 226:	fa 83       	std	Y+2, r31	; 0x02
+ 228:	e9 83       	std	Y+1, r30	; 0x01
+ 22a:	31 97       	sbiw	r30, 0x01	; 1
+ 22c:	e4 91       	lpm	r30, Z
+            spiOut(data1, data1);
+ 22e:	6e 2f       	mov	r22, r30
+ 230:	8e 2f       	mov	r24, r30
+ 232:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 236:	80 e2       	ldi	r24, 0x20	; 32
+ 238:	9e e4       	ldi	r25, 0x4E	; 78
+ 23a:	01 97       	sbiw	r24, 0x01	; 1
+ 23c:	01 f4       	brne	.+0      	; 0x23e <main+0x184>
+        unsigned char ii;
+        unsigned char jj;
+        x = x * 1664525L + 1013904223L;
+        ii = pickTransform(x >> 17 & 0x7fff, &ptr);
+
+        for (jj = 0; jj < ii; jj++)
+ 23e:	d3 94       	inc	r13
+ 240:	dc 14       	cp	r13, r12
+ 242:	01 f4       	brne	.+0      	; 0x244 <main+0x18a>
+ 244:	28 e8       	ldi	r18, 0x88	; 136
+ 246:	33 e1       	ldi	r19, 0x13	; 19
+ 248:	88 ec       	ldi	r24, 0xC8	; 200
+ 24a:	90 e0       	ldi	r25, 0x00	; 0
+ 24c:	01 97       	sbiw	r24, 0x01	; 1
+ 24e:	01 f4       	brne	.+0      	; 0x250 <main+0x196>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 250:	21 50       	subi	r18, 0x01	; 1
+ 252:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 254:	01 f4       	brne	.+0      	; 0x256 <main+0x19c>
+ 256:	00 c0       	rjmp	.+0      	; 0x258 <txStrShiftLeftRight+0x86>

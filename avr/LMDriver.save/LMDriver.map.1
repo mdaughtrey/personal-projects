@@ -1,0 +1,439 @@
+Archive member included because of file (symbol)
+
+/usr/avr/lib/libc.a(memmove.o)
+                              displaymux.o (memmove)
+/usr/avr/lib/libc.a(memset.o)
+                              displaymux.o (memset)
+/usr/avr/lib/libc.a(memcpy.o)
+                              /usr/avr/lib/libc.a(memmove.o) (memcpy)
+/usr/lib/gcc-lib/avr/3.3/avr5/libgcc.a(_copy_data.o)
+                              main.o (__do_copy_data)
+/usr/lib/gcc-lib/avr/3.3/avr5/libgcc.a(_clear_bss.o)
+                              main.o (__do_clear_bss)
+
+Allocating common symbols
+Common symbol       size              file
+
+parameter           0x4               cmdproc.o
+paramsRemaining     0x1               cmdproc.o
+rxTail              0x1               serutil.o
+display             0x52              displaymux.o
+spiBuffer           0x10              main.o
+dispDebugChar       0x1               displaymux.o
+dataRxBuffer        0x8               serutil.o
+timer0Event         0x1               main.o
+rxHead              0x1               serutil.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00020000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD /usr/lib/gcc-lib/avr/3.3/../../../../avr/lib/avr5/crtm169.o
+LOAD main.o
+LOAD displaymux.o
+LOAD serutil.o
+LOAD cmdproc.o
+LOAD font5x7.o
+LOAD diagleds.o
+LOAD /usr/avr/lib/libc.a
+LOAD /usr/lib/gcc-lib/avr/3.3/avr5/libgcc.a
+LOAD /usr/avr/lib/libc.a
+LOAD /usr/lib/gcc-lib/avr/3.3/avr5/libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x00000000     0x32d4
+ *(.vectors)
+ .vectors       0x00000000       0x5c /usr/lib/gcc-lib/avr/3.3/../../../../avr/lib/avr5/crtm169.o
+                0x00000000                __vectors
+                0x00000000                __vector_default
+                0x0000005c                __ctors_start = .
+ *(.ctors)
+                0x0000005c                __ctors_end = .
+                0x0000005c                __dtors_start = .
+ *(.dtors)
+                0x0000005c                __dtors_end = .
+ *(.progmem.gcc*)
+ *(.progmem*)
+ .progmem.data  0x0000005c      0x25e displaymux.o
+                0x0000007f                msgTxReverse
+                0x0000024f                msgPrevColOff
+                0x00000145                msgArrow
+                0x000002a8                msgNewDataBit
+                0x000000b1                msgFindFirstTransform
+                0x00000102                msgRollUp
+                0x0000022c                msgDataBit
+                0x00000169                msgClearColumns
+                0x00000243                msgNewFrame
+                0x0000029b                msgData
+                0x000000d6                msgTxRollHorz
+                0x00000148                msgPreCopy
+                0x0000018e                msgCopy
+                0x000000e4                msgTxShiftVert
+                0x0000009a                msgCR
+                0x00000075                msgTxFlip
+                0x0000005c                msgSetChar
+                0x0000012e                msgLength
+                0x0000009d                msgSpace
+                0x00000126                msgFound
+                0x000000f3                msgTxShiftHorz
+                0x000001d8                rowCtlGreen
+                0x0000008c                msgTransformIs
+                0x0000027a                msgOldPort
+                0x0000010a                msgRollLeft
+                0x000001aa                msgDmProgColumn
+                0x00000282                msgOldBit
+                0x000001ba                columnCtl
+                0x00000136                msgDumpTxList
+                0x00000202                rowCtlOrange
+                0x00000069                msgTxMirror
+                0x0000017a                msgDisp
+                0x00000237                msgColIndex
+                0x000002a3                msgOn
+                0x00000180                msgBoot
+                0x000002b1                msgCount
+                0x0000028a                msgNewPort
+                0x00000154                msgPostCopy
+                0x00000293                msgNewBit
+                0x00000176                msgGreen
+                0x0000026a                msgOldRowCtlPtr
+                0x00000114                msgDeleteTransform
+                0x000000a0                msgSetTransform
+                0x000000c8                msgTxRollVert
+                0x0000019f                msgDmPixel
+                0x0000025e                msgRowCtlPtr
+                0x00000161                msgReset
+                0x00000178                msgOrange
+ .progmem.data  0x000002ba       0x10 serutil.o
+                0x000002ba                hexTable
+ .progmem.data  0x000002ca      0x500 font5x7.o
+                0x000002ca                font5x7
+                0x000007ca                . = ALIGN (0x2)
+ *(.init0)
+ *(.init1)
+ *(.init2)
+ .init2         0x000007ca        0xc /usr/lib/gcc-lib/avr/3.3/../../../../avr/lib/avr5/crtm169.o
+ *(.init3)
+ *(.init4)
+ .init4         0x000007d6       0x16 /usr/lib/gcc-lib/avr/3.3/avr5/libgcc.a(_copy_data.o)
+                0x000007d6                __do_copy_data
+ .init4         0x000007ec       0x10 /usr/lib/gcc-lib/avr/3.3/avr5/libgcc.a(_clear_bss.o)
+                0x000007ec                __do_clear_bss
+ *(.init5)
+ *(.init6)
+ *(.init7)
+ *(.init8)
+ *(.init9)
+ .init9         0x000007fc        0x4 /usr/lib/gcc-lib/avr/3.3/../../../../avr/lib/avr5/crtm169.o
+ *(.text)
+ .text          0x00000800        0x4 /usr/lib/gcc-lib/avr/3.3/../../../../avr/lib/avr5/crtm169.o
+                0x00000800                __vector_22
+                0x00000800                __vector_1
+                0x00000800                __bad_interrupt
+                0x00000800                __vector_6
+                0x00000800                __vector_3
+                0x00000800                __vector_17
+                0x00000800                __vector_19
+                0x00000800                __vector_7
+                0x00000800                __vector_5
+                0x00000800                __vector_4
+                0x00000800                __vector_9
+                0x00000800                __vector_2
+                0x00000800                __vector_21
+                0x00000800                __vector_8
+                0x00000800                __vector_14
+                0x00000800                __vector_10
+                0x00000800                __vector_16
+                0x00000800                __vector_18
+                0x00000800                __vector_20
+ .text          0x00000804      0x222 main.o
+                0x0000082e                __vector_12
+                0x00000936                spi_init
+                0x00000804                __vector_11
+                0x000008e2                __vector_13
+                0x00000982                main
+                0x0000088e                __vector_15
+ .text          0x00000a26     0x1dd6 displaymux.o
+                0x000017ec                dm_blank
+                0x000025ce                dm_copyToCustom
+                0x00001b60                dm_setPalette
+                0x00001516                dm_setReverse
+                0x00001a14                dm_roll
+                0x0000266c                dm_dumpdisp
+                0x00001636                dm_setDim
+                0x000015d6                dm_setMirror
+                0x0000185a                dm_unBlank
+                0x00001576                dm_setFlip
+                0x00000eca                dm_init
+                0x0000237e                dm_progColumn
+                0x000018c8                dm_shift
+                0x00002434                dm_pixel
+                0x00002300                dm_reset
+                0x00000a26                dm_timerHandler
+                0x00000f9c                dm_setChar
+                0x0000170e                dm_displayProgrammed
+ .text          0x000027fc      0x2f4 serutil.o
+                0x00002862                uart_RXISR
+                0x000029c0                uart_send_sync
+                0x00002940                uart_send_async
+                0x00002a44                uart_init
+                0x000027fc                uart_TXISR
+                0x00002894                uart_get_buffered
+                0x000028fa                uart_send_char
+                0x00002a70                uart_send_hex_byte
+ .text          0x00002af0      0x62e cmdproc.o
+                0x00002bba                cmd_dataHandler
+                0x00002af0                cmd_Init
+                0x00002b0a                asciiToHex
+ .text          0x0000311e      0x16a diagleds.o
+                0x00003154                diagled
+                0x0000311e                diagled_init
+ .text          0x00003288       0x26 /usr/avr/lib/libc.a(memmove.o)
+                0x00003288                memmove
+ .text          0x000032ae       0x10 /usr/avr/lib/libc.a(memset.o)
+                0x000032ae                memset
+ .text          0x000032be       0x16 /usr/avr/lib/libc.a(memcpy.o)
+                0x000032be                memcpy
+                0x000032d4                . = ALIGN (0x2)
+ *(.text.*)
+                0x000032d4                . = ALIGN (0x2)
+ *(.fini9)
+ *(.fini8)
+ *(.fini7)
+ *(.fini6)
+ *(.fini5)
+ *(.fini4)
+ *(.fini3)
+ *(.fini2)
+ *(.fini1)
+ *(.fini0)
+                0x000032d4                _etext = .
+
+.data           0x00800100        0x0 load address 0x000032d4
+                0x00800100                PROVIDE (__data_start, .)
+ *(.data)
+ *(.gnu.linkonce.d*)
+                0x00800100                . = ALIGN (0x2)
+                0x00800100                _edata = .
+                0x00800100                PROVIDE (__data_end, .)
+
+.bss            0x00800100       0x7a
+                0x00800100                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x00800100        0x2 main.o
+                0x00800101                spiTail
+                0x00800100                spiHead
+ .bss           0x00800102        0x3 serutil.o
+ .bss           0x00800105        0x2 cmdproc.o
+                0x00800106                paramIndex
+                0x00800105                command
+ *(COMMON)
+ COMMON         0x00800107       0x11 main.o
+                                  0x0 (size before relaxing)
+                0x00800107                spiBuffer
+                0x00800117                timer0Event
+ COMMON         0x00800118       0x53 displaymux.o
+                                  0x0 (size before relaxing)
+                0x00800118                display
+                0x0080016a                dispDebugChar
+ COMMON         0x0080016b        0xa serutil.o
+                                  0x0 (size before relaxing)
+                0x0080016b                rxTail
+                0x0080016c                dataRxBuffer
+                0x00800174                rxHead
+ COMMON         0x00800175        0x5 cmdproc.o
+                                  0x0 (size before relaxing)
+                0x00800175                parameter
+                0x00800179                paramsRemaining
+                0x0080017a                PROVIDE (__bss_end, .)
+                0x000032d4                __data_load_start = LOADADDR (.data)
+                0x000032d4                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x0080017a        0x0
+                0x0080017a                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x0080017a                PROVIDE (__noinit_end, .)
+                0x0080017a                _end = .
+                0x0080017a                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0 load address 0x000032d4
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+
+.stab           0x00000000     0x4554
+ *(.stab)
+ .stab          0x00000000      0x36c /usr/lib/gcc-lib/avr/3.3/../../../../avr/lib/avr5/crtm169.o
+ .stab          0x0000036c      0x840 main.o
+                                0x84c (size before relaxing)
+ .stab          0x00000bac     0x25ec displaymux.o
+                               0x28bc (size before relaxing)
+ .stab          0x00003198      0x69c serutil.o
+                                0x96c (size before relaxing)
+ .stab          0x00003834      0x714 cmdproc.o
+                                0x9e4 (size before relaxing)
+ .stab          0x00003f48      0x1a4 font5x7.o
+                                0x414 (size before relaxing)
+ .stab          0x000040ec      0x294 diagleds.o
+                                0x45c (size before relaxing)
+ .stab          0x00004380       0xe4 /usr/avr/lib/libc.a(memmove.o)
+                                 0xf0 (size before relaxing)
+ .stab          0x00004464       0x6c /usr/avr/lib/libc.a(memset.o)
+                                 0x78 (size before relaxing)
+ .stab          0x000044d0       0x84 /usr/avr/lib/libc.a(memcpy.o)
+                                 0x90 (size before relaxing)
+
+.stabstr        0x00000000     0x2028
+ *(.stabstr)
+ .stabstr       0x00000000     0x2028 /usr/lib/gcc-lib/avr/3.3/../../../../avr/lib/avr5/crtm169.o
+                                  0x0 (size before relaxing)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges
+ *(.debug_aranges)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info
+ *(.debug_info)
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev
+ *(.debug_abbrev)
+
+.debug_line
+ *(.debug_line)
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str
+ *(.debug_str)
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(LMDriver.out elf32-avr)

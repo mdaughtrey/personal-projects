@@ -1,0 +1,302 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
+	<META NAME="CREATED" CONTENT="0;0">
+	<META NAME="CHANGEDBY" CONTENT="Matthew Daughtrey">
+	<META NAME="CHANGED" CONTENT="20081002;22482500">
+	<META NAME="DC.title" CONTENT="">
+	<META NAME="DC.subject" CONTENT="">
+	<META NAME="DC.description" CONTENT="">
+	<META NAME="DC.creator" CONTENT="Matthew Daughtrey">
+	<!-- This file was converted to xhtml by Writer2xhtml ver. 0.5. See http://www.hj-gym.dk/~hj/writer2latex for more info. -->
+	<META NAME="DC.date" CONTENT="2008-10-02T22:33:02">
+	<META NAME="DC.language" CONTENT="">
+	<STYLE TYPE="text/css">
+	<!--
+		TD P { font-family: "Times New Roman", serif; font-size: 12pt }
+		H1 { margin-top: 0.16in; margin-bottom: 0.08in; border: none; padding: 0in; font-family: "Arial", sans-serif; font-size: 15pt }
+		P { font-family: "Times New Roman", serif; font-size: 12pt }
+		P.textbody { margin-bottom: 0.08in; border: none; padding: 0in; font-family: "Times New Roman", serif; font-size: 12pt }
+		P.preformattedtext { border: none; padding: 0in; font-family: "Times New Roman"; font-size: 9pt }
+		P.standard { border: none; padding: 0in; font-family: "Times New Roman", serif; font-size: 12pt }
+		P.illustration { margin-top: 0.08in; margin-bottom: 0.08in; border: none; padding: 0in; font-family: "Times New Roman", serif; font-size: 12pt; font-style: italic }
+		H2 { margin-top: 0.16in; margin-bottom: 0.08in; border: none; padding: 0in; font-family: "Arial", sans-serif; font-size: 13pt; font-style: italic }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1><A NAME="toc0"></A>Halloween Eyes</H1>
+<P CLASS="standard"><TABLE DIR="LTR" ALIGN=LEFT BORDER=0 CELLPADDING=0 CELLSPACING=2>
+	<TR>
+		<TD>
+			<P><!-- begin embedded WindowsMedia file... --><EMBED SRC="http://daughtrey.com/proj/heyes/heyes-video.wmv" TYPE="application/x-mplayer2" NAME="mediaPlayer" ALIGN=BOTTOM WIDTH=320 HEIGHT=285 pluginspage="http://microsoft.com/windows/mediaplayer/en/download/" displaysize="4" autosize="-1" bgcolor="darkblue" showcontrols="true" showtracker="-1" showdisplay="0" showstatusbar="-1" videoborder3d="-1" autostart="true" designtimesp="5311" loop="true"><!-- ...end embedded WindowsMedia file --><!-- begin link to launch external media player... -->
+						</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD>
+			<P ALIGN=CENTER><A HREF="http://daughtrey.com/proj/heyes/heyes-video.wmv" TARGET="_blank">Launch
+			in external player<!-- ...end link to launch external media player... --></A>
+						</P>
+		</TD>
+	</TR>
+</TABLE><BR><BR>
+</P>
+<P CLASS="standard"><FONT FACE="Trebuchet MS, sans-serif">Halloween
+Eyes is the first project using my LMDriver platform (which I've been
+working on, on and off, for about 4 years (real life can be very
+inconvenient)). The concept is simple; a pair of TERRIFYING
+disembodied eyes rendered on a 4 5x7 dot matrix displays which look
+about and blink every so often. Even though I was going for
+&quot;terrifying&quot;, the most common reaction was &quot;cute&quot;.
+Yeah, cute like a GHOST.</FONT></P>
+<P><BR><BR>
+</P>
+<P CLASS="standard"><BR><BR>
+</P>
+<P CLASS="standard"><BR><BR>
+</P>
+<P CLASS="standard"><FONT FACE="Trebuchet MS, sans-serif">The whole
+thing is based around 2 complete LMDriver modules, and a third
+microcontroller which steps them through their sequence.</FONT></P>
+<DIV ID="Frame17Cframe" DIR="LTR">
+	<P ALIGN=LEFT STYLE="border: none; padding: 0in"><A NAME="graphics17Cgraphics"></A>
+	<IMG SRC="HalloweenEyes-img1" NAME="graphics1" ALT="graphics1" ALIGN=BOTTOM WIDTH=639 HEIGHT=480 BORDER=0>
+		</P>
+	<P CLASS="illustration" STYLE="border: none; padding: 0in"><A NAME="seqrefIllustration0"></A>
+	<FONT SIZE=3>Illustration 1: Here you can see the 4 LED matrices and
+	a partially populated board with the programming interface.</FONT></P>
+</DIV>
+<DIV ID="Frame27Cframe" DIR="LTR">
+	<P ALIGN=LEFT STYLE="border: none; padding: 0in"><A NAME="graphics27Cgraphics"></A>
+	<IMG SRC="HalloweenEyes-img2" NAME="graphics2" ALT="graphics2" ALIGN=BOTTOM WIDTH=639 HEIGHT=480 BORDER=0>
+		</P>
+	<P CLASS="illustration" STYLE="border: none; padding: 0in"><A NAME="seqrefIllustration1"></A>
+	<FONT SIZE=3>Illustration 2: The displays on either end are being
+	controlled by the central micro which is simply sending out LMDriver
+	commands via a bit-banged SPI bus</FONT></P>
+</DIV>
+<P CLASS="standard"><FONT FACE="Trebuchet MS, sans-serif">Each
+display module is driven by an Atmel ATMega169 microcontroller and
+nothing else. The uC accepts an extensive command set and handles the
+multiplexing of the displays. The displays are heavily multiplexed;
+each LED matrix has a maximum of 2 LEDs on simultaneously. The LED
+displays are dual color but I'm not using green for this project; the
+next one will.</FONT></P>
+<DIV ID="Frame37Cframe" DIR="LTR">
+	<P ALIGN=LEFT STYLE="border: none; padding: 0in"><A NAME="graphics37Cgraphics"></A>
+	<IMG SRC="HalloweenEyes-img3" NAME="graphics3" ALT="graphics3" ALIGN=BOTTOM WIDTH=639 HEIGHT=480 BORDER=0>
+		</P>
+	<P CLASS="illustration" STYLE="border: none; padding: 0in"><A NAME="seqrefIllustration2"></A>
+	<FONT SIZE=3>Illustration 3: The programming is done via a <A HREF="http://www.adafruit.com/index.php?main_page=product_info&amp;cPath=16&amp;products_id=46">tinyisp
+	module from adafruit.org</A>. Here you can see it attached to the
+	eyes module, along with the module development jig next to it.</FONT></P>
+</DIV>
+<P CLASS="standard"><BR><BR>
+</P>
+<P CLASS="standard"><FONT FACE="Trebuchet MS, sans-serif">As an
+example of how easy the LMDriver is to use, here's the code that
+steps through the sequence</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#include
+&lt;avr/io.h&gt;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#include
+&lt;util/delay.h&gt;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#include
+&lt;avr/pgmspace.h&gt;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#include
+&lt;avr/interrupt.h&gt;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#include
+&lt;stdint.h&gt;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#include
+&lt;avr/wdt.h&gt;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#include
+&lt;avr/pgmspace.h&gt;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strLookStraightAhead[] PROGMEM = {
+&quot;g001c91c12282224174134145d55d641c0c1a-A-&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char C0C1[] PROGMEM = { &quot;C0C1&quot;};</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char c0c1[] PROGMEM = { &quot;c0c1&quot;};</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strSlowBlink[] PROGMEM = {</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">&quot;00890811481422272232262243e53e&quot;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">&quot;10880821471431461441c51c&quot;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">&quot;208308408508608708&quot;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">&quot;10880821471431461441c51c&quot;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">&quot;11481422272232262243e53e&quot;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">&quot;01c91c12282224174134145d55d641&quot;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">};</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceRight1[] PROGMEM = { &quot;35d541&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceRight2[] PROGMEM = { &quot;25d441&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceRight3[] PROGMEM = { &quot;45d241&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceRight4[] PROGMEM = { &quot;55d341&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceLeft1[] PROGMEM = { &quot;65d441&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceLeft2[] PROGMEM = { &quot;75d541&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceLeft3[] PROGMEM = { &quot;55d741&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">unsigned
+char strGlanceLeft4[] PROGMEM = { &quot;45d641&quot; };</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">//
+PORTC</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#define
+BOTH_RESET _BV(6)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#define
+BOTH_SCK _BV(5)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#define
+BOTH_MISO _BV(4)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#define
+BOTH_MOSI _BV(3)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#define
+RIGHT_SS _BV(2)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">#define
+LEFT_SS _BV(1)</FONT></P>
+<P CLASS="preformattedtext">&nbsp;</P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">//
+msb first, sck low on idle, sample on leading edge</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">void
+spiOut(unsigned char data)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">while
+(SPSR &amp; _BV(SPIF));</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">unsigned
+char toss = SPDR;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;</P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">//
+set the SS lines</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+&amp;= ~LEFT_SS;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+&amp;= ~RIGHT_SS;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_us(5);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">unsigned
+char ii;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">for
+(ii = 0; ii &lt; 8; ii++)</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">if
+(data &amp; 0x80) { PORTC |= BOTH_MOSI; } </FONT>
+</P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">else
+{ PORTC &amp;= ~BOTH_MOSI; }</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_us(5);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+|= BOTH_SCK;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_us(5);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+&amp;= ~BOTH_SCK;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">data
+&lt;&lt;= 1;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_us(5);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">//
+reset the SS lines</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+|= LEFT_SS;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+|= RIGHT_SS;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">void
+stringOut(unsigned char * stringPtr)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">unsigned
+char data = pgm_read_byte_near(stringPtr++);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">while
+(data)</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">spiOut
+(data);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">data
+= pgm_read_byte_near(stringPtr++);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(1);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">void
+fastBlink()</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(C0C1);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(50);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(c0c1);</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">void
+slowBlink(void)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">{
+</FONT>
+</P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strSlowBlink);</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">void
+glanceRight(void)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceRight1);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(100);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceRight2);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(3000);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceRight3);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(200);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceRight4);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(200);</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">void
+glanceLeft(void)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceLeft1);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(100);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceLeft2);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(3000);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceLeft3);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(200);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strGlanceLeft4);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(200);</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">int
+main(void)</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">//
+initialize</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">DDRC
+= 0x6e; // 0110 1110 &nbsp;&nbsp;&nbsp;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+= 0x46; // 0100 0110 reset, SS idle</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">//
+reset the displays</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+&amp;= ~BOTH_RESET;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(30);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">PORTC
+|= BOTH_RESET;</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(100);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">stringOut(strLookStraightAhead);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">while
+(1)</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">{</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(5000);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">glanceLeft();</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(5000);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">glanceRight();</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">_delay_ms(5000);</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">slowBlink();</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext">&nbsp;&nbsp;&nbsp;&nbsp;<FONT FACE="Courier 10 Pitch, monospace">return
+0;</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Courier 10 Pitch, monospace">}</FONT></P>
+<P CLASS="preformattedtext"><FONT FACE="Trebuchet MS, sans-serif"><FONT SIZE=3>Ok,
+so the control strings are complete gibberish, but they'll make more
+sense once I publish the spec; suffice to say for the moment that the
+code is manually programming each column in turn, so “055” means
+column 0 is value 0x55, where the LSB is the topmost pixel. </FONT></FONT>
+</P>
+<H2><A NAME="toc1"></A>Questions/Contact</H2>
+<P CLASS="textbody"><FONT FACE="Trebuchet MS, sans-serif">My email
+name is matt, and you can email me at this site, daughtrey.com.</FONT></P>
+</BODY>
+</HTML>

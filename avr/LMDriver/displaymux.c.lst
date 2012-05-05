@@ -1,0 +1,2356 @@
+
+displaymux.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000bda  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  00000c0e  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000000  00000000  00000000  00000c0e  2**0
+                  ALLOC
+  3 .stab         00001d64  00000000  00000000  00000c10  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      00001381  00000000  00000000  00002974  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .progmem.data 00000072  00000000  00000000  00003cf5  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+Disassembly of section .text:
+
+00000000 <dm_timerHandler>:
+static void dm_clearRows(struct _display * display, u08 start, u08 count);
+static void dm_clearColumns(struct _display * display, u08 start, u08 count);
+
+
+void dm_timerHandler(void)
+{
+   0:	2f 92       	push	r2
+   2:	3f 92       	push	r3
+   4:	4f 92       	push	r4
+   6:	5f 92       	push	r5
+   8:	6f 92       	push	r6
+   a:	7f 92       	push	r7
+   c:	8f 92       	push	r8
+   e:	9f 92       	push	r9
+  10:	af 92       	push	r10
+  12:	bf 92       	push	r11
+  14:	cf 92       	push	r12
+  16:	df 92       	push	r13
+  18:	ef 92       	push	r14
+  1a:	ff 92       	push	r15
+  1c:	0f 93       	push	r16
+  1e:	1f 93       	push	r17
+  20:	cf 93       	push	r28
+  22:	df 93       	push	r29
+  24:	cd b7       	in	r28, 0x3d	; 61
+  26:	de b7       	in	r29, 0x3e	; 62
+  28:	27 97       	sbiw	r28, 0x07	; 7
+  2a:	0f b6       	in	r0, 0x3f	; 63
+  2c:	f8 94       	cli
+  2e:	de bf       	out	0x3e, r29	; 62
+  30:	0f be       	out	0x3f, r0	; 63
+  32:	cd bf       	out	0x3d, r28	; 61
+  34:	90 e0       	ldi	r25, 0x00	; 0
+  36:	69 2e       	mov	r6, r25
+  38:	90 e0       	ldi	r25, 0x00	; 0
+  3a:	79 2e       	mov	r7, r25
+  3c:	8e e1       	ldi	r24, 0x1E	; 30
+  3e:	e8 2e       	mov	r14, r24
+  40:	f1 2c       	mov	r15, r1
+  42:	e6 0c       	add	r14, r6
+  44:	f7 1c       	adc	r15, r7
+  46:	22 24       	eor	r2, r2
+  48:	33 24       	eor	r3, r3
+  4a:	44 24       	eor	r4, r4
+  4c:	55 24       	eor	r5, r5
+    u08 whichIndex = 0;
+
+    for (whichIndex = 0; whichIndex < NUM_DISPLAYS; whichIndex++)
+    {
+        struct _display * disp = &display[whichIndex];
+        u08 flags = disp->flags;
+  4e:	f3 01       	movw	r30, r6
+  50:	f2 81       	ldd	r31, Z+2	; 0x02
+  52:	fb 83       	std	Y+3, r31	; 0x03
+        u08 litBitIndex = disp->currentColumnBit;
+  54:	f7 01       	movw	r30, r14
+  56:	31 81       	ldd	r19, Z+1	; 0x01
+        u08 colIndex = disp->colIndex;
+  58:	f3 01       	movw	r30, r6
+  5a:	b1 80       	ldd	r11, Z+1	; 0x01
+/*             { */
+/*                 colIndex = 0; */
+/*             } */
+/*         } */
+
+        const u08 * colCtlPtr = &columnCtl[whichIndex][colIndex];
+  5c:	83 e0       	ldi	r24, 0x03	; 3
+  5e:	b8 9e       	mul	r11, r24
+  60:	a0 01       	movw	r20, r0
+  62:	11 24       	eor	r1, r1
+  64:	42 0d       	add	r20, r2
+  66:	53 1d       	adc	r21, r3
+  68:	40 50       	subi	r20, 0x00	; 0
+  6a:	50 40       	sbci	r21, 0x00	; 0
+        u08 * rowCtlPtr = disp->rowCtlPtr;
+  6c:	f7 01       	movw	r30, r14
+  6e:	a3 81       	ldd	r26, Z+3	; 0x03
+  70:	b4 81       	ldd	r27, Z+4	; 0x04
+        u08 * oldRowCtlPtr = disp->oldRowCtlPtr;
+  72:	85 81       	ldd	r24, Z+5	; 0x05
+  74:	96 81       	ldd	r25, Z+6	; 0x06
+  76:	9f 83       	std	Y+7, r25	; 0x07
+  78:	8e 83       	std	Y+6, r24	; 0x06
+        u08 senseRow = disp->senseRowColumn >> 4;
+
+        /* If we're at the start of a new frame... */
+        if (litBitIndex == 7 &&
+  7a:	37 30       	cpi	r19, 0x07	; 7
+  7c:	01 f4       	brne	.+0      	; 0x7e <dm_timerHandler+0x7e>
+  7e:	bb 20       	and	r11, r11
+  80:	01 f4       	brne	.+0      	; 0x82 <dm_timerHandler+0x82>
+            //	  oldRowCtlPtr = rowCtlPtr;
+            /* Set up the color choice for this frame */
+#ifdef PALETTE
+            if (disp->paletteCountdown < disp->paletteSelected)
+#else
+                if (0 == disp->paletteSelected) /* palette zero = orange */
+  82:	82 81       	ldd	r24, Z+2	; 0x02
+  84:	88 23       	and	r24, r24
+  86:	01 f4       	brne	.+0      	; 0x88 <dm_timerHandler+0x88>
+#endif
+                {
+                    disp->rowCtlPtr = &rowCtlOrange[whichIndex][0]; 
+  88:	c2 01       	movw	r24, r4
+  8a:	80 50       	subi	r24, 0x00	; 0
+  8c:	90 40       	sbci	r25, 0x00	; 0
+  8e:	00 c0       	rjmp	.+0      	; 0x90 <dm_timerHandler+0x90>
+                }
+                else
+                {
+                    disp->rowCtlPtr = &rowCtlGreen[whichIndex][0]; /* palette 1 == green */
+  90:	c2 01       	movw	r24, r4
+  92:	80 50       	subi	r24, 0x00	; 0
+  94:	90 40       	sbci	r25, 0x00	; 0
+  96:	f7 01       	movw	r30, r14
+  98:	94 83       	std	Z+4, r25	; 0x04
+  9a:	83 83       	std	Z+3, r24	; 0x03
+                }
+            if (rowCtlPtr != disp->rowCtlPtr) /*  If we changed palettes... */
+  9c:	f7 01       	movw	r30, r14
+  9e:	83 81       	ldd	r24, Z+3	; 0x03
+  a0:	94 81       	ldd	r25, Z+4	; 0x04
+  a2:	a8 17       	cp	r26, r24
+  a4:	b9 07       	cpc	r27, r25
+  a6:	01 f0       	breq	.+0      	; 0xa8 <dm_timerHandler+0xa8>
+            {
+                oldRowCtlPtr = rowCtlPtr; /* get the old palette pointer */
+                rowCtlPtr = disp->rowCtlPtr; /* get the new palette pointer */
+                disp->oldRowCtlPtr = oldRowCtlPtr; /* store the old palette pointer */
+  a8:	b6 83       	std	Z+6, r27	; 0x06
+  aa:	a5 83       	std	Z+5, r26	; 0x05
+  ac:	bf 83       	std	Y+7, r27	; 0x07
+  ae:	ae 83       	std	Y+6, r26	; 0x06
+  b0:	dc 01       	movw	r26, r24
+  b2:	00 c0       	rjmp	.+0      	; 0xb4 <dm_timerHandler+0xb4>
+                disp->paletteCountdown = PALETTE_COUNTDOWN_INIT;
+            }
+#endif
+        }
+        u08 data;
+        if (litBitIndex < 7)		/* if we're in a frame, restore the current data */
+  b4:	37 30       	cpi	r19, 0x07	; 7
+  b6:	00 f4       	brcc	.+0      	; 0xb8 <dm_timerHandler+0xb8>
+        {
+            data = disp->currentColumn;
+  b8:	f7 01       	movw	r30, r14
+  ba:	a0 80       	ld	r10, Z
+  bc:	00 c0       	rjmp	.+0      	; 0xbe <dm_timerHandler+0xbe>
+        }
+        else
+        {
+            data = disp->bitsOut[colIndex]; /* else read from frame buffer */
+  be:	f3 01       	movw	r30, r6
+  c0:	eb 0d       	add	r30, r11
+  c2:	f1 1d       	adc	r31, r1
+  c4:	a1 8c       	ldd	r10, Z+25	; 0x19
+  c6:	30 e0       	ldi	r19, 0x00	; 0
+            litBitIndex = 0;
+        }
+      
+        u08 * colOnPort = pgm_read_byte_near(colCtlPtr + offsetof(PortPin, port));
+  c8:	fa 01       	movw	r30, r20
+  ca:	84 91       	lpm	r24, Z
+  cc:	88 2e       	mov	r8, r24
+  ce:	99 24       	eor	r9, r9
+        u08 colOnBit = pgm_read_byte_near(colCtlPtr + offsetof(PortPin, pin));
+  d0:	4e 5f       	subi	r20, 0xFE	; 254
+  d2:	5f 4f       	sbci	r21, 0xFF	; 255
+  d4:	fa 01       	movw	r30, r20
+  d6:	f4 91       	lpm	r31, Z
+  d8:	f9 83       	std	Y+1, r31	; 0x01
+      
+        /* If we're starting a new frame... */
+        if (litBitIndex == 0)
+  da:	33 23       	and	r19, r19
+  dc:	01 f0       	breq	.+0      	; 0xde <dm_timerHandler+0xde>
+  de:	1a 82       	std	Y+2, r1	; 0x02
+  e0:	cc 24       	eor	r12, r12
+  e2:	dd 24       	eor	r13, r13
+  e4:	00 c0       	rjmp	.+0      	; 0xe6 <dm_timerHandler+0xe6>
+        {
+            (*disp->litPort) |= _BV(disp->litBit); /* turn off the previous column */
+  e6:	f7 01       	movw	r30, r14
+  e8:	47 81       	ldd	r20, Z+7	; 0x07
+  ea:	50 85       	ldd	r21, Z+8	; 0x08
+  ec:	81 e0       	ldi	r24, 0x01	; 1
+  ee:	90 e0       	ldi	r25, 0x00	; 0
+  f0:	01 84       	ldd	r0, Z+9	; 0x09
+  f2:	00 c0       	rjmp	.+0      	; 0xf4 <dm_timerHandler+0xf4>
+  f4:	88 0f       	add	r24, r24
+  f6:	99 1f       	adc	r25, r25
+  f8:	0a 94       	dec	r0
+  fa:	02 f4       	brpl	.+0      	; 0xfc <dm_timerHandler+0xfc>
+  fc:	fa 01       	movw	r30, r20
+  fe:	20 81       	ld	r18, Z
+ 100:	28 2b       	or	r18, r24
+ 102:	20 83       	st	Z, r18
+            disp->litPort = colOnPort;		 /* store the new column port */
+ 104:	f7 01       	movw	r30, r14
+ 106:	90 86       	std	Z+8, r9	; 0x08
+ 108:	87 82       	std	Z+7, r8	; 0x07
+            disp->litBit = colOnBit;		 /* store the new column bit */
+ 10a:	49 81       	ldd	r20, Y+1	; 0x01
+ 10c:	41 87       	std	Z+9, r20	; 0x09
+ 10e:	00 c0       	rjmp	.+0      	; 0x110 <dm_timerHandler+0x110>
+                else
+                {
+                    (*newPort) &= ~_BV(newBit);
+                }
+            }
+            rowCtlPtr += sizeof(PortPin); /* point to the next row */
+ 110:	13 96       	adiw	r26, 0x03	; 3
+            oldRowCtlPtr += sizeof(PortPin); /* point to the next row */
+ 112:	8e 81       	ldd	r24, Y+6	; 0x06
+ 114:	9f 81       	ldd	r25, Y+7	; 0x07
+ 116:	03 96       	adiw	r24, 0x03	; 3
+ 118:	9f 83       	std	Y+7, r25	; 0x07
+ 11a:	8e 83       	std	Y+6, r24	; 0x06
+                rowCtlPtr += sizeof(PortPin); /* point to the next row */
+                oldRowCtlPtr += sizeof(PortPin); /* point to the next row */
+                continue;
+            }
+#endif
+            u08 * newPort = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, port));
+ 11c:	fd 01       	movw	r30, r26
+ 11e:	84 91       	lpm	r24, Z
+ 120:	08 2f       	mov	r16, r24
+ 122:	11 27       	eor	r17, r17
+            u08 newBit = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, pin));
+ 124:	12 96       	adiw	r26, 0x02	; 2
+ 126:	fd 01       	movw	r30, r26
+ 128:	64 91       	lpm	r22, Z
+ 12a:	12 97       	sbiw	r26, 0x02	; 2
+            u08 * oldPort = pgm_read_byte_near(oldRowCtlPtr + offsetof(PortPin, port));
+ 12c:	ee 81       	ldd	r30, Y+6	; 0x06
+ 12e:	ff 81       	ldd	r31, Y+7	; 0x07
+ 130:	84 91       	lpm	r24, Z
+ 132:	48 2f       	mov	r20, r24
+ 134:	55 27       	eor	r21, r21
+ 136:	5d 83       	std	Y+5, r21	; 0x05
+ 138:	4c 83       	std	Y+4, r20	; 0x04
+            u08 oldBit = pgm_read_byte_near(oldRowCtlPtr + offsetof(PortPin, pin));
+ 13a:	32 96       	adiw	r30, 0x02	; 2
+ 13c:	ff 83       	std	Y+7, r31	; 0x07
+ 13e:	ee 83       	std	Y+6, r30	; 0x06
+ 140:	84 91       	lpm	r24, Z
+ 142:	32 97       	sbiw	r30, 0x02	; 2
+ 144:	ff 83       	std	Y+7, r31	; 0x07
+ 146:	ee 83       	std	Y+6, r30	; 0x06
+
+            (*oldPort) &= ~_BV(oldBit); /* turn off the bit of the previous column */
+ 148:	41 e0       	ldi	r20, 0x01	; 1
+ 14a:	50 e0       	ldi	r21, 0x00	; 0
+ 14c:	fa 01       	movw	r30, r20
+ 14e:	00 c0       	rjmp	.+0      	; 0x150 <dm_timerHandler+0x150>
+ 150:	ee 0f       	add	r30, r30
+ 152:	ff 1f       	adc	r31, r31
+ 154:	8a 95       	dec	r24
+ 156:	02 f4       	brpl	.+0      	; 0x158 <dm_timerHandler+0x158>
+ 158:	cf 01       	movw	r24, r30
+ 15a:	80 95       	com	r24
+ 15c:	ec 81       	ldd	r30, Y+4	; 0x04
+ 15e:	fd 81       	ldd	r31, Y+5	; 0x05
+ 160:	20 81       	ld	r18, Z
+ 162:	28 23       	and	r18, r24
+ 164:	20 83       	st	Z, r18
+      
+            if (litBits >= BITSPERSCAN ||
+ 166:	fa 81       	ldd	r31, Y+2	; 0x02
+ 168:	f2 30       	cpi	r31, 0x02	; 2
+ 16a:	00 f4       	brcc	.+0      	; 0x16c <dm_timerHandler+0x16c>
+ 16c:	c3 16       	cp	r12, r19
+ 16e:	00 f4       	brcc	.+0      	; 0x170 <dm_timerHandler+0x170>
+                count < litBitIndex)
+            {
+                    (*newPort) &= ~_BV(newBit); /* turn off the bit on this column */
+ 170:	00 c0       	rjmp	.+0      	; 0x172 <dm_timerHandler+0x172>
+ 172:	44 0f       	add	r20, r20
+ 174:	55 1f       	adc	r21, r21
+ 176:	6a 95       	dec	r22
+ 178:	02 f4       	brpl	.+0      	; 0x17a <dm_timerHandler+0x17a>
+ 17a:	94 2f       	mov	r25, r20
+ 17c:	90 95       	com	r25
+ 17e:	f8 01       	movw	r30, r16
+ 180:	80 81       	ld	r24, Z
+ 182:	89 23       	and	r24, r25
+ 184:	80 83       	st	Z, r24
+ 186:	00 c0       	rjmp	.+0      	; 0x188 <dm_timerHandler+0x188>
+            }
+            else
+            {
+                if (data & (1 << count))
+ 188:	8a 2d       	mov	r24, r10
+ 18a:	99 27       	eor	r25, r25
+ 18c:	0c 2c       	mov	r0, r12
+ 18e:	00 c0       	rjmp	.+0      	; 0x190 <dm_timerHandler+0x190>
+ 190:	95 95       	asr	r25
+ 192:	87 95       	ror	r24
+ 194:	0a 94       	dec	r0
+ 196:	02 f4       	brpl	.+0      	; 0x198 <dm_timerHandler+0x198>
+ 198:	77 27       	eor	r23, r23
+ 19a:	f8 01       	movw	r30, r16
+ 19c:	20 81       	ld	r18, Z
+ 19e:	80 ff       	sbrs	r24, 0
+ 1a0:	00 c0       	rjmp	.+0      	; 0x1a2 <dm_timerHandler+0x1a2>
+                {
+                    (*newPort) |= _BV(newBit);
+ 1a2:	ca 01       	movw	r24, r20
+ 1a4:	00 c0       	rjmp	.+0      	; 0x1a6 <dm_timerHandler+0x1a6>
+ 1a6:	88 0f       	add	r24, r24
+ 1a8:	99 1f       	adc	r25, r25
+ 1aa:	6a 95       	dec	r22
+ 1ac:	02 f4       	brpl	.+0      	; 0x1ae <dm_timerHandler+0x1ae>
+ 1ae:	28 2b       	or	r18, r24
+ 1b0:	20 83       	st	Z, r18
+                    litBitIndex = count;
+                    litBits++;
+ 1b2:	fa 81       	ldd	r31, Y+2	; 0x02
+ 1b4:	ff 5f       	subi	r31, 0xFF	; 255
+ 1b6:	fa 83       	std	Y+2, r31	; 0x02
+                    data &= ~(1 << count);
+ 1b8:	0c 2c       	mov	r0, r12
+ 1ba:	00 c0       	rjmp	.+0      	; 0x1bc <dm_timerHandler+0x1bc>
+ 1bc:	44 0f       	add	r20, r20
+ 1be:	55 1f       	adc	r21, r21
+ 1c0:	0a 94       	dec	r0
+ 1c2:	02 f4       	brpl	.+0      	; 0x1c4 <dm_timerHandler+0x1c4>
+ 1c4:	84 2f       	mov	r24, r20
+ 1c6:	80 95       	com	r24
+ 1c8:	a8 22       	and	r10, r24
+ 1ca:	3c 2d       	mov	r19, r12
+ 1cc:	00 c0       	rjmp	.+0      	; 0x1ce <dm_timerHandler+0x1ce>
+                }
+                else
+                {
+                    (*newPort) &= ~_BV(newBit);
+ 1ce:	00 c0       	rjmp	.+0      	; 0x1d0 <dm_timerHandler+0x1d0>
+ 1d0:	44 0f       	add	r20, r20
+ 1d2:	55 1f       	adc	r21, r21
+ 1d4:	6a 95       	dec	r22
+ 1d6:	02 f4       	brpl	.+0      	; 0x1d8 <dm_timerHandler+0x1d8>
+ 1d8:	84 2f       	mov	r24, r20
+ 1da:	80 95       	com	r24
+ 1dc:	28 23       	and	r18, r24
+ 1de:	f8 01       	movw	r30, r16
+ 1e0:	20 83       	st	Z, r18
+ 1e2:	08 94       	sec
+ 1e4:	c1 1c       	adc	r12, r1
+ 1e6:	d1 1c       	adc	r13, r1
+
+        /* run through the current columns respecting BITSPERSCAN */
+        /* run through bits 0-6 (all LEDs in the current lit column). */
+        /* Turn them all off at every run. Once count > litBitIndex, illuminate up to */
+        /* BITSPERSCAN LEDs. */
+        for (count = 0; count < 7; count++)
+ 1e8:	f7 e0       	ldi	r31, 0x07	; 7
+ 1ea:	cf 16       	cp	r12, r31
+ 1ec:	d1 04       	cpc	r13, r1
+ 1ee:	01 f0       	breq	.+0      	; 0x1f0 <dm_timerHandler+0x1f0>
+ 1f0:	00 c0       	rjmp	.+0      	; 0x1f2 <dm_timerHandler+0x1f2>
+            oldRowCtlPtr += sizeof(PortPin); /* point to the next row */
+        }
+        //      litBitIndex = newDataBit;	/* store the index of the bit to light next */
+
+        /* If display is not blanked, turn on the current column */
+        if ((flags & FLAG_BLANK) == 0)
+ 1f2:	4b 81       	ldd	r20, Y+3	; 0x03
+ 1f4:	45 fd       	sbrc	r20, 5
+ 1f6:	00 c0       	rjmp	.+0      	; 0x1f8 <dm_timerHandler+0x1f8>
+        {
+            (*colOnPort) &= ~_BV(colOnBit);
+ 1f8:	81 e0       	ldi	r24, 0x01	; 1
+ 1fa:	90 e0       	ldi	r25, 0x00	; 0
+ 1fc:	09 80       	ldd	r0, Y+1	; 0x01
+ 1fe:	00 c0       	rjmp	.+0      	; 0x200 <dm_timerHandler+0x200>
+ 200:	88 0f       	add	r24, r24
+ 202:	99 1f       	adc	r25, r25
+ 204:	0a 94       	dec	r0
+ 206:	02 f4       	brpl	.+0      	; 0x208 <dm_timerHandler+0x208>
+ 208:	80 95       	com	r24
+ 20a:	f4 01       	movw	r30, r8
+ 20c:	20 81       	ld	r18, Z
+ 20e:	28 23       	and	r18, r24
+ 210:	20 83       	st	Z, r18
+        }
+      
+        disp->currentColumn = data;
+ 212:	f7 01       	movw	r30, r14
+ 214:	a0 82       	st	Z, r10
+      
+        //      if ((data >> litBitIndex) == 0)
+        if (0 == data)
+ 216:	aa 20       	and	r10, r10
+ 218:	01 f4       	brne	.+0      	; 0x21a <dm_timerHandler+0x21a>
+        {
+            litBitIndex = 7;
+            ++colIndex;
+ 21a:	b3 94       	inc	r11
+	  
+            if (colIndex == NUM_COLUMNS)
+ 21c:	f5 e0       	ldi	r31, 0x05	; 5
+ 21e:	bf 16       	cp	r11, r31
+ 220:	01 f4       	brne	.+0      	; 0x222 <dm_timerHandler+0x222>
+ 222:	37 e0       	ldi	r19, 0x07	; 7
+ 224:	bb 24       	eor	r11, r11
+ 226:	00 c0       	rjmp	.+0      	; 0x228 <dm_timerHandler+0x228>
+ 228:	37 e0       	ldi	r19, 0x07	; 7
+            {
+                colIndex = 0;
+            }
+        }
+        disp->currentColumnBit = litBitIndex;
+ 22a:	f7 01       	movw	r30, r14
+ 22c:	31 83       	std	Z+1, r19	; 0x01
+        disp->colIndex = colIndex;
+ 22e:	f3 01       	movw	r30, r6
+ 230:	b1 82       	std	Z+1, r11	; 0x01
+ 232:	49 e2       	ldi	r20, 0x29	; 41
+ 234:	50 e0       	ldi	r21, 0x00	; 0
+ 236:	64 0e       	add	r6, r20
+ 238:	75 1e       	adc	r7, r21
+ 23a:	8f e0       	ldi	r24, 0x0F	; 15
+ 23c:	90 e0       	ldi	r25, 0x00	; 0
+ 23e:	28 0e       	add	r2, r24
+ 240:	39 1e       	adc	r3, r25
+ 242:	e4 0e       	add	r14, r20
+ 244:	f5 1e       	adc	r15, r21
+ 246:	e5 e1       	ldi	r30, 0x15	; 21
+ 248:	f0 e0       	ldi	r31, 0x00	; 0
+ 24a:	4e 0e       	add	r4, r30
+ 24c:	5f 1e       	adc	r5, r31
+
+void dm_timerHandler(void)
+{
+    u08 whichIndex = 0;
+
+    for (whichIndex = 0; whichIndex < NUM_DISPLAYS; whichIndex++)
+ 24e:	fe e1       	ldi	r31, 0x1E	; 30
+ 250:	2f 16       	cp	r2, r31
+ 252:	31 04       	cpc	r3, r1
+ 254:	01 f0       	breq	.+0      	; 0x256 <dm_timerHandler+0x256>
+ 256:	00 c0       	rjmp	.+0      	; 0x258 <dm_timerHandler+0x258>
+ 258:	27 96       	adiw	r28, 0x07	; 7
+ 25a:	0f b6       	in	r0, 0x3f	; 63
+ 25c:	f8 94       	cli
+ 25e:	de bf       	out	0x3e, r29	; 62
+ 260:	0f be       	out	0x3f, r0	; 63
+ 262:	cd bf       	out	0x3d, r28	; 61
+ 264:	df 91       	pop	r29
+ 266:	cf 91       	pop	r28
+ 268:	1f 91       	pop	r17
+ 26a:	0f 91       	pop	r16
+ 26c:	ff 90       	pop	r15
+ 26e:	ef 90       	pop	r14
+ 270:	df 90       	pop	r13
+ 272:	cf 90       	pop	r12
+ 274:	bf 90       	pop	r11
+ 276:	af 90       	pop	r10
+ 278:	9f 90       	pop	r9
+ 27a:	8f 90       	pop	r8
+ 27c:	7f 90       	pop	r7
+ 27e:	6f 90       	pop	r6
+ 280:	5f 90       	pop	r5
+ 282:	4f 90       	pop	r4
+ 284:	3f 90       	pop	r3
+ 286:	2f 90       	pop	r2
+ 288:	08 95       	ret
+
+0000028a <dm_blank>:
+    }
+    dm_applyTransforms(which);
+}
+
+void dm_blank(u08 which, u08 set)
+{
+ 28a:	e8 2f       	mov	r30, r24
+ 28c:	ff 27       	eor	r31, r31
+    if (set)
+ 28e:	66 23       	and	r22, r22
+ 290:	01 f0       	breq	.+0      	; 0x292 <dm_blank+0x8>
+    {
+        display[which].flags |= FLAG_BLANK;
+ 292:	89 e2       	ldi	r24, 0x29	; 41
+ 294:	90 e0       	ldi	r25, 0x00	; 0
+ 296:	9f 01       	movw	r18, r30
+ 298:	28 9f       	mul	r18, r24
+ 29a:	f0 01       	movw	r30, r0
+ 29c:	29 9f       	mul	r18, r25
+ 29e:	f0 0d       	add	r31, r0
+ 2a0:	38 9f       	mul	r19, r24
+ 2a2:	f0 0d       	add	r31, r0
+ 2a4:	11 24       	eor	r1, r1
+ 2a6:	e0 50       	subi	r30, 0x00	; 0
+ 2a8:	f0 40       	sbci	r31, 0x00	; 0
+ 2aa:	82 81       	ldd	r24, Z+2	; 0x02
+ 2ac:	80 62       	ori	r24, 0x20	; 32
+ 2ae:	00 c0       	rjmp	.+0      	; 0x2b0 <dm_blank+0x26>
+    }
+    else
+    {
+        display[which].flags &= ~FLAG_BLANK;
+ 2b0:	89 e2       	ldi	r24, 0x29	; 41
+ 2b2:	90 e0       	ldi	r25, 0x00	; 0
+ 2b4:	9f 01       	movw	r18, r30
+ 2b6:	28 9f       	mul	r18, r24
+ 2b8:	f0 01       	movw	r30, r0
+ 2ba:	29 9f       	mul	r18, r25
+ 2bc:	f0 0d       	add	r31, r0
+ 2be:	38 9f       	mul	r19, r24
+ 2c0:	f0 0d       	add	r31, r0
+ 2c2:	11 24       	eor	r1, r1
+ 2c4:	e0 50       	subi	r30, 0x00	; 0
+ 2c6:	f0 40       	sbci	r31, 0x00	; 0
+ 2c8:	82 81       	ldd	r24, Z+2	; 0x02
+ 2ca:	8f 7d       	andi	r24, 0xDF	; 223
+ 2cc:	82 83       	std	Z+2, r24	; 0x02
+ 2ce:	08 95       	ret
+
+000002d0 <dm_setPalette>:
+{
+/*   cli(); */
+#ifdef PALETTE
+    display[which].paletteCountdown = PALETTE_COUNTDOWN_INIT;
+#endif
+    display[which].paletteSelected = index;
+ 2d0:	99 27       	eor	r25, r25
+ 2d2:	29 e2       	ldi	r18, 0x29	; 41
+ 2d4:	30 e0       	ldi	r19, 0x00	; 0
+ 2d6:	82 9f       	mul	r24, r18
+ 2d8:	f0 01       	movw	r30, r0
+ 2da:	83 9f       	mul	r24, r19
+ 2dc:	f0 0d       	add	r31, r0
+ 2de:	92 9f       	mul	r25, r18
+ 2e0:	f0 0d       	add	r31, r0
+ 2e2:	11 24       	eor	r1, r1
+ 2e4:	e0 50       	subi	r30, 0x00	; 0
+ 2e6:	f0 40       	sbci	r31, 0x00	; 0
+ 2e8:	60 a3       	std	Z+32, r22	; 0x20
+ 2ea:	08 95       	ret
+
+000002ec <dm_findNextTransform>:
+    }
+    return 0;
+}
+
+static u08 dm_findNextTransform(struct _display * display)
+{
+ 2ec:	dc 01       	movw	r26, r24
+    display->txListBookmark += dm_cmdLength(display->txList[display->txListBookmark] & 0x0f);
+ 2ee:	fc 01       	movw	r30, r24
+ 2f0:	23 89       	ldd	r18, Z+19	; 0x13
+    return display->txList[0];
+}
+
+static u08 dm_cmdLength(u08 command)
+{
+    switch (command & 0x0f)
+ 2f2:	e2 0f       	add	r30, r18
+ 2f4:	f1 1d       	adc	r31, r1
+ 2f6:	83 81       	ldd	r24, Z+3	; 0x03
+ 2f8:	8f 70       	andi	r24, 0x0F	; 15
+ 2fa:	99 27       	eor	r25, r25
+ 2fc:	83 30       	cpi	r24, 0x03	; 3
+ 2fe:	91 05       	cpc	r25, r1
+ 300:	04 f0       	brlt	.+0      	; 0x302 <dm_findNextTransform+0x16>
+ 302:	07 97       	sbiw	r24, 0x07	; 7
+ 304:	04 f4       	brge	.+0      	; 0x306 <dm_findNextTransform+0x1a>
+ 306:	82 e0       	ldi	r24, 0x02	; 2
+ 308:	90 e0       	ldi	r25, 0x00	; 0
+ 30a:	00 c0       	rjmp	.+0      	; 0x30c <dm_findNextTransform+0x20>
+ 30c:	80 e0       	ldi	r24, 0x00	; 0
+ 30e:	90 e0       	ldi	r25, 0x00	; 0
+ 310:	00 c0       	rjmp	.+0      	; 0x312 <dm_findNextTransform+0x26>
+ 312:	81 e0       	ldi	r24, 0x01	; 1
+ 314:	90 e0       	ldi	r25, 0x00	; 0
+    return 0;
+}
+
+static u08 dm_findNextTransform(struct _display * display)
+{
+    display->txListBookmark += dm_cmdLength(display->txList[display->txListBookmark] & 0x0f);
+ 316:	82 0f       	add	r24, r18
+ 318:	fd 01       	movw	r30, r26
+ 31a:	83 8b       	std	Z+19, r24	; 0x13
+ 31c:	a8 0f       	add	r26, r24
+ 31e:	b1 1d       	adc	r27, r1
+ 320:	fd 01       	movw	r30, r26
+ 322:	83 81       	ldd	r24, Z+3	; 0x03
+    return display->txList[display->txListBookmark];
+}
+ 324:	99 27       	eor	r25, r25
+ 326:	08 95       	ret
+
+00000328 <dm_setTransform>:
+    }
+
+}
+
+static void dm_setTransform(u08 which, u08 command)
+{
+ 328:	1f 93       	push	r17
+ 32a:	cf 93       	push	r28
+ 32c:	df 93       	push	r29
+ 32e:	16 2f       	mov	r17, r22
+    struct _display * disp = &display[which];
+ 330:	99 e2       	ldi	r25, 0x29	; 41
+ 332:	89 9f       	mul	r24, r25
+ 334:	e0 01       	movw	r28, r0
+ 336:	11 24       	eor	r1, r1
+ 338:	c0 50       	subi	r28, 0x00	; 0
+ 33a:	d0 40       	sbci	r29, 0x00	; 0
+    }
+}
+
+static u08 dm_findFirstTransform(struct _display * display)
+{
+    display->txListBookmark = 0;
+ 33c:	1b 8a       	std	Y+19, r1	; 0x13
+    return display->txList[0];
+ 33e:	8b 81       	ldd	r24, Y+3	; 0x03
+ 340:	00 c0       	rjmp	.+0      	; 0x342 <dm_setTransform+0x1a>
+
+    u08 test = dm_findFirstTransform(disp);
+  
+    while ((test & 0x0f) != TRANSFORM_EOL)
+    {
+        if (test == command)
+ 342:	81 17       	cp	r24, r17
+ 344:	01 f0       	breq	.+0      	; 0x346 <dm_setTransform+0x1e>
+        {
+            break;
+        }
+        test = dm_findNextTransform(disp);
+ 346:	ce 01       	movw	r24, r28
+ 348:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+    struct _display * disp = &display[which];
+
+
+    u08 test = dm_findFirstTransform(disp);
+  
+    while ((test & 0x0f) != TRANSFORM_EOL)
+ 34c:	28 2f       	mov	r18, r24
+ 34e:	33 27       	eor	r19, r19
+ 350:	2f 70       	andi	r18, 0x0F	; 15
+ 352:	30 70       	andi	r19, 0x00	; 0
+ 354:	2f 30       	cpi	r18, 0x0F	; 15
+ 356:	31 05       	cpc	r19, r1
+ 358:	01 f4       	brne	.+0      	; 0x35a <dm_setTransform+0x32>
+            break;
+        }
+        test = dm_findNextTransform(disp);
+    }
+
+    disp->txList[disp->txListBookmark++] = command;
+ 35a:	8b 89       	ldd	r24, Y+19	; 0x13
+ 35c:	fe 01       	movw	r30, r28
+ 35e:	e8 0f       	add	r30, r24
+ 360:	f1 1d       	adc	r31, r1
+ 362:	13 83       	std	Z+3, r17	; 0x03
+ 364:	8f 5f       	subi	r24, 0xFF	; 255
+ 366:	8b 8b       	std	Y+19, r24	; 0x13
+    if ((test & 0x0f) == TRANSFORM_EOL)
+ 368:	2f 30       	cpi	r18, 0x0F	; 15
+ 36a:	31 05       	cpc	r19, r1
+ 36c:	01 f4       	brne	.+0      	; 0x36e <dm_setTransform+0x46>
+    {
+        disp->txList[disp->txListBookmark] = TRANSFORM_EOL;
+ 36e:	c8 0f       	add	r28, r24
+ 370:	d1 1d       	adc	r29, r1
+ 372:	8f e0       	ldi	r24, 0x0F	; 15
+ 374:	8b 83       	std	Y+3, r24	; 0x03
+ 376:	df 91       	pop	r29
+ 378:	cf 91       	pop	r28
+ 37a:	1f 91       	pop	r17
+ 37c:	08 95       	ret
+
+0000037e <dm_setTransformData>:
+{
+    return display->txList[display->txListBookmark + index + 1];
+}
+
+static void dm_setTransformData(struct _display * display, u08 index, u08 data)
+{
+ 37e:	fc 01       	movw	r30, r24
+    u08 * dataPtr = &display->txList[display->txListBookmark + index];
+ 380:	83 89       	ldd	r24, Z+19	; 0x13
+ 382:	68 0f       	add	r22, r24
+ 384:	71 2d       	mov	r23, r1
+ 386:	71 1d       	adc	r23, r1
+ 388:	33 96       	adiw	r30, 0x03	; 3
+ 38a:	e6 0f       	add	r30, r22
+ 38c:	f7 1f       	adc	r31, r23
+    if (*dataPtr == TRANSFORM_EOL)
+ 38e:	80 81       	ld	r24, Z
+ 390:	8f 30       	cpi	r24, 0x0F	; 15
+ 392:	01 f4       	brne	.+0      	; 0x394 <dm_setTransformData+0x16>
+    {
+        *dataPtr++ = data;
+ 394:	40 83       	st	Z, r20
+        *dataPtr = TRANSFORM_EOL;
+ 396:	81 83       	std	Z+1, r24	; 0x01
+ 398:	08 95       	ret
+    }
+    else
+    {
+        *dataPtr = data;
+ 39a:	40 83       	st	Z, r20
+ 39c:	08 95       	ret
+
+0000039e <dm_rollUp>:
+    }
+}
+
+static void dm_rollUp(struct _display * display, u08 count)
+{
+ 39e:	fc 01       	movw	r30, r24
+ 3a0:	a0 e0       	ldi	r26, 0x00	; 0
+    u08 index;
+
+    for (index = 0; index < NUM_COLUMNS; index++)
+    {
+        u08 data = display->bitsOut[index];
+        temp = data & ((1 << count) - 1);
+ 3a2:	77 27       	eor	r23, r23
+        data >>= count;
+        data |= temp << (NUM_ROWS - count);
+ 3a4:	81 e0       	ldi	r24, 0x01	; 1
+ 3a6:	90 e0       	ldi	r25, 0x00	; 0
+ 3a8:	06 2e       	mov	r0, r22
+ 3aa:	00 c0       	rjmp	.+0      	; 0x3ac <dm_rollUp+0xe>
+ 3ac:	88 0f       	add	r24, r24
+ 3ae:	99 1f       	adc	r25, r25
+ 3b0:	0a 94       	dec	r0
+ 3b2:	02 f4       	brpl	.+0      	; 0x3b4 <dm_rollUp+0x16>
+ 3b4:	b8 2f       	mov	r27, r24
+ 3b6:	b1 50       	subi	r27, 0x01	; 1
+ 3b8:	47 e0       	ldi	r20, 0x07	; 7
+ 3ba:	50 e0       	ldi	r21, 0x00	; 0
+ 3bc:	46 1b       	sub	r20, r22
+ 3be:	57 0b       	sbc	r21, r23
+    u08 temp;
+    u08 index;
+
+    for (index = 0; index < NUM_COLUMNS; index++)
+    {
+        u08 data = display->bitsOut[index];
+ 3c0:	21 8d       	ldd	r18, Z+25	; 0x19
+        temp = data & ((1 << count) - 1);
+        data >>= count;
+        data |= temp << (NUM_ROWS - count);
+ 3c2:	8b 2f       	mov	r24, r27
+ 3c4:	82 23       	and	r24, r18
+ 3c6:	99 27       	eor	r25, r25
+ 3c8:	04 2e       	mov	r0, r20
+ 3ca:	00 c0       	rjmp	.+0      	; 0x3cc <dm_rollUp+0x2e>
+ 3cc:	88 0f       	add	r24, r24
+ 3ce:	99 1f       	adc	r25, r25
+ 3d0:	0a 94       	dec	r0
+ 3d2:	02 f4       	brpl	.+0      	; 0x3d4 <dm_rollUp+0x36>
+ 3d4:	33 27       	eor	r19, r19
+ 3d6:	06 2e       	mov	r0, r22
+ 3d8:	00 c0       	rjmp	.+0      	; 0x3da <dm_rollUp+0x3c>
+ 3da:	35 95       	asr	r19
+ 3dc:	27 95       	ror	r18
+ 3de:	0a 94       	dec	r0
+ 3e0:	02 f4       	brpl	.+0      	; 0x3e2 <dm_rollUp+0x44>
+ 3e2:	82 2b       	or	r24, r18
+        display->bitsOut[index] = data;
+ 3e4:	81 8f       	std	Z+25, r24	; 0x19
+static void dm_rollUp(struct _display * display, u08 count)
+{
+    u08 temp;
+    u08 index;
+
+    for (index = 0; index < NUM_COLUMNS; index++)
+ 3e6:	af 5f       	subi	r26, 0xFF	; 255
+ 3e8:	31 96       	adiw	r30, 0x01	; 1
+ 3ea:	a5 30       	cpi	r26, 0x05	; 5
+ 3ec:	01 f4       	brne	.+0      	; 0x3ee <dm_rollUp+0x50>
+ 3ee:	08 95       	ret
+
+000003f0 <dm_rollLeft>:
+        display->bitsOut[index] = data;
+    }
+}
+
+static void dm_rollLeft(struct _display * display, u08 count)
+{
+ 3f0:	dc 01       	movw	r26, r24
+ 3f2:	00 c0       	rjmp	.+0      	; 0x3f4 <dm_rollLeft+0x4>
+    u08 temp;
+    u08 index;
+
+    while (count)
+    {
+        temp = display->bitsOut[0];
+ 3f4:	fd 01       	movw	r30, r26
+ 3f6:	21 8d       	ldd	r18, Z+25	; 0x19
+ 3f8:	90 e0       	ldi	r25, 0x00	; 0
+        for (index = 0; index < NUM_COLUMNS - 1; index++)
+        {
+            display->bitsOut[index] = display->bitsOut[index + 1];
+ 3fa:	82 8d       	ldd	r24, Z+26	; 0x1a
+ 3fc:	81 8f       	std	Z+25, r24	; 0x19
+    u08 index;
+
+    while (count)
+    {
+        temp = display->bitsOut[0];
+        for (index = 0; index < NUM_COLUMNS - 1; index++)
+ 3fe:	9f 5f       	subi	r25, 0xFF	; 255
+ 400:	31 96       	adiw	r30, 0x01	; 1
+ 402:	94 30       	cpi	r25, 0x04	; 4
+ 404:	01 f4       	brne	.+0      	; 0x406 <dm_rollLeft+0x16>
+        {
+            display->bitsOut[index] = display->bitsOut[index + 1];
+        }
+        display->bitsOut[NUM_COLUMNS - 1] = temp;
+ 406:	fd 01       	movw	r30, r26
+ 408:	25 8f       	std	Z+29, r18	; 0x1d
+        count--;
+ 40a:	61 50       	subi	r22, 0x01	; 1
+static void dm_rollLeft(struct _display * display, u08 count)
+{
+    u08 temp;
+    u08 index;
+
+    while (count)
+ 40c:	66 23       	and	r22, r22
+ 40e:	01 f4       	brne	.+0      	; 0x410 <dm_rollLeft+0x20>
+ 410:	08 95       	ret
+
+00000412 <dm_clearRows>:
+    }
+}
+
+
+static void dm_clearRows(struct _display * display, u08 start, u08 count)
+{
+ 412:	fc 01       	movw	r30, r24
+ 414:	20 e0       	ldi	r18, 0x00	; 0
+    u08 index;
+
+    for (index = 0; index < NUM_COLUMNS; index++)
+    {
+        display->bitsOut[index] &= ~(((1 << count) - 1) << start);
+ 416:	81 e0       	ldi	r24, 0x01	; 1
+ 418:	90 e0       	ldi	r25, 0x00	; 0
+ 41a:	00 c0       	rjmp	.+0      	; 0x41c <dm_clearRows+0xa>
+ 41c:	88 0f       	add	r24, r24
+ 41e:	99 1f       	adc	r25, r25
+ 420:	4a 95       	dec	r20
+ 422:	02 f4       	brpl	.+0      	; 0x424 <dm_clearRows+0x12>
+ 424:	01 97       	sbiw	r24, 0x01	; 1
+ 426:	00 c0       	rjmp	.+0      	; 0x428 <dm_clearRows+0x16>
+ 428:	88 0f       	add	r24, r24
+ 42a:	99 1f       	adc	r25, r25
+ 42c:	6a 95       	dec	r22
+ 42e:	02 f4       	brpl	.+0      	; 0x430 <dm_clearRows+0x1e>
+ 430:	98 2f       	mov	r25, r24
+ 432:	90 95       	com	r25
+ 434:	81 8d       	ldd	r24, Z+25	; 0x19
+ 436:	89 23       	and	r24, r25
+ 438:	81 8f       	std	Z+25, r24	; 0x19
+
+static void dm_clearRows(struct _display * display, u08 start, u08 count)
+{
+    u08 index;
+
+    for (index = 0; index < NUM_COLUMNS; index++)
+ 43a:	2f 5f       	subi	r18, 0xFF	; 255
+ 43c:	31 96       	adiw	r30, 0x01	; 1
+ 43e:	25 30       	cpi	r18, 0x05	; 5
+ 440:	01 f4       	brne	.+0      	; 0x442 <dm_clearRows+0x30>
+ 442:	08 95       	ret
+
+00000444 <dm_clearColumns>:
+static void dm_clearColumns(struct _display * display, u08 start, u08 count)
+{
+    do
+    {
+        --count;
+        display->bitsOut[start + count] = 0;
+ 444:	77 27       	eor	r23, r23
+
+static void dm_clearColumns(struct _display * display, u08 start, u08 count)
+{
+    do
+    {
+        --count;
+ 446:	41 50       	subi	r20, 0x01	; 1
+        display->bitsOut[start + count] = 0;
+ 448:	fc 01       	movw	r30, r24
+ 44a:	e4 0f       	add	r30, r20
+ 44c:	f1 1d       	adc	r31, r1
+ 44e:	e6 0f       	add	r30, r22
+ 450:	f7 1f       	adc	r31, r23
+ 452:	11 8e       	std	Z+25, r1	; 0x19
+    } while (count > 0);
+ 454:	44 23       	and	r20, r20
+ 456:	01 f4       	brne	.+0      	; 0x458 <dm_clearColumns+0x14>
+ 458:	08 95       	ret
+
+0000045a <dm_applyTransforms>:
+    display[which].charIndex = set;
+    dm_applyTransforms(which);
+}
+
+static void dm_applyTransforms(u08 which)
+{
+ 45a:	1f 93       	push	r17
+ 45c:	cf 93       	push	r28
+ 45e:	df 93       	push	r29
+    u08 count;
+    u08 transform;
+    struct _display * disp = &display[which];
+ 460:	99 e2       	ldi	r25, 0x29	; 41
+ 462:	89 9f       	mul	r24, r25
+ 464:	e0 01       	movw	r28, r0
+ 466:	11 24       	eor	r1, r1
+ 468:	c0 50       	subi	r28, 0x00	; 0
+ 46a:	d0 40       	sbci	r29, 0x00	; 0
+    u08 * dataPtr = font5x7 + (disp->charIndex * NUM_COLUMNS);
+ 46c:	e8 81       	ld	r30, Y
+
+/*   cbi(TIMSK0, TOIE0); */
+/*   TIMSK0 &= ~_BV(TOIE0); */
+
+    if (disp->flags & FLAG_PROGCOLS)
+ 46e:	8a 81       	ldd	r24, Y+2	; 0x02
+ 470:	84 ff       	sbrs	r24, 4
+ 472:	00 c0       	rjmp	.+0      	; 0x474 <dm_applyTransforms+0x1a>
+    {
+        for (count = 0; count < NUM_COLUMNS; count++)
+        {
+            disp->bitsOut[count] = disp->progColumn[count];
+ 474:	8c 89       	ldd	r24, Y+20	; 0x14
+ 476:	89 8f       	std	Y+25, r24	; 0x19
+ 478:	8d 89       	ldd	r24, Y+21	; 0x15
+ 47a:	8a 8f       	std	Y+26, r24	; 0x1a
+ 47c:	8e 89       	ldd	r24, Y+22	; 0x16
+ 47e:	8b 8f       	std	Y+27, r24	; 0x1b
+ 480:	8f 89       	ldd	r24, Y+23	; 0x17
+ 482:	8c 8f       	std	Y+28, r24	; 0x1c
+ 484:	88 8d       	ldd	r24, Y+24	; 0x18
+ 486:	8d 8f       	std	Y+29, r24	; 0x1d
+ 488:	00 c0       	rjmp	.+0      	; 0x48a <dm_applyTransforms+0x30>
+static void dm_applyTransforms(u08 which)
+{
+    u08 count;
+    u08 transform;
+    struct _display * disp = &display[which];
+    u08 * dataPtr = font5x7 + (disp->charIndex * NUM_COLUMNS);
+ 48a:	85 e0       	ldi	r24, 0x05	; 5
+ 48c:	e8 9f       	mul	r30, r24
+ 48e:	c0 01       	movw	r24, r0
+ 490:	11 24       	eor	r1, r1
+ 492:	80 50       	subi	r24, 0x00	; 0
+ 494:	90 40       	sbci	r25, 0x00	; 0
+ 496:	de 01       	movw	r26, r28
+ 498:	20 e0       	ldi	r18, 0x00	; 0
+ 49a:	fc 01       	movw	r30, r24
+    }
+    else
+    {
+        for (count = 0; count < NUM_COLUMNS; count++)
+        {
+            disp->bitsOut[count] = pgm_read_byte_near(dataPtr++);
+ 49c:	01 96       	adiw	r24, 0x01	; 1
+ 49e:	34 91       	lpm	r19, Z
+ 4a0:	fd 01       	movw	r30, r26
+ 4a2:	31 8f       	std	Z+25, r19	; 0x19
+            disp->bitsOut[count] = disp->progColumn[count];
+        }
+    }
+    else
+    {
+        for (count = 0; count < NUM_COLUMNS; count++)
+ 4a4:	2f 5f       	subi	r18, 0xFF	; 255
+ 4a6:	11 96       	adiw	r26, 0x01	; 1
+ 4a8:	25 30       	cpi	r18, 0x05	; 5
+ 4aa:	01 f4       	brne	.+0      	; 0x4ac <dm_applyTransforms+0x52>
+        {
+            disp->bitsOut[count] = pgm_read_byte_near(dataPtr++);
+        }
+    }
+  
+    disp->colIndex = 0;
+ 4ac:	19 82       	std	Y+1, r1	; 0x01
+    /* test */
+    disp->currentColumnBit = 8;
+ 4ae:	88 e0       	ldi	r24, 0x08	; 8
+ 4b0:	8f 8f       	std	Y+31, r24	; 0x1f
+    }
+}
+
+static u08 dm_findFirstTransform(struct _display * display)
+{
+    display->txListBookmark = 0;
+ 4b2:	1b 8a       	std	Y+19, r1	; 0x13
+    return display->txList[0];
+ 4b4:	8b 81       	ldd	r24, Y+3	; 0x03
+ 4b6:	00 c0       	rjmp	.+0      	; 0x4b8 <dm_applyTransforms+0x5e>
+    while ((transform & 0x0f) != TRANSFORM_EOL)
+    {
+        int tmp = (int)disp;
+        u08 data;
+        u08 count2;
+        switch (transform & 0x0f)
+ 4b8:	85 30       	cpi	r24, 0x05	; 5
+ 4ba:	91 05       	cpc	r25, r1
+ 4bc:	04 f4       	brge	.+0      	; 0x4be <dm_applyTransforms+0x64>
+ 4be:	83 30       	cpi	r24, 0x03	; 3
+ 4c0:	91 05       	cpc	r25, r1
+ 4c2:	04 f0       	brlt	.+0      	; 0x4c4 <dm_applyTransforms+0x6a>
+ 4c4:	00 c0       	rjmp	.+0      	; 0x4c6 <dm_applyTransforms+0x6c>
+ 4c6:	81 30       	cpi	r24, 0x01	; 1
+ 4c8:	91 05       	cpc	r25, r1
+ 4ca:	01 f0       	breq	.+0      	; 0x4cc <dm_applyTransforms+0x72>
+ 4cc:	82 30       	cpi	r24, 0x02	; 2
+ 4ce:	91 05       	cpc	r25, r1
+ 4d0:	04 f0       	brlt	.+0      	; 0x4d2 <dm_applyTransforms+0x78>
+ 4d2:	00 c0       	rjmp	.+0      	; 0x4d4 <dm_applyTransforms+0x7a>
+ 4d4:	89 2b       	or	r24, r25
+ 4d6:	01 f0       	breq	.+0      	; 0x4d8 <dm_applyTransforms+0x7e>
+ 4d8:	00 c0       	rjmp	.+0      	; 0x4da <dm_applyTransforms+0x80>
+ 4da:	85 30       	cpi	r24, 0x05	; 5
+ 4dc:	91 05       	cpc	r25, r1
+ 4de:	01 f4       	brne	.+0      	; 0x4e0 <dm_applyTransforms+0x86>
+ 4e0:	00 c0       	rjmp	.+0      	; 0x4e2 <dm_applyTransforms+0x88>
+ 4e2:	06 97       	sbiw	r24, 0x06	; 6
+ 4e4:	01 f0       	breq	.+0      	; 0x4e6 <dm_applyTransforms+0x8c>
+ 4e6:	00 c0       	rjmp	.+0      	; 0x4e8 <dm_applyTransforms+0x8e>
+ 4e8:	00 c0       	rjmp	.+0      	; 0x4ea <dm_applyTransforms+0x90>
+ 4ea:	fe 01       	movw	r30, r28
+ 4ec:	40 e0       	ldi	r20, 0x00	; 0
+        case TRANSFORM_FLIP:
+        {
+            for (count2 = 0; count2 < NUM_COLUMNS; count2++)
+            {
+                data = disp->bitsOut[count2];
+                data = ((data & 0xAA) >>  1) | ((data & 0x55) <<  1);
+ 4ee:	81 8d       	ldd	r24, Z+25	; 0x19
+ 4f0:	99 27       	eor	r25, r25
+                data = ((data & 0xCC) >>  2) | ((data & 0x33) <<  2);
+ 4f2:	9c 01       	movw	r18, r24
+ 4f4:	25 75       	andi	r18, 0x55	; 85
+ 4f6:	30 70       	andi	r19, 0x00	; 0
+ 4f8:	22 0f       	add	r18, r18
+ 4fa:	33 1f       	adc	r19, r19
+ 4fc:	8a 7a       	andi	r24, 0xAA	; 170
+ 4fe:	90 70       	andi	r25, 0x00	; 0
+ 500:	95 95       	asr	r25
+ 502:	87 95       	ror	r24
+ 504:	28 2b       	or	r18, r24
+ 506:	33 27       	eor	r19, r19
+ 508:	c9 01       	movw	r24, r18
+ 50a:	83 73       	andi	r24, 0x33	; 51
+ 50c:	90 70       	andi	r25, 0x00	; 0
+ 50e:	88 0f       	add	r24, r24
+ 510:	99 1f       	adc	r25, r25
+ 512:	88 0f       	add	r24, r24
+ 514:	99 1f       	adc	r25, r25
+ 516:	2c 7c       	andi	r18, 0xCC	; 204
+ 518:	30 70       	andi	r19, 0x00	; 0
+ 51a:	35 95       	asr	r19
+ 51c:	27 95       	ror	r18
+ 51e:	35 95       	asr	r19
+ 520:	27 95       	ror	r18
+ 522:	82 2b       	or	r24, r18
+                data = (data >> 4) | (data << 4);
+ 524:	28 2f       	mov	r18, r24
+ 526:	22 95       	swap	r18
+ 528:	2f 70       	andi	r18, 0x0F	; 15
+ 52a:	82 95       	swap	r24
+ 52c:	80 7f       	andi	r24, 0xF0	; 240
+ 52e:	82 2b       	or	r24, r18
+                data = data >> 1;
+                disp->bitsOut[count2] = data;
+ 530:	86 95       	lsr	r24
+ 532:	81 8f       	std	Z+25, r24	; 0x19
+        switch (transform & 0x0f)
+        {
+
+        case TRANSFORM_FLIP:
+        {
+            for (count2 = 0; count2 < NUM_COLUMNS; count2++)
+ 534:	4f 5f       	subi	r20, 0xFF	; 255
+ 536:	31 96       	adiw	r30, 0x01	; 1
+ 538:	45 30       	cpi	r20, 0x05	; 5
+ 53a:	01 f4       	brne	.+0      	; 0x53c <dm_applyTransforms+0xe2>
+ 53c:	00 c0       	rjmp	.+0      	; 0x53e <dm_applyTransforms+0xe4>
+ 53e:	00 c0       	rjmp	.+0      	; 0x540 <dm_applyTransforms+0xe6>
+        break;
+
+        case TRANSFORM_MIRROR:
+        {
+            u08 temp;
+            temp = disp->bitsOut[0];
+ 540:	29 8d       	ldd	r18, Y+25	; 0x19
+            disp->bitsOut[0] = disp->bitsOut[4];
+ 542:	8d 8d       	ldd	r24, Y+29	; 0x1d
+ 544:	89 8f       	std	Y+25, r24	; 0x19
+            disp->bitsOut[4] = disp->bitsOut[1];
+ 546:	9a 8d       	ldd	r25, Y+26	; 0x1a
+            disp->bitsOut[1] = disp->bitsOut[3];
+ 548:	8c 8d       	ldd	r24, Y+28	; 0x1c
+ 54a:	8a 8f       	std	Y+26, r24	; 0x1a
+            disp->bitsOut[3] = disp->bitsOut[4];
+ 54c:	9c 8f       	std	Y+28, r25	; 0x1c
+            disp->bitsOut[4] = temp;
+ 54e:	2d 8f       	std	Y+29, r18	; 0x1d
+ 550:	00 c0       	rjmp	.+0      	; 0x552 <dm_applyTransforms+0xf8>
+        }
+        break;
+ 552:	fe 01       	movw	r30, r28
+ 554:	90 e0       	ldi	r25, 0x00	; 0
+	  
+        case TRANSFORM_REVERSE: 
+        { 
+            for (count2 = 0; count2 < NUM_COLUMNS; count2++) 
+            { 
+                disp->bitsOut[count2] = ~disp->bitsOut[count2] & 0x7f;
+ 556:	81 8d       	ldd	r24, Z+25	; 0x19
+ 558:	80 95       	com	r24
+ 55a:	8f 77       	andi	r24, 0x7F	; 127
+ 55c:	81 8f       	std	Z+25, r24	; 0x19
+        }
+        break;
+	  
+        case TRANSFORM_REVERSE: 
+        { 
+            for (count2 = 0; count2 < NUM_COLUMNS; count2++) 
+ 55e:	9f 5f       	subi	r25, 0xFF	; 255
+ 560:	31 96       	adiw	r30, 0x01	; 1
+ 562:	95 30       	cpi	r25, 0x05	; 5
+ 564:	01 f4       	brne	.+0      	; 0x566 <dm_applyTransforms+0x10c>
+ 566:	00 c0       	rjmp	.+0      	; 0x568 <dm_applyTransforms+0x10e>
+ 568:	00 c0       	rjmp	.+0      	; 0x56a <dm_applyTransforms+0x110>
+    return display->txList[display->txListBookmark];
+}
+
+static u08 dm_getTransformData(struct _display * display, u08 index)
+{
+    return display->txList[display->txListBookmark + index + 1];
+ 56a:	8b 89       	ldd	r24, Y+19	; 0x13
+ 56c:	fe 01       	movw	r30, r28
+ 56e:	e8 0f       	add	r30, r24
+ 570:	f1 1d       	adc	r31, r1
+ 572:	24 81       	ldd	r18, Z+4	; 0x04
+        case TRANSFORM_ROLL_VERT:
+        case TRANSFORM_ROLL_HORZ:
+        {
+            u08 data;
+            data = dm_getTransformData(disp, 0);
+            switch (data & 0xf0)
+ 574:	82 2f       	mov	r24, r18
+ 576:	99 27       	eor	r25, r25
+ 578:	80 7f       	andi	r24, 0xF0	; 240
+ 57a:	90 70       	andi	r25, 0x00	; 0
+ 57c:	80 32       	cpi	r24, 0x20	; 32
+ 57e:	91 05       	cpc	r25, r1
+ 580:	01 f0       	breq	.+0      	; 0x582 <dm_applyTransforms+0x128>
+ 582:	81 32       	cpi	r24, 0x21	; 33
+ 584:	91 05       	cpc	r25, r1
+ 586:	04 f4       	brge	.+0      	; 0x588 <dm_applyTransforms+0x12e>
+ 588:	40 97       	sbiw	r24, 0x10	; 16
+ 58a:	01 f0       	breq	.+0      	; 0x58c <dm_applyTransforms+0x132>
+ 58c:	00 c0       	rjmp	.+0      	; 0x58e <dm_applyTransforms+0x134>
+ 58e:	00 c0       	rjmp	.+0      	; 0x590 <dm_applyTransforms+0x136>
+ 590:	80 33       	cpi	r24, 0x30	; 48
+ 592:	91 05       	cpc	r25, r1
+ 594:	01 f0       	breq	.+0      	; 0x596 <dm_applyTransforms+0x13c>
+ 596:	80 34       	cpi	r24, 0x40	; 64
+ 598:	91 05       	cpc	r25, r1
+ 59a:	01 f0       	breq	.+0      	; 0x59c <dm_applyTransforms+0x142>
+ 59c:	00 c0       	rjmp	.+0      	; 0x59e <dm_applyTransforms+0x144>
+ 59e:	00 c0       	rjmp	.+0      	; 0x5a0 <dm_applyTransforms+0x146>
+            {
+            case DIR_UP: dm_rollUp(disp, data & 0x0f); break;
+ 5a0:	2f 70       	andi	r18, 0x0F	; 15
+ 5a2:	62 2f       	mov	r22, r18
+ 5a4:	00 c0       	rjmp	.+0      	; 0x5a6 <dm_applyTransforms+0x14c>
+            case DIR_DOWN: dm_rollUp(disp, NUM_ROWS - (data & 0x0f)); break;
+ 5a6:	2f 70       	andi	r18, 0x0F	; 15
+ 5a8:	67 e0       	ldi	r22, 0x07	; 7
+ 5aa:	62 1b       	sub	r22, r18
+ 5ac:	ce 01       	movw	r24, r28
+ 5ae:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 5b2:	00 c0       	rjmp	.+0      	; 0x5b4 <dm_applyTransforms+0x15a>
+            case DIR_LEFT: dm_rollLeft(disp, data & 0x0f); break;
+ 5b4:	2f 70       	andi	r18, 0x0F	; 15
+ 5b6:	62 2f       	mov	r22, r18
+ 5b8:	00 c0       	rjmp	.+0      	; 0x5ba <dm_applyTransforms+0x160>
+            case DIR_RIGHT: dm_rollLeft(disp, NUM_COLUMNS - (data & 0x0f)); break;
+ 5ba:	2f 70       	andi	r18, 0x0F	; 15
+ 5bc:	65 e0       	ldi	r22, 0x05	; 5
+ 5be:	62 1b       	sub	r22, r18
+ 5c0:	ce 01       	movw	r24, r28
+ 5c2:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 5c6:	00 c0       	rjmp	.+0      	; 0x5c8 <dm_applyTransforms+0x16e>
+    return display->txList[display->txListBookmark];
+}
+
+static u08 dm_getTransformData(struct _display * display, u08 index)
+{
+    return display->txList[display->txListBookmark + index + 1];
+ 5c8:	8b 89       	ldd	r24, Y+19	; 0x13
+ 5ca:	fe 01       	movw	r30, r28
+ 5cc:	e8 0f       	add	r30, r24
+ 5ce:	f1 1d       	adc	r31, r1
+ 5d0:	14 81       	ldd	r17, Z+4	; 0x04
+
+        case TRANSFORM_SHIFT_VERT:
+        {
+            u08 data;
+            data = dm_getTransformData(disp, 0);
+            switch (data & 0xf0)
+ 5d2:	81 2f       	mov	r24, r17
+ 5d4:	99 27       	eor	r25, r25
+ 5d6:	80 7f       	andi	r24, 0xF0	; 240
+ 5d8:	90 70       	andi	r25, 0x00	; 0
+ 5da:	80 31       	cpi	r24, 0x10	; 16
+ 5dc:	91 05       	cpc	r25, r1
+ 5de:	01 f0       	breq	.+0      	; 0x5e0 <dm_applyTransforms+0x186>
+ 5e0:	80 97       	sbiw	r24, 0x20	; 32
+ 5e2:	01 f4       	brne	.+0      	; 0x5e4 <dm_applyTransforms+0x18a>
+ 5e4:	00 c0       	rjmp	.+0      	; 0x5e6 <dm_applyTransforms+0x18c>
+            {
+            case DIR_UP:
+                data &= 0x0f;
+ 5e6:	1f 70       	andi	r17, 0x0F	; 15
+                dm_rollUp(disp, data);
+ 5e8:	61 2f       	mov	r22, r17
+ 5ea:	ce 01       	movw	r24, r28
+ 5ec:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+                dm_clearRows(disp, NUM_ROWS - data, data);
+ 5f0:	67 e0       	ldi	r22, 0x07	; 7
+ 5f2:	61 1b       	sub	r22, r17
+ 5f4:	41 2f       	mov	r20, r17
+ 5f6:	00 c0       	rjmp	.+0      	; 0x5f8 <dm_applyTransforms+0x19e>
+                break;
+		
+            case DIR_DOWN:
+                data &= 0x0f;
+ 5f8:	1f 70       	andi	r17, 0x0F	; 15
+                dm_rollUp(disp, NUM_ROWS - data);
+ 5fa:	67 e0       	ldi	r22, 0x07	; 7
+ 5fc:	61 1b       	sub	r22, r17
+ 5fe:	ce 01       	movw	r24, r28
+ 600:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+                dm_clearRows(disp, 0, data);
+ 604:	41 2f       	mov	r20, r17
+ 606:	60 e0       	ldi	r22, 0x00	; 0
+ 608:	ce 01       	movw	r24, r28
+ 60a:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 60e:	00 c0       	rjmp	.+0      	; 0x610 <dm_applyTransforms+0x1b6>
+    return display->txList[display->txListBookmark];
+}
+
+static u08 dm_getTransformData(struct _display * display, u08 index)
+{
+    return display->txList[display->txListBookmark + index + 1];
+ 610:	8b 89       	ldd	r24, Y+19	; 0x13
+ 612:	fe 01       	movw	r30, r28
+ 614:	e8 0f       	add	r30, r24
+ 616:	f1 1d       	adc	r31, r1
+ 618:	14 81       	ldd	r17, Z+4	; 0x04
+        }
+
+        case TRANSFORM_SHIFT_HORZ:
+        {
+            data = dm_getTransformData(disp, 0);
+            switch (data & 0xf0)
+ 61a:	81 2f       	mov	r24, r17
+ 61c:	99 27       	eor	r25, r25
+ 61e:	80 7f       	andi	r24, 0xF0	; 240
+ 620:	90 70       	andi	r25, 0x00	; 0
+ 622:	80 33       	cpi	r24, 0x30	; 48
+ 624:	91 05       	cpc	r25, r1
+ 626:	01 f0       	breq	.+0      	; 0x628 <dm_applyTransforms+0x1ce>
+ 628:	80 34       	cpi	r24, 0x40	; 64
+ 62a:	91 05       	cpc	r25, r1
+ 62c:	01 f4       	brne	.+0      	; 0x62e <dm_applyTransforms+0x1d4>
+ 62e:	00 c0       	rjmp	.+0      	; 0x630 <dm_applyTransforms+0x1d6>
+            {
+            case DIR_LEFT:
+                data &= 0x0f;
+ 630:	1f 70       	andi	r17, 0x0F	; 15
+                dm_rollLeft(disp, data);
+ 632:	61 2f       	mov	r22, r17
+ 634:	ce 01       	movw	r24, r28
+ 636:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+                dm_clearColumns(disp, NUM_COLUMNS - data, data);
+ 63a:	65 e0       	ldi	r22, 0x05	; 5
+ 63c:	61 1b       	sub	r22, r17
+ 63e:	41 2f       	mov	r20, r17
+ 640:	00 c0       	rjmp	.+0      	; 0x642 <dm_applyTransforms+0x1e8>
+                break;
+		
+            case DIR_RIGHT:
+                data &= 0x0f;
+ 642:	1f 70       	andi	r17, 0x0F	; 15
+                dm_rollLeft(disp, NUM_COLUMNS - data);
+ 644:	65 e0       	ldi	r22, 0x05	; 5
+ 646:	61 1b       	sub	r22, r17
+ 648:	ce 01       	movw	r24, r28
+ 64a:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+                dm_clearColumns(disp, 0, data);
+ 64e:	41 2f       	mov	r20, r17
+ 650:	60 e0       	ldi	r22, 0x00	; 0
+ 652:	ce 01       	movw	r24, r28
+ 654:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            }
+        }
+        break;
+
+        }
+        transform = dm_findNextTransform(disp);
+ 658:	ce 01       	movw	r24, r28
+ 65a:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+    disp->colIndex = 0;
+    /* test */
+    disp->currentColumnBit = 8;
+
+    transform = dm_findFirstTransform(disp);
+    while ((transform & 0x0f) != TRANSFORM_EOL)
+ 65e:	99 27       	eor	r25, r25
+ 660:	8f 70       	andi	r24, 0x0F	; 15
+ 662:	90 70       	andi	r25, 0x00	; 0
+ 664:	8f 30       	cpi	r24, 0x0F	; 15
+ 666:	91 05       	cpc	r25, r1
+ 668:	01 f0       	breq	.+0      	; 0x66a <dm_applyTransforms+0x210>
+ 66a:	00 c0       	rjmp	.+0      	; 0x66c <dm_applyTransforms+0x212>
+ 66c:	df 91       	pop	r29
+ 66e:	cf 91       	pop	r28
+ 670:	1f 91       	pop	r17
+ 672:	08 95       	ret
+
+00000674 <dm_displayProgrammed>:
+    dm_applyTransforms(which);
+}
+
+
+void dm_displayProgrammed(u08 which, u08 set)
+{
+ 674:	48 2f       	mov	r20, r24
+    switch (set)
+ 676:	66 23       	and	r22, r22
+ 678:	01 f0       	breq	.+0      	; 0x67a <dm_displayProgrammed+0x6>
+ 67a:	61 30       	cpi	r22, 0x01	; 1
+ 67c:	01 f4       	brne	.+0      	; 0x67e <dm_displayProgrammed+0xa>
+ 67e:	00 c0       	rjmp	.+0      	; 0x680 <dm_displayProgrammed+0xc>
+    {
+    case 0: display[which].flags &= ~FLAG_PROGCOLS; break;
+ 680:	28 2f       	mov	r18, r24
+ 682:	33 27       	eor	r19, r19
+ 684:	89 e2       	ldi	r24, 0x29	; 41
+ 686:	90 e0       	ldi	r25, 0x00	; 0
+ 688:	28 9f       	mul	r18, r24
+ 68a:	f0 01       	movw	r30, r0
+ 68c:	29 9f       	mul	r18, r25
+ 68e:	f0 0d       	add	r31, r0
+ 690:	38 9f       	mul	r19, r24
+ 692:	f0 0d       	add	r31, r0
+ 694:	11 24       	eor	r1, r1
+ 696:	e0 50       	subi	r30, 0x00	; 0
+ 698:	f0 40       	sbci	r31, 0x00	; 0
+ 69a:	82 81       	ldd	r24, Z+2	; 0x02
+ 69c:	8f 7e       	andi	r24, 0xEF	; 239
+ 69e:	00 c0       	rjmp	.+0      	; 0x6a0 <dm_displayProgrammed+0x2c>
+    case 1: display[which].flags |= FLAG_PROGCOLS; break;
+ 6a0:	28 2f       	mov	r18, r24
+ 6a2:	33 27       	eor	r19, r19
+ 6a4:	89 e2       	ldi	r24, 0x29	; 41
+ 6a6:	90 e0       	ldi	r25, 0x00	; 0
+ 6a8:	28 9f       	mul	r18, r24
+ 6aa:	f0 01       	movw	r30, r0
+ 6ac:	29 9f       	mul	r18, r25
+ 6ae:	f0 0d       	add	r31, r0
+ 6b0:	38 9f       	mul	r19, r24
+ 6b2:	f0 0d       	add	r31, r0
+ 6b4:	11 24       	eor	r1, r1
+ 6b6:	e0 50       	subi	r30, 0x00	; 0
+ 6b8:	f0 40       	sbci	r31, 0x00	; 0
+ 6ba:	82 81       	ldd	r24, Z+2	; 0x02
+ 6bc:	80 61       	ori	r24, 0x10	; 16
+ 6be:	82 83       	std	Z+2, r24	; 0x02
+    }
+    dm_applyTransforms(which);
+ 6c0:	84 2f       	mov	r24, r20
+ 6c2:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 6c6:	08 95       	ret
+
+000006c8 <dm_setChar>:
+}
+
+
+void dm_setChar(u08 which, u08 set)
+{
+    display[which].charIndex = set;
+ 6c8:	48 2f       	mov	r20, r24
+ 6ca:	55 27       	eor	r21, r21
+ 6cc:	29 e2       	ldi	r18, 0x29	; 41
+ 6ce:	30 e0       	ldi	r19, 0x00	; 0
+ 6d0:	42 9f       	mul	r20, r18
+ 6d2:	f0 01       	movw	r30, r0
+ 6d4:	43 9f       	mul	r20, r19
+ 6d6:	f0 0d       	add	r31, r0
+ 6d8:	52 9f       	mul	r21, r18
+ 6da:	f0 0d       	add	r31, r0
+ 6dc:	11 24       	eor	r1, r1
+ 6de:	e0 50       	subi	r30, 0x00	; 0
+ 6e0:	f0 40       	sbci	r31, 0x00	; 0
+ 6e2:	60 83       	st	Z, r22
+    dm_applyTransforms(which);
+ 6e4:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 6e8:	08 95       	ret
+
+000006ea <dm_reset>:
+    } while (count > 0);
+}
+
+void dm_reset(u08 which)
+{
+    display[which].txListBookmark = 0;
+ 6ea:	48 2f       	mov	r20, r24
+ 6ec:	55 27       	eor	r21, r21
+ 6ee:	29 e2       	ldi	r18, 0x29	; 41
+ 6f0:	30 e0       	ldi	r19, 0x00	; 0
+ 6f2:	42 9f       	mul	r20, r18
+ 6f4:	f0 01       	movw	r30, r0
+ 6f6:	43 9f       	mul	r20, r19
+ 6f8:	f0 0d       	add	r31, r0
+ 6fa:	52 9f       	mul	r21, r18
+ 6fc:	f0 0d       	add	r31, r0
+ 6fe:	11 24       	eor	r1, r1
+ 700:	e0 50       	subi	r30, 0x00	; 0
+ 702:	f0 40       	sbci	r31, 0x00	; 0
+ 704:	13 8a       	std	Z+19, r1	; 0x13
+    display[which].txList[0] = TRANSFORM_EOL;
+ 706:	9f e0       	ldi	r25, 0x0F	; 15
+ 708:	93 83       	std	Z+3, r25	; 0x03
+    dm_applyTransforms(which);
+ 70a:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 70e:	08 95       	ret
+
+00000710 <dm_progColumn>:
+}
+
+void dm_progColumn(u08 which, u08 column, u08 data)
+{
+ 710:	58 2f       	mov	r21, r24
+    display[which].progColumn[column] = data;
+ 712:	28 2f       	mov	r18, r24
+ 714:	33 27       	eor	r19, r19
+ 716:	89 e2       	ldi	r24, 0x29	; 41
+ 718:	90 e0       	ldi	r25, 0x00	; 0
+ 71a:	28 9f       	mul	r18, r24
+ 71c:	d0 01       	movw	r26, r0
+ 71e:	29 9f       	mul	r18, r25
+ 720:	b0 0d       	add	r27, r0
+ 722:	38 9f       	mul	r19, r24
+ 724:	b0 0d       	add	r27, r0
+ 726:	11 24       	eor	r1, r1
+ 728:	fd 01       	movw	r30, r26
+ 72a:	e6 0f       	add	r30, r22
+ 72c:	f1 1d       	adc	r31, r1
+ 72e:	e0 50       	subi	r30, 0x00	; 0
+ 730:	f0 40       	sbci	r31, 0x00	; 0
+ 732:	44 8b       	std	Z+20, r20	; 0x14
+    if (display[which].flags & FLAG_PROGCOLS)
+ 734:	a0 50       	subi	r26, 0x00	; 0
+ 736:	b0 40       	sbci	r27, 0x00	; 0
+ 738:	fd 01       	movw	r30, r26
+ 73a:	82 81       	ldd	r24, Z+2	; 0x02
+ 73c:	84 ff       	sbrs	r24, 4
+ 73e:	00 c0       	rjmp	.+0      	; 0x740 <dm_progColumn+0x30>
+    {
+        dm_applyTransforms(which);
+ 740:	85 2f       	mov	r24, r21
+ 742:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 746:	08 95       	ret
+
+00000748 <dm_pixel>:
+    }
+}
+
+void dm_pixel(u08 which, u08 set, u08 row, u08 column)
+{
+ 748:	78 2f       	mov	r23, r24
+ 74a:	e8 2f       	mov	r30, r24
+ 74c:	ff 27       	eor	r31, r31
+ 74e:	33 27       	eor	r19, r19
+ 750:	55 27       	eor	r21, r21
+    if (set == 1)
+ 752:	61 30       	cpi	r22, 0x01	; 1
+ 754:	01 f4       	brne	.+0      	; 0x756 <dm_pixel+0xe>
+    {
+        display[which].progColumn[column] |= (1 << row);
+ 756:	89 e2       	ldi	r24, 0x29	; 41
+ 758:	90 e0       	ldi	r25, 0x00	; 0
+ 75a:	df 01       	movw	r26, r30
+ 75c:	a8 9f       	mul	r26, r24
+ 75e:	f0 01       	movw	r30, r0
+ 760:	a9 9f       	mul	r26, r25
+ 762:	f0 0d       	add	r31, r0
+ 764:	b8 9f       	mul	r27, r24
+ 766:	f0 0d       	add	r31, r0
+ 768:	11 24       	eor	r1, r1
+ 76a:	e2 0f       	add	r30, r18
+ 76c:	f3 1f       	adc	r31, r19
+ 76e:	e0 50       	subi	r30, 0x00	; 0
+ 770:	f0 40       	sbci	r31, 0x00	; 0
+ 772:	81 e0       	ldi	r24, 0x01	; 1
+ 774:	90 e0       	ldi	r25, 0x00	; 0
+ 776:	00 c0       	rjmp	.+0      	; 0x778 <dm_pixel+0x30>
+ 778:	88 0f       	add	r24, r24
+ 77a:	99 1f       	adc	r25, r25
+ 77c:	4a 95       	dec	r20
+ 77e:	02 f4       	brpl	.+0      	; 0x780 <dm_pixel+0x38>
+ 780:	24 89       	ldd	r18, Z+20	; 0x14
+ 782:	28 2b       	or	r18, r24
+ 784:	24 8b       	std	Z+20, r18	; 0x14
+ 786:	00 c0       	rjmp	.+0      	; 0x788 <dm_pixel+0x40>
+    }
+    else
+    {
+        display[which].progColumn[column] &= ~(1 << row);
+ 788:	89 e2       	ldi	r24, 0x29	; 41
+ 78a:	90 e0       	ldi	r25, 0x00	; 0
+ 78c:	df 01       	movw	r26, r30
+ 78e:	a8 9f       	mul	r26, r24
+ 790:	f0 01       	movw	r30, r0
+ 792:	a9 9f       	mul	r26, r25
+ 794:	f0 0d       	add	r31, r0
+ 796:	b8 9f       	mul	r27, r24
+ 798:	f0 0d       	add	r31, r0
+ 79a:	11 24       	eor	r1, r1
+ 79c:	e2 0f       	add	r30, r18
+ 79e:	f3 1f       	adc	r31, r19
+ 7a0:	e0 50       	subi	r30, 0x00	; 0
+ 7a2:	f0 40       	sbci	r31, 0x00	; 0
+ 7a4:	81 e0       	ldi	r24, 0x01	; 1
+ 7a6:	90 e0       	ldi	r25, 0x00	; 0
+ 7a8:	00 c0       	rjmp	.+0      	; 0x7aa <dm_pixel+0x62>
+ 7aa:	88 0f       	add	r24, r24
+ 7ac:	99 1f       	adc	r25, r25
+ 7ae:	4a 95       	dec	r20
+ 7b0:	02 f4       	brpl	.+0      	; 0x7b2 <dm_pixel+0x6a>
+ 7b2:	80 95       	com	r24
+ 7b4:	24 89       	ldd	r18, Z+20	; 0x14
+ 7b6:	82 23       	and	r24, r18
+ 7b8:	84 8b       	std	Z+20, r24	; 0x14
+    }
+    if (display[which].flags & FLAG_PROGCOLS)
+ 7ba:	27 2f       	mov	r18, r23
+ 7bc:	33 27       	eor	r19, r19
+ 7be:	89 e2       	ldi	r24, 0x29	; 41
+ 7c0:	90 e0       	ldi	r25, 0x00	; 0
+ 7c2:	28 9f       	mul	r18, r24
+ 7c4:	f0 01       	movw	r30, r0
+ 7c6:	29 9f       	mul	r18, r25
+ 7c8:	f0 0d       	add	r31, r0
+ 7ca:	38 9f       	mul	r19, r24
+ 7cc:	f0 0d       	add	r31, r0
+ 7ce:	11 24       	eor	r1, r1
+ 7d0:	e0 50       	subi	r30, 0x00	; 0
+ 7d2:	f0 40       	sbci	r31, 0x00	; 0
+ 7d4:	82 81       	ldd	r24, Z+2	; 0x02
+ 7d6:	84 ff       	sbrs	r24, 4
+ 7d8:	00 c0       	rjmp	.+0      	; 0x7da <dm_pixel+0x92>
+    {
+        dm_applyTransforms(which);
+ 7da:	87 2f       	mov	r24, r23
+ 7dc:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 7e0:	08 95       	ret
+
+000007e2 <dm_copyToCustom>:
+    }
+}
+
+
+void dm_copyToCustom(u08 which, u08 charIndex)
+{
+ 7e2:	cf 93       	push	r28
+ 7e4:	df 93       	push	r29
+ 7e6:	98 2f       	mov	r25, r24
+    u08 count;
+    struct _display * disp = &display[which];
+    u08 * dataPtr = font5x7 + (charIndex * NUM_COLUMNS);
+ 7e8:	85 e0       	ldi	r24, 0x05	; 5
+ 7ea:	68 9f       	mul	r22, r24
+ 7ec:	90 01       	movw	r18, r0
+ 7ee:	11 24       	eor	r1, r1
+ 7f0:	20 50       	subi	r18, 0x00	; 0
+ 7f2:	30 40       	sbci	r19, 0x00	; 0
+ 7f4:	89 e2       	ldi	r24, 0x29	; 41
+ 7f6:	98 9f       	mul	r25, r24
+ 7f8:	d0 01       	movw	r26, r0
+ 7fa:	11 24       	eor	r1, r1
+ 7fc:	a0 50       	subi	r26, 0x00	; 0
+ 7fe:	b0 40       	sbci	r27, 0x00	; 0
+ 800:	80 e0       	ldi	r24, 0x00	; 0
+ 802:	f9 01       	movw	r30, r18
+
+    for (count = 0; count < NUM_COLUMNS; count++)
+    {
+        disp->progColumn[count] = pgm_read_byte_near(dataPtr++);
+ 804:	2f 5f       	subi	r18, 0xFF	; 255
+ 806:	3f 4f       	sbci	r19, 0xFF	; 255
+ 808:	e4 91       	lpm	r30, Z
+ 80a:	ed 01       	movw	r28, r26
+ 80c:	ec 8b       	std	Y+20, r30	; 0x14
+{
+    u08 count;
+    struct _display * disp = &display[which];
+    u08 * dataPtr = font5x7 + (charIndex * NUM_COLUMNS);
+
+    for (count = 0; count < NUM_COLUMNS; count++)
+ 80e:	8f 5f       	subi	r24, 0xFF	; 255
+ 810:	11 96       	adiw	r26, 0x01	; 1
+ 812:	85 30       	cpi	r24, 0x05	; 5
+ 814:	01 f4       	brne	.+0      	; 0x816 <dm_copyToCustom+0x34>
+    {
+        disp->progColumn[count] = pgm_read_byte_near(dataPtr++);
+    }
+    dm_applyTransforms(which);
+ 816:	89 2f       	mov	r24, r25
+ 818:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 81c:	df 91       	pop	r29
+ 81e:	cf 91       	pop	r28
+ 820:	08 95       	ret
+
+00000822 <dm_setsense>:
+}
+
+void dm_setsense(u08 row, u08 column)
+{
+ 822:	28 2f       	mov	r18, r24
+    extern u08 * sensePort;
+    extern u08 * senseBit;
+
+    if ('X' == column)
+ 824:	68 35       	cpi	r22, 0x58	; 88
+ 826:	01 f4       	brne	.+0      	; 0x828 <dm_setsense+0x6>
+    {
+/* disable the timer interrupt */
+        TIMSK0 &= ~_BV(TOIE0);
+ 828:	80 91 6e 00 	lds	r24, 0x006E
+ 82c:	8e 7f       	andi	r24, 0xFE	; 254
+ 82e:	80 93 6e 00 	sts	0x006E, r24
+/* senseport = PORTX, senseport -1 = DDRX */
+        *(sensePort - 1) &= ~_BV(*senseBit); /* set column driver to input */
+ 832:	e0 91 00 00 	lds	r30, 0x0000
+ 836:	f0 91 00 00 	lds	r31, 0x0000
+ 83a:	31 97       	sbiw	r30, 0x01	; 1
+ 83c:	20 81       	ld	r18, Z
+ 83e:	a0 91 00 00 	lds	r26, 0x0000
+ 842:	b0 91 00 00 	lds	r27, 0x0000
+ 846:	81 e0       	ldi	r24, 0x01	; 1
+ 848:	90 e0       	ldi	r25, 0x00	; 0
+ 84a:	0c 90       	ld	r0, X
+ 84c:	00 c0       	rjmp	.+0      	; 0x84e <dm_setsense+0x2c>
+ 84e:	88 0f       	add	r24, r24
+ 850:	99 1f       	adc	r25, r25
+ 852:	0a 94       	dec	r0
+ 854:	02 f4       	brpl	.+0      	; 0x856 <dm_setsense+0x34>
+ 856:	80 95       	com	r24
+ 858:	82 23       	and	r24, r18
+ 85a:	80 83       	st	Z, r24
+        display[0].senseRowColumn = 0xff;
+ 85c:	8f ef       	ldi	r24, 0xFF	; 255
+ 85e:	80 93 00 00 	sts	0x0000, r24
+        display[1].senseRowColumn = 0xff;
+ 862:	80 93 00 00 	sts	0x0000, r24
+ 866:	08 95       	ret
+        return;
+    }
+    if (column <= 4)
+ 868:	65 30       	cpi	r22, 0x05	; 5
+ 86a:	00 f4       	brcc	.+0      	; 0x86c <dm_setsense+0x4a>
+    {
+        display[0].senseRowColumn = (row << 4) | column;
+ 86c:	22 95       	swap	r18
+ 86e:	20 7f       	andi	r18, 0xF0	; 240
+ 870:	26 2b       	or	r18, r22
+ 872:	20 93 00 00 	sts	0x0000, r18
+        sensePort = pgm_read_byte_near(&columnCtl[0][column].port);
+ 876:	86 2f       	mov	r24, r22
+ 878:	99 27       	eor	r25, r25
+ 87a:	9c 01       	movw	r18, r24
+ 87c:	22 0f       	add	r18, r18
+ 87e:	33 1f       	adc	r19, r19
+ 880:	28 0f       	add	r18, r24
+ 882:	39 1f       	adc	r19, r25
+ 884:	f9 01       	movw	r30, r18
+ 886:	e0 50       	subi	r30, 0x00	; 0
+ 888:	f0 40       	sbci	r31, 0x00	; 0
+ 88a:	e4 91       	lpm	r30, Z
+ 88c:	8e 2f       	mov	r24, r30
+ 88e:	99 27       	eor	r25, r25
+ 890:	90 93 00 00 	sts	0x0000, r25
+ 894:	80 93 00 00 	sts	0x0000, r24
+        senseBit = pgm_read_byte_near(&columnCtl[0][column].pin);
+ 898:	20 50       	subi	r18, 0x00	; 0
+ 89a:	30 40       	sbci	r19, 0x00	; 0
+ 89c:	f9 01       	movw	r30, r18
+ 89e:	84 91       	lpm	r24, Z
+ 8a0:	00 c0       	rjmp	.+0      	; 0x8a2 <dm_setsense+0x80>
+    }
+    else if (column >= 5 && column <= 9)
+ 8a2:	86 2f       	mov	r24, r22
+ 8a4:	85 50       	subi	r24, 0x05	; 5
+ 8a6:	85 30       	cpi	r24, 0x05	; 5
+ 8a8:	00 f4       	brcc	.+0      	; 0x8aa <dm_setsense+0x88>
+    {
+        display[1].senseRowColumn = (row << 4) | column;
+ 8aa:	22 95       	swap	r18
+ 8ac:	20 7f       	andi	r18, 0xF0	; 240
+ 8ae:	26 2b       	or	r18, r22
+ 8b0:	20 93 00 00 	sts	0x0000, r18
+        sensePort = pgm_read_byte_near(&columnCtl[1][column - 5].port);
+ 8b4:	86 2f       	mov	r24, r22
+ 8b6:	99 27       	eor	r25, r25
+ 8b8:	05 97       	sbiw	r24, 0x05	; 5
+ 8ba:	9c 01       	movw	r18, r24
+ 8bc:	22 0f       	add	r18, r18
+ 8be:	33 1f       	adc	r19, r19
+ 8c0:	28 0f       	add	r18, r24
+ 8c2:	39 1f       	adc	r19, r25
+ 8c4:	f9 01       	movw	r30, r18
+ 8c6:	e0 50       	subi	r30, 0x00	; 0
+ 8c8:	f0 40       	sbci	r31, 0x00	; 0
+ 8ca:	e4 91       	lpm	r30, Z
+ 8cc:	8e 2f       	mov	r24, r30
+ 8ce:	99 27       	eor	r25, r25
+ 8d0:	90 93 00 00 	sts	0x0000, r25
+ 8d4:	80 93 00 00 	sts	0x0000, r24
+        senseBit = pgm_read_byte_near(&columnCtl[1][column - 5].pin);
+ 8d8:	20 50       	subi	r18, 0x00	; 0
+ 8da:	30 40       	sbci	r19, 0x00	; 0
+ 8dc:	f9 01       	movw	r30, r18
+ 8de:	84 91       	lpm	r24, Z
+ 8e0:	99 27       	eor	r25, r25
+ 8e2:	90 93 00 00 	sts	0x0000, r25
+ 8e6:	80 93 00 00 	sts	0x0000, r24
+    }
+    /* senseport = PORTX, senseport -1 = DDRX */
+    *(sensePort - 1) |= _BV(*senseBit); /* set column driver to output */
+ 8ea:	e0 91 00 00 	lds	r30, 0x0000
+ 8ee:	f0 91 00 00 	lds	r31, 0x0000
+ 8f2:	31 97       	sbiw	r30, 0x01	; 1
+ 8f4:	20 81       	ld	r18, Z
+ 8f6:	a0 91 00 00 	lds	r26, 0x0000
+ 8fa:	b0 91 00 00 	lds	r27, 0x0000
+ 8fe:	81 e0       	ldi	r24, 0x01	; 1
+ 900:	90 e0       	ldi	r25, 0x00	; 0
+ 902:	0c 90       	ld	r0, X
+ 904:	00 c0       	rjmp	.+0      	; 0x906 <dm_setsense+0xe4>
+ 906:	88 0f       	add	r24, r24
+ 908:	99 1f       	adc	r25, r25
+ 90a:	0a 94       	dec	r0
+ 90c:	02 f4       	brpl	.+0      	; 0x90e <dm_setsense+0xec>
+ 90e:	28 2b       	or	r18, r24
+ 910:	20 83       	st	Z, r18
+    /* enable the timer interrupt */
+    TIMSK0 |= _BV(TOIE0);
+ 912:	80 91 6e 00 	lds	r24, 0x006E
+ 916:	81 60       	ori	r24, 0x01	; 1
+ 918:	80 93 6e 00 	sts	0x006E, r24
+ 91c:	08 95       	ret
+
+0000091e <dm_deleteTransform>:
+    display[which].paletteSelected = index;
+/*   sei(); */
+}
+
+static void dm_deleteTransform(u08 which, u08 command)
+{
+ 91e:	1f 93       	push	r17
+ 920:	cf 93       	push	r28
+ 922:	df 93       	push	r29
+ 924:	16 2f       	mov	r17, r22
+    struct _display * disp = &display[which];
+ 926:	99 e2       	ldi	r25, 0x29	; 41
+ 928:	89 9f       	mul	r24, r25
+ 92a:	e0 01       	movw	r28, r0
+ 92c:	11 24       	eor	r1, r1
+ 92e:	c0 50       	subi	r28, 0x00	; 0
+ 930:	d0 40       	sbci	r29, 0x00	; 0
+    }
+}
+
+static u08 dm_findFirstTransform(struct _display * display)
+{
+    display->txListBookmark = 0;
+ 932:	1b 8a       	std	Y+19, r1	; 0x13
+}
+
+static void dm_deleteTransform(u08 which, u08 command)
+{
+    struct _display * disp = &display[which];
+    u08 test = (dm_findFirstTransform(disp) & 0x0f);
+ 934:	8b 81       	ldd	r24, Y+3	; 0x03
+ 936:	00 c0       	rjmp	.+0      	; 0x938 <dm_deleteTransform+0x1a>
+
+    while (test != TRANSFORM_EOL)
+    {
+        if (test == command)
+ 938:	81 17       	cp	r24, r17
+ 93a:	01 f4       	brne	.+0      	; 0x93c <dm_deleteTransform+0x1e>
+    return display->txList[0];
+}
+
+static u08 dm_cmdLength(u08 command)
+{
+    switch (command & 0x0f)
+ 93c:	99 27       	eor	r25, r25
+ 93e:	83 30       	cpi	r24, 0x03	; 3
+ 940:	91 05       	cpc	r25, r1
+ 942:	04 f0       	brlt	.+0      	; 0x944 <dm_deleteTransform+0x26>
+ 944:	07 97       	sbiw	r24, 0x07	; 7
+ 946:	04 f4       	brge	.+0      	; 0x948 <dm_deleteTransform+0x2a>
+ 948:	62 e0       	ldi	r22, 0x02	; 2
+ 94a:	70 e0       	ldi	r23, 0x00	; 0
+ 94c:	00 c0       	rjmp	.+0      	; 0x94e <dm_deleteTransform+0x30>
+ 94e:	60 e0       	ldi	r22, 0x00	; 0
+ 950:	70 e0       	ldi	r23, 0x00	; 0
+ 952:	00 c0       	rjmp	.+0      	; 0x954 <dm_deleteTransform+0x36>
+ 954:	61 e0       	ldi	r22, 0x01	; 1
+ 956:	70 e0       	ldi	r23, 0x00	; 0
+    {
+        if (test == command)
+        {
+            u08 length = dm_cmdLength(command);
+
+            memmove(&disp->txList[disp->txListBookmark],
+ 958:	2b 89       	ldd	r18, Y+19	; 0x13
+ 95a:	33 27       	eor	r19, r19
+ 95c:	ce 01       	movw	r24, r28
+ 95e:	03 96       	adiw	r24, 0x03	; 3
+ 960:	40 e1       	ldi	r20, 0x10	; 16
+ 962:	50 e0       	ldi	r21, 0x00	; 0
+ 964:	42 1b       	sub	r20, r18
+ 966:	53 0b       	sbc	r21, r19
+ 968:	46 1b       	sub	r20, r22
+ 96a:	57 0b       	sbc	r21, r23
+ 96c:	62 0f       	add	r22, r18
+ 96e:	73 1f       	adc	r23, r19
+ 970:	68 0f       	add	r22, r24
+ 972:	79 1f       	adc	r23, r25
+ 974:	82 0f       	add	r24, r18
+ 976:	93 1f       	adc	r25, r19
+ 978:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 97c:	00 c0       	rjmp	.+0      	; 0x97e <dm_deleteTransform+0x60>
+                    &disp->txList[disp->txListBookmark + length],
+                    TRANSFORM_LIST_LENGTH - disp->txListBookmark - length);
+
+            break;
+        }
+        test = (dm_findNextTransform(disp) & 0x0f);
+ 97e:	ce 01       	movw	r24, r28
+ 980:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 984:	8f 70       	andi	r24, 0x0F	; 15
+static void dm_deleteTransform(u08 which, u08 command)
+{
+    struct _display * disp = &display[which];
+    u08 test = (dm_findFirstTransform(disp) & 0x0f);
+
+    while (test != TRANSFORM_EOL)
+ 986:	8f 30       	cpi	r24, 0x0F	; 15
+ 988:	01 f4       	brne	.+0      	; 0x98a <dm_deleteTransform+0x6c>
+ 98a:	df 91       	pop	r29
+ 98c:	cf 91       	pop	r28
+ 98e:	1f 91       	pop	r17
+ 990:	08 95       	ret
+
+00000992 <dm_roll>:
+    }
+    dm_applyTransforms(which);
+}
+
+void dm_roll(u08 which, u08 direction, u08 count)
+{
+ 992:	0f 93       	push	r16
+ 994:	1f 93       	push	r17
+ 996:	cf 93       	push	r28
+ 998:	df 93       	push	r29
+ 99a:	08 2f       	mov	r16, r24
+ 99c:	14 2f       	mov	r17, r20
+    struct _display * disp = &display[which];
+    switch (count)
+ 99e:	44 23       	and	r20, r20
+ 9a0:	01 f4       	brne	.+0      	; 0x9a2 <dm_roll+0x10>
+    {
+    case 0:
+        switch (direction)
+ 9a2:	6c 36       	cpi	r22, 0x6C	; 108
+ 9a4:	01 f0       	breq	.+0      	; 0x9a6 <dm_roll+0x14>
+ 9a6:	6d 36       	cpi	r22, 0x6D	; 109
+ 9a8:	00 f4       	brcc	.+0      	; 0x9aa <dm_roll+0x18>
+ 9aa:	64 36       	cpi	r22, 0x64	; 100
+ 9ac:	01 f4       	brne	.+0      	; 0x9ae <dm_roll+0x1c>
+ 9ae:	00 c0       	rjmp	.+0      	; 0x9b0 <dm_roll+0x1e>
+ 9b0:	62 37       	cpi	r22, 0x72	; 114
+ 9b2:	01 f0       	breq	.+0      	; 0x9b4 <dm_roll+0x22>
+ 9b4:	65 37       	cpi	r22, 0x75	; 117
+ 9b6:	01 f4       	brne	.+0      	; 0x9b8 <dm_roll+0x26>
+        {
+        case 'u':
+        case 'd':
+            dm_deleteTransform(which, TRANSFORM_ROLL_VERT);
+ 9b8:	63 e0       	ldi	r22, 0x03	; 3
+ 9ba:	00 c0       	rjmp	.+0      	; 0x9bc <dm_roll+0x2a>
+            break;
+
+        case 'l':
+        case 'r':
+            dm_deleteTransform(which, TRANSFORM_ROLL_HORZ);
+ 9bc:	64 e0       	ldi	r22, 0x04	; 4
+ 9be:	80 2f       	mov	r24, r16
+ 9c0:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ 9c4:	00 c0       	rjmp	.+0      	; 0x9c6 <dm_roll+0x34>
+    dm_applyTransforms(which);
+}
+
+void dm_roll(u08 which, u08 direction, u08 count)
+{
+    struct _display * disp = &display[which];
+ 9c6:	89 e2       	ldi	r24, 0x29	; 41
+ 9c8:	08 9f       	mul	r16, r24
+ 9ca:	e0 01       	movw	r28, r0
+ 9cc:	11 24       	eor	r1, r1
+ 9ce:	c0 50       	subi	r28, 0x00	; 0
+ 9d0:	d0 40       	sbci	r29, 0x00	; 0
+            break;
+        }
+        break;
+
+    default:
+        switch (direction)
+ 9d2:	6c 36       	cpi	r22, 0x6C	; 108
+ 9d4:	01 f0       	breq	.+0      	; 0x9d6 <dm_roll+0x44>
+ 9d6:	6d 36       	cpi	r22, 0x6D	; 109
+ 9d8:	00 f4       	brcc	.+0      	; 0x9da <dm_roll+0x48>
+ 9da:	64 36       	cpi	r22, 0x64	; 100
+ 9dc:	01 f4       	brne	.+0      	; 0x9de <dm_roll+0x4c>
+ 9de:	00 c0       	rjmp	.+0      	; 0x9e0 <dm_roll+0x4e>
+ 9e0:	62 37       	cpi	r22, 0x72	; 114
+ 9e2:	01 f0       	breq	.+0      	; 0x9e4 <dm_roll+0x52>
+ 9e4:	65 37       	cpi	r22, 0x75	; 117
+ 9e6:	01 f4       	brne	.+0      	; 0x9e8 <dm_roll+0x56>
+        {
+        case 'u':
+            dm_setTransform(which, TRANSFORM_ROLL_VERT);
+ 9e8:	63 e0       	ldi	r22, 0x03	; 3
+ 9ea:	80 2f       	mov	r24, r16
+ 9ec:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_UP | count);
+ 9f0:	10 61       	ori	r17, 0x10	; 16
+ 9f2:	00 c0       	rjmp	.+0      	; 0x9f4 <dm_roll+0x62>
+            break;
+
+        case 'd':
+            dm_setTransform(which, TRANSFORM_ROLL_VERT);
+ 9f4:	63 e0       	ldi	r22, 0x03	; 3
+ 9f6:	80 2f       	mov	r24, r16
+ 9f8:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_DOWN | count);
+ 9fc:	10 62       	ori	r17, 0x20	; 32
+ 9fe:	00 c0       	rjmp	.+0      	; 0xa00 <dm_roll+0x6e>
+            break;
+
+        case 'l':
+            dm_setTransform(which, TRANSFORM_ROLL_HORZ);
+ a00:	64 e0       	ldi	r22, 0x04	; 4
+ a02:	80 2f       	mov	r24, r16
+ a04:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_LEFT | count);
+ a08:	10 63       	ori	r17, 0x30	; 48
+ a0a:	00 c0       	rjmp	.+0      	; 0xa0c <dm_roll+0x7a>
+            break;
+
+        case 'r':
+            dm_setTransform(which, TRANSFORM_ROLL_HORZ);
+ a0c:	64 e0       	ldi	r22, 0x04	; 4
+ a0e:	80 2f       	mov	r24, r16
+ a10:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_RIGHT | count);
+ a14:	10 64       	ori	r17, 0x40	; 64
+ a16:	41 2f       	mov	r20, r17
+ a18:	60 e0       	ldi	r22, 0x00	; 0
+ a1a:	ce 01       	movw	r24, r28
+ a1c:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            break;
+        }
+    }
+    dm_applyTransforms(which);
+ a20:	80 2f       	mov	r24, r16
+ a22:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ a26:	df 91       	pop	r29
+ a28:	cf 91       	pop	r28
+ a2a:	1f 91       	pop	r17
+ a2c:	0f 91       	pop	r16
+ a2e:	08 95       	ret
+
+00000a30 <dm_shift>:
+        display[which].flags &= ~FLAG_BLANK;
+    }
+}
+
+void dm_shift(u08 which, u08 direction, u08 count)
+{
+ a30:	0f 93       	push	r16
+ a32:	1f 93       	push	r17
+ a34:	cf 93       	push	r28
+ a36:	df 93       	push	r29
+ a38:	08 2f       	mov	r16, r24
+ a3a:	14 2f       	mov	r17, r20
+    struct _display * disp = &display[which];
+    switch (count)
+ a3c:	44 23       	and	r20, r20
+ a3e:	01 f4       	brne	.+0      	; 0xa40 <dm_shift+0x10>
+    {
+    case 0:
+        switch (direction)
+ a40:	6c 36       	cpi	r22, 0x6C	; 108
+ a42:	01 f0       	breq	.+0      	; 0xa44 <dm_shift+0x14>
+ a44:	6d 36       	cpi	r22, 0x6D	; 109
+ a46:	00 f4       	brcc	.+0      	; 0xa48 <dm_shift+0x18>
+ a48:	64 36       	cpi	r22, 0x64	; 100
+ a4a:	01 f4       	brne	.+0      	; 0xa4c <dm_shift+0x1c>
+ a4c:	00 c0       	rjmp	.+0      	; 0xa4e <dm_shift+0x1e>
+ a4e:	62 37       	cpi	r22, 0x72	; 114
+ a50:	01 f0       	breq	.+0      	; 0xa52 <dm_shift+0x22>
+ a52:	65 37       	cpi	r22, 0x75	; 117
+ a54:	01 f4       	brne	.+0      	; 0xa56 <dm_shift+0x26>
+        {
+        case 'u':
+        case 'd':
+            dm_deleteTransform(which, TRANSFORM_SHIFT_VERT);
+ a56:	65 e0       	ldi	r22, 0x05	; 5
+ a58:	00 c0       	rjmp	.+0      	; 0xa5a <dm_shift+0x2a>
+            break;
+
+        case 'l':
+        case 'r':
+            dm_deleteTransform(which, TRANSFORM_SHIFT_HORZ);
+ a5a:	66 e0       	ldi	r22, 0x06	; 6
+ a5c:	80 2f       	mov	r24, r16
+ a5e:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ a62:	00 c0       	rjmp	.+0      	; 0xa64 <dm_shift+0x34>
+    }
+}
+
+void dm_shift(u08 which, u08 direction, u08 count)
+{
+    struct _display * disp = &display[which];
+ a64:	89 e2       	ldi	r24, 0x29	; 41
+ a66:	08 9f       	mul	r16, r24
+ a68:	e0 01       	movw	r28, r0
+ a6a:	11 24       	eor	r1, r1
+ a6c:	c0 50       	subi	r28, 0x00	; 0
+ a6e:	d0 40       	sbci	r29, 0x00	; 0
+        }
+        break;
+
+/*     case 1: */
+    default:
+        switch (direction)
+ a70:	6c 36       	cpi	r22, 0x6C	; 108
+ a72:	01 f0       	breq	.+0      	; 0xa74 <dm_shift+0x44>
+ a74:	6d 36       	cpi	r22, 0x6D	; 109
+ a76:	00 f4       	brcc	.+0      	; 0xa78 <dm_shift+0x48>
+ a78:	64 36       	cpi	r22, 0x64	; 100
+ a7a:	01 f4       	brne	.+0      	; 0xa7c <dm_shift+0x4c>
+ a7c:	00 c0       	rjmp	.+0      	; 0xa7e <dm_shift+0x4e>
+ a7e:	62 37       	cpi	r22, 0x72	; 114
+ a80:	01 f0       	breq	.+0      	; 0xa82 <dm_shift+0x52>
+ a82:	65 37       	cpi	r22, 0x75	; 117
+ a84:	01 f4       	brne	.+0      	; 0xa86 <dm_shift+0x56>
+        {
+        case 'u':
+            dm_setTransform(which, TRANSFORM_SHIFT_VERT);
+ a86:	65 e0       	ldi	r22, 0x05	; 5
+ a88:	80 2f       	mov	r24, r16
+ a8a:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_UP | count);
+ a8e:	10 61       	ori	r17, 0x10	; 16
+ a90:	00 c0       	rjmp	.+0      	; 0xa92 <dm_shift+0x62>
+            break;
+
+        case 'd':
+            dm_setTransform(which, TRANSFORM_SHIFT_VERT);
+ a92:	65 e0       	ldi	r22, 0x05	; 5
+ a94:	80 2f       	mov	r24, r16
+ a96:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_DOWN | count);
+ a9a:	10 62       	ori	r17, 0x20	; 32
+ a9c:	00 c0       	rjmp	.+0      	; 0xa9e <dm_shift+0x6e>
+            break;
+
+        case 'l':
+            dm_setTransform(which, TRANSFORM_SHIFT_HORZ);
+ a9e:	66 e0       	ldi	r22, 0x06	; 6
+ aa0:	80 2f       	mov	r24, r16
+ aa2:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_LEFT | count);
+ aa6:	10 63       	ori	r17, 0x30	; 48
+ aa8:	00 c0       	rjmp	.+0      	; 0xaaa <dm_shift+0x7a>
+            break;
+
+        case 'r':
+            dm_setTransform(which, TRANSFORM_SHIFT_HORZ);
+ aaa:	66 e0       	ldi	r22, 0x06	; 6
+ aac:	80 2f       	mov	r24, r16
+ aae:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            dm_setTransformData(disp, 0, DIR_RIGHT | count);
+ ab2:	10 64       	ori	r17, 0x40	; 64
+ ab4:	41 2f       	mov	r20, r17
+ ab6:	60 e0       	ldi	r22, 0x00	; 0
+ ab8:	ce 01       	movw	r24, r28
+ aba:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+            break;
+        }
+    }
+    dm_applyTransforms(which);
+ abe:	80 2f       	mov	r24, r16
+ ac0:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ ac4:	df 91       	pop	r29
+ ac6:	cf 91       	pop	r28
+ ac8:	1f 91       	pop	r17
+ aca:	0f 91       	pop	r16
+ acc:	08 95       	ret
+
+00000ace <dm_setMirror>:
+    }
+    dm_applyTransforms(which);
+}
+
+void dm_setMirror(u08 which, u08 set)
+{
+ ace:	1f 93       	push	r17
+ ad0:	18 2f       	mov	r17, r24
+    switch (set)
+ ad2:	66 23       	and	r22, r22
+ ad4:	01 f0       	breq	.+0      	; 0xad6 <dm_setMirror+0x8>
+ ad6:	61 30       	cpi	r22, 0x01	; 1
+ ad8:	01 f4       	brne	.+0      	; 0xada <dm_setMirror+0xc>
+ ada:	00 c0       	rjmp	.+0      	; 0xadc <dm_setMirror+0xe>
+    {
+    case 0: dm_deleteTransform(which, TRANSFORM_MIRROR); break;
+ adc:	61 e0       	ldi	r22, 0x01	; 1
+ ade:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ ae2:	00 c0       	rjmp	.+0      	; 0xae4 <dm_setMirror+0x16>
+    case 1: dm_setTransform(which, TRANSFORM_MIRROR); break;
+ ae4:	61 e0       	ldi	r22, 0x01	; 1
+ ae6:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+    }
+    dm_applyTransforms(which);
+ aea:	81 2f       	mov	r24, r17
+ aec:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ af0:	1f 91       	pop	r17
+ af2:	08 95       	ret
+
+00000af4 <dm_setFlip>:
+    }
+    dm_applyTransforms(which);
+}
+
+void dm_setFlip(u08 which, u08 set)
+{
+ af4:	1f 93       	push	r17
+ af6:	18 2f       	mov	r17, r24
+    switch (set)
+ af8:	66 23       	and	r22, r22
+ afa:	01 f0       	breq	.+0      	; 0xafc <dm_setFlip+0x8>
+ afc:	61 30       	cpi	r22, 0x01	; 1
+ afe:	01 f4       	brne	.+0      	; 0xb00 <dm_setFlip+0xc>
+ b00:	00 c0       	rjmp	.+0      	; 0xb02 <dm_setFlip+0xe>
+    {
+    case 0: dm_deleteTransform(which, TRANSFORM_FLIP); break;
+ b02:	60 e0       	ldi	r22, 0x00	; 0
+ b04:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ b08:	00 c0       	rjmp	.+0      	; 0xb0a <dm_setFlip+0x16>
+    case 1: dm_setTransform(which, TRANSFORM_FLIP); break;
+ b0a:	60 e0       	ldi	r22, 0x00	; 0
+ b0c:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+    }
+    dm_applyTransforms(which);
+ b10:	81 2f       	mov	r24, r17
+ b12:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ b16:	1f 91       	pop	r17
+ b18:	08 95       	ret
+
+00000b1a <dm_setReverse>:
+/*   sei(); */
+/*   TIMSK0 |= _BV(TOIE0); */
+}
+
+void dm_setReverse(u08 which, u08 set)
+{
+ b1a:	1f 93       	push	r17
+ b1c:	18 2f       	mov	r17, r24
+    switch (set)
+ b1e:	66 23       	and	r22, r22
+ b20:	01 f0       	breq	.+0      	; 0xb22 <dm_setReverse+0x8>
+ b22:	61 30       	cpi	r22, 0x01	; 1
+ b24:	01 f4       	brne	.+0      	; 0xb26 <dm_setReverse+0xc>
+ b26:	00 c0       	rjmp	.+0      	; 0xb28 <dm_setReverse+0xe>
+    {
+    case 0: dm_deleteTransform(which, TRANSFORM_REVERSE); break;
+ b28:	62 e0       	ldi	r22, 0x02	; 2
+ b2a:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ b2e:	00 c0       	rjmp	.+0      	; 0xb30 <dm_setReverse+0x16>
+    case 1: dm_setTransform(which, TRANSFORM_REVERSE); break;
+ b30:	62 e0       	ldi	r22, 0x02	; 2
+ b32:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+    }
+    dm_applyTransforms(which);
+ b36:	81 2f       	mov	r24, r17
+ b38:	0e 94 00 00 	call	0	; 0x0 <dm_timerHandler>
+ b3c:	1f 91       	pop	r17
+ b3e:	08 95       	ret
+
+00000b40 <dm_init>:
+    }
+}
+
+void dm_init(void)
+{
+    memset(display, 0, sizeof(display));
+ b40:	82 e5       	ldi	r24, 0x52	; 82
+ b42:	e0 e0       	ldi	r30, 0x00	; 0
+ b44:	f0 e0       	ldi	r31, 0x00	; 0
+ b46:	11 92       	st	Z+, r1
+ b48:	8a 95       	dec	r24
+ b4a:	01 f4       	brne	.+0      	; 0xb4c <dm_init+0xc>
+    display[0].txList[0] = TRANSFORM_EOL;
+ b4c:	8f e0       	ldi	r24, 0x0F	; 15
+ b4e:	80 93 00 00 	sts	0x0000, r24
+    display[1].txList[0] = TRANSFORM_EOL;
+ b52:	80 93 00 00 	sts	0x0000, r24
+
+    MCUCR |= PUD;
+ b56:	85 b7       	in	r24, 0x35	; 53
+ b58:	84 60       	ori	r24, 0x04	; 4
+ b5a:	85 bf       	out	0x35, r24	; 53
+
+#ifdef KB_TBC12
+    /* Enable pullup resistors for row drivers */
+/*   PORTE = 0x0c; */
+    /* Enable pullup resistors general purpose input */
+    PORTE = 0xc3;
+ b5c:	83 ec       	ldi	r24, 0xC3	; 195
+ b5e:	8e b9       	out	0x0e, r24	; 14
+   
+    /* Set direction */
+    DDRA = 0xff; /*76543210 1111 1111  */
+ b60:	4f ef       	ldi	r20, 0xFF	; 255
+ b62:	41 b9       	out	0x01, r20	; 1
+    DDRB |= 0xf0;  /*7654 1111 0000 */
+ b64:	84 b1       	in	r24, 0x04	; 4
+ b66:	80 6f       	ori	r24, 0xF0	; 240
+ b68:	84 b9       	out	0x04, r24	; 4
+    DDRC = 0xff; /*76543210 1111 1111  */
+ b6a:	47 b9       	out	0x07, r20	; 7
+    DDRD = 0x7f; /* 210 0111 1111 bits 3-6 are general purpose output*/
+ b6c:	8f e7       	ldi	r24, 0x7F	; 127
+ b6e:	8a b9       	out	0x0a, r24	; 10
+    DDRE = 0x0c; /* 32 0000 1100*/
+ b70:	8c e0       	ldi	r24, 0x0C	; 12
+ b72:	8d b9       	out	0x0d, r24	; 13
+    DDRF = 0xff; /* 76543210 11111111*/
+ b74:	40 bb       	out	0x10, r20	; 16
+    DDRG = 0x1f; /* 43210 0001 1111*/
+ b76:	9f e1       	ldi	r25, 0x1F	; 31
+ b78:	93 bb       	out	0x13, r25	; 19
+
+    PORTB |= 0xc0; /* 1100 0000 */
+ b7a:	85 b1       	in	r24, 0x05	; 5
+ b7c:	80 6c       	ori	r24, 0xC0	; 192
+ b7e:	85 b9       	out	0x05, r24	; 5
+    PORTC = 0x1f; /* 0001 1111 */
+ b80:	98 b9       	out	0x08, r25	; 8
+    PORTD = 0xf9; /* 1111 1001 */
+ b82:	89 ef       	ldi	r24, 0xF9	; 249
+ b84:	8b b9       	out	0x0b, r24	; 11
+    PORTE &= 0xf3;
+ b86:	8e b1       	in	r24, 0x0e	; 14
+ b88:	83 7f       	andi	r24, 0xF3	; 243
+ b8a:	8e b9       	out	0x0e, r24	; 14
+    PORTG = 0x18; /* 0001 1000 */
+ b8c:	88 e1       	ldi	r24, 0x18	; 24
+ b8e:	84 bb       	out	0x14, r24	; 20
+    PORTF = 0;
+ b90:	11 ba       	out	0x11, r1	; 17
+
+    display[0].colIndex = 4;
+ b92:	84 e0       	ldi	r24, 0x04	; 4
+ b94:	80 93 00 00 	sts	0x0000, r24
+    display[1].colIndex = 4;
+ b98:	80 93 00 00 	sts	0x0000, r24
+    display[0].rowCtlPtr = &rowCtlGreen[0][0];
+ b9c:	80 e0       	ldi	r24, 0x00	; 0
+ b9e:	90 e0       	ldi	r25, 0x00	; 0
+ ba0:	90 93 00 00 	sts	0x0000, r25
+ ba4:	80 93 00 00 	sts	0x0000, r24
+    display[1].rowCtlPtr = &rowCtlGreen[1][0];
+ ba8:	9c 01       	movw	r18, r24
+ baa:	2b 5e       	subi	r18, 0xEB	; 235
+ bac:	3f 4f       	sbci	r19, 0xFF	; 255
+ bae:	30 93 00 00 	sts	0x0000, r19
+ bb2:	20 93 00 00 	sts	0x0000, r18
+    display[0].oldRowCtlPtr = &rowCtlGreen[0][0];
+ bb6:	90 93 00 00 	sts	0x0000, r25
+ bba:	80 93 00 00 	sts	0x0000, r24
+    display[1].oldRowCtlPtr = &rowCtlGreen[1][0];
+ bbe:	30 93 00 00 	sts	0x0000, r19
+ bc2:	20 93 00 00 	sts	0x0000, r18
+    display[0].currentColumnBit = 7;
+ bc6:	87 e0       	ldi	r24, 0x07	; 7
+ bc8:	80 93 00 00 	sts	0x0000, r24
+    display[1].currentColumnBit = 7;
+ bcc:	80 93 00 00 	sts	0x0000, r24
+    display[0].litPort = PORTC;
+    display[0].litBit = 4;
+    display[1].litPort = PORTB;
+    display[1].litBit = 6;
+#endif
+    display[0].senseRowColumn = 0xff;
+ bd0:	40 93 00 00 	sts	0x0000, r20
+    display[1].senseRowColumn = 0xff;
+ bd4:	40 93 00 00 	sts	0x0000, r20
+ bd8:	08 95       	ret

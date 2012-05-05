@@ -1,0 +1,132 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+BITSPERSCAN	displaymux.c	15;"	d	file:
+CHARGE	sense.c	/^    CHARGE,$/;"	e	enum:__anon2	file:
+DIR_DOWN	displaymux.c	34;"	d	file:
+DIR_LEFT	displaymux.c	35;"	d	file:
+DIR_RIGHT	displaymux.c	36;"	d	file:
+DIR_UP	displaymux.c	33;"	d	file:
+FLAG_BLANK	displaymux.c	243;"	d	file:
+FLAG_PROGCOLS	displaymux.c	242;"	d	file:
+IDLE	sense.c	/^    IDLE = 0,$/;"	e	enum:__anon2	file:
+ISR	sense.c	/^ISR(SIG_OVERFLOW0)$/;"	f
+ISR	spi.c	/^ISR(SIG_SPI)$/;"	f
+NUM_COLUMNS	displaymux.c	19;"	d	file:
+NUM_DISPLAYS	displaymux.c	20;"	d	file:
+NUM_ROWS	displaymux.c	18;"	d	file:
+PALETTE_COUNTDOWN_INIT	displaymux.c	22;"	d	file:
+PROGMEM	cmdproc.c	/^u08 hexTable[16] PROGMEM = "0123456789abcdef";$/;"	v
+PROGMEM	displaymux.c	/^PortPin columnCtl[NUM_DISPLAYS][NUM_COLUMNS] PROGMEM =$/;"	v
+PROGMEM	displaymux.c	/^PortPin rowCtlGreen[NUM_DISPLAYS][NUM_ROWS] PROGMEM =$/;"	v
+PROGMEM	displaymux.c	/^PortPin rowCtlOrange[NUM_DISPLAYS][NUM_ROWS] PROGMEM =$/;"	v
+PROGMEM	displaymux.c	/^u08 columnCtl[NUM_DISPLAYS][NUM_COLUMNS][2] PROGMEM =$/;"	v
+PROGMEM	displaymux.c	/^u08 rowCtlGreen[NUM_DISPLAYS][NUM_ROWS][2] PROGMEM =$/;"	v
+PROGMEM	displaymux.c	/^u08 rowCtlOrange[NUM_DISPLAYS][NUM_ROWS][2] PROGMEM =$/;"	v
+PROGMEM	displaymux.c	/^u08 rowCtl[NUM_DISPLAYS][NUM_ROWS][2] PROGMEM =$/;"	v
+PROGMEM	font5x7.c	/^unsigned char font5x7[0x500] PROGMEM =$/;"	v
+PROGMEM	serutil.c	/^u08 hexTable[16] PROGMEM = "0123456789abcdef";$/;"	v
+PortPin	displaymux.c	/^}PortPin;$/;"	t	typeref:struct:__anon1	file:
+READ	sense.c	/^    READ$/;"	e	enum:__anon2	file:
+State	sense.c	/^}State;$/;"	t	typeref:enum:__anon2	file:
+TRANSFORM_EOL	displaymux.c	31;"	d	file:
+TRANSFORM_FLIP	displaymux.c	24;"	d	file:
+TRANSFORM_LIST_LENGTH	displaymux.c	21;"	d	file:
+TRANSFORM_MIRROR	displaymux.c	25;"	d	file:
+TRANSFORM_REVERSE	displaymux.c	26;"	d	file:
+TRANSFORM_ROLL_HORZ	displaymux.c	28;"	d	file:
+TRANSFORM_ROLL_VERT	displaymux.c	27;"	d	file:
+TRANSFORM_SHIFT_HORZ	displaymux.c	30;"	d	file:
+TRANSFORM_SHIFT_VERT	displaymux.c	29;"	d	file:
+UART_BAUD_RATE	serutil.c	29;"	d	file:
+UART_BAUD_SELECT	serutil.c	32;"	d	file:
+USE_CURRENTCOLUMN	displaymux.c	12;"	d	file:
+_display	displaymux.c	/^struct _display$/;"	s	file:
+asciiToHex	cmdproc.c	/^u08 asciiToHex(u08 ascii1, u08 ascii2)$/;"	f
+bitsOut	displaymux.c	/^    u08 bitsOut[NUM_COLUMNS];$/;"	m	struct:_display	file:
+charIndex	displaymux.c	/^    u08 charIndex;$/;"	m	struct:_display	file:
+cmd_Init	cmdproc.c	/^void cmd_Init(void)$/;"	f
+cmd_dataHandler	cmdproc.c	/^void cmd_dataHandler(u08 input)$/;"	f
+colIndex	displaymux.c	/^    u08 colIndex;$/;"	m	struct:_display	file:
+command	cmdproc.c	/^u08 command = 0;$/;"	v
+count	sense.c	/^u08 count = 0;$/;"	v
+currentColumn	displaymux.c	/^    u08 currentColumn;$/;"	m	struct:_display	file:
+currentColumnBit	displaymux.c	/^    u08 currentColumnBit;$/;"	m	struct:_display	file:
+dataRxBuffer	serutil.c	/^u08 dataRxBuffer[RXBUFFERSIZE];$/;"	v
+diagled	diagleds.c	/^void diagled(unsigned char led, unsigned char state)$/;"	f
+diagled_init	diagleds.c	/^void diagled_init(void)$/;"	f
+display	displaymux.c	/^}display[NUM_DISPLAYS];$/;"	v	typeref:struct:_display
+disploop	main.c	/^u08 disploop = 1;$/;"	v
+dm_applyTransforms	displaymux.c	/^static void dm_applyTransforms(u08 which)$/;"	f	file:
+dm_blank	displaymux.c	/^void dm_blank(u08 which, u08 set)$/;"	f
+dm_clearColumns	displaymux.c	/^static void dm_clearColumns(struct _display * display, u08 start, u08 count)$/;"	f	file:
+dm_clearRows	displaymux.c	/^static void dm_clearRows(struct _display * display, u08 start, u08 count)$/;"	f	file:
+dm_cmdLength	displaymux.c	/^static u08 dm_cmdLength(u08 command)$/;"	f	file:
+dm_copyToCustom	displaymux.c	/^void dm_copyToCustom(u08 which, u08 charIndex)$/;"	f
+dm_deleteTransform	displaymux.c	/^static void dm_deleteTransform(u08 which, u08 command)$/;"	f	file:
+dm_displayProgrammed	displaymux.c	/^void dm_displayProgrammed(u08 which, u08 set)$/;"	f
+dm_findFirstTransform	displaymux.c	/^static u08 dm_findFirstTransform(struct _display * display)$/;"	f	file:
+dm_findNextTransform	displaymux.c	/^static u08 dm_findNextTransform(struct _display * display)$/;"	f	file:
+dm_getTransformData	displaymux.c	/^static u08 dm_getTransformData(struct _display * display, u08 index)$/;"	f	file:
+dm_init	displaymux.c	/^void dm_init(void)$/;"	f
+dm_pixel	displaymux.c	/^void dm_pixel(u08 which, u08 set, u08 row, u08 column)$/;"	f
+dm_progColumn	displaymux.c	/^void dm_progColumn(u08 which, u08 column, u08 data)$/;"	f
+dm_reset	displaymux.c	/^void dm_reset(u08 which)$/;"	f
+dm_roll	displaymux.c	/^void dm_roll(u08 which, u08 direction, u08 count)$/;"	f
+dm_rollLeft	displaymux.c	/^static void dm_rollLeft(struct _display * display, u08 count)$/;"	f	file:
+dm_rollUp	displaymux.c	/^static void dm_rollUp(struct _display * display, u08 count)$/;"	f	file:
+dm_setChar	displaymux.c	/^void dm_setChar(u08 which, u08 set)$/;"	f
+dm_setFlip	displaymux.c	/^void dm_setFlip(u08 which, u08 set)$/;"	f
+dm_setMirror	displaymux.c	/^void dm_setMirror(u08 which, u08 set)$/;"	f
+dm_setPalette	displaymux.c	/^void dm_setPalette(u08 which, u08 index)$/;"	f
+dm_setReverse	displaymux.c	/^void dm_setReverse(u08 which, u08 set)$/;"	f
+dm_setTransform	displaymux.c	/^static void dm_setTransform(u08 which, u08 command)$/;"	f	file:
+dm_setTransformData	displaymux.c	/^static void dm_setTransformData(struct _display * display, u08 index, u08 data)$/;"	f	file:
+dm_setsense	displaymux.c	/^void dm_setsense(u08 row, u08 column)$/;"	f
+dm_shift	displaymux.c	/^void dm_shift(u08 which, u08 direction, u08 count)$/;"	f
+dm_timerHandler	displaymux.c	/^void dm_timerHandler(void)$/;"	f
+flags	displaymux.c	/^    u08 flags;$/;"	m	struct:_display	file:
+litBit	displaymux.c	/^    u08 litBit;$/;"	m	struct:_display	file:
+litPort	displaymux.c	/^    uint8_t * litPort;$/;"	m	struct:_display	file:
+main	main.c	/^int main(void)$/;"	f
+misoBuffer	spi.c	/^u08 misoBuffer[MISOBUFFERSIZE];$/;"	v
+misoHead	spi.c	/^u08 misoHead = 0;$/;"	v
+misoTail	spi.c	/^u08 misoTail = 0;$/;"	v
+miso_push	spi.c	/^void miso_push(u08 data)$/;"	f
+mosiBuffer	spi.c	/^u08 mosiBuffer[MOSIBUFFERSIZE];$/;"	v
+mosiHead	spi.c	/^u08 mosiHead = 0;$/;"	v
+mosiTail	spi.c	/^u08 mosiTail = 0;$/;"	v
+oldRowCtlPtr	displaymux.c	/^    u08 * oldRowCtlPtr;$/;"	m	struct:_display	file:
+paletteCountdown	displaymux.c	/^    u08 paletteCountdown;		\/* countdown to next palette change *\/$/;"	m	struct:_display	file:
+paletteSelected	displaymux.c	/^    u08 paletteSelected;		\/* Change to this pallete *\/$/;"	m	struct:_display	file:
+paramIndex	cmdproc.c	/^u08 paramIndex = 0;$/;"	v
+parameter	cmdproc.c	/^u08 parameter[4];$/;"	v
+paramsRemaining	cmdproc.c	/^u08 paramsRemaining;$/;"	v
+pin	displaymux.c	/^    uint8_t pin;$/;"	m	struct:__anon1	file:
+port	displaymux.c	/^    uint8_t * port;$/;"	m	struct:__anon1	file:
+progColumn	displaymux.c	/^    u08 progColumn[NUM_COLUMNS];$/;"	m	struct:_display	file:
+rowCtlPtr	displaymux.c	/^    u08 * rowCtlPtr;$/;"	m	struct:_display	file:
+rxHead	serutil.c	/^volatile u08 rxHead;$/;"	v
+rxTail	serutil.c	/^volatile u08 rxTail;$/;"	v
+senseBit	sense.c	/^u08 * senseBit;$/;"	v
+sensePort	sense.c	/^u08 * sensePort;$/;"	v
+senseRowColumn	displaymux.c	/^    u08 senseRowColumn;         \/* high nibble = row, low nibble = column *\/$/;"	m	struct:_display	file:
+senseState	sense.c	/^State senseState;$/;"	v
+sense_get	sense.c	/^u08 sense_get(void)$/;"	f
+spiEvent	spi.c	/^u08 spiEvent = 0;$/;"	v
+spi_init	spi.c	/^void spi_init(void)$/;"	f
+txList	displaymux.c	/^    u08 txList[TRANSFORM_LIST_LENGTH];$/;"	m	struct:_display	file:
+txListBookmark	displaymux.c	/^    u08 txListBookmark;$/;"	m	struct:_display	file:
+uart_RXISR	serutil.c	/^void uart_RXISR(void)$/;"	f
+uart_TXISR	serutil.c	/^void uart_TXISR(void)$/;"	f
+uart_counter	serutil.c	/^static volatile u08 uart_counter = 0;$/;"	v	file:
+uart_data_ptr	serutil.c	/^static volatile u08 *uart_data_ptr = 0;$/;"	v	file:
+uart_get_buffered	serutil.c	/^u16 uart_get_buffered (void)$/;"	f
+uart_init	serutil.c	/^void uart_init(void)$/;"	f
+uart_send_async	serutil.c	/^void uart_send_async (u08 *buf, u08 size)$/;"	f
+uart_send_char	serutil.c	/^void uart_send_char (u08 character)$/;"	f
+uart_send_hex_byte	serutil.c	/^void uart_send_hex_byte(u08 byte)$/;"	f
+uart_send_sync	serutil.c	/^void uart_send_sync(u08 *buf, u08 size)$/;"	f

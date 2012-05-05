@@ -1,0 +1,355 @@
+
+dmc16207.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000013e  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  00000172  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000000  00000000  00000000  00000172  2**0
+                  ALLOC
+  3 .stab         00000a2c  00000000  00000000  00000174  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      00000e45  00000000  00000000  00000ba0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+Disassembly of section .text:
+
+00000000 <e>:
+
+extern char hexTable[]; // PROGMEM = "0123456789abcdef";
+
+void e(void)
+{
+    E1HIGH;
+   0:	12 9a       	sbi	0x02, 2	; 2
+    milliseconds can be achieved.
+ */
+void
+_delay_loop_2(uint16_t __count)
+{
+	__asm__ volatile (
+   2:	80 e2       	ldi	r24, 0x20	; 32
+   4:	9e e4       	ldi	r25, 0x4E	; 78
+   6:	fc 01       	movw	r30, r24
+   8:	31 97       	sbiw	r30, 0x01	; 1
+   a:	01 f4       	brne	.+0      	; 0xc <e+0xc>
+    _delay_ms(10);
+    E1LOW;
+   c:	12 98       	cbi	0x02, 2	; 2
+   e:	01 97       	sbiw	r24, 0x01	; 1
+  10:	01 f4       	brne	.+0      	; 0x12 <e+0x12>
+    _delay_ms(10);
+}
+  12:	08 95       	ret
+
+00000014 <lcdData>:
+*/
+
+
+void lcdData(unsigned char data)
+{
+    PORTA &= 0x87;
+  14:	92 b1       	in	r25, 0x02	; 2
+  16:	97 78       	andi	r25, 0x87	; 135
+  18:	92 b9       	out	0x02, r25	; 2
+    PORTA |= ((data >> 1) & 0x78);
+  1a:	22 b1       	in	r18, 0x02	; 2
+  1c:	98 2f       	mov	r25, r24
+  1e:	96 95       	lsr	r25
+  20:	98 77       	andi	r25, 0x78	; 120
+  22:	92 2b       	or	r25, r18
+  24:	92 b9       	out	0x02, r25	; 2
+
+extern char hexTable[]; // PROGMEM = "0123456789abcdef";
+
+void e(void)
+{
+    E1HIGH;
+  26:	12 9a       	sbi	0x02, 2	; 2
+  28:	20 e2       	ldi	r18, 0x20	; 32
+  2a:	3e e4       	ldi	r19, 0x4E	; 78
+  2c:	f9 01       	movw	r30, r18
+  2e:	31 97       	sbiw	r30, 0x01	; 1
+  30:	01 f4       	brne	.+0      	; 0x32 <lcdData+0x1e>
+    _delay_ms(10);
+    E1LOW;
+  32:	12 98       	cbi	0x02, 2	; 2
+  34:	f9 01       	movw	r30, r18
+  36:	31 97       	sbiw	r30, 0x01	; 1
+  38:	01 f4       	brne	.+0      	; 0x3a <lcdData+0x26>
+void lcdData(unsigned char data)
+{
+    PORTA &= 0x87;
+    PORTA |= ((data >> 1) & 0x78);
+    e();
+    PORTA &= 0x87;
+  3a:	92 b1       	in	r25, 0x02	; 2
+  3c:	97 78       	andi	r25, 0x87	; 135
+  3e:	92 b9       	out	0x02, r25	; 2
+    PORTA |= ((data << 3) & 0x78);
+  40:	92 b1       	in	r25, 0x02	; 2
+  42:	88 0f       	add	r24, r24
+  44:	88 0f       	add	r24, r24
+  46:	88 0f       	add	r24, r24
+  48:	88 77       	andi	r24, 0x78	; 120
+  4a:	98 2b       	or	r25, r24
+  4c:	92 b9       	out	0x02, r25	; 2
+
+extern char hexTable[]; // PROGMEM = "0123456789abcdef";
+
+void e(void)
+{
+    E1HIGH;
+  4e:	12 9a       	sbi	0x02, 2	; 2
+  50:	c9 01       	movw	r24, r18
+  52:	01 97       	sbiw	r24, 0x01	; 1
+  54:	01 f4       	brne	.+0      	; 0x56 <lcdData+0x42>
+    _delay_ms(10);
+    E1LOW;
+  56:	12 98       	cbi	0x02, 2	; 2
+  58:	c9 01       	movw	r24, r18
+  5a:	01 97       	sbiw	r24, 0x01	; 1
+  5c:	01 f4       	brne	.+0      	; 0x5e <lcdData+0x4a>
+    PORTA |= ((data >> 1) & 0x78);
+    e();
+    PORTA &= 0x87;
+    PORTA |= ((data << 3) & 0x78);
+    e();
+}
+  5e:	08 95       	ret
+
+00000060 <lcdChar>:
+
+void lcdChar(unsigned char data)
+{
+    RSHIGH;
+  60:	10 9a       	sbi	0x02, 0	; 2
+    PORTA &= 0x87;
+  62:	92 b1       	in	r25, 0x02	; 2
+  64:	97 78       	andi	r25, 0x87	; 135
+  66:	92 b9       	out	0x02, r25	; 2
+    PORTA |= ((data >> 1) & 0x78);
+  68:	22 b1       	in	r18, 0x02	; 2
+  6a:	98 2f       	mov	r25, r24
+  6c:	96 95       	lsr	r25
+  6e:	98 77       	andi	r25, 0x78	; 120
+  70:	92 2b       	or	r25, r18
+  72:	92 b9       	out	0x02, r25	; 2
+
+extern char hexTable[]; // PROGMEM = "0123456789abcdef";
+
+void e(void)
+{
+    E1HIGH;
+  74:	12 9a       	sbi	0x02, 2	; 2
+  76:	20 e2       	ldi	r18, 0x20	; 32
+  78:	3e e4       	ldi	r19, 0x4E	; 78
+  7a:	f9 01       	movw	r30, r18
+  7c:	31 97       	sbiw	r30, 0x01	; 1
+  7e:	01 f4       	brne	.+0      	; 0x80 <lcdChar+0x20>
+    _delay_ms(10);
+    E1LOW;
+  80:	12 98       	cbi	0x02, 2	; 2
+  82:	f9 01       	movw	r30, r18
+  84:	31 97       	sbiw	r30, 0x01	; 1
+  86:	01 f4       	brne	.+0      	; 0x88 <lcdChar+0x28>
+{
+    RSHIGH;
+    PORTA &= 0x87;
+    PORTA |= ((data >> 1) & 0x78);
+    e();
+    PORTA &= 0x87;
+  88:	92 b1       	in	r25, 0x02	; 2
+  8a:	97 78       	andi	r25, 0x87	; 135
+  8c:	92 b9       	out	0x02, r25	; 2
+    PORTA |= ((data << 3) & 0x78);
+  8e:	92 b1       	in	r25, 0x02	; 2
+  90:	88 0f       	add	r24, r24
+  92:	88 0f       	add	r24, r24
+  94:	88 0f       	add	r24, r24
+  96:	88 77       	andi	r24, 0x78	; 120
+  98:	98 2b       	or	r25, r24
+  9a:	92 b9       	out	0x02, r25	; 2
+
+extern char hexTable[]; // PROGMEM = "0123456789abcdef";
+
+void e(void)
+{
+    E1HIGH;
+  9c:	12 9a       	sbi	0x02, 2	; 2
+  9e:	c9 01       	movw	r24, r18
+  a0:	01 97       	sbiw	r24, 0x01	; 1
+  a2:	01 f4       	brne	.+0      	; 0xa4 <lcdChar+0x44>
+    _delay_ms(10);
+    E1LOW;
+  a4:	12 98       	cbi	0x02, 2	; 2
+  a6:	c9 01       	movw	r24, r18
+  a8:	01 97       	sbiw	r24, 0x01	; 1
+  aa:	01 f4       	brne	.+0      	; 0xac <lcdChar+0x4c>
+    PORTA |= ((data >> 1) & 0x78);
+    e();
+    PORTA &= 0x87;
+    PORTA |= ((data << 3) & 0x78);
+    e();
+    RSLOW;
+  ac:	10 98       	cbi	0x02, 0	; 2
+}
+  ae:	08 95       	ret
+
+000000b0 <lcdInit>:
+
+
+void lcdInit(void)
+{
+    DDRA = 0x7f; // 0000 1100 data0 and data1 output
+  b0:	8f e7       	ldi	r24, 0x7F	; 127
+  b2:	81 b9       	out	0x01, r24	; 1
+    PORTA = 0;
+  b4:	12 b8       	out	0x02, r1	; 2
+
+    D1HIGH;
+  b6:	14 9a       	sbi	0x02, 4	; 2
+  b8:	88 e8       	ldi	r24, 0x88	; 136
+  ba:	93 e1       	ldi	r25, 0x13	; 19
+  bc:	28 ec       	ldi	r18, 0xC8	; 200
+  be:	30 e0       	ldi	r19, 0x00	; 0
+  c0:	f9 01       	movw	r30, r18
+  c2:	31 97       	sbiw	r30, 0x01	; 1
+  c4:	01 f4       	brne	.+0      	; 0xc6 <lcdInit+0x16>
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  c6:	01 97       	sbiw	r24, 0x01	; 1
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  c8:	01 f4       	brne	.+0      	; 0xca <lcdInit+0x1a>
+
+extern char hexTable[]; // PROGMEM = "0123456789abcdef";
+
+void e(void)
+{
+    E1HIGH;
+  ca:	12 9a       	sbi	0x02, 2	; 2
+  cc:	80 e2       	ldi	r24, 0x20	; 32
+  ce:	9e e4       	ldi	r25, 0x4E	; 78
+  d0:	fc 01       	movw	r30, r24
+  d2:	31 97       	sbiw	r30, 0x01	; 1
+  d4:	01 f4       	brne	.+0      	; 0xd6 <lcdInit+0x26>
+    _delay_ms(10);
+    E1LOW;
+  d6:	12 98       	cbi	0x02, 2	; 2
+  d8:	01 97       	sbiw	r24, 0x01	; 1
+  da:	01 f4       	brne	.+0      	; 0xdc <lcdInit+0x2c>
+  dc:	88 e8       	ldi	r24, 0x88	; 136
+  de:	93 e1       	ldi	r25, 0x13	; 19
+  e0:	28 ec       	ldi	r18, 0xC8	; 200
+  e2:	30 e0       	ldi	r19, 0x00	; 0
+  e4:	f9 01       	movw	r30, r18
+  e6:	31 97       	sbiw	r30, 0x01	; 1
+  e8:	01 f4       	brne	.+0      	; 0xea <lcdInit+0x3a>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  ea:	01 97       	sbiw	r24, 0x01	; 1
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  ec:	01 f4       	brne	.+0      	; 0xee <lcdInit+0x3e>
+    D1HIGH;
+    _delay_ms(500);
+    e();
+    _delay_ms(500);
+    // 4-bit interface enabled
+    lcdData(0x20); // Set display lines and font
+  ee:	80 e2       	ldi	r24, 0x20	; 32
+  f0:	0e 94 00 00 	call	0	; 0x0 <e>
+    lcdData(0x0c); // display on
+  f4:	8c e0       	ldi	r24, 0x0C	; 12
+  f6:	0e 94 00 00 	call	0	; 0x0 <e>
+    lcdData(0x01); // clear screen
+  fa:	81 e0       	ldi	r24, 0x01	; 1
+  fc:	0e 94 00 00 	call	0	; 0x0 <e>
+    lcdData(0x06); // entry mode
+ 100:	86 e0       	ldi	r24, 0x06	; 6
+ 102:	0e 94 00 00 	call	0	; 0x0 <e>
+}
+ 106:	08 95       	ret
+
+00000108 <lcdStringPtr>:
+
+void lcdStringPtr(unsigned char * string)
+{
+ 108:	cf 93       	push	r28
+ 10a:	df 93       	push	r29
+ 10c:	ec 01       	movw	r28, r24
+ 10e:	00 c0       	rjmp	.+0      	; 0x110 <lcdStringPtr+0x8>
+    unsigned char ch;
+    while (ch = pgm_read_byte_near(string))
+    {
+        lcdChar(ch);
+ 110:	0e 94 00 00 	call	0	; 0x0 <e>
+        string++;
+ 114:	21 96       	adiw	r28, 0x01	; 1
+}
+
+void lcdStringPtr(unsigned char * string)
+{
+    unsigned char ch;
+    while (ch = pgm_read_byte_near(string))
+ 116:	fe 01       	movw	r30, r28
+ 118:	84 91       	lpm	r24, Z+
+ 11a:	88 23       	and	r24, r24
+ 11c:	01 f4       	brne	.+0      	; 0x11e <lcdStringPtr+0x16>
+    {
+        lcdChar(ch);
+        string++;
+    }
+}
+ 11e:	df 91       	pop	r29
+ 120:	cf 91       	pop	r28
+ 122:	08 95       	ret
+
+00000124 <lcdString>:
+
+void lcdString(char * string)
+{
+ 124:	cf 93       	push	r28
+ 126:	df 93       	push	r29
+ 128:	ec 01       	movw	r28, r24
+ 12a:	00 c0       	rjmp	.+0      	; 0x12c <lcdString+0x8>
+    unsigned char ch;
+    while (ch = *string)
+    {
+        lcdChar(ch);
+ 12c:	0e 94 00 00 	call	0	; 0x0 <e>
+        string++;
+ 130:	21 96       	adiw	r28, 0x01	; 1
+}
+
+void lcdString(char * string)
+{
+    unsigned char ch;
+    while (ch = *string)
+ 132:	88 81       	ld	r24, Y
+ 134:	88 23       	and	r24, r24
+ 136:	01 f4       	brne	.+0      	; 0x138 <lcdString+0x14>
+    {
+        lcdChar(ch);
+        string++;
+    }
+}
+ 138:	df 91       	pop	r29
+ 13a:	cf 91       	pop	r28
+ 13c:	08 95       	ret

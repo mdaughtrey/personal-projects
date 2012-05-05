@@ -1,0 +1,520 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+                                    
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+                                    
+  <meta name="Author" content="Mark McClelland">
+                                    
+  <meta name="GENERATOR" content="Mozilla/4.61 [en] (OS/2; U) [Netscape]"><title>Linux OV511 Driver - Apps</title></head><body text="#000000" bgcolor="#ffffff" link="#0000ee" vlink="#551a8b" alink="#ff0000">
+                  
+<center><font size="+2">Tested Applications:</font></center>
+                  
+<hr width="100%">         
+<p><b><font color="#ff0000">NOTE:</font></b> If you are a V4L application
+ developer, make sure that you support YUV420P color in your app. Driver
+version 2.01 and later don't support other color formats.<br>
+   </p>
+     
+<p>Test system is a PIII 600 running RedHat 7.3. Video card is an ATI
+All-in-Wonder 16MB (PCI), driven by XFree86 4.0.3 at 16 bpp.<br>
+         
+<table border="1">
+         <tbody>
+            <tr>
+         <td bgcolor="#99ff99"><b>Name</b></td>
+          <td valign="middle" bgcolor="#33ffff"><b>Type </b>(see below)<br>
+             </td>
+             <td bgcolor="#66ffff"><b>App<br>
+Version</b></td>
+          <td bgcolor="#66ffff"><b>Driver</b> <br>
+              <b>Version</b></td>
+          <td bgcolor="#66ffff"><b>Syscall</b> <br>
+              <b>Used</b></td>
+          <td bgcolor="#66ffff"><b>Resolutions</b></td>
+          <td bgcolor="#66ffff"><b>Supports YUV420P</b></td>
+          <td valign="middle" bgcolor="#33ffff"><b>V4L2</b></td>
+<td bgcolor="#66ffff"><b>Status</b></td>
+          <td bgcolor="#66ffff"><b>Note</b></td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www.bytesex.org/xawtv/">
+      Xawtv</a>        </td>
+          <td valign="middle">MCTWS<br>
+             </td>
+             <td>3.47, 3.66</td>
+          <td>1.40 - 1.56</td>
+          <td>mmap</td>
+          <td><font color="#000000">Any *</font></td>
+          <td>Yes **<br>
+        </td>
+          <td valign="middle">Yes<br>
+      </td>
+<td bgcolor="#99ff99">Working</td>
+          <td>Upgrade to driver version 1.43 or use the -noscale option if
+ you   get  a black or green image</td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc">vidcat (<strike><a href="http://www.hdk-berlin.de/%7Erasca/w3cam/">w3cam</a></strike>) <font color="#cc0000">Site is down; use <a href="download/apps/w3cam-0.7.2.tar.gz">local mirror</a></font></td>
+          <td valign="middle">WS<br>
+             </td>
+             <td>0.6.2, 0.7.1</td>
+          <td>1.29, 1.43</td>
+          <td>mmap</td>
+          <td>Any *</td>
+          <td>Yes</td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Working</td>
+          <td>If you get a scrambled or tiled image, use the "-p c" option
+ to  set  the palette.<br>
+             </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://cse.unl.edu/%7Ecluening/gqcam/">
+      gqcam</a>        </td>
+          <td valign="middle">M<br>
+             </td>
+             <td>0.9</td>
+          <td>1.40</td>
+          <td>read</td>
+          <td>640x480, 320x240, <font color="#000000">160x120</font></td>
+          <td><font color="#ff0000">???</font></td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Working</td>
+          <td>Must use "<tt>-swap</tt>" option.</td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www-mice.cs.ucl.ac.uk/multimedia/software/vic/">
+        vic</a>        </td>
+          <td valign="middle">V<br>
+             </td>
+             <td>2.8ucl-1.1.3</td>
+          <td>(At least 1.22; Tested with 1.25)</td>
+          <td><font color="#ff0000">???</font></td>
+          <td><font color="#ff0000">???</font></td>
+          <td><font color="#ff0000">???</font></td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Working</td>
+          <td><br>
+              </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www.openh323.org">ohphone</a>
+           </td>
+          <td valign="middle">V<br>
+             </td>
+             <td>1.1p1, static linked binary release</td>
+          <td>1.32</td>
+          <td>mmap</td>
+          <td>320x240, <font color="#000000">176x144</font></td>
+          <td><font color="#ff0000">???</font></td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Working</td>
+          <td>Must use "<tt>--videosize large</tt>" option if your driver 
+is  older   than 1.43.</td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www.mathematik.uni-kl.de/%7Ewenk/kwintv/">
+        kwintv</a>        </td>
+          <td valign="middle">T<br>
+             </td>
+             <td>0.8.5</td>
+          <td>1.40</td>
+          <td><font color="#ff9900">overlay</font></td>
+          <td><br>
+     </td>
+          <td><br>
+     </td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#ffcccc">Unsupported</td>
+          <td>This is designed for TV cards that use overlay, which ov511 
+does   not  support.</td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc">qvix</td>
+          <td valign="middle"><br>
+             </td>
+             <td><br>
+     </td>
+          <td><br>
+     </td>
+          <td><br>
+     </td>
+          <td><br>
+     </td>
+          <td><font color="#ff0000">???</font><br>
+     </td>
+          <td valign="middle"><br>
+      </td>
+<td>Untested</td>
+          <td><br>
+     </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www.smcc.demon.nl/camstream/">
+    camstream</a>          </td>
+          <td valign="middle">M<br>
+             </td>
+             <td><br>
+     </td>
+          <td>1.28</td>
+          <td><br>
+     </td>
+          <td><br>
+     </td>
+          <td><font color="#ff0000">???</font><br>
+     </td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Reported Working</td>
+          <td>This is a good replacement for xawtv</td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://motion.technolust.cx/">motion</a>
+              </td>
+          <td valign="middle">O<br>
+             </td>
+             <td>2.5.0</td>
+          <td>1.38</td>
+          <td>mmap</td>
+          <td>Any *</td>
+          <td><font color="#ff0000">???</font></td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Reported Working</td>
+          <td>A motion detection program. Good for surveillance, etc...</td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://ascii.dyne.org/">Hasciicam</a>
+            </td>
+          <td valign="middle">MS<br>
+             </td>
+             <td><br>
+          </td>
+          <td><br>
+     </td>
+          <td><br>
+     </td>
+          <td><br>
+     </td>
+          <td><font color="#ff0000">???</font><br>
+     </td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Reported <br>
+        Working</td>
+          <td><br>
+     </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www.freewebfone.com/">Freewebfone</a>
+              </td>
+          <td valign="middle">V<br>
+             </td>
+             <td>3.3</td>
+          <td>1.35</td>
+          <td>read</td>
+          <td>352x288, 320x240, 176x144, 160x120</td>
+          <td><font color="#ff0000">???</font></td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Working</td>
+          <td><br>
+              </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www.realnetworks.com">RealProducer 
+    Basic</a>        </td>
+          <td valign="middle">C<br>
+             </td>
+             <td>8.5</td>
+          <td>1.34, 1.43</td>
+          <td>mmap</td>
+          <td>Any * (must set with <tt>-vx width,height</tt>)</td>
+          <td><font color="#ff0000">???</font></td>
+          <td valign="middle">No<br>
+      </td>
+<td bgcolor="#99ff99">Working</td>
+          <td>Works well with RealServer.</td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://cserv.sourceforge.net/">camserv</a>
+              </td>
+          <td valign="middle">W<br>
+             </td>
+             <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><font color="#ff0000">???</font><br>
+              </td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Reported <br>
+        Working</td>
+          <td><br>
+              </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://gspy.sourceforge.net/">gspy</a>
+             </td>
+          <td valign="middle">O<br>
+             </td>
+             <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><font color="#ff0000">???</font><br>
+              </td>
+          <td valign="middle"><br>
+      </td>
+<td>Untested</td>
+          <td><br>
+              </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://www.linuxbrit.co.uk/camE/">
+ camE</a>             </td>
+          <td valign="middle"><br>
+             </td>
+             <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td><font color="#ff0000">???</font><br>
+              </td>
+          <td valign="middle"><br>
+      </td>
+<td bgcolor="#99ff99">Reported <br>
+        Working</td>
+          <td><br>
+              </td>
+         </tr>
+          <tr>
+         <td bgcolor="#ffffcc"><a href="http://planeta.terra.com.br/informatica/gleicon/video4linux/videodog.html">
+        VideoDog</a>        </td>
+          <td valign="middle"><br>
+             </td>
+             <td>0.21<br>
+              </td>
+          <td><br>
+              </td>
+          <td><br>
+              </td>
+          <td>Any *
+              </td>
+          <td style="color: rgb(0, 0, 0);">No
+              </td>
+          <td valign="middle">No<br>
+      </td>
+<td bgcolor="#99ff99">Reported <br>
+        Working</td>
+          <td><br>
+              </td>
+         </tr>
+            <tr>
+              <td valign="middle" bgcolor="#ffffcc">Gnomemeeting<br>
+              </td>
+              <td valign="middle">V<br>
+             </td>
+             <td valign="middle"><br>
+              </td>
+              <td valign="middle">1.43<br>
+              </td>
+              <td valign="middle"><br>
+              </td>
+              <td valign="middle"><br>
+              </td>
+              <td valign="middle"><font color="#ff0000">???</font><br>
+              </td>
+              <td valign="middle"><br>
+      </td>
+<td valign="middle" bgcolor="#99ff99">Working<br>
+              </td>
+              <td valign="middle">Must use driver version 1.43 for the small
+  video  size option to work<br>
+              </td>
+            </tr>
+          <tr>
+           <td valign="middle" bgcolor="#ffffcc"><a href="http://zapping.sourceforge.net/">
+     Zapping<br>
+           </a></td>
+           <td valign="middle">MCT<br>
+           </td>
+           <td valign="middle"><br>
+           </td>
+           <td valign="middle"><br>
+           </td>
+           <td valign="middle"><br>
+           </td>
+           <td valign="middle"><br>
+           </td>
+           <td valign="middle"><font color="#ff0000">???</font><br>
+           </td>
+           <td valign="middle"><br>
+      </td>
+<td valign="middle">Untested<br>
+           </td>
+           <td valign="middle">Supports the ov511's button<br>
+           </td>
+         </tr>
+         <tr>
+            <td valign="middle" bgcolor="#ffffcc">fbtv<br>
+            </td>
+            <td valign="middle">MT<br>
+            </td>
+            <td valign="middle"><br>
+            </td>
+            <td valign="middle"><br>
+            </td>
+            <td valign="middle"><br>
+            </td>
+            <td valign="middle"><br>
+            </td>
+            <td valign="middle"><font color="#ff0000">???</font><br>
+            </td>
+            <td valign="middle"><br>
+      </td>
+<td valign="middle">Untested<br>
+            </td>
+            <td valign="middle"><br>
+            </td>
+          </tr>
+    <tr>
+      <td valign="top" bgcolor="#ffffcc"><a href="http://www.vrvs.org/">VRVS</a><br>
+      </td>
+      <td valign="top">V<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><font color="#ff0000">Probably</font><br>
+      </td>
+      <td valign="middle"><br>
+      </td>
+<td valign="top">Untested<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr><tr>
+      <td valign="top" bgcolor="#ffffcc"><a href="http://sdlcam.raphnet.net/">SDLcam</a><br>
+      </td>
+      <td valign="top">MCS<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top">Yes<br>
+      </td>
+      <td valign="middle"><br>
+      </td>
+<td valign="top">Untested<br>
+      </td>
+      <td valign="top">Has lots of cool real-time filters<br>
+      </td>
+    </tr><tr>
+      <td valign="middle" bgcolor="#ffffcc"><a href="http://camorama.fixedgear.org">Camorama</a><br>
+      </td>
+      <td valign="middle">MS<br>
+      </td>
+      <td valign="middle">0.14<br>
+      </td>
+      <td valign="middle"><br>
+      </td>
+      <td valign="middle">mmap<br>
+      </td>
+      <td valign="middle">Any *</td>
+      <td valign="middle">No<br>
+      </td>
+      <td valign="middle">No<br>
+      </td>
+      <td valign="middle" bgcolor="#99ff99">Reported <br>
+
+        Working</td>
+      <td valign="middle">A Gnome2 app. Has some interesting filters.<br>
+      </td>
+    </tr><tr>
+      <td style="vertical-align: top; background-color: rgb(255, 255, 204);"><a href="http://camsource.sourceforge.net/">Camsource</a><br>
+      </td>
+      <td style="vertical-align: top;">WSO<br>
+      </td>
+      <td style="vertical-align: top;">0.6.0<br>
+      </td>
+      <td style="vertical-align: top;">2.23<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;">Any *</td>
+      <td style="vertical-align: top;">Yes<br>
+      </td>
+      <td style="vertical-align: top;">No<br>
+      </td>
+      <td style="vertical-align: top; background-color: rgb(153, 255, 153);">Working</td>
+      <td style="vertical-align: top;">A modular V4L server<br>
+      </td>
+    </tr>
+
+
+
+                                 
+  </tbody>        
+</table>
+  </p>
+   <b>NOTES:</b>  
+<ul>
+   <li><font color="#ff9900">Orange</font> text indicates a feature not supported 
+by the driver</li>
+   <li> * Driver only supports widths/heights that are a multiple of 16</li>
+   <li> ** Defaults to greyscale. For color, you must load ov511 with "force_palette=15".</li>
+ 
+</ul>
+             
+<p><big><b>Types are:</b></big><br>
+       </p>
+             
+<ul>
+         <li><b>M: </b>Motion video display</li>
+         <li><b>C: </b>Motion video capture<br>
+         </li>
+         <li><b>T: </b>Television capabilities</li>
+         <li><b>W: </b>Webcam CGI</li>
+         <li><b>S: </b>Single image capture</li>
+         <li><b>V: </b>Videoconference</li>
+         <li><b>O: </b>Other<br>
+         </li>
+             
+</ul>
+             
+<p><br>
+        </p>
+               
+<br>
+<br>
+<br>
+<br>
+</body></html>

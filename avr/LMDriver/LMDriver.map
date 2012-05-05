@@ -1,0 +1,471 @@
+Archive member included because of file (symbol)
+
+/usr/avr/lib/libc.a(exit.o)   /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o (exit)
+/usr/avr/lib/libc.a(memmove.o)
+                              displaymux.o (memmove)
+/usr/avr/lib/libc.a(memcpy.o)
+                              /usr/avr/lib/libc.a(memmove.o) (memcpy)
+/usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+                              /usr/avr/lib/libc.a(exit.o) (_exit)
+/usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
+                              main.o (__do_copy_data)
+/usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+                              main.o (__do_clear_bss)
+
+Allocating common symbols
+Common symbol       size              file
+
+sensePort           0x2               sense.o
+parameter           0x4               cmdproc.o
+senseBit            0x2               sense.o
+misoBuffer          0x8               spi.o
+paramsRemaining     0x1               cmdproc.o
+display             0x52              displaymux.o
+mosiBuffer          0x8               spi.o
+senseState          0x2               sense.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00020000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+fuse             0x00820000         0x00000400         rw !x
+lock             0x00830000         0x00000400         rw !x
+signature        0x00840000         0x00000400         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+LOAD main.o
+LOAD displaymux.o
+LOAD cmdproc.o
+LOAD font5x7.o
+LOAD spi.o
+LOAD sense.o
+LOAD /usr/avr/lib/libc.a
+LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
+LOAD /usr/avr/lib/libc.a
+LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x00000000     0x170c
+ *(.vectors)
+ .vectors       0x00000000       0x5c /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+                0x00000000                __vectors
+                0x00000000                __vector_default
+ *(.vectors)
+ *(.progmem.gcc*)
+ *(.progmem*)
+ .progmem.data  0x0000005c       0x72 displaymux.o
+                0x0000007a                rowCtlGreen
+                0x0000005c                columnCtl
+                0x000000a4                rowCtlOrange
+ .progmem.data  0x000000ce       0x10 cmdproc.o
+                0x000000ce                hexTable
+ .progmem.data  0x000000de      0x500 font5x7.o
+                0x000000de                font5x7
+                0x000005de                . = ALIGN (0x2)
+                0x000005de                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x000005de        0x0 linker stubs
+ *(.trampolines*)
+                0x000005de                __trampolines_end = .
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x000005de                __ctors_start = .
+ *(.ctors)
+                0x000005de                __ctors_end = .
+                0x000005de                __dtors_start = .
+ *(.dtors)
+                0x000005de                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x000005de        0x0 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+                0x000005de                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x000005de        0xc /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x000005ea       0x16 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
+                0x000005ea                __do_copy_data
+ .init4         0x00000600       0x10 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+                0x00000600                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x00000610        0x8 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ *(.init9)
+ *(.text)
+ .text          0x00000618        0x4 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+                0x00000618                __vector_22
+                0x00000618                __vector_1
+                0x00000618                __bad_interrupt
+                0x00000618                __vector_6
+                0x00000618                __vector_3
+                0x00000618                __vector_13
+                0x00000618                __vector_17
+                0x00000618                __vector_19
+                0x00000618                __vector_7
+                0x00000618                __vector_5
+                0x00000618                __vector_4
+                0x00000618                __vector_9
+                0x00000618                __vector_2
+                0x00000618                __vector_21
+                0x00000618                __vector_15
+                0x00000618                __vector_8
+                0x00000618                __vector_14
+                0x00000618                __vector_10
+                0x00000618                __vector_16
+                0x00000618                __vector_18
+                0x00000618                __vector_20
+ .text          0x0000061c       0x6c main.o
+                0x0000061c                main
+ .text          0x00000688      0xbda displaymux.o
+                0x00000912                dm_blank
+                0x00000e6a                dm_copyToCustom
+                0x00000958                dm_setPalette
+                0x00000eaa                dm_setsense
+                0x000011a2                dm_setReverse
+                0x0000101a                dm_roll
+                0x00001156                dm_setMirror
+                0x0000117c                dm_setFlip
+                0x000011c8                dm_init
+                0x00000d98                dm_progColumn
+                0x000010b8                dm_shift
+                0x00000dd0                dm_pixel
+                0x00000d72                dm_reset
+                0x00000688                dm_timerHandler
+                0x00000d50                dm_setChar
+                0x00000cfc                dm_displayProgrammed
+ .text          0x00001262      0x386 cmdproc.o
+                0x000012b6                cmd_dataHandler
+                0x00001262                cmd_Init
+                0x00001270                asciiToHex
+ .text          0x000015e8        0x0 font5x7.o
+ .text          0x000015e8       0xca spi.o
+                0x00001696                miso_push
+                0x000015e8                __vector_12
+                0x0000164e                spi_init
+ .text          0x000016b2       0x1a sense.o
+                0x000016b2                __vector_11
+                0x000016c6                sense_get
+ .text          0x000016cc        0x2 /usr/avr/lib/libc.a(exit.o)
+                0x000016cc                exit
+ .text          0x000016ce       0x26 /usr/avr/lib/libc.a(memmove.o)
+                0x000016ce                memmove
+ .text          0x000016f4       0x16 /usr/avr/lib/libc.a(memcpy.o)
+                0x000016f4                memcpy
+ .text          0x0000170a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+ .text          0x0000170a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
+ .text          0x0000170a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+                0x0000170a                . = ALIGN (0x2)
+ *(.text.*)
+ .text.libgcc   0x0000170a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+ .text.libgcc   0x0000170a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc   0x0000170a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+                0x0000170a                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x0000170a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+                0x0000170a                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x0000170a        0x2 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+ *(.fini0)
+                0x0000170c                _etext = .
+
+.data           0x00800100        0x2 load address 0x0000170c
+                0x00800100                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .data          0x00800100        0x1 main.o
+                0x00800100                disploop
+ .data          0x00800101        0x0 displaymux.o
+ .data          0x00800101        0x0 cmdproc.o
+ .data          0x00800101        0x0 font5x7.o
+ .data          0x00800101        0x0 spi.o
+ .data          0x00800101        0x0 sense.o
+ .data          0x00800101        0x0 /usr/avr/lib/libc.a(exit.o)
+ .data          0x00800101        0x0 /usr/avr/lib/libc.a(memmove.o)
+ .data          0x00800101        0x0 /usr/avr/lib/libc.a(memcpy.o)
+ .data          0x00800101        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+ .data          0x00800101        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
+ .data          0x00800101        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+ *(.data*)
+ *(.rodata)
+ *(.rodata*)
+ *(.gnu.linkonce.d*)
+                0x00800102                . = ALIGN (0x2)
+ *fill*         0x00800101        0x1 00
+                0x00800102                _edata = .
+                0x00800102                PROVIDE (__data_end, .)
+
+.bss            0x00800102       0x75 load address 0x0000170e
+                0x00800102                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x00800102        0x0 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .bss           0x00800102        0x0 main.o
+ .bss           0x00800102        0x0 displaymux.o
+ .bss           0x00800102        0x2 cmdproc.o
+                0x00800103                paramIndex
+                0x00800102                command
+ .bss           0x00800104        0x0 font5x7.o
+ .bss           0x00800104        0x5 spi.o
+                0x00800106                misoHead
+                0x00800107                misoTail
+                0x00800104                mosiHead
+                0x00800105                mosiTail
+                0x00800108                spiEvent
+ .bss           0x00800109        0x1 sense.o
+                0x00800109                count
+ .bss           0x0080010a        0x0 /usr/avr/lib/libc.a(exit.o)
+ .bss           0x0080010a        0x0 /usr/avr/lib/libc.a(memmove.o)
+ .bss           0x0080010a        0x0 /usr/avr/lib/libc.a(memcpy.o)
+ .bss           0x0080010a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+ .bss           0x0080010a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
+ .bss           0x0080010a        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x0080010a       0x52 displaymux.o
+                0x0080010a                display
+ COMMON         0x0080015c        0x5 cmdproc.o
+                0x0080015c                parameter
+                0x00800160                paramsRemaining
+ COMMON         0x00800161       0x10 spi.o
+                0x00800161                misoBuffer
+                0x00800169                mosiBuffer
+ COMMON         0x00800171        0x6 sense.o
+                0x00800171                sensePort
+                0x00800173                senseBit
+                0x00800175                senseState
+                0x00800177                PROVIDE (__bss_end, .)
+                0x0000170c                __data_load_start = LOADADDR (.data)
+                0x0000170e                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x00800177        0x0
+                0x00800177                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x00800177                PROVIDE (__noinit_end, .)
+                0x00800177                _end = .
+                0x00800177                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.stab           0x00000000     0x3108
+ *(.stab)
+ .stab          0x00000000      0x378 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .stab          0x00000378      0x4e0 main.o
+                                0x4ec (size before relaxing)
+ .stab          0x00000858     0x1adc displaymux.o
+                               0x1d64 (size before relaxing)
+ .stab          0x00002334      0x5e8 cmdproc.o
+                                0x870 (size before relaxing)
+ .stab          0x0000291c      0x120 font5x7.o
+                                0x354 (size before relaxing)
+ .stab          0x00002a3c      0x33c spi.o
+                                0x51c (size before relaxing)
+ .stab          0x00002d78      0x204 sense.o
+                                0x3e4 (size before relaxing)
+ .stab          0x00002f7c       0x24 /usr/avr/lib/libc.a(exit.o)
+                                 0x30 (size before relaxing)
+ .stab          0x00002fa0       0xe4 /usr/avr/lib/libc.a(memmove.o)
+                                 0xf0 (size before relaxing)
+ .stab          0x00003084       0x84 /usr/avr/lib/libc.a(memcpy.o)
+                                 0x90 (size before relaxing)
+
+.stabstr        0x00000000     0x142b
+ *(.stabstr)
+ .stabstr       0x00000000     0x142b /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges
+ *(.debug_aranges)
+
+.debug_pubnames
+ *(.debug_pubnames)
+
+.debug_info
+ *(.debug_info)
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev
+ *(.debug_abbrev)
+
+.debug_line
+ *(.debug_line)
+
+.debug_frame
+ *(.debug_frame)
+
+.debug_str
+ *(.debug_str)
+
+.debug_loc
+ *(.debug_loc)
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(LMDriver.out elf32-avr)
+LOAD linker stubs

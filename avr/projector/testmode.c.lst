@@ -1,0 +1,150 @@
+
+testmode.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000090  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  000000c4  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000000  00000000  00000000  000000c4  2**0
+                  ALLOC
+  3 .stab         0000057c  00000000  00000000  000000c4  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      00000a8a  00000000  00000000  00000640  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .progmem.data 0000003f  00000000  00000000  000010ca  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+Disassembly of section .text:
+
+00000000 <testMode>:
+    DDRA = 0x00;
+    uart_send_sync (msgDone, sizeof(msgDone));
+}
+
+void testMode(void)
+{
+   0:	cf 92       	push	r12
+   2:	df 92       	push	r13
+   4:	ef 92       	push	r14
+   6:	ff 92       	push	r15
+   8:	0f 93       	push	r16
+   a:	1f 93       	push	r17
+   c:	cf 93       	push	r28
+   e:	df 93       	push	r29
+  10:	90 e0       	ldi	r25, 0x00	; 0
+  12:	c9 2e       	mov	r12, r25
+  14:	90 e0       	ldi	r25, 0x00	; 0
+  16:	d9 2e       	mov	r13, r25
+static void sequence(void)
+{
+    unsigned char count;
+//    DDRA = 0xff;
+
+    uart_send_sync (msgSequence, sizeof(msgSequence));
+  18:	80 e0       	ldi	r24, 0x00	; 0
+  1a:	e8 2e       	mov	r14, r24
+  1c:	80 e0       	ldi	r24, 0x00	; 0
+  1e:	f8 2e       	mov	r15, r24
+  20:	00 e0       	ldi	r16, 0x00	; 0
+  22:	10 e0       	ldi	r17, 0x00	; 0
+  24:	6b e0       	ldi	r22, 0x0B	; 11
+  26:	c6 01       	movw	r24, r12
+  28:	0e 94 00 00 	call	0	; 0x0 <testMode>
+  2c:	c0 e0       	ldi	r28, 0x00	; 0
+  2e:	d0 e0       	ldi	r29, 0x00	; 0
+
+    for (count = 0; count < 8; count++)
+    {
+        uart_send_char('0' + count);
+  30:	9e 01       	movw	r18, r28
+  32:	20 5d       	subi	r18, 0xD0	; 208
+  34:	82 2f       	mov	r24, r18
+  36:	0e 94 00 00 	call	0	; 0x0 <testMode>
+        uart_send_sync (msgCRLF, sizeof(msgCRLF));
+  3a:	63 e0       	ldi	r22, 0x03	; 3
+  3c:	c7 01       	movw	r24, r14
+  3e:	0e 94 00 00 	call	0	; 0x0 <testMode>
+  42:	20 e1       	ldi	r18, 0x10	; 16
+  44:	37 e2       	ldi	r19, 0x27	; 39
+    milliseconds can be achieved.
+ */
+void
+_delay_loop_2(uint16_t __count)
+{
+	__asm__ volatile (
+  46:	88 ec       	ldi	r24, 0xC8	; 200
+  48:	90 e0       	ldi	r25, 0x00	; 0
+  4a:	01 97       	sbiw	r24, 0x01	; 1
+  4c:	01 f4       	brne	.+0      	; 0x4e <testMode+0x4e>
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  4e:	21 50       	subi	r18, 0x01	; 1
+  50:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  52:	01 f4       	brne	.+0      	; 0x54 <testMode+0x54>
+        _delay_ms(1000);
+        DDRA = _BV(count);
+  54:	81 e0       	ldi	r24, 0x01	; 1
+  56:	90 e0       	ldi	r25, 0x00	; 0
+  58:	0c 2e       	mov	r0, r28
+  5a:	00 c0       	rjmp	.+0      	; 0x5c <testMode+0x5c>
+  5c:	88 0f       	add	r24, r24
+  5e:	99 1f       	adc	r25, r25
+  60:	0a 94       	dec	r0
+  62:	02 f4       	brpl	.+0      	; 0x64 <testMode+0x64>
+  64:	81 b9       	out	0x01, r24	; 1
+        PORTA = _BV(count);
+  66:	82 b9       	out	0x02, r24	; 2
+  68:	21 96       	adiw	r28, 0x01	; 1
+    unsigned char count;
+//    DDRA = 0xff;
+
+    uart_send_sync (msgSequence, sizeof(msgSequence));
+
+    for (count = 0; count < 8; count++)
+  6a:	c8 30       	cpi	r28, 0x08	; 8
+  6c:	d1 05       	cpc	r29, r1
+  6e:	01 f4       	brne	.+0      	; 0x70 <testMode+0x70>
+        uart_send_sync (msgCRLF, sizeof(msgCRLF));
+        _delay_ms(1000);
+        DDRA = _BV(count);
+        PORTA = _BV(count);
+    }
+    PORTA = 0;
+  70:	12 b8       	out	0x02, r1	; 2
+    DDRA = 0x00;
+  72:	11 b8       	out	0x01, r1	; 1
+    uart_send_sync (msgDone, sizeof(msgDone));
+  74:	6c e0       	ldi	r22, 0x0C	; 12
+  76:	c8 01       	movw	r24, r16
+  78:	0e 94 00 00 	call	0	; 0x0 <testMode>
+  7c:	20 e1       	ldi	r18, 0x10	; 16
+  7e:	37 e2       	ldi	r19, 0x27	; 39
+  80:	88 ec       	ldi	r24, 0xC8	; 200
+  82:	90 e0       	ldi	r25, 0x00	; 0
+  84:	01 97       	sbiw	r24, 0x01	; 1
+  86:	01 f4       	brne	.+0      	; 0x88 <testMode+0x88>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  88:	21 50       	subi	r18, 0x01	; 1
+  8a:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  8c:	01 f4       	brne	.+0      	; 0x8e <testMode+0x8e>
+  8e:	00 c0       	rjmp	.+0      	; 0x90 <__SREG__+0x51>

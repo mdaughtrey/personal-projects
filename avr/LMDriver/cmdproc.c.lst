@@ -1,0 +1,625 @@
+
+cmdproc.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000386  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  000003ba  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000002  00000000  00000000  000003ba  2**0
+                  ALLOC
+  3 .stab         00000870  00000000  00000000  000003bc  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      00000a3c  00000000  00000000  00000c2c  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .progmem.data 00000010  00000000  00000000  00001668  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+Disassembly of section .text:
+
+00000000 <cmd_Init>:
+
+extern u08 disploop;
+
+void cmd_Init(void)
+{
+    command = 0;
+   0:	10 92 00 00 	sts	0x0000, r1
+    paramsRemaining = 0;
+   4:	10 92 00 00 	sts	0x0000, r1
+    paramIndex = 0;
+   8:	10 92 00 00 	sts	0x0000, r1
+   c:	08 95       	ret
+
+0000000e <asciiToHex>:
+}
+
+u08 asciiToHex(u08 ascii1, u08 ascii2)
+{
+   e:	20 e0       	ldi	r18, 0x00	; 0
+  10:	30 e0       	ldi	r19, 0x00	; 0
+    u08 result = 0;
+    u08 index;
+    
+    for (index = 0; index < 16; index++)
+    {
+        if (ascii1 == pgm_read_byte_near(hexTable + index))
+  12:	f9 01       	movw	r30, r18
+  14:	e0 50       	subi	r30, 0x00	; 0
+  16:	f0 40       	sbci	r31, 0x00	; 0
+  18:	e4 91       	lpm	r30, Z
+  1a:	8e 17       	cp	r24, r30
+  1c:	01 f4       	brne	.+0      	; 0x1e <asciiToHex+0x10>
+  1e:	82 2f       	mov	r24, r18
+  20:	00 c0       	rjmp	.+0      	; 0x22 <asciiToHex+0x14>
+  22:	2f 5f       	subi	r18, 0xFF	; 255
+  24:	3f 4f       	sbci	r19, 0xFF	; 255
+u08 asciiToHex(u08 ascii1, u08 ascii2)
+{
+    u08 result = 0;
+    u08 index;
+    
+    for (index = 0; index < 16; index++)
+  26:	20 31       	cpi	r18, 0x10	; 16
+  28:	31 05       	cpc	r19, r1
+  2a:	01 f4       	brne	.+0      	; 0x2c <asciiToHex+0x1e>
+  2c:	80 e0       	ldi	r24, 0x00	; 0
+        {
+            result = index;
+            break;
+        }
+    }
+    result <<= 4;
+  2e:	82 95       	swap	r24
+  30:	80 7f       	andi	r24, 0xF0	; 240
+  32:	20 e0       	ldi	r18, 0x00	; 0
+  34:	30 e0       	ldi	r19, 0x00	; 0
+    for (index = 0; index < 16; index++)
+    {
+        if (ascii2 == pgm_read_byte_near(hexTable + index))
+  36:	f9 01       	movw	r30, r18
+  38:	e0 50       	subi	r30, 0x00	; 0
+  3a:	f0 40       	sbci	r31, 0x00	; 0
+  3c:	e4 91       	lpm	r30, Z
+  3e:	6e 17       	cp	r22, r30
+  40:	01 f4       	brne	.+0      	; 0x42 <asciiToHex+0x34>
+        {
+            result |= index;
+  42:	82 2b       	or	r24, r18
+  44:	00 c0       	rjmp	.+0      	; 0x46 <asciiToHex+0x38>
+            break;
+  46:	2f 5f       	subi	r18, 0xFF	; 255
+  48:	3f 4f       	sbci	r19, 0xFF	; 255
+            result = index;
+            break;
+        }
+    }
+    result <<= 4;
+    for (index = 0; index < 16; index++)
+  4a:	20 31       	cpi	r18, 0x10	; 16
+  4c:	31 05       	cpc	r19, r1
+  4e:	01 f4       	brne	.+0      	; 0x50 <asciiToHex+0x42>
+            break;
+        }
+    }
+    return result;
+    
+}
+  50:	99 27       	eor	r25, r25
+  52:	08 95       	ret
+
+00000054 <cmd_dataHandler>:
+
+void cmd_dataHandler(u08 input)
+{
+  54:	98 2f       	mov	r25, r24
+    if (command)
+  56:	50 91 00 00 	lds	r21, 0x0000
+  5a:	55 23       	and	r21, r21
+  5c:	01 f4       	brne	.+0      	; 0x5e <cmd_dataHandler+0xa>
+  5e:	00 c0       	rjmp	.+0      	; 0x60 <cmd_dataHandler+0xc>
+    {
+        parameter[paramIndex++] = input;
+  60:	80 91 00 00 	lds	r24, 0x0000
+  64:	e8 2f       	mov	r30, r24
+  66:	ff 27       	eor	r31, r31
+  68:	e0 50       	subi	r30, 0x00	; 0
+  6a:	f0 40       	sbci	r31, 0x00	; 0
+  6c:	90 83       	st	Z, r25
+  6e:	8f 5f       	subi	r24, 0xFF	; 255
+  70:	80 93 00 00 	sts	0x0000, r24
+        paramsRemaining--;
+  74:	80 91 00 00 	lds	r24, 0x0000
+  78:	81 50       	subi	r24, 0x01	; 1
+  7a:	80 93 00 00 	sts	0x0000, r24
+        if (paramsRemaining)
+  7e:	88 23       	and	r24, r24
+  80:	01 f0       	breq	.+0      	; 0x82 <cmd_dataHandler+0x2e>
+  82:	00 c0       	rjmp	.+0      	; 0x84 <cmd_dataHandler+0x30>
+        {
+            return;
+        }
+        u08 which = (parameter[0] == '0' ? 0 : 1);
+  84:	90 91 00 00 	lds	r25, 0x0000
+  88:	90 33       	cpi	r25, 0x30	; 48
+  8a:	01 f0       	breq	.+0      	; 0x8c <cmd_dataHandler+0x38>
+  8c:	81 e0       	ldi	r24, 0x01	; 1
+        switch (command & 0xdf)
+  8e:	25 2f       	mov	r18, r21
+  90:	33 27       	eor	r19, r19
+  92:	2f 7d       	andi	r18, 0xDF	; 223
+  94:	30 70       	andi	r19, 0x00	; 0
+  96:	2c 34       	cpi	r18, 0x4C	; 76
+  98:	31 05       	cpc	r19, r1
+  9a:	01 f4       	brne	.+0      	; 0x9c <cmd_dataHandler+0x48>
+  9c:	00 c0       	rjmp	.+0      	; 0x9e <cmd_dataHandler+0x4a>
+  9e:	2d 34       	cpi	r18, 0x4D	; 77
+  a0:	31 05       	cpc	r19, r1
+  a2:	04 f4       	brge	.+0      	; 0xa4 <cmd_dataHandler+0x50>
+  a4:	23 34       	cpi	r18, 0x43	; 67
+  a6:	31 05       	cpc	r19, r1
+  a8:	01 f4       	brne	.+0      	; 0xaa <cmd_dataHandler+0x56>
+  aa:	00 c0       	rjmp	.+0      	; 0xac <cmd_dataHandler+0x58>
+  ac:	24 34       	cpi	r18, 0x44	; 68
+  ae:	31 05       	cpc	r19, r1
+  b0:	04 f4       	brge	.+0      	; 0xb2 <cmd_dataHandler+0x5e>
+  b2:	21 34       	cpi	r18, 0x41	; 65
+  b4:	31 05       	cpc	r19, r1
+  b6:	01 f0       	breq	.+0      	; 0xb8 <cmd_dataHandler+0x64>
+  b8:	22 34       	cpi	r18, 0x42	; 66
+  ba:	31 05       	cpc	r19, r1
+  bc:	01 f0       	breq	.+0      	; 0xbe <cmd_dataHandler+0x6a>
+  be:	00 c0       	rjmp	.+0      	; 0xc0 <cmd_dataHandler+0x6c>
+  c0:	00 c0       	rjmp	.+0      	; 0xc2 <cmd_dataHandler+0x6e>
+  c2:	27 34       	cpi	r18, 0x47	; 71
+  c4:	31 05       	cpc	r19, r1
+  c6:	01 f4       	brne	.+0      	; 0xc8 <cmd_dataHandler+0x74>
+  c8:	00 c0       	rjmp	.+0      	; 0xca <cmd_dataHandler+0x76>
+  ca:	29 34       	cpi	r18, 0x49	; 73
+  cc:	31 05       	cpc	r19, r1
+  ce:	01 f4       	brne	.+0      	; 0xd0 <cmd_dataHandler+0x7c>
+  d0:	00 c0       	rjmp	.+0      	; 0xd2 <cmd_dataHandler+0x7e>
+  d2:	26 34       	cpi	r18, 0x46	; 70
+  d4:	31 05       	cpc	r19, r1
+  d6:	01 f0       	breq	.+0      	; 0xd8 <cmd_dataHandler+0x84>
+  d8:	00 c0       	rjmp	.+0      	; 0xda <cmd_dataHandler+0x86>
+  da:	00 c0       	rjmp	.+0      	; 0xdc <cmd_dataHandler+0x88>
+  dc:	22 35       	cpi	r18, 0x52	; 82
+  de:	31 05       	cpc	r19, r1
+  e0:	01 f4       	brne	.+0      	; 0xe2 <cmd_dataHandler+0x8e>
+  e2:	00 c0       	rjmp	.+0      	; 0xe4 <cmd_dataHandler+0x90>
+  e4:	23 35       	cpi	r18, 0x53	; 83
+  e6:	31 05       	cpc	r19, r1
+  e8:	04 f4       	brge	.+0      	; 0xea <cmd_dataHandler+0x96>
+  ea:	2d 34       	cpi	r18, 0x4D	; 77
+  ec:	31 05       	cpc	r19, r1
+  ee:	01 f4       	brne	.+0      	; 0xf0 <cmd_dataHandler+0x9c>
+  f0:	00 c0       	rjmp	.+0      	; 0xf2 <cmd_dataHandler+0x9e>
+  f2:	20 35       	cpi	r18, 0x50	; 80
+  f4:	31 05       	cpc	r19, r1
+  f6:	01 f0       	breq	.+0      	; 0xf8 <cmd_dataHandler+0xa4>
+  f8:	00 c0       	rjmp	.+0      	; 0xfa <cmd_dataHandler+0xa6>
+  fa:	00 c0       	rjmp	.+0      	; 0xfc <cmd_dataHandler+0xa8>
+  fc:	24 35       	cpi	r18, 0x54	; 84
+  fe:	31 05       	cpc	r19, r1
+ 100:	01 f4       	brne	.+0      	; 0x102 <cmd_dataHandler+0xae>
+ 102:	00 c0       	rjmp	.+0      	; 0x104 <cmd_dataHandler+0xb0>
+ 104:	24 35       	cpi	r18, 0x54	; 84
+ 106:	31 05       	cpc	r19, r1
+ 108:	04 f4       	brge	.+0      	; 0x10a <cmd_dataHandler+0xb6>
+ 10a:	00 c0       	rjmp	.+0      	; 0x10c <cmd_dataHandler+0xb8>
+ 10c:	2a 35       	cpi	r18, 0x5A	; 90
+ 10e:	31 05       	cpc	r19, r1
+ 110:	01 f0       	breq	.+0      	; 0x112 <cmd_dataHandler+0xbe>
+ 112:	00 c0       	rjmp	.+0      	; 0x114 <cmd_dataHandler+0xc0>
+ 114:	00 c0       	rjmp	.+0      	; 0x116 <cmd_dataHandler+0xc2>
+        {
+            /* Set display 0 character - a<char> */
+            /* Set display 1 character - A<char> */
+        case 'A':
+            dm_setChar((command == 'a' ? 0 : 1), parameter[0]); 
+ 116:	80 e0       	ldi	r24, 0x00	; 0
+ 118:	51 36       	cpi	r21, 0x61	; 97
+ 11a:	01 f0       	breq	.+0      	; 0x11c <cmd_dataHandler+0xc8>
+ 11c:	81 e0       	ldi	r24, 0x01	; 1
+ 11e:	69 2f       	mov	r22, r25
+ 120:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 124:	00 c0       	rjmp	.+0      	; 0x126 <cmd_dataHandler+0xd2>
+            break;
+
+            /* Blank character - b<01> */
+            /* Unblank character - b<01> */
+        case 'B':
+            dm_blank(which, (command == 'b' ? 1: 0));
+ 126:	60 e0       	ldi	r22, 0x00	; 0
+ 128:	52 36       	cpi	r21, 0x62	; 98
+ 12a:	01 f4       	brne	.+0      	; 0x12c <cmd_dataHandler+0xd8>
+ 12c:	61 e0       	ldi	r22, 0x01	; 1
+ 12e:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 132:	00 c0       	rjmp	.+0      	; 0x134 <cmd_dataHandler+0xe0>
+            break;
+            
+            /* Enable Custom character - c<01>  */
+            /* Disable Custom character - C<01> */
+        case 'C':
+            dm_displayProgrammed(which, (command == 'c' ? 1 : 0)); 
+ 134:	60 e0       	ldi	r22, 0x00	; 0
+ 136:	53 36       	cpi	r21, 0x63	; 99
+ 138:	01 f4       	brne	.+0      	; 0x13a <cmd_dataHandler+0xe6>
+ 13a:	61 e0       	ldi	r22, 0x01	; 1
+ 13c:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 140:	00 c0       	rjmp	.+0      	; 0x142 <cmd_dataHandler+0xee>
+            break;
+            
+            /* Flip display - f<01> */
+            /* Unflip display - F<01> */
+        case 'F':
+            dm_setFlip(which, (command == 'f' ? 0 : 1)); 
+ 142:	60 e0       	ldi	r22, 0x00	; 0
+ 144:	56 36       	cpi	r21, 0x66	; 102
+ 146:	01 f0       	breq	.+0      	; 0x148 <cmd_dataHandler+0xf4>
+ 148:	61 e0       	ldi	r22, 0x01	; 1
+ 14a:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 14e:	00 c0       	rjmp	.+0      	; 0x150 <cmd_dataHandler+0xfc>
+            break;
+        
+            /* General Purpose Output: g<0-F> */
+            /* Returns General Purpose Input via SPI */
+        case 'G':
+            which = asciiToHex(0, parameter[0]) << 3;
+ 150:	69 2f       	mov	r22, r25
+ 152:	80 e0       	ldi	r24, 0x00	; 0
+ 154:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 158:	88 0f       	add	r24, r24
+ 15a:	88 0f       	add	r24, r24
+ 15c:	88 0f       	add	r24, r24
+            unsigned char data = PORTD;
+ 15e:	2b b1       	in	r18, 0x0b	; 11
+            data &= (0x87 | which);
+ 160:	98 2f       	mov	r25, r24
+ 162:	97 68       	ori	r25, 0x87	; 135
+ 164:	92 23       	and	r25, r18
+            data |= which;
+ 166:	98 2b       	or	r25, r24
+            PORTD = data;
+ 168:	9b b9       	out	0x0b, r25	; 11
+            which = PINE & 0xc3;
+ 16a:	8c b1       	in	r24, 0x0c	; 12
+ 16c:	83 7c       	andi	r24, 0xC3	; 195
+//            dm_setChar(0, pgm_read_byte_near(hexTable + ((which & 0xf0 )>> 4))); 
+ //           dm_setChar(1, pgm_read_byte_near(hexTable + (which & 0x0f))); 
+            miso_push(pgm_read_byte_near(hexTable + ((which & 0x03) | (which >> 4))));
+ 16e:	e8 2f       	mov	r30, r24
+ 170:	e2 95       	swap	r30
+ 172:	ef 70       	andi	r30, 0x0F	; 15
+ 174:	ff 27       	eor	r31, r31
+ 176:	99 27       	eor	r25, r25
+ 178:	83 70       	andi	r24, 0x03	; 3
+ 17a:	90 70       	andi	r25, 0x00	; 0
+ 17c:	e8 2b       	or	r30, r24
+ 17e:	f9 2b       	or	r31, r25
+ 180:	e0 50       	subi	r30, 0x00	; 0
+ 182:	f0 40       	sbci	r31, 0x00	; 0
+ 184:	e4 91       	lpm	r30, Z
+ 186:	8e 2f       	mov	r24, r30
+ 188:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 18c:	00 c0       	rjmp	.+0      	; 0x18e <cmd_dataHandler+0x13a>
+            break;
+            
+            /* Invert display bits - i<01> */
+            /* Uninvert display bits - I<01> */
+        case 'I':
+            dm_setReverse(which, (command == 'i' ? 1 : 0)); 
+ 18e:	60 e0       	ldi	r22, 0x00	; 0
+ 190:	59 36       	cpi	r21, 0x69	; 105
+ 192:	01 f4       	brne	.+0      	; 0x194 <cmd_dataHandler+0x140>
+ 194:	61 e0       	ldi	r22, 0x01	; 1
+ 196:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 19a:	00 c0       	rjmp	.+0      	; 0x19c <cmd_dataHandler+0x148>
+            /* Set Pallete Index for display 0- l<HH> */
+            /* This is ignored for single-color displays */
+            /* Set Pallete Index for display 1- L<HH> */
+            /* This is ignored for single-color displays */
+        case 'L':
+            dm_setPalette((command == 'l' ? 0 : 1), 
+ 19c:	60 91 00 00 	lds	r22, 0x0000
+ 1a0:	89 2f       	mov	r24, r25
+ 1a2:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 1a6:	68 2f       	mov	r22, r24
+ 1a8:	90 e0       	ldi	r25, 0x00	; 0
+ 1aa:	80 91 00 00 	lds	r24, 0x0000
+ 1ae:	8c 36       	cpi	r24, 0x6C	; 108
+ 1b0:	01 f0       	breq	.+0      	; 0x1b2 <cmd_dataHandler+0x15e>
+ 1b2:	91 e0       	ldi	r25, 0x01	; 1
+ 1b4:	89 2f       	mov	r24, r25
+ 1b6:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 1ba:	00 c0       	rjmp	.+0      	; 0x1bc <cmd_dataHandler+0x168>
+            break;
+
+            /* Mirror display - m<01> */
+            /* Unmirror display M<01> */
+        case 'M':
+            dm_setMirror(which, (command == 'm' ? 1 : 0)); 
+ 1bc:	60 e0       	ldi	r22, 0x00	; 0
+ 1be:	5d 36       	cpi	r21, 0x6D	; 109
+ 1c0:	01 f4       	brne	.+0      	; 0x1c2 <cmd_dataHandler+0x16e>
+ 1c2:	61 e0       	ldi	r22, 0x01	; 1
+ 1c4:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 1c8:	00 c0       	rjmp	.+0      	; 0x1ca <cmd_dataHandler+0x176>
+            break;
+            
+            /* Copy character to custom character 0 - p<hex> */
+            /* Copy character to custom character 1 - P<hex> */
+        case 'P':
+            dm_copyToCustom((command == 'p' ? 0 : 1), asciiToHex(parameter[0], parameter[1])); 
+ 1ca:	60 91 00 00 	lds	r22, 0x0000
+ 1ce:	89 2f       	mov	r24, r25
+ 1d0:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 1d4:	68 2f       	mov	r22, r24
+ 1d6:	90 e0       	ldi	r25, 0x00	; 0
+ 1d8:	80 91 00 00 	lds	r24, 0x0000
+ 1dc:	80 37       	cpi	r24, 0x70	; 112
+ 1de:	01 f0       	breq	.+0      	; 0x1e0 <cmd_dataHandler+0x18c>
+ 1e0:	91 e0       	ldi	r25, 0x01	; 1
+ 1e2:	89 2f       	mov	r24, r25
+ 1e4:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 1e8:	00 c0       	rjmp	.+0      	; 0x1ea <cmd_dataHandler+0x196>
+            break;
+            
+            /* Roll matrix n row<s> - r<01><udlr><n> */
+        case 'R': dm_roll(which,
+ 1ea:	40 91 00 00 	lds	r20, 0x0000
+ 1ee:	40 53       	subi	r20, 0x30	; 48
+ 1f0:	60 91 00 00 	lds	r22, 0x0000
+ 1f4:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 1f8:	00 c0       	rjmp	.+0      	; 0x1fa <cmd_dataHandler+0x1a6>
+                          parameter[1],
+                          parameter[2] - '0');
+            break;
+            
+            /* Shift matrix <n> rows  - s<01><udlr><n> */
+        case 'S': dm_shift(which,
+ 1fa:	40 91 00 00 	lds	r20, 0x0000
+ 1fe:	40 53       	subi	r20, 0x30	; 48
+ 200:	60 91 00 00 	lds	r22, 0x0000
+ 204:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 208:	00 c0       	rjmp	.+0      	; 0x20a <cmd_dataHandler+0x1b6>
+            break;
+            
+            /* Turn on pixel in custom character - t<01><row><column> */
+            /* Turn off pixel in custom character - T<01><row><column> */
+        case 'T':
+            dm_pixel(which, (command == 't' ? 1 : 0), parameter[1] - '0', parameter[2] - '0');
+ 20a:	20 91 00 00 	lds	r18, 0x0000
+ 20e:	20 53       	subi	r18, 0x30	; 48
+ 210:	40 91 00 00 	lds	r20, 0x0000
+ 214:	40 53       	subi	r20, 0x30	; 48
+ 216:	60 e0       	ldi	r22, 0x00	; 0
+ 218:	54 37       	cpi	r21, 0x74	; 116
+ 21a:	01 f4       	brne	.+0      	; 0x21c <cmd_dataHandler+0x1c8>
+ 21c:	61 e0       	ldi	r22, 0x01	; 1
+ 21e:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 222:	00 c0       	rjmp	.+0      	; 0x224 <cmd_dataHandler+0x1d0>
+            /* Enable light sense - z<row><column> */
+            /* Disable light sense - Z<row><column>*/
+            /* columns 0-4: display 0 */
+            /* columns 5-9: display 1 */
+        case 'Z':
+            dm_setsense('Z' == command ? 'X':  parameter[0] - '0',
+ 224:	5a 35       	cpi	r21, 0x5A	; 90
+ 226:	01 f4       	brne	.+0      	; 0x228 <cmd_dataHandler+0x1d4>
+ 228:	88 e5       	ldi	r24, 0x58	; 88
+ 22a:	68 e5       	ldi	r22, 0x58	; 88
+ 22c:	00 c0       	rjmp	.+0      	; 0x22e <cmd_dataHandler+0x1da>
+ 22e:	60 91 00 00 	lds	r22, 0x0000
+ 232:	60 53       	subi	r22, 0x30	; 48
+ 234:	89 2f       	mov	r24, r25
+ 236:	80 53       	subi	r24, 0x30	; 48
+ 238:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 23c:	00 c0       	rjmp	.+0      	; 0x23e <cmd_dataHandler+0x1ea>
+                        'Z' == command ? 'X':  parameter[1] - '0');
+            break;
+            
+        default:
+            /* Reset all transforms - !<01> */
+            if ('!' == command)
+ 23e:	51 32       	cpi	r21, 0x21	; 33
+ 240:	01 f4       	brne	.+0      	; 0x242 <cmd_dataHandler+0x1ee>
+            {
+                dm_reset(which); 
+ 242:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 246:	00 c0       	rjmp	.+0      	; 0x248 <cmd_dataHandler+0x1f4>
+            }
+            /* Program custom character columns, display 0 - [01234]<HexHex> */
+            else if (command >= '0' && command <= '4')
+ 248:	85 2f       	mov	r24, r21
+ 24a:	80 53       	subi	r24, 0x30	; 48
+ 24c:	85 30       	cpi	r24, 0x05	; 5
+ 24e:	00 f4       	brcc	.+0      	; 0x250 <cmd_dataHandler+0x1fc>
+            {
+                dm_progColumn(0, command - '0', asciiToHex(parameter[0], parameter[1])); 
+ 250:	60 91 00 00 	lds	r22, 0x0000
+ 254:	89 2f       	mov	r24, r25
+ 256:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 25a:	60 91 00 00 	lds	r22, 0x0000
+ 25e:	60 53       	subi	r22, 0x30	; 48
+ 260:	48 2f       	mov	r20, r24
+ 262:	80 e0       	ldi	r24, 0x00	; 0
+ 264:	00 c0       	rjmp	.+0      	; 0x266 <cmd_dataHandler+0x212>
+            }
+            /* Program custom character columns, display 1 - [56789]<data> */
+            else if (command >= '5' && command <= '9')
+ 266:	55 53       	subi	r21, 0x35	; 53
+ 268:	55 30       	cpi	r21, 0x05	; 5
+ 26a:	00 f4       	brcc	.+0      	; 0x26c <cmd_dataHandler+0x218>
+            {
+                dm_progColumn(1, command -'5', asciiToHex(parameter[0], parameter[1])); 
+ 26c:	60 91 00 00 	lds	r22, 0x0000
+ 270:	89 2f       	mov	r24, r25
+ 272:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+ 276:	60 91 00 00 	lds	r22, 0x0000
+ 27a:	65 53       	subi	r22, 0x35	; 53
+ 27c:	48 2f       	mov	r20, r24
+ 27e:	81 e0       	ldi	r24, 0x01	; 1
+ 280:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+            }
+        }
+        command = 0;
+ 284:	10 92 00 00 	sts	0x0000, r1
+        paramIndex = 0;
+ 288:	10 92 00 00 	sts	0x0000, r1
+ 28c:	08 95       	ret
+        return;
+    }
+    
+    paramsRemaining = 0;
+ 28e:	10 92 00 00 	sts	0x0000, r1
+    paramIndex = 0;
+ 292:	10 92 00 00 	sts	0x0000, r1
+    switch (input)
+ 296:	82 35       	cpi	r24, 0x52	; 82
+ 298:	01 f4       	brne	.+0      	; 0x29a <cmd_dataHandler+0x246>
+ 29a:	00 c0       	rjmp	.+0      	; 0x29c <cmd_dataHandler+0x248>
+ 29c:	83 35       	cpi	r24, 0x53	; 83
+ 29e:	00 f4       	brcc	.+0      	; 0x2a0 <cmd_dataHandler+0x24c>
+ 2a0:	84 34       	cpi	r24, 0x44	; 68
+ 2a2:	00 f4       	brcc	.+0      	; 0x2a4 <cmd_dataHandler+0x250>
+ 2a4:	81 34       	cpi	r24, 0x41	; 65
+ 2a6:	00 f0       	brcs	.+0      	; 0x2a8 <cmd_dataHandler+0x254>
+ 2a8:	00 c0       	rjmp	.+0      	; 0x2aa <cmd_dataHandler+0x256>
+ 2aa:	8f 32       	cpi	r24, 0x2F	; 47
+ 2ac:	01 f4       	brne	.+0      	; 0x2ae <cmd_dataHandler+0x25a>
+ 2ae:	00 c0       	rjmp	.+0      	; 0x2b0 <cmd_dataHandler+0x25c>
+ 2b0:	80 33       	cpi	r24, 0x30	; 48
+ 2b2:	00 f4       	brcc	.+0      	; 0x2b4 <cmd_dataHandler+0x260>
+ 2b4:	8a 32       	cpi	r24, 0x2A	; 42
+ 2b6:	01 f4       	brne	.+0      	; 0x2b8 <cmd_dataHandler+0x264>
+ 2b8:	00 c0       	rjmp	.+0      	; 0x2ba <cmd_dataHandler+0x266>
+ 2ba:	8b 32       	cpi	r24, 0x2B	; 43
+ 2bc:	01 f4       	brne	.+0      	; 0x2be <cmd_dataHandler+0x26a>
+ 2be:	00 c0       	rjmp	.+0      	; 0x2c0 <cmd_dataHandler+0x26c>
+ 2c0:	81 32       	cpi	r24, 0x21	; 33
+ 2c2:	01 f0       	breq	.+0      	; 0x2c4 <cmd_dataHandler+0x270>
+ 2c4:	00 c0       	rjmp	.+0      	; 0x2c6 <cmd_dataHandler+0x272>
+ 2c6:	00 c0       	rjmp	.+0      	; 0x2c8 <cmd_dataHandler+0x274>
+ 2c8:	8a 33       	cpi	r24, 0x3A	; 58
+ 2ca:	00 f0       	brcs	.+0      	; 0x2cc <cmd_dataHandler+0x278>
+ 2cc:	00 c0       	rjmp	.+0      	; 0x2ce <cmd_dataHandler+0x27a>
+ 2ce:	00 c0       	rjmp	.+0      	; 0x2d0 <cmd_dataHandler+0x27c>
+ 2d0:	89 34       	cpi	r24, 0x49	; 73
+ 2d2:	01 f0       	breq	.+0      	; 0x2d4 <cmd_dataHandler+0x280>
+ 2d4:	8a 34       	cpi	r24, 0x4A	; 74
+ 2d6:	00 f4       	brcc	.+0      	; 0x2d8 <cmd_dataHandler+0x284>
+ 2d8:	86 54       	subi	r24, 0x46	; 70
+ 2da:	00 c0       	rjmp	.+0      	; 0x2dc <cmd_dataHandler+0x288>
+ 2dc:	8d 34       	cpi	r24, 0x4D	; 77
+ 2de:	01 f0       	breq	.+0      	; 0x2e0 <cmd_dataHandler+0x28c>
+ 2e0:	80 35       	cpi	r24, 0x50	; 80
+ 2e2:	01 f0       	breq	.+0      	; 0x2e4 <cmd_dataHandler+0x290>
+ 2e4:	8c 34       	cpi	r24, 0x4C	; 76
+ 2e6:	01 f0       	breq	.+0      	; 0x2e8 <cmd_dataHandler+0x294>
+ 2e8:	00 c0       	rjmp	.+0      	; 0x2ea <cmd_dataHandler+0x296>
+ 2ea:	00 c0       	rjmp	.+0      	; 0x2ec <cmd_dataHandler+0x298>
+ 2ec:	89 36       	cpi	r24, 0x69	; 105
+ 2ee:	01 f0       	breq	.+0      	; 0x2f0 <cmd_dataHandler+0x29c>
+ 2f0:	8a 36       	cpi	r24, 0x6A	; 106
+ 2f2:	00 f4       	brcc	.+0      	; 0x2f4 <cmd_dataHandler+0x2a0>
+ 2f4:	84 36       	cpi	r24, 0x64	; 100
+ 2f6:	00 f4       	brcc	.+0      	; 0x2f8 <cmd_dataHandler+0x2a4>
+ 2f8:	81 36       	cpi	r24, 0x61	; 97
+ 2fa:	00 f4       	brcc	.+0      	; 0x2fc <cmd_dataHandler+0x2a8>
+ 2fc:	84 35       	cpi	r24, 0x54	; 84
+ 2fe:	01 f0       	breq	.+0      	; 0x300 <cmd_dataHandler+0x2ac>
+ 300:	8a 35       	cpi	r24, 0x5A	; 90
+ 302:	01 f0       	breq	.+0      	; 0x304 <cmd_dataHandler+0x2b0>
+ 304:	00 c0       	rjmp	.+0      	; 0x306 <cmd_dataHandler+0x2b2>
+ 306:	00 c0       	rjmp	.+0      	; 0x308 <cmd_dataHandler+0x2b4>
+ 308:	86 56       	subi	r24, 0x66	; 102
+ 30a:	82 30       	cpi	r24, 0x02	; 2
+ 30c:	00 f4       	brcc	.+0      	; 0x30e <cmd_dataHandler+0x2ba>
+ 30e:	00 c0       	rjmp	.+0      	; 0x310 <cmd_dataHandler+0x2bc>
+ 310:	80 37       	cpi	r24, 0x70	; 112
+ 312:	01 f0       	breq	.+0      	; 0x314 <cmd_dataHandler+0x2c0>
+ 314:	81 37       	cpi	r24, 0x71	; 113
+ 316:	00 f4       	brcc	.+0      	; 0x318 <cmd_dataHandler+0x2c4>
+ 318:	8c 36       	cpi	r24, 0x6C	; 108
+ 31a:	01 f0       	breq	.+0      	; 0x31c <cmd_dataHandler+0x2c8>
+ 31c:	8d 36       	cpi	r24, 0x6D	; 109
+ 31e:	01 f4       	brne	.+0      	; 0x320 <cmd_dataHandler+0x2cc>
+ 320:	00 c0       	rjmp	.+0      	; 0x322 <cmd_dataHandler+0x2ce>
+ 322:	82 37       	cpi	r24, 0x72	; 114
+ 324:	00 f0       	brcs	.+0      	; 0x326 <cmd_dataHandler+0x2d2>
+ 326:	85 37       	cpi	r24, 0x75	; 117
+ 328:	00 f0       	brcs	.+0      	; 0x32a <cmd_dataHandler+0x2d6>
+ 32a:	8a 37       	cpi	r24, 0x7A	; 122
+ 32c:	01 f4       	brne	.+0      	; 0x32e <cmd_dataHandler+0x2da>
+ 32e:	00 c0       	rjmp	.+0      	; 0x330 <cmd_dataHandler+0x2dc>
+    case 'I':
+    case 'm':
+    case 'M':
+    case 'R':
+    case '!':
+        command = input;
+ 330:	90 93 00 00 	sts	0x0000, r25
+        paramsRemaining = 1;
+ 334:	81 e0       	ldi	r24, 0x01	; 1
+ 336:	00 c0       	rjmp	.+0      	; 0x338 <cmd_dataHandler+0x2e4>
+      
+    case 'r':
+    case 's':
+    case 't':
+    case 'T':
+        command = input;
+ 338:	90 93 00 00 	sts	0x0000, r25
+        paramsRemaining = 3;
+ 33c:	83 e0       	ldi	r24, 0x03	; 3
+ 33e:	00 c0       	rjmp	.+0      	; 0x340 <cmd_dataHandler+0x2ec>
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+        command = input;
+ 340:	90 93 00 00 	sts	0x0000, r25
+        paramsRemaining = 2;
+ 344:	82 e0       	ldi	r24, 0x02	; 2
+ 346:	80 93 00 00 	sts	0x0000, r24
+ 34a:	08 95       	ret
+        break;
+        
+    case '*': 
+        _wdt_write(1);
+ 34c:	88 e1       	ldi	r24, 0x18	; 24
+ 34e:	90 e0       	ldi	r25, 0x00	; 0
+ 350:	29 e0       	ldi	r18, 0x09	; 9
+ 352:	0f b6       	in	r0, 0x3f	; 63
+ 354:	f8 94       	cli
+ 356:	a8 95       	wdr
+ 358:	80 93 60 00 	sts	0x0060, r24
+ 35c:	0f be       	out	0x3f, r0	; 63
+ 35e:	20 93 60 00 	sts	0x0060, r18
+ 362:	08 95       	ret
+        break;
+                                /* manual invocation of timer handler */
+    case '/':
+        dm_timerHandler();
+ 364:	0e 94 00 00 	call	0	; 0x0 <cmd_Init>
+        command = 0;
+ 368:	10 92 00 00 	sts	0x0000, r1
+ 36c:	08 95       	ret
+        break;
+    case '+':                   /* toggle auto timer handler */
+        disploop = !disploop;
+ 36e:	90 e0       	ldi	r25, 0x00	; 0
+ 370:	80 91 00 00 	lds	r24, 0x0000
+ 374:	88 23       	and	r24, r24
+ 376:	01 f4       	brne	.+0      	; 0x378 <cmd_dataHandler+0x324>
+ 378:	91 e0       	ldi	r25, 0x01	; 1
+ 37a:	90 93 00 00 	sts	0x0000, r25
+ 37e:	08 95       	ret
+        break;
+        
+    default:
+        command = 0;
+ 380:	10 92 00 00 	sts	0x0000, r1
+ 384:	08 95       	ret

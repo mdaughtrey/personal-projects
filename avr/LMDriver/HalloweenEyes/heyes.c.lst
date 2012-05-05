@@ -1,0 +1,572 @@
+
+heyes.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         0000020e  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  00000242  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000000  00000000  00000000  00000242  2**0
+                  ALLOC
+  3 .stab         000011c4  00000000  00000000  00000244  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      00001705  00000000  00000000  00001408  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .progmem.data 0000010b  00000000  00000000  00002b0d  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+Disassembly of section .text:
+
+00000000 <spiOut>:
+#define LEFT_SS _BV(1)
+ 
+#define SPIBIT_DELAYUS 80
+// msb first, sck low on idle, sample on leading edge
+void spiOut(unsigned char data)
+{
+   0:	28 2f       	mov	r18, r24
+    // set the SS lines
+    PORTC &= ~LEFT_SS;
+   2:	41 98       	cbi	0x08, 1	; 8
+    PORTC &= ~RIGHT_SS;
+   4:	42 98       	cbi	0x08, 2	; 8
+   6:	30 e0       	ldi	r19, 0x00	; 0
+//    _delay_us(SPIBIT_DELAYUS);
+
+    unsigned char ii;
+    for (ii = 0; ii < 8; ii++)
+    {
+        if (data & 0x80) { PORTC |= BOTH_MOSI; } 
+   8:	27 ff       	sbrs	r18, 7
+   a:	00 c0       	rjmp	.+0      	; 0xc <spiOut+0xc>
+   c:	43 9a       	sbi	0x08, 3	; 8
+   e:	00 c0       	rjmp	.+0      	; 0x10 <spiOut+0x10>
+        else { PORTC &= ~BOTH_MOSI; }
+  10:	43 98       	cbi	0x08, 3	; 8
+    can be achieved.
+*/
+void
+_delay_loop_1(uint8_t __count)
+{
+	__asm__ volatile (
+  12:	85 ed       	ldi	r24, 0xD5	; 213
+  14:	98 2f       	mov	r25, r24
+  16:	9a 95       	dec	r25
+  18:	01 f4       	brne	.+0      	; 0x1a <spiOut+0x1a>
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC |= BOTH_SCK;
+  1a:	45 9a       	sbi	0x08, 5	; 8
+  1c:	8a 95       	dec	r24
+  1e:	01 f4       	brne	.+0      	; 0x20 <spiOut+0x20>
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC &= ~BOTH_SCK;
+  20:	45 98       	cbi	0x08, 5	; 8
+    PORTC &= ~LEFT_SS;
+    PORTC &= ~RIGHT_SS;
+//    _delay_us(SPIBIT_DELAYUS);
+
+    unsigned char ii;
+    for (ii = 0; ii < 8; ii++)
+  22:	3f 5f       	subi	r19, 0xFF	; 255
+  24:	38 30       	cpi	r19, 0x08	; 8
+  26:	01 f0       	breq	.+0      	; 0x28 <spiOut+0x28>
+        else { PORTC &= ~BOTH_MOSI; }
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC |= BOTH_SCK;
+        _delay_us(SPIBIT_DELAYUS);
+        PORTC &= ~BOTH_SCK;
+        data <<= 1;
+  28:	22 0f       	add	r18, r18
+  2a:	00 c0       	rjmp	.+0      	; 0x2c <spiOut+0x2c>
+    }
+ //   _delay_us(SPIBIT_DELAYUS);
+    // reset the SS lines
+    PORTC |= LEFT_SS;
+  2c:	41 9a       	sbi	0x08, 1	; 8
+    PORTC |= RIGHT_SS;
+  2e:	42 9a       	sbi	0x08, 2	; 8
+  30:	08 95       	ret
+
+00000032 <stringOut>:
+}
+
+void stringOut(unsigned char * stringPtr)
+{
+  32:	cf 93       	push	r28
+  34:	df 93       	push	r29
+  36:	fc 01       	movw	r30, r24
+    unsigned char data = pgm_read_byte_near(stringPtr++);
+  38:	84 91       	lpm	r24, Z
+  3a:	ef 01       	movw	r28, r30
+  3c:	00 c0       	rjmp	.+0      	; 0x3e <stringOut+0xc>
+    while (data)
+    {
+        spiOut (data);
+  3e:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+        data = pgm_read_byte_near(stringPtr++);
+  42:	fe 01       	movw	r30, r28
+  44:	84 91       	lpm	r24, Z
+  46:	21 96       	adiw	r28, 0x01	; 1
+}
+
+void stringOut(unsigned char * stringPtr)
+{
+    unsigned char data = pgm_read_byte_near(stringPtr++);
+    while (data)
+  48:	88 23       	and	r24, r24
+  4a:	01 f4       	brne	.+0      	; 0x4c <stringOut+0x1a>
+  4c:	df 91       	pop	r29
+  4e:	cf 91       	pop	r28
+  50:	08 95       	ret
+
+00000052 <slowBlink>:
+}
+
+
+void slowBlink(void)
+{ 
+    stringOut(strSlowBlink);
+  52:	80 e0       	ldi	r24, 0x00	; 0
+  54:	90 e0       	ldi	r25, 0x00	; 0
+  56:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  5a:	08 95       	ret
+
+0000005c <glanceRight>:
+}
+
+void glanceRight(void)
+{
+    stringOut(strGlanceRight1);
+  5c:	80 e0       	ldi	r24, 0x00	; 0
+  5e:	90 e0       	ldi	r25, 0x00	; 0
+  60:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  64:	28 ee       	ldi	r18, 0xE8	; 232
+  66:	33 e0       	ldi	r19, 0x03	; 3
+    milliseconds can be achieved.
+ */
+void
+_delay_loop_2(uint16_t __count)
+{
+	__asm__ volatile (
+  68:	88 ec       	ldi	r24, 0xC8	; 200
+  6a:	90 e0       	ldi	r25, 0x00	; 0
+  6c:	01 97       	sbiw	r24, 0x01	; 1
+  6e:	01 f4       	brne	.+0      	; 0x70 <glanceRight+0x14>
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  70:	21 50       	subi	r18, 0x01	; 1
+  72:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  74:	01 f4       	brne	.+0      	; 0x76 <glanceRight+0x1a>
+    _delay_ms(100);
+    stringOut(strGlanceRight2);
+  76:	80 e0       	ldi	r24, 0x00	; 0
+  78:	90 e0       	ldi	r25, 0x00	; 0
+  7a:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  7e:	20 e3       	ldi	r18, 0x30	; 48
+  80:	35 e7       	ldi	r19, 0x75	; 117
+  82:	88 ec       	ldi	r24, 0xC8	; 200
+  84:	90 e0       	ldi	r25, 0x00	; 0
+  86:	01 97       	sbiw	r24, 0x01	; 1
+  88:	01 f4       	brne	.+0      	; 0x8a <glanceRight+0x2e>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  8a:	21 50       	subi	r18, 0x01	; 1
+  8c:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  8e:	01 f4       	brne	.+0      	; 0x90 <glanceRight+0x34>
+    _delay_ms(3000);
+    stringOut(strGlanceRight3);
+  90:	80 e0       	ldi	r24, 0x00	; 0
+  92:	90 e0       	ldi	r25, 0x00	; 0
+  94:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  98:	20 ed       	ldi	r18, 0xD0	; 208
+  9a:	37 e0       	ldi	r19, 0x07	; 7
+  9c:	88 ec       	ldi	r24, 0xC8	; 200
+  9e:	90 e0       	ldi	r25, 0x00	; 0
+  a0:	01 97       	sbiw	r24, 0x01	; 1
+  a2:	01 f4       	brne	.+0      	; 0xa4 <glanceRight+0x48>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  a4:	21 50       	subi	r18, 0x01	; 1
+  a6:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  a8:	01 f4       	brne	.+0      	; 0xaa <glanceRight+0x4e>
+    _delay_ms(200);
+    stringOut(strGlanceRight4);
+  aa:	80 e0       	ldi	r24, 0x00	; 0
+  ac:	90 e0       	ldi	r25, 0x00	; 0
+  ae:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  b2:	20 ed       	ldi	r18, 0xD0	; 208
+  b4:	37 e0       	ldi	r19, 0x07	; 7
+  b6:	88 ec       	ldi	r24, 0xC8	; 200
+  b8:	90 e0       	ldi	r25, 0x00	; 0
+  ba:	01 97       	sbiw	r24, 0x01	; 1
+  bc:	01 f4       	brne	.+0      	; 0xbe <glanceRight+0x62>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  be:	21 50       	subi	r18, 0x01	; 1
+  c0:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  c2:	01 f4       	brne	.+0      	; 0xc4 <glanceRight+0x68>
+  c4:	08 95       	ret
+
+000000c6 <glanceLeft>:
+    _delay_ms(200);
+}
+
+void glanceLeft(void)
+{
+    stringOut(strGlanceLeft1);
+  c6:	80 e0       	ldi	r24, 0x00	; 0
+  c8:	90 e0       	ldi	r25, 0x00	; 0
+  ca:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  ce:	28 ee       	ldi	r18, 0xE8	; 232
+  d0:	33 e0       	ldi	r19, 0x03	; 3
+  d2:	88 ec       	ldi	r24, 0xC8	; 200
+  d4:	90 e0       	ldi	r25, 0x00	; 0
+  d6:	01 97       	sbiw	r24, 0x01	; 1
+  d8:	01 f4       	brne	.+0      	; 0xda <glanceLeft+0x14>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  da:	21 50       	subi	r18, 0x01	; 1
+  dc:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  de:	01 f4       	brne	.+0      	; 0xe0 <glanceLeft+0x1a>
+    _delay_ms(100);
+    stringOut(strGlanceLeft2);
+  e0:	80 e0       	ldi	r24, 0x00	; 0
+  e2:	90 e0       	ldi	r25, 0x00	; 0
+  e4:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+  e8:	20 e3       	ldi	r18, 0x30	; 48
+  ea:	35 e7       	ldi	r19, 0x75	; 117
+  ec:	88 ec       	ldi	r24, 0xC8	; 200
+  ee:	90 e0       	ldi	r25, 0x00	; 0
+  f0:	01 97       	sbiw	r24, 0x01	; 1
+  f2:	01 f4       	brne	.+0      	; 0xf4 <glanceLeft+0x2e>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  f4:	21 50       	subi	r18, 0x01	; 1
+  f6:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  f8:	01 f4       	brne	.+0      	; 0xfa <glanceLeft+0x34>
+    _delay_ms(3000);
+    stringOut(strGlanceLeft3);
+  fa:	80 e0       	ldi	r24, 0x00	; 0
+  fc:	90 e0       	ldi	r25, 0x00	; 0
+  fe:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 102:	20 ed       	ldi	r18, 0xD0	; 208
+ 104:	37 e0       	ldi	r19, 0x07	; 7
+ 106:	88 ec       	ldi	r24, 0xC8	; 200
+ 108:	90 e0       	ldi	r25, 0x00	; 0
+ 10a:	01 97       	sbiw	r24, 0x01	; 1
+ 10c:	01 f4       	brne	.+0      	; 0x10e <glanceLeft+0x48>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 10e:	21 50       	subi	r18, 0x01	; 1
+ 110:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 112:	01 f4       	brne	.+0      	; 0x114 <glanceLeft+0x4e>
+    _delay_ms(200);
+    stringOut(strGlanceLeft4);
+ 114:	80 e0       	ldi	r24, 0x00	; 0
+ 116:	90 e0       	ldi	r25, 0x00	; 0
+ 118:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 11c:	20 ed       	ldi	r18, 0xD0	; 208
+ 11e:	37 e0       	ldi	r19, 0x07	; 7
+ 120:	88 ec       	ldi	r24, 0xC8	; 200
+ 122:	90 e0       	ldi	r25, 0x00	; 0
+ 124:	01 97       	sbiw	r24, 0x01	; 1
+ 126:	01 f4       	brne	.+0      	; 0x128 <glanceLeft+0x62>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 128:	21 50       	subi	r18, 0x01	; 1
+ 12a:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 12c:	01 f4       	brne	.+0      	; 0x12e <glanceLeft+0x68>
+ 12e:	08 95       	ret
+
+00000130 <fastBlink>:
+    }
+}
+
+void fastBlink()
+{
+    stringOut(C0C1);
+ 130:	80 e0       	ldi	r24, 0x00	; 0
+ 132:	90 e0       	ldi	r25, 0x00	; 0
+ 134:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 138:	24 ef       	ldi	r18, 0xF4	; 244
+ 13a:	31 e0       	ldi	r19, 0x01	; 1
+ 13c:	88 ec       	ldi	r24, 0xC8	; 200
+ 13e:	90 e0       	ldi	r25, 0x00	; 0
+ 140:	01 97       	sbiw	r24, 0x01	; 1
+ 142:	01 f4       	brne	.+0      	; 0x144 <fastBlink+0x14>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 144:	21 50       	subi	r18, 0x01	; 1
+ 146:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 148:	01 f4       	brne	.+0      	; 0x14a <fastBlink+0x1a>
+    _delay_ms(50);
+    stringOut(c0c1);
+ 14a:	80 e0       	ldi	r24, 0x00	; 0
+ 14c:	90 e0       	ldi	r25, 0x00	; 0
+ 14e:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 152:	08 95       	ret
+
+00000154 <main>:
+    stringOut(strGlanceLeft4);
+    _delay_ms(200);
+}
+
+int main(void)
+{
+ 154:	c0 e0       	ldi	r28, 0x00	; 0
+ 156:	d0 e0       	ldi	r29, 0x00	; 0
+ 158:	de bf       	out	0x3e, r29	; 62
+ 15a:	cd bf       	out	0x3d, r28	; 61
+ 15c:	80 e2       	ldi	r24, 0x20	; 32
+ 15e:	9e e4       	ldi	r25, 0x4E	; 78
+ 160:	01 97       	sbiw	r24, 0x01	; 1
+ 162:	01 f4       	brne	.+0      	; 0x164 <main+0x10>
+    // A little settling time...
+    _delay_ms(10);
+    // initialize
+    DDRC = 0x6e; // 0110 1110  rst,sck,mosi,ss1,ss2
+ 164:	8e e6       	ldi	r24, 0x6E	; 110
+ 166:	87 b9       	out	0x07, r24	; 7
+    PORTC = 0x46; // 0100 0110 reset, SS idle
+ 168:	86 e4       	ldi	r24, 0x46	; 70
+ 16a:	88 b9       	out	0x08, r24	; 8
+
+    // reset the displays
+    PORTC |= BOTH_RESET; // high
+ 16c:	46 9a       	sbi	0x08, 6	; 8
+ 16e:	28 ee       	ldi	r18, 0xE8	; 232
+ 170:	33 e0       	ldi	r19, 0x03	; 3
+ 172:	88 ec       	ldi	r24, 0xC8	; 200
+ 174:	90 e0       	ldi	r25, 0x00	; 0
+ 176:	01 97       	sbiw	r24, 0x01	; 1
+ 178:	01 f4       	brne	.+0      	; 0x17a <main+0x26>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 17a:	21 50       	subi	r18, 0x01	; 1
+ 17c:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 17e:	01 f4       	brne	.+0      	; 0x180 <main+0x2c>
+    _delay_ms(100);
+    PORTC &= ~BOTH_RESET; // low
+ 180:	46 98       	cbi	0x08, 6	; 8
+ 182:	28 ee       	ldi	r18, 0xE8	; 232
+ 184:	33 e0       	ldi	r19, 0x03	; 3
+ 186:	88 ec       	ldi	r24, 0xC8	; 200
+ 188:	90 e0       	ldi	r25, 0x00	; 0
+ 18a:	01 97       	sbiw	r24, 0x01	; 1
+ 18c:	01 f4       	brne	.+0      	; 0x18e <main+0x3a>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 18e:	21 50       	subi	r18, 0x01	; 1
+ 190:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 192:	01 f4       	brne	.+0      	; 0x194 <main+0x40>
+    _delay_ms(100);
+    PORTC |= BOTH_RESET; // high
+ 194:	46 9a       	sbi	0x08, 6	; 8
+ 196:	28 ee       	ldi	r18, 0xE8	; 232
+ 198:	33 e0       	ldi	r19, 0x03	; 3
+ 19a:	88 ec       	ldi	r24, 0xC8	; 200
+ 19c:	90 e0       	ldi	r25, 0x00	; 0
+ 19e:	01 97       	sbiw	r24, 0x01	; 1
+ 1a0:	01 f4       	brne	.+0      	; 0x1a2 <main+0x4e>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 1a2:	21 50       	subi	r18, 0x01	; 1
+ 1a4:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 1a6:	01 f4       	brne	.+0      	; 0x1a8 <main+0x54>
+    _delay_ms(100);
+
+    stringOut(strReset);
+ 1a8:	80 e0       	ldi	r24, 0x00	; 0
+ 1aa:	90 e0       	ldi	r25, 0x00	; 0
+ 1ac:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 1b0:	28 ee       	ldi	r18, 0xE8	; 232
+ 1b2:	33 e0       	ldi	r19, 0x03	; 3
+ 1b4:	88 ec       	ldi	r24, 0xC8	; 200
+ 1b6:	90 e0       	ldi	r25, 0x00	; 0
+ 1b8:	01 97       	sbiw	r24, 0x01	; 1
+ 1ba:	01 f4       	brne	.+0      	; 0x1bc <main+0x68>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 1bc:	21 50       	subi	r18, 0x01	; 1
+ 1be:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 1c0:	01 f4       	brne	.+0      	; 0x1c2 <main+0x6e>
+    _delay_ms(100);
+    stringOut(strLookStraightAhead);
+ 1c2:	80 e0       	ldi	r24, 0x00	; 0
+ 1c4:	90 e0       	ldi	r25, 0x00	; 0
+ 1c6:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 1ca:	20 e5       	ldi	r18, 0x50	; 80
+ 1cc:	33 ec       	ldi	r19, 0xC3	; 195
+ 1ce:	88 ec       	ldi	r24, 0xC8	; 200
+ 1d0:	90 e0       	ldi	r25, 0x00	; 0
+ 1d2:	01 97       	sbiw	r24, 0x01	; 1
+ 1d4:	01 f4       	brne	.+0      	; 0x1d6 <main+0x82>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 1d6:	21 50       	subi	r18, 0x01	; 1
+ 1d8:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 1da:	01 f4       	brne	.+0      	; 0x1dc <main+0x88>
+    while (1)
+    {
+        _delay_ms(5000);
+        glanceLeft();
+ 1dc:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 1e0:	20 e5       	ldi	r18, 0x50	; 80
+ 1e2:	33 ec       	ldi	r19, 0xC3	; 195
+ 1e4:	88 ec       	ldi	r24, 0xC8	; 200
+ 1e6:	90 e0       	ldi	r25, 0x00	; 0
+ 1e8:	01 97       	sbiw	r24, 0x01	; 1
+ 1ea:	01 f4       	brne	.+0      	; 0x1ec <main+0x98>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 1ec:	21 50       	subi	r18, 0x01	; 1
+ 1ee:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 1f0:	01 f4       	brne	.+0      	; 0x1f2 <main+0x9e>
+        _delay_ms(5000);
+        glanceRight();
+ 1f2:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 1f6:	20 e5       	ldi	r18, 0x50	; 80
+ 1f8:	33 ec       	ldi	r19, 0xC3	; 195
+ 1fa:	88 ec       	ldi	r24, 0xC8	; 200
+ 1fc:	90 e0       	ldi	r25, 0x00	; 0
+ 1fe:	01 97       	sbiw	r24, 0x01	; 1
+ 200:	01 f4       	brne	.+0      	; 0x202 <main+0xae>
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+ 202:	21 50       	subi	r18, 0x01	; 1
+ 204:	30 40       	sbci	r19, 0x00	; 0
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+ 206:	01 f4       	brne	.+0      	; 0x208 <main+0xb4>
+        _delay_ms(5000);
+        slowBlink();
+ 208:	0e 94 00 00 	call	0	; 0x0 <spiOut>
+ 20c:	00 c0       	rjmp	.+0      	; 0x20e <main+0xba>

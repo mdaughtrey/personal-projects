@@ -1,0 +1,478 @@
+
+serutil.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000002f8  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  0000032c  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000003  00000000  00000000  0000032c  2**0
+                  ALLOC
+  3 .stab         0000090c  00000000  00000000  0000032c  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      00000b4b  00000000  00000000  00000c38  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .progmem.data 00000010  00000000  00000000  00001783  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+Disassembly of section .text:
+
+00000000 <uart_TXISR>:
+volatile u08 rxTail;
+
+
+void uart_TXISR(void)
+{
+   0:	cf 93       	push	r28
+   2:	df 93       	push	r29
+   4:	cd b7       	in	r28, 0x3d	; 61
+   6:	de b7       	in	r29, 0x3e	; 62
+   8:	23 97       	sbiw	r28, 0x03	; 3
+   a:	0f b6       	in	r0, 0x3f	; 63
+   c:	f8 94       	cli
+   e:	de bf       	out	0x3e, r29	; 62
+  10:	0f be       	out	0x3f, r0	; 63
+  12:	cd bf       	out	0x3d, r28	; 61
+  if (--uart_counter)
+  14:	80 91 00 00 	lds	r24, 0x0000
+  18:	81 50       	subi	r24, 0x01	; 1
+  1a:	80 93 00 00 	sts	0x0000, r24
+  1e:	80 91 00 00 	lds	r24, 0x0000
+  22:	88 23       	and	r24, r24
+  24:	01 f0       	breq	.+0      	; 0x26 <uart_TXISR+0x26>
+    {
+      UDR = pgm_read_byte_near(uart_data_ptr++);
+  26:	a6 ec       	ldi	r26, 0xC6	; 198
+  28:	b0 e0       	ldi	r27, 0x00	; 0
+  2a:	20 91 00 00 	lds	r18, 0x0000
+  2e:	30 91 00 00 	lds	r19, 0x0000
+  32:	c9 01       	movw	r24, r18
+  34:	9b 83       	std	Y+3, r25	; 0x03
+  36:	8a 83       	std	Y+2, r24	; 0x02
+  38:	c9 01       	movw	r24, r18
+  3a:	01 96       	adiw	r24, 0x01	; 1
+  3c:	90 93 00 00 	sts	0x0000, r25
+  40:	80 93 00 00 	sts	0x0000, r24
+  44:	ea 81       	ldd	r30, Y+2	; 0x02
+  46:	fb 81       	ldd	r31, Y+3	; 0x03
+  48:	84 91       	lpm	r24, Z
+  4a:	89 83       	std	Y+1, r24	; 0x01
+  4c:	89 81       	ldd	r24, Y+1	; 0x01
+  4e:	8c 93       	st	X, r24
+  50:	00 c0       	rjmp	.+0      	; 0x52 <uart_TXISR+0x52>
+    }
+  else
+    {
+      UCSRB &= ~_BV(TXCIE);
+  52:	a1 ec       	ldi	r26, 0xC1	; 193
+  54:	b0 e0       	ldi	r27, 0x00	; 0
+  56:	e1 ec       	ldi	r30, 0xC1	; 193
+  58:	f0 e0       	ldi	r31, 0x00	; 0
+  5a:	80 81       	ld	r24, Z
+  5c:	8f 7b       	andi	r24, 0xBF	; 191
+  5e:	8c 93       	st	X, r24
+  60:	23 96       	adiw	r28, 0x03	; 3
+  62:	0f b6       	in	r0, 0x3f	; 63
+  64:	f8 94       	cli
+  66:	de bf       	out	0x3e, r29	; 62
+  68:	0f be       	out	0x3f, r0	; 63
+  6a:	cd bf       	out	0x3d, r28	; 61
+  6c:	df 91       	pop	r29
+  6e:	cf 91       	pop	r28
+  70:	08 95       	ret
+
+00000072 <uart_RXISR>:
+    }
+}
+
+/* signal handler for receive complete interrupt */
+void uart_RXISR(void)
+{
+  72:	cf 93       	push	r28
+  74:	df 93       	push	r29
+  76:	cd b7       	in	r28, 0x3d	; 61
+  78:	de b7       	in	r29, 0x3e	; 62
+  dataRxBuffer[rxTail++] = UDR;
+  7a:	30 91 00 00 	lds	r19, 0x0000
+  7e:	83 2f       	mov	r24, r19
+  80:	99 27       	eor	r25, r25
+  82:	e6 ec       	ldi	r30, 0xC6	; 198
+  84:	f0 e0       	ldi	r31, 0x00	; 0
+  86:	20 81       	ld	r18, Z
+  88:	fc 01       	movw	r30, r24
+  8a:	e0 50       	subi	r30, 0x00	; 0
+  8c:	f0 40       	sbci	r31, 0x00	; 0
+  8e:	20 83       	st	Z, r18
+  90:	83 2f       	mov	r24, r19
+  92:	8f 5f       	subi	r24, 0xFF	; 255
+  94:	80 93 00 00 	sts	0x0000, r24
+  rxTail &= (RXBUFFERSIZE - 1);
+  98:	80 91 00 00 	lds	r24, 0x0000
+  9c:	87 70       	andi	r24, 0x07	; 7
+  9e:	80 93 00 00 	sts	0x0000, r24
+  a2:	df 91       	pop	r29
+  a4:	cf 91       	pop	r28
+  a6:	08 95       	ret
+
+000000a8 <uart_get_buffered>:
+}
+
+u16 uart_get_buffered (void)
+{
+  a8:	cf 93       	push	r28
+  aa:	df 93       	push	r29
+  ac:	cd b7       	in	r28, 0x3d	; 61
+  ae:	de b7       	in	r29, 0x3e	; 62
+  b0:	22 97       	sbiw	r28, 0x02	; 2
+  b2:	0f b6       	in	r0, 0x3f	; 63
+  b4:	f8 94       	cli
+  b6:	de bf       	out	0x3e, r29	; 62
+  b8:	0f be       	out	0x3f, r0	; 63
+  ba:	cd bf       	out	0x3d, r28	; 61
+  u16 result = 0;
+  bc:	1a 82       	std	Y+2, r1	; 0x02
+  be:	19 82       	std	Y+1, r1	; 0x01
+
+/*   if (rxTail != rxHead) */
+/*     { */
+      cli();
+  c0:	f8 94       	cli
+      result = dataRxBuffer[rxHead++] | 0x0100;
+  c2:	20 91 00 00 	lds	r18, 0x0000
+  c6:	82 2f       	mov	r24, r18
+  c8:	99 27       	eor	r25, r25
+  ca:	fc 01       	movw	r30, r24
+  cc:	e0 50       	subi	r30, 0x00	; 0
+  ce:	f0 40       	sbci	r31, 0x00	; 0
+  d0:	80 81       	ld	r24, Z
+  d2:	99 27       	eor	r25, r25
+  d4:	91 60       	ori	r25, 0x01	; 1
+  d6:	9a 83       	std	Y+2, r25	; 0x02
+  d8:	89 83       	std	Y+1, r24	; 0x01
+  da:	82 2f       	mov	r24, r18
+  dc:	8f 5f       	subi	r24, 0xFF	; 255
+  de:	80 93 00 00 	sts	0x0000, r24
+      rxHead &= (RXBUFFERSIZE - 1);
+  e2:	80 91 00 00 	lds	r24, 0x0000
+  e6:	87 70       	andi	r24, 0x07	; 7
+  e8:	80 93 00 00 	sts	0x0000, r24
+      
+      sei();
+  ec:	78 94       	sei
+/*     } */
+  return result;
+  ee:	89 81       	ldd	r24, Y+1	; 0x01
+  f0:	9a 81       	ldd	r25, Y+2	; 0x02
+  f2:	22 96       	adiw	r28, 0x02	; 2
+  f4:	0f b6       	in	r0, 0x3f	; 63
+  f6:	f8 94       	cli
+  f8:	de bf       	out	0x3e, r29	; 62
+  fa:	0f be       	out	0x3f, r0	; 63
+  fc:	cd bf       	out	0x3d, r28	; 61
+  fe:	df 91       	pop	r29
+ 100:	cf 91       	pop	r28
+ 102:	08 95       	ret
+
+00000104 <uart_send_char>:
+}
+
+void uart_send_char (u08 character)
+{
+ 104:	cf 93       	push	r28
+ 106:	df 93       	push	r29
+ 108:	cd b7       	in	r28, 0x3d	; 61
+ 10a:	de b7       	in	r29, 0x3e	; 62
+ 10c:	21 97       	sbiw	r28, 0x01	; 1
+ 10e:	0f b6       	in	r0, 0x3f	; 63
+ 110:	f8 94       	cli
+ 112:	de bf       	out	0x3e, r29	; 62
+ 114:	0f be       	out	0x3f, r0	; 63
+ 116:	cd bf       	out	0x3d, r28	; 61
+ 118:	89 83       	std	Y+1, r24	; 0x01
+  while (uart_counter);
+ 11a:	80 91 00 00 	lds	r24, 0x0000
+ 11e:	88 23       	and	r24, r24
+ 120:	01 f4       	brne	.+0      	; 0x122 <uart_send_char+0x1e>
+  loop_until_bit_is_set(UCSRA, UDRE);
+ 122:	e0 ec       	ldi	r30, 0xC0	; 192
+ 124:	f0 e0       	ldi	r31, 0x00	; 0
+ 126:	80 81       	ld	r24, Z
+ 128:	99 27       	eor	r25, r25
+ 12a:	80 72       	andi	r24, 0x20	; 32
+ 12c:	90 70       	andi	r25, 0x00	; 0
+ 12e:	00 97       	sbiw	r24, 0x00	; 0
+ 130:	01 f0       	breq	.+0      	; 0x132 <uart_send_char+0x2e>
+  UDR = character;
+ 132:	e6 ec       	ldi	r30, 0xC6	; 198
+ 134:	f0 e0       	ldi	r31, 0x00	; 0
+ 136:	89 81       	ldd	r24, Y+1	; 0x01
+ 138:	80 83       	st	Z, r24
+ 13a:	21 96       	adiw	r28, 0x01	; 1
+ 13c:	0f b6       	in	r0, 0x3f	; 63
+ 13e:	f8 94       	cli
+ 140:	de bf       	out	0x3e, r29	; 62
+ 142:	0f be       	out	0x3f, r0	; 63
+ 144:	cd bf       	out	0x3d, r28	; 61
+ 146:	df 91       	pop	r29
+ 148:	cf 91       	pop	r28
+ 14a:	08 95       	ret
+
+0000014c <uart_send_async>:
+}
+
+void uart_send_async (u08 *buf, u08 size)
+{
+ 14c:	cf 93       	push	r28
+ 14e:	df 93       	push	r29
+ 150:	cd b7       	in	r28, 0x3d	; 61
+ 152:	de b7       	in	r29, 0x3e	; 62
+ 154:	26 97       	sbiw	r28, 0x06	; 6
+ 156:	0f b6       	in	r0, 0x3f	; 63
+ 158:	f8 94       	cli
+ 15a:	de bf       	out	0x3e, r29	; 62
+ 15c:	0f be       	out	0x3f, r0	; 63
+ 15e:	cd bf       	out	0x3d, r28	; 61
+ 160:	9d 83       	std	Y+5, r25	; 0x05
+ 162:	8c 83       	std	Y+4, r24	; 0x04
+ 164:	6e 83       	std	Y+6, r22	; 0x06
+  while (uart_counter);
+ 166:	80 91 00 00 	lds	r24, 0x0000
+ 16a:	88 23       	and	r24, r24
+ 16c:	01 f4       	brne	.+0      	; 0x16e <uart_send_async+0x22>
+  loop_until_bit_is_set(UCSRA, UDRE);
+ 16e:	e0 ec       	ldi	r30, 0xC0	; 192
+ 170:	f0 e0       	ldi	r31, 0x00	; 0
+ 172:	80 81       	ld	r24, Z
+ 174:	99 27       	eor	r25, r25
+ 176:	80 72       	andi	r24, 0x20	; 32
+ 178:	90 70       	andi	r25, 0x00	; 0
+ 17a:	00 97       	sbiw	r24, 0x00	; 0
+ 17c:	01 f0       	breq	.+0      	; 0x17e <uart_send_async+0x32>
+
+  uart_counter = size - 1;
+ 17e:	8e 81       	ldd	r24, Y+6	; 0x06
+ 180:	81 50       	subi	r24, 0x01	; 1
+ 182:	80 93 00 00 	sts	0x0000, r24
+  uart_data_ptr = buf + 1;
+ 186:	8c 81       	ldd	r24, Y+4	; 0x04
+ 188:	9d 81       	ldd	r25, Y+5	; 0x05
+ 18a:	01 96       	adiw	r24, 0x01	; 1
+ 18c:	90 93 00 00 	sts	0x0000, r25
+ 190:	80 93 00 00 	sts	0x0000, r24
+  if (size > 1)
+ 194:	8e 81       	ldd	r24, Y+6	; 0x06
+ 196:	82 30       	cpi	r24, 0x02	; 2
+ 198:	00 f0       	brcs	.+0      	; 0x19a <uart_send_async+0x4e>
+    {
+/*       sbi(UCSRB, TXCIE); */
+      UCSRB |= _BV(TXCIE);
+ 19a:	a1 ec       	ldi	r26, 0xC1	; 193
+ 19c:	b0 e0       	ldi	r27, 0x00	; 0
+ 19e:	e1 ec       	ldi	r30, 0xC1	; 193
+ 1a0:	f0 e0       	ldi	r31, 0x00	; 0
+ 1a2:	80 81       	ld	r24, Z
+ 1a4:	80 64       	ori	r24, 0x40	; 64
+ 1a6:	8c 93       	st	X, r24
+    }
+  UDR = pgm_read_byte_near(buf);
+ 1a8:	a6 ec       	ldi	r26, 0xC6	; 198
+ 1aa:	b0 e0       	ldi	r27, 0x00	; 0
+ 1ac:	8c 81       	ldd	r24, Y+4	; 0x04
+ 1ae:	9d 81       	ldd	r25, Y+5	; 0x05
+ 1b0:	9b 83       	std	Y+3, r25	; 0x03
+ 1b2:	8a 83       	std	Y+2, r24	; 0x02
+ 1b4:	ea 81       	ldd	r30, Y+2	; 0x02
+ 1b6:	fb 81       	ldd	r31, Y+3	; 0x03
+ 1b8:	84 91       	lpm	r24, Z
+ 1ba:	89 83       	std	Y+1, r24	; 0x01
+ 1bc:	89 81       	ldd	r24, Y+1	; 0x01
+ 1be:	8c 93       	st	X, r24
+ 1c0:	26 96       	adiw	r28, 0x06	; 6
+ 1c2:	0f b6       	in	r0, 0x3f	; 63
+ 1c4:	f8 94       	cli
+ 1c6:	de bf       	out	0x3e, r29	; 62
+ 1c8:	0f be       	out	0x3f, r0	; 63
+ 1ca:	cd bf       	out	0x3d, r28	; 61
+ 1cc:	df 91       	pop	r29
+ 1ce:	cf 91       	pop	r28
+ 1d0:	08 95       	ret
+
+000001d2 <uart_send_sync>:
+}
+
+void uart_send_sync(u08 *buf, u08 size)
+{ 
+ 1d2:	cf 93       	push	r28
+ 1d4:	df 93       	push	r29
+ 1d6:	cd b7       	in	r28, 0x3d	; 61
+ 1d8:	de b7       	in	r29, 0x3e	; 62
+ 1da:	26 97       	sbiw	r28, 0x06	; 6
+ 1dc:	0f b6       	in	r0, 0x3f	; 63
+ 1de:	f8 94       	cli
+ 1e0:	de bf       	out	0x3e, r29	; 62
+ 1e2:	0f be       	out	0x3f, r0	; 63
+ 1e4:	cd bf       	out	0x3d, r28	; 61
+ 1e6:	9d 83       	std	Y+5, r25	; 0x05
+ 1e8:	8c 83       	std	Y+4, r24	; 0x04
+ 1ea:	6e 83       	std	Y+6, r22	; 0x06
+  while (uart_counter);
+ 1ec:	80 91 00 00 	lds	r24, 0x0000
+ 1f0:	88 23       	and	r24, r24
+ 1f2:	01 f4       	brne	.+0      	; 0x1f4 <uart_send_sync+0x22>
+  loop_until_bit_is_set(UCSRA, UDRE);
+ 1f4:	e0 ec       	ldi	r30, 0xC0	; 192
+ 1f6:	f0 e0       	ldi	r31, 0x00	; 0
+ 1f8:	80 81       	ld	r24, Z
+ 1fa:	99 27       	eor	r25, r25
+ 1fc:	80 72       	andi	r24, 0x20	; 32
+ 1fe:	90 70       	andi	r25, 0x00	; 0
+ 200:	00 97       	sbiw	r24, 0x00	; 0
+ 202:	01 f0       	breq	.+0      	; 0x204 <uart_send_sync+0x32>
+
+  while (size)
+ 204:	00 c0       	rjmp	.+0      	; 0x206 <uart_send_sync+0x34>
+    {
+      loop_until_bit_is_set(UCSRA, UDRE);
+ 206:	e0 ec       	ldi	r30, 0xC0	; 192
+ 208:	f0 e0       	ldi	r31, 0x00	; 0
+ 20a:	80 81       	ld	r24, Z
+ 20c:	99 27       	eor	r25, r25
+ 20e:	80 72       	andi	r24, 0x20	; 32
+ 210:	90 70       	andi	r25, 0x00	; 0
+ 212:	00 97       	sbiw	r24, 0x00	; 0
+ 214:	01 f0       	breq	.+0      	; 0x216 <uart_send_sync+0x44>
+      UDR = pgm_read_byte_near(buf);
+ 216:	a6 ec       	ldi	r26, 0xC6	; 198
+ 218:	b0 e0       	ldi	r27, 0x00	; 0
+ 21a:	8c 81       	ldd	r24, Y+4	; 0x04
+ 21c:	9d 81       	ldd	r25, Y+5	; 0x05
+ 21e:	9b 83       	std	Y+3, r25	; 0x03
+ 220:	8a 83       	std	Y+2, r24	; 0x02
+ 222:	ea 81       	ldd	r30, Y+2	; 0x02
+ 224:	fb 81       	ldd	r31, Y+3	; 0x03
+ 226:	84 91       	lpm	r24, Z
+ 228:	89 83       	std	Y+1, r24	; 0x01
+ 22a:	89 81       	ldd	r24, Y+1	; 0x01
+ 22c:	8c 93       	st	X, r24
+      buf++;
+ 22e:	8c 81       	ldd	r24, Y+4	; 0x04
+ 230:	9d 81       	ldd	r25, Y+5	; 0x05
+ 232:	01 96       	adiw	r24, 0x01	; 1
+ 234:	9d 83       	std	Y+5, r25	; 0x05
+ 236:	8c 83       	std	Y+4, r24	; 0x04
+      size--;
+ 238:	8e 81       	ldd	r24, Y+6	; 0x06
+ 23a:	81 50       	subi	r24, 0x01	; 1
+ 23c:	8e 83       	std	Y+6, r24	; 0x06
+ 23e:	8e 81       	ldd	r24, Y+6	; 0x06
+ 240:	88 23       	and	r24, r24
+ 242:	01 f4       	brne	.+0      	; 0x244 <uart_send_sync+0x72>
+ 244:	26 96       	adiw	r28, 0x06	; 6
+ 246:	0f b6       	in	r0, 0x3f	; 63
+ 248:	f8 94       	cli
+ 24a:	de bf       	out	0x3e, r29	; 62
+ 24c:	0f be       	out	0x3f, r0	; 63
+ 24e:	cd bf       	out	0x3d, r28	; 61
+ 250:	df 91       	pop	r29
+ 252:	cf 91       	pop	r28
+ 254:	08 95       	ret
+
+00000256 <uart_init>:
+    }
+}
+
+void uart_init(void)
+{
+ 256:	cf 93       	push	r28
+ 258:	df 93       	push	r29
+ 25a:	cd b7       	in	r28, 0x3d	; 61
+ 25c:	de b7       	in	r29, 0x3e	; 62
+  uart_counter = 0;
+ 25e:	10 92 00 00 	sts	0x0000, r1
+  rxHead = 0;
+ 262:	10 92 00 00 	sts	0x0000, r1
+  rxTail = 0;
+ 266:	10 92 00 00 	sts	0x0000, r1
+
+  /* set baud rate */
+  UBRR = UART_BAUD_SELECT;
+ 26a:	e4 ec       	ldi	r30, 0xC4	; 196
+ 26c:	f0 e0       	ldi	r31, 0x00	; 0
+ 26e:	89 e1       	ldi	r24, 0x19	; 25
+ 270:	90 e0       	ldi	r25, 0x00	; 0
+ 272:	91 83       	std	Z+1, r25	; 0x01
+ 274:	80 83       	st	Z, r24
+
+  UCSRB = _BV(RXCIE) | _BV(RXEN) | _BV(TXEN);
+ 276:	e1 ec       	ldi	r30, 0xC1	; 193
+ 278:	f0 e0       	ldi	r31, 0x00	; 0
+ 27a:	88 e9       	ldi	r24, 0x98	; 152
+ 27c:	80 83       	st	Z, r24
+ 27e:	df 91       	pop	r29
+ 280:	cf 91       	pop	r28
+ 282:	08 95       	ret
+
+00000284 <uart_send_hex_byte>:
+
+}
+
+void uart_send_hex_byte(u08 byte)
+{
+ 284:	cf 93       	push	r28
+ 286:	df 93       	push	r29
+ 288:	cd b7       	in	r28, 0x3d	; 61
+ 28a:	de b7       	in	r29, 0x3e	; 62
+ 28c:	27 97       	sbiw	r28, 0x07	; 7
+ 28e:	0f b6       	in	r0, 0x3f	; 63
+ 290:	f8 94       	cli
+ 292:	de bf       	out	0x3e, r29	; 62
+ 294:	0f be       	out	0x3f, r0	; 63
+ 296:	cd bf       	out	0x3d, r28	; 61
+ 298:	8f 83       	std	Y+7, r24	; 0x07
+  uart_send_char(pgm_read_byte_near(hexTable + ((byte & 0xf0) >> 4)));
+ 29a:	8f 81       	ldd	r24, Y+7	; 0x07
+ 29c:	99 27       	eor	r25, r25
+ 29e:	80 7f       	andi	r24, 0xF0	; 240
+ 2a0:	90 70       	andi	r25, 0x00	; 0
+ 2a2:	95 95       	asr	r25
+ 2a4:	87 95       	ror	r24
+ 2a6:	95 95       	asr	r25
+ 2a8:	87 95       	ror	r24
+ 2aa:	95 95       	asr	r25
+ 2ac:	87 95       	ror	r24
+ 2ae:	95 95       	asr	r25
+ 2b0:	87 95       	ror	r24
+ 2b2:	80 50       	subi	r24, 0x00	; 0
+ 2b4:	90 40       	sbci	r25, 0x00	; 0
+ 2b6:	9e 83       	std	Y+6, r25	; 0x06
+ 2b8:	8d 83       	std	Y+5, r24	; 0x05
+ 2ba:	ed 81       	ldd	r30, Y+5	; 0x05
+ 2bc:	fe 81       	ldd	r31, Y+6	; 0x06
+ 2be:	84 91       	lpm	r24, Z
+ 2c0:	8c 83       	std	Y+4, r24	; 0x04
+ 2c2:	8c 81       	ldd	r24, Y+4	; 0x04
+ 2c4:	0e 94 00 00 	call	0	; 0x0 <uart_TXISR>
+  uart_send_char(pgm_read_byte_near(hexTable + (byte & 0x0f)));
+ 2c8:	8f 81       	ldd	r24, Y+7	; 0x07
+ 2ca:	99 27       	eor	r25, r25
+ 2cc:	8f 70       	andi	r24, 0x0F	; 15
+ 2ce:	90 70       	andi	r25, 0x00	; 0
+ 2d0:	80 50       	subi	r24, 0x00	; 0
+ 2d2:	90 40       	sbci	r25, 0x00	; 0
+ 2d4:	9b 83       	std	Y+3, r25	; 0x03
+ 2d6:	8a 83       	std	Y+2, r24	; 0x02
+ 2d8:	ea 81       	ldd	r30, Y+2	; 0x02
+ 2da:	fb 81       	ldd	r31, Y+3	; 0x03
+ 2dc:	84 91       	lpm	r24, Z
+ 2de:	89 83       	std	Y+1, r24	; 0x01
+ 2e0:	89 81       	ldd	r24, Y+1	; 0x01
+ 2e2:	0e 94 00 00 	call	0	; 0x0 <uart_TXISR>
+ 2e6:	27 96       	adiw	r28, 0x07	; 7
+ 2e8:	0f b6       	in	r0, 0x3f	; 63
+ 2ea:	f8 94       	cli
+ 2ec:	de bf       	out	0x3e, r29	; 62
+ 2ee:	0f be       	out	0x3f, r0	; 63
+ 2f0:	cd bf       	out	0x3d, r28	; 61
+ 2f2:	df 91       	pop	r29
+ 2f4:	cf 91       	pop	r28
+ 2f6:	08 95       	ret

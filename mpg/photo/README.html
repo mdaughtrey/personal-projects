@@ -1,0 +1,445 @@
+<html>
+<head>
+  <title>My Photo Gallery README</title>
+</head>
+<body>
+<center><font size="4">My Photo Gallery&nbsp; 4.03</font></center>
+<hr> Please read everything but email me if<br>
+(1) you do not understand <br>
+(2) you get it running (so I can check it out and put up a link to your
+site)<br>
+at <a href="mailto:support@fuzzymonkey.org">support@fuzzymonkey.org</a><br>
+<br>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> In this README: </b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> <a href="#requires">REQUIRES</a><br>
+  <a href="#summary">SUMMARY</a><br>
+  <a href="#features">FEATURES</a><br>
+  <a href="#license">DISTRIBUTION / LICENSE</a><br>
+  <a href="#installation">INSTALLATION</a><br>
+  <a href="#how">HOW TO USE</a><br>
+  <a href="#changes">CHANGES</a><br>
+  <a href="#todo">TODO</a><br>
+</blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="requires">REQUIRES </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> <li>1. web server (tested on apache Linux/Unix but
+reported to work on Windows NT/2000) </li>
+  <li>2. Perl 5.00503 (may work with others) </li>
+  <li>3. <a href="http://www.imagemagick.org/">ImageMagick (with
+PerlMagick) 5.2.2</a> </li>
+  <li>4. <a href="http://search.cpan.org/search?module=Image::Info">Image::Info</a>
+and <a href="http://search.cpan.org/search?dist=IO-String">IO::String</a>
+(to get EXIF data stored in the images by digital cameras). <br>
+    <b><font color="red">NOTE: if you do not have root access to
+install these perl modules, just follow the easy instructions in
+README.IMAGEMAGICK to install them locally.</font></b> </li>
+</blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="summary">SUMMARY </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> My Photo Gallery is a Web-based photo gallery with support
+for other filetypes. It is easy to setup and even easier to maintain.
+Slick-looking image/file galleries and thumbnails are generated on the
+fly from the directory that you specify. Creating an album is as easy as
+creating a directory and FTPing your pictures to that directory. A Web
+administration interface is available, and updating is just as easy. It
+also includes advanced features such as image logging, resizing, rotating (lossless),
+extracting EXIF data from digital cameras, and visitor comments. Many
+other file formats are recognized and given a special icon. </blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="features">FEATURES </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> <li>Automatic creation of photo,movie, and file galleries</li>
+  <li>Web based upload and gallery manager</li>
+  <li>Automatic unzip'ing of uploaded .zip files (requires 'unzip' to
+be installed and in your path)<br>
+  </li>
+  <li>Uses a template.html file to quickly make everything match your
+current site</li>
+  <li>Simply ftp your stuff or use the web based manager </li>
+  <li>Pretty file name option (in config file) </li>
+  <li>Automatic thumbnail generation </li>
+  <li>Automatic creation of various sizes of each image so that your
+visitors can specify the viewing size of their preference. </li>
+  <li>Logging for each time a picture or album is viewed. </li>
+  <li>Visitors can comment on each picture. </li>
+  <li>Shutterfly.com support to allow your visitors to order prints. </li>
+  <li>Manage your photo galleries from the web. </li>
+  <li>Previous/next picture buttons with thumbnail preview </li>
+  <li>Automatic extraction of EXIF data embedded from most digital
+cameras </li>
+  <li>Easyily themable with your custom colors, logo, and main page </li>
+  <li>Configurable filetype support to support any filetype for
+download </li>
+  <li>Upload, rotate (lossless), rename, or delete images using the web manager interface </li>
+  <li>password protect directories using a lock file of user/pass's </li>
+  <li>replace :-) (and about every other derivation) with a picture of a smiley </li>
+  <li>I am sure there is more that I cannot think of. </li>
+</blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="license">DISTRIBUTION /
+LICENSE </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> This software is released under the GPL.  Please see the
+included LICENSE file. Copyright (C) 2000  Michael Spiceland This
+program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your
+option) any later version. This program is distributed in the hope that
+it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See
+the GNU General Public License for more details. You should have
+received a copy of the GNU General Public License along with this
+program; if not, write to the Free Software Foundation, Inc., 59 Temple
+Place, Suite 330, Boston, MA  02111-1307  USA Use this script at your
+own risk!  I make no warranties that it is hack proof! </blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="installation">INSTALLATION </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> <font color="red">IMPORTANT: You must have the perl
+modules listed in the requirements section before this script will work.
+Even if you do not have root access, you can install them locally using
+the instructions in docs/README.IMAGEMAGICK.  Read the doc/FAQ.html or
+Intro to CGI at <a href="http://www.fuzzymonkey.org/perl/">http://www.fuzzymonkey.org/perl/</a>
+to easily troubleshoot it.</font> <br>
+  <br>
+1. Install scripts
+  <blockquote> This script will need three directories.&nbsp; One is for
+the cgi scripts, one is for the main source images that you want a
+gallery of,&nbsp; and the third is a data directory to store the
+thumbnails, resized images, comments, and descriptions.&nbsp; By using a
+separate directory for the data, your original photos are left
+untouched.&nbsp; The original photos are only read, never written to (unless you are renaming or rotating the image).<br>
+    <br>
+Here is what I use:<br>
+    <i>/home/username/www/cgi-bin/photo/</i> (to store all the script
+stuff)<br>
+    <i>/home/username/www/photo/</i> (to store all of the images for
+display)<br>
+    <span style="font-style: italic;">/home/username/www/photodata/</span>
+(to store thumbs and other data)<br>
+    <br>
+For example, this is what I do: <br>
+    <br>
+ftp myphotogallery.tar.gz into my www/cgi-bin/<br>
+tar -zxvpf myphotogaller.tar.gz<br>
+cd photo/<br>
+mkdir /home/username/www/photo (to be the main directory for the
+galleries)<br>
+mkdir /home/username/www/photodata (to be the data directory for the
+galleries)<br>
+mv site-images/ /home/username/www/photodata/<br>
+    <br>
+One of the most common issues when installing "My Photo Galley" has to
+do with permissions.&nbsp; The web interface in the next step will point
+you at how to use the manage.cgi script to check some of the most common
+errors.&nbsp; If this doesn't work or you get an internal server error
+when you attempt to run the manage script, please check the
+docs/FAQ.html included in the package.<br>
+  </blockquote>
+2. Configure My Photo Gallery<br>
+  <br style="font-weight: bold;">
+  <div style="margin-left: 40px;"><span style="font-weight: bold;">Using
+the web interface</span><br>
+  <br>
+If you followed the instructions above, you can use the manage.cgi
+script to check for all of the requirements and set up all of your
+variables.&nbsp; Simply point your browser at:<br>
+  <br>
+http://www.yourserver.com/cgi-bin/photo/protected/manage.cgi<br>
+  <br>
+Using the web interface you can:<br>
+  <br>
+  <li>verify you have the dependancies installed </li>
+  <li>set-up and configure your configuration/variables </li>
+  <li>manage/edit photo galleries </li>
+  <li>find out more information on included too</li>
+  </div>
+  <br>
+  <div style="margin-left: 40px;">If manage.cgi has problems finding
+your local Image::Magick install then you may need to use a use <span
+ style="font-weight: bold;">lib line</span> at the top of the index.cgi
+and manage.cgi script.&nbsp; More details are below in the manual
+section.<span style="font-weight: bold;"></span><br>
+  </div>
+  <div style="margin-left: 40px;"> <br>
+  <span style="font-weight: bold;">Editing the config file manually</span><br>
+  </div>
+  <blockquote>
+    <p>Edit sitevariales.pl (in the cgi-bin/photo/ directory) to suit
+your needs.  You will need to make sure the directories chosen in the
+two above steps are in this file correctly. </p>
+    <p>If you had to install Image Magick with NON-root permissions
+(the work around described in the README.IMAGEMAGICK) make sure you add
+the use lib ""; line to both index.cgi and protected/manage.cgi.  I use
+the following two lines at the top of both scripts:<br>
+    </p>
+    <p>use lib
+"/home/username/www/cgi-bin/local/lib/site_perl/5.6.0/i686-linux/";
+#ImageMagick<br>
+use lib "/home/username/www/cgi-bin/local/lib/site_perl/"; #Image::Info
+and IO::String<br>
+    </p>
+    <p>You can easily change the entire look of your galleries.  There
+are a     few basic ways to change the look: </p>
+    <li>modify the colors in sitevariables.pl </li>
+    <li>upload a new logo to site-images/ and specify it in
+sitevariables.pl </li>
+    <li>upload new buttons and images by simply replacing the old ones
+in site-images/ </li>
+    <li>update the news.html (your frontpage of the gallery) to look as
+you want. </li>
+  </blockquote>
+3. Create your photo galleries<br>
+  <br>
+  <div style="margin-left: 40px;"><span style="font-weight: bold;">Setting
+up your galleries</span><br>
+  </div>
+  <br>
+  <div style="margin-left: 40px;">Use the manage.cgi script to upload
+your photos and .zip files.&nbsp; Alternatively, you can keep reading
+for information on how to manage your galleries manually.<br>
+  </div>
+  <blockquote> Now you need to mv or upload your pictures into
+directories under the directory created in the step above.  For
+example, if you use the directory mentioned above you could make a
+directory /var/www/html/photo/florida2000/ and then put all the
+pictures from the florida trip in that directory.  You can make as many
+of these directories as you like.  I will from now on call these
+"albums".<br>
+    <br>
+    <span style="font-weight: bold;">Password protecting your galleries</span><br>
+    <p>If you want to password protect a directory, you will need to
+manually put in a lock file.  This file should be named 'lock' and be
+placed in the directory that you would like to password protect.  It
+should contain the username and passwords for any users that you want to
+give access to, one per line with username=password.  For example, if
+you want henry to have access using the password 'oranges' you would put<br>
+    <br>
+    <i>henry=oranges</i><br>
+    <br>
+in the file 'lock' that is in the directory that you want to deny
+access for. Please be carefull using this feature as it is not
+gauranteed to prevent access although it is secure enough for almost all
+uses.</p>
+  </blockquote>
+4. SECURE YOUR MANAGER.CGI OR DELETE IT !!!!!
+  <blockquote><span style="font-weight: bold; color: rgb(255, 0, 0);">
+IMPORTANT:</span> You should use htaccess or some other method of
+password protecting the protected/ directory.  If you not know how to do
+this, please ask your server administrator to password protect this
+directory for you.  If you choose not to do this PLEASE remove this
+directory. manage.cgi is a script that you can use to manage your photo
+galleries. It is not secure enough to allow public access to it. Many
+accounts have a web interface that will allow you to do this.  IF YOU
+CHOOSE TO LEAVE THE MANAGER.CGI ON YOUR SERVER, PLEASE DO SO AT YOUR OWN
+RISK AND MAKE SURE IT IS PASSWORD PROTECTED. <br>
+Thanks to Michael Phan for sending this <a href="http://www.javascriptkit.com/howto/htaccess3.shtml">link</a> to a good tutorial on .htacces.</blockquote>
+5. Your done!
+  <blockquote> Fire up your browser and point it at the index.cgi
+script. Good Luck!  Email me if you use it! </blockquote>
+</blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="how">HOW TO USE </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote>
+  <p>Just point your browser at it</p>
+  <p>e.g.- http://www.yoursite.com/cgi-bin/photo/index.cgi</p>
+  <p>If you get an internal server error, run it from command line so
+that you can see what is going wrong.  See my docs/FAQ.html on my script
+page for more info. </p>
+  <p>You may also use the web based administration (if installed) by
+pointing your browser at:
+http://www.yoursite.com/cgi-bin/photo/protected/manage.cgi </p>
+</blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="changes">CHANGES </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote>
+  <p>11.23.2000 	Initial release. </p>
+  <p>11.28.2000 	Added commenting section and a few new settings in
+sitevariables.pl Added a         few more images to site images. Fixed
+back button to work even after comments. </p>
+  <p>11.28.2000 	Fixed space in filename issue (hopefully) there were
+many bugs here to squash.         Changed location of descriptions to
+descriptions/ sub directory under the         album.  This is more
+organized. </p>
+  <p>11.29.200 	MAJOR changes. 	Added manager.cgi in protected/ and all
+of its features 	Added shutterfly.com support. 	Added many new variables
+in sitevariables.pl 	Added wrapping if the number of albums goes over
+the 	albums per row variable. </p>
+  <p>12.03.2000 	fixed bug when reporting the height to shutterfly.
+	fixed a few bugs and enhanced security in manage.cgi 	(I still think
+manage.cgi should be as proetected 	as you can make it in order to be
+safe) </p>
+  <p>12.08.2000 	Changed to version 1.4.  Added prev/next links and
+	thumbails for prev/next.  Added width tag on preview images. 	Changed
+image to a border table with rows.  Removed the exact timestamp from
+	the images. </p>
+  <p>12.19.2000 	Changed to version 1.5.  A few asthetic changes
+including a smaller 	date on each file in the album.  Added check for
+empty directory name. 	Moved the directorycheck() sub to common.pl so
+that I could add it to the 	manage.cgi.  manage.cgi now also creates
+thumbnails that were unavailable before. 	Added README.IMAGEMAGICK </p>
+  <p>12.30.2000 	Added a link to the index.cgi to the manage.cgi.
+	Added maxWidth viewing option for visitors.  Added a cookie to store
+the users 	viewing preference.  Changed background color and updated
+corner pictures. </p>
+  <p>1.10.2001 	Major update to appearance.  Added search. </p>
+  <p>1.28.2001 	Version 1.8 Added support for movies.  Still need to
+fix comments for movies. </p>
+  <p>5.27.2001 	Version 1.9  Added email option for commenting.  Fixed
+movie commenting. </p>
+  <p>6.11.2001 	Version 1.95  Fixed issue where pictures with caps
+extention (.JPG) would 	not show up. </p>
+  <p>7.17.2001 	Version 2.0  Added subfolder support.  Also updated the
+manager to 	support subfolders.  Changed the sorting of the folders.
+Using ping 	now to get the resolution of the images instead of having to
+open 	the image first (much faster). </p>
+  <p>7.22.2001 	Version 2.01  Fixed the picture size returned from the
+5.3.6 version 	of image magcik when using the ping command.  Added a new
+variable 	called $old_imagemagick to sitevariables to specify which
+image 	magick you have installed.7.22.2001 </p>
+  <p>8.2.2001     version 2.02.  New images for folders, buttons,
+arrows, etc.  Added     comments to teh colors section of the setup to
+make it easier to see     what you are changing.  Made the text color
+variable actually work     and change the color of the text in the
+menues. </p>
+  <p>8.4.2001     version 2.5.  Complete overhaul of the way the script
+works. Re-wrote     the album display routine.  Better support for any
+filetype. You can     now register filetypes using the %filetype hash in
+the sitevariables.pl     file.  Also re-did the standard images used for
+buttons,logos, etc.     Also a complete overhaul of the manager script!
+Added support for     Image::Info to get the EXIF data stored by digital
+cameras. </p>
+  <p>8.10.2001     version 2.6.  Major security fix!  Now it dies if
+someone puts .. in the album     name they want to view!  Fixed
+deleteing a picture to delete the picture     and all different sizes of
+it (manage.cgi).  Fixed problem with spaces     in image names for older
+netscapes. Added alpha watermarking code. </p>
+  <p>6.12.2002    version 3.1.  Major updates: My Photo Gallery is now
+much more customizable    thanks to the use of a template file.  Using
+this file, the photo gallery    is generated inside an html page at the
+point where you specify.  This makes    it really quick and easy to make
+the photo gallery match the current site.    added a smaller viewing
+option for all pictures of 320 pixels in width.    Took off the main
+menu on the right side.  Added option to turn off the    shadows around
+each picture.  New png images for directories to allow for any color
+background that you wish.  Added password protection for any  dictory
+where you want to require a username and password.  No longer using
+Image Magick's ping function to prevent incompatablities between
+versions.<br>
+  </p>
+  <p>3.6.2003 version 3.2 Major updates: Complete re-write of the
+manage.cgi script.&nbsp; Users can now easily update the config file
+through this web based interface.&nbsp; New manage.cgi now acts in batch
+mode, allowing an entire directory to be processed at a time with
+description editing, rotation, deletion, and more.&nbsp; Automatic
+unzipping of uploaded files when using manage.cgi.&nbsp; New version
+fixed many bugs.&nbsp; Main index.cgi has many cosmetic changes.&nbsp;
+Picture table now tightly holds all generated information in a smaller
+table, buttons accross the top have been streamlined.&nbsp; Package now
+includes a command line script (createfiles.pl) that is capable of doing
+all of the processing ahead of time for the script instead of waiting to
+do this dynamically.<br>
+  </p>
+  <p>8.24.2003 version 3.4<br>
+  Fixed a bug that caused the manage.cgi script and index.cgi script to
+  create different thumbnails that prevented rotation, etc.<br>
+  Fixed a bug that required the username and password to be entered twice
+  to gain access to password protected folders.  This was due to the
+  script ignoring the value passed by the form and only looking at the
+  cookie.<br>
+  Fixed a bug allowing access when the username and password fields 
+  were left blank in certain conditions.<br>
+  Fixed a bug in the createfiles.pl script that ignored directories containing
+  spaces.  This was due to the glob() function needing the spaces to be
+  escaped.<br>
+  Fixed a bug that didn't show the "order this photo" button for shutterfly
+  support.<br>
+  <p>09.07.2003 (version 3.5)</p>
+  <p>Major facelift to picture page.  Several bugfixes when viewing very small
+  pictures.  Replaced default directory image. Uses javascript now to automatically change viewing resolutions.  createfiles.pl script will now watermark all
+  of your pictures.  All of the MPG scripts now use the imagemagick.pl script
+  for the imagemagick work meaning that a bug fix in one script will fix the same bug for all scripts.</p>
+  </p>
+  <p>10.19.2003 version 3.6</p>
+  <p>major security flaw fixed.  Rotating images now is completely lossless 
+  (meaning absolutely no loss in quality) by optionally allowing jpegtran to
+  handle the rotations instead of Image Magick.
+  Option to replace :-) and the like with small images of smilies.
+  Bug fixes in EXIF data for Shutterspeeds longer
+  than one second and some irreported focal lengths.  Fixed bug that ignored the
+  config option to overlay the magnifying glass over the thumbnails.  Fixed a
+  bug with the calculations for focal lengths (please let us know if it is 
+  reporting incorrect values for your camera).</p>
+  <p>11.01.2003 version 3.7</p>
+  <p>Management script can now be used to move pictures around while safely moving the data files as well.  Using the management script, all of the data files including various resizes, comments, descriptions, etc will be moved along with the picture.  When watermarking is enabled, uploaded images are now automatically watermarked.  Added option to remove leading numbers from filenames when displayed.  Added option to specify the quality level for resized images.  The EXIF data from some cameras included the "Make" in the "Make" and the "Model" causing duplicate words.  This is now detected and prevented.  Updated License note at the top of imagemagick.pl.  New lines now show up correctly for album descriptions (replacing \n with &lt;br&gt;).</p>
+  <p>11.01.2003 version 3.8</p>
+  <p>Security fix (update strongly suggested).  Listing of files now lists directories first before photos and other files.  ClubPhoto.com support added.  When enabled, you visitors can now order prints of your pictures from either ClubPhoto.com or ShutterFly.com.  A small image appears next to each thumbnail when comments are available.  When the user hovers over this icon it informs them that comments are available.</p>
+  <p>4.4.2004 version 3.9</p>
+  <p>Pictures can now be selected to appear to be overlayed ontop of the folder picture.  Images to be used for folders can now be graphically selected using the web based manage script. Changed logging functionality to speed up page loads with lots of folders. Fixed a bug that prohibited uploading of non-image files with the manage script.  Fixed a bug deleting non-image files from the root picture directory with the manage script.</p>
+  <p>6.3.2004 version 4.0</p>
+  <p>Thanks to many people for this release including Scott Allen, Neil Hooey, Matthew Ball, Chuck Brady, and others.  Most of these bugs were reported and or fixed by users. Scott provided a re-written EXIF subroutine that is much smarter than before.  Only present elements are displayed and if they are not any found the entire EXIF data table is not displayed.  Fixed bug in using jpegtran with pictures with spaces.  Users can specify how many thumbnails are generated per page and page numbers are assigned.  A bug was fixed with Windows servers paths for the config file.  EXIF data and embedded thumbnails are no longer stored in thumbnails or resized images to save space.  Various bugs fixed.</p>
+  <p>10.04.2004 version 4.01</p>
+  <p>Fixed problem with pagination in main directory.  Now works just as smoothly as subdirectories.</p>
+  <p>07.18.2005 version 4.02</p>
+  <p>Fixed a bug in creating directory images. Script now also filters troublesome filename characters.</p>
+  <p>09.19.2005 version 4.03</p>
+  <p>Fixed a bug in creating thumbnails in which the filesize can be large.</p>
+
+</blockquote>
+<table bgcolor="#000000" width="100%" cellpadding="3">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"><b> <a name="todo">TODO </a></b></font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> I need to do/need help with the following items 
+<li>1.  disable right click to save with java script (I now have an example, just need to integrate it).</li>
+  <li>2. fix shutterspeed bug with shutterspeeds over 1 sec. </li>
+  <li>3. allow the creation of the username and password lock files via the manage.cgi script. </li>
+</blockquote>
+Send questions or comments to <a href="mailto:mike@fuzzymonkey.org">mike@fuzzymonkey.org</a> <br>
+<br>
+Thanks,<br>
+Michael and Erin<br>
+FuzzyMonkey scripting wizards<br>
+</body>
+</html>
