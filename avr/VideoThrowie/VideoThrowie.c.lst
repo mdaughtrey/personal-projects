@@ -63,7 +63,7 @@ _delay_loop_2(uint16_t __count)
   14:	08 95       	ret
 
 00000016 <__vector_5>:
-#define INTERVAL_INIT (60 << 2) // 60s in 250ms intervals
+#define INTERVAL_INIT (30 << 2) // 30s in 250ms intervals
 
 volatile unsigned char interval = INTERVAL_INIT; // 250ms units 
 
@@ -204,7 +204,7 @@ main(void)
         while (!breakit)
         {
             interval = INTERVAL_INIT;
-  aa:	60 ef       	ldi	r22, 0xF0	; 240
+  aa:	68 e7       	ldi	r22, 0x78	; 120
             while (interval) // wait for timer to expire
             {
                 if (PINB & POWER)

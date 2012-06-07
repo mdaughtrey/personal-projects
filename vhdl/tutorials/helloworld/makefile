@@ -11,5 +11,8 @@ elaborate: makefile
 run: makefile
 	$(GHDL) -r hello
 
+analyze: makefile
+	$(GHDL) -a hello
+
 clean:
 	rm *.cf

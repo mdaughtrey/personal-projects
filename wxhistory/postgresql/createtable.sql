@@ -1,17 +1,35 @@
+DROP TABLE station
+DROP TABLE wxhistory
+
+
+CREATE TABLE station (
+        state CHARACTER(2),
+        longname TEXT,
+        icao CHARACTER(4),
+        iata CHARACTER(3),
+        synop NUMERIC,
+        latitude NUMERIC,
+        longitude NUMERIC,
+        elevation NUMERIC,
+        metar CHARACTER(1),
+        nexrad CHARACTER(1),
+        airmet CHARACTER(1),
+        artcc CHARACTER(1),
+        taf CHARACTER(1),
+        plot_priority NUMERIC,
+        country CHARACTER(2)
+);
+
 CREATE TABLE wxhistory (
-    source   VARCHAR(20),
     raw_text TEXT,
-    station_id CHARACTER(4),
+    icao CHARACTER(4),
     observation_time TIMESTAMP WITH TIME ZONE,
-    latitude NUMERIC,
-    longitude NUMERIC,
     temp_c NUMERIC,
     dewpoint_c NUMERIC,
     wind_dir_degrees NUMERIC,
     wind_speed_kt NUMERIC,
     wind_speed_gust NUMERIC,
     visibility_statute_mi NUMERIC,
-    altim_in_hg NUMERIC,
     sea_level_pressure_mb NUMERIC,
     quality_control_flags TEXT,
     wx_string TEXT,
@@ -29,9 +47,8 @@ CREATE TABLE wxhistory (
     pcp24hr_in NUMERIC,
     snow_in NUMERIC,
     vert_vis_fr NUMERIC,
-    metar_type TEXT,
-    elevation_m NUMERIC
     );
 
-ALTER TABLE wxhistory ADD PRIMARY KEY (raw_text);
+ALTER TABLE wxhistory ADD PRIMARY KEY (icao, observation_time);
+ALTER TABLE station ADD PRIMARY KEY (icao)
 
