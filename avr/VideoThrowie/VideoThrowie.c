@@ -24,7 +24,7 @@ void delayMs(unsigned char ms, unsigned char repeat)
 
 #define WAIT_TIL_LED_ON while ((PINB & LED) == LED);
 #define WAIT_TIL_LED_OFF while ((PINB & LED) == 0);
-#define INTERVAL_INIT (60 << 2) // 60s in 250ms intervals
+#define INTERVAL_INIT (30 << 2) // 30s in 250ms intervals
 
 volatile unsigned char interval = INTERVAL_INIT; // 250ms units 
 
