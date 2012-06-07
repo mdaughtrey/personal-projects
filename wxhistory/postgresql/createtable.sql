@@ -1,0 +1,37 @@
+CREATE TABLE wxhistory (
+    source   VARCHAR(20),
+    raw_text TEXT,
+    station_id CHARACTER(4),
+    observation_time TIMESTAMP WITH TIME ZONE,
+    latitude NUMERIC,
+    longitude NUMERIC,
+    temp_c NUMERIC,
+    dewpoint_c NUMERIC,
+    wind_dir_degrees NUMERIC,
+    wind_speed_kt NUMERIC,
+    wind_speed_gust NUMERIC,
+    visibility_statute_mi NUMERIC,
+    altim_in_hg NUMERIC,
+    sea_level_pressure_mb NUMERIC,
+    quality_control_flags TEXT,
+    wx_string TEXT,
+    sky_cover TEXT,
+    cloud_base_ft_agl NUMERIC,
+    flight_category TEXT,
+    three_hr_pressure_tendency_mb NUMERIC,
+    maxt_c NUMERIC,
+    mint_c NUMERIC,
+    maxt24hr_c NUMERIC,
+    mint24hr_c NUMERIC,
+    precip_in NUMERIC,
+    pcp3hr_in NUMERIC,
+    pcp6hr_in NUMERIC,
+    pcp24hr_in NUMERIC,
+    snow_in NUMERIC,
+    vert_vis_fr NUMERIC,
+    metar_type TEXT,
+    elevation_m NUMERIC
+    );
+
+ALTER TABLE wxhistory ADD PRIMARY KEY (raw_text);
+
