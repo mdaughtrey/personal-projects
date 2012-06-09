@@ -7,6 +7,7 @@ import fileinput
 import re
 import pdb
 import station
+import database
 
 #           1         2         3         4         5         6         7         8
 # 0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
@@ -15,7 +16,7 @@ import station
 
 class Ingest:
     def __init__(self, config):
-        self._config = config
+        self.__config = config
         self._localFilename = config.get('metar', 'stations_txt_local')
         self._log = logging.getLogger('metaringest')
         logging.getLogger('metaringest').debug('init')
@@ -27,13 +28,13 @@ class Ingest:
 
 
     def _stationsGenerator(self):
-        pdb.set_trace()
         for line in fileinput.input(self._localFilename):
-            self._log.debug(line)
-            if len(line) != 84:
+#            self._log.debug(line)
+            line = line.rstrip('\r\n')
+            if len(line) != 83:
                 continue
             data = { 'CD' : line[0:2],
-                'station' : line[3:19],
+                'station' : line[3:19].rstrip(' '),
                 'icao' : line[20:24], 
                 'iata' : line[26:29],
                 'synop' : int(self._blankCheck(line[33:37])),
@@ -51,7 +52,7 @@ class Ingest:
                 'auto' : line[74],
                 'office' : line[77],
                 'plotting' : int(self._blankCheck(line[79])),
-                'country' : line[81:84]}
+                'country' : line[81:82]}
 
             newStation = station.Station(data)
             if not newStation():
@@ -59,7 +60,7 @@ class Ingest:
             yield newStation
 
     def __call__(self):
-        url = self._config.get('metar', 'stations_txt_url')
+        url = self.__config.get('metar', 'stations_txt_url')
 
         if not os.path.isfile(self._localFilename):
             self._log.debug("Retrieving %s" % url)
@@ -69,7 +70,9 @@ class Ingest:
         # Read the stations file, update the DB if necessary and build the 
         # data query
         #
+        pdb.set_trace()
+        stationsDb = database.Database(self.__config)
         for station in self._stationsGenerator():
-            pass
+            stationsDb.updateStation(station)
 
         return True

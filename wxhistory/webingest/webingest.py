@@ -18,7 +18,6 @@ configFilename = 'webingest.cfg'
 
 
 def main():
-#    pdb.set_trace()
     #
     # Read the configuration file
     #
@@ -45,7 +44,6 @@ def main():
     # Set up the logger
     #
     try:
-#        pdb.set_trace()
         logging.basicConfig(
                 level = getattr(
                     logging,
