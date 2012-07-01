@@ -52,7 +52,7 @@ class Ingest:
                 'auto' : line[74],
                 'office' : line[77],
                 'plotting' : int(self._blankCheck(line[79])),
-                'country' : line[81:82]}
+                'country' : line[81:83]}
 
             newStation = station.Station(data)
             if not newStation():
@@ -70,7 +70,6 @@ class Ingest:
         # Read the stations file, update the DB if necessary and build the 
         # data query
         #
-        pdb.set_trace()
         stationsDb = database.Database(self.__config)
         for station in self._stationsGenerator():
             stationsDb.updateStation(station)

@@ -12,7 +12,6 @@ class Database:
         cursor = self.__conn.cursor()
         cursor.execute('SELECT longname FROM station;')
         try:
-            pdb.set_trace()
             self.__knownStations = [ name[0] for name in cursor.fetchall()]
         except TypeError:
             self.__knownStations =() 
@@ -23,48 +22,50 @@ class Database:
         pass
 
     def createNewStationRecord(self, station):
+        toYN = { True: 'Y', False: 'N' }
         cursor = self.__conn.cursor()
-        cursor.execute("INSERT INTO station VALUES('%(state)s', '%(longname)s',\
-'%(icao)s', '%(iata)s', %(synop)d, %(latitude)f, '%(longitude)s',\
-%(elevation)d,'%(metar)c', '%(nexrad)c', '%(airmet)c', '%(artcc)c', '%(taf)c',\
-'%(upperair)c', '%(rawinsonde)c', '%(windprofiler)c', '%(asos)c',\
-'%(awos)c', '%(meso)c', '%(human)c', '%(augmented)c', '%(office_wfo)c',\
-'%(office_rfc)c', '%(office_ncep)c','%(country)s');"
-
-                % {
-                    'state' : station.state,
-                    'longname' : string.replace(station.longname, '\'', ' '),
-                    'icao' : station.name,
-                    'iata' : station.iata,
-                    'synop' : station.synop,
-                    'latitude' : station.latitude,
-                    'longitude' : station.longitude,
-                    'elevation' : station.elevation,
-                    'metar' :  ('Y' and station.isMetar) or 'N',
-                    'nexrad' : ('Y' and station.isNexrad) or 'N',
-                    'airmet' : ('Y' and station.isAviationAirmet) or 'N',
-                    'artcc' : ('Y' and station.isAviationArtcc) or 'N',
-                    'taf' : ('Y' and station.isAviationTaf) or 'N',
-                    'upperair' : ('Y' and station.isUpperAir) or 'N',
-                    'rawinsonde' : ('Y' and station.isRawInSonde) or 'N',
-                    'windprofiler' : ('Y' and station.isWindProfiler) or 'N',
-                    'asos' : ('Y' and station.isAutoAsos ) or 'N',
-                    'awos' : ('Y' and station.isAutoAwos ) or 'N',
-                    'meso' : ('Y' and station.isAutoMeso ) or 'N',
-                    'human' : ('Y' and station.isAutoHuman ) or 'N',
-                    'augmented' : ('Y' and station.isAutoAugmented ) or 'N',
-                    'office_wfo' : ('Y' and station.isOfficeWfo ) or 'N',
-                    'office_rfc' : ('Y' and station.isOfficeRfc ) or 'N',
-                    'office_ncep' : ('Y' and station.isOfficeNcep ) or 'N',
-                    'country' : station.country
-                })
+        cursor.execute("INSERT INTO station VALUES(%(state)s, %(longname)s,\
+%(icao)s, %(iata)s, %(synop)s, %(latitude)s, %(longitude)s,\
+%(elevation)s,%(metar)s, %(nexrad)s, %(airmet)s, %(artcc)s, %(taf)s,\
+%(upperair)s, %(rawinsonde)s, %(windprofiler)s, %(asos)s,\
+%(awos)s, %(meso)s, %(human)s, %(augmented)s, %(office_wfo)s,\
+%(office_rfc)s, %(office_ncep)s,%(country)s);",
+    
+                     {
+                        'state' : station.state,
+                        'longname' : station.longname,
+                        'icao' : station.name,
+                        'iata' : station.iata,
+                        'synop' : station.synop,
+                        'latitude' : station.latitude,
+                        'longitude' : station.longitude,
+                        'elevation' : station.elevation,
+                        'metar' :  toYN[station.isMetar],
+                        'nexrad' : toYN[station.isNexrad],
+                        'airmet' : toYN[station.isAviationAirmet],
+                        'artcc' : toYN[station.isAviationArtcc],
+                        'taf' : toYN[station.isAviationTaf],
+                        'upperair' : toYN[station.isUpperAir],
+                        'rawinsonde' : toYN[station.isRawInSonde],
+                        'windprofiler' : toYN[station.isWindProfiler],
+                        'asos' : toYN[station.isAutoAsos],
+                        'awos' : toYN[station.isAutoAwos],
+                        'meso' : toYN[station.isAutoMeso],
+                        'human' : toYN[station.isAutoHuman],
+                        'augmented' : toYN[station.isAutoAugmented], 
+                        'office_wfo' : toYN[station.isOfficeWfo],
+                        'office_rfc' : toYN[station.isOfficeRfc],
+                        'office_ncep' : toYN[station.isOfficeNcep],
+                        'country' : station.country
+                    })
         self.__conn.commit()
         cursor.close()
 
 
+
     def updateStation(self, station):
-        if not station.name in self.__knownStations:
+        if not station.longname in self.__knownStations:
+            logging.getLogger('database').debug("Add new longname %s" % station.longname)
             self.createNewStationRecord(station)
-            logging.getLogger('New station %s' % station.longname)
 
 

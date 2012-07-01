@@ -119,7 +119,7 @@ LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x260
+.text           0x00000000      0x2fc
  *(.vectors)
  .vectors       0x00000000       0x1e /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr25/crttn45.o
                 0x00000000                __vectors
@@ -187,28 +187,29 @@ LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a
                 0x00000044                __vector_8
                 0x00000044                __vector_14
                 0x00000044                __vector_1
- .text          0x00000046      0x1ee VideoThrowie.o
+ .text          0x00000046      0x28a VideoThrowie.o
                 0x00000046                delayMs
                 0x0000005c                __vector_5
                 0x00000086                flashLed
-                0x000000de                main
- .text          0x00000234        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr25/libc.a(exit.o)
- .text          0x00000234        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_mulhi3.o)
- .text          0x00000234        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
- .text          0x00000234        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_copy_data.o)
-                0x00000234                . = ALIGN (0x2)
+                0x000000de                mainD006D_V3
+                0x00000178                main
+ .text          0x000002d0        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr25/libc.a(exit.o)
+ .text          0x000002d0        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_mulhi3.o)
+ .text          0x000002d0        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
+ .text          0x000002d0        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_copy_data.o)
+                0x000002d0                . = ALIGN (0x2)
  *(.text.*)
  .text.avr-libc
-                0x00000234        0x4 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr25/libc.a(exit.o)
-                0x00000234                exit
- .text.libgcc   0x00000238       0x24 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_mulhi3.o)
-                0x00000238                __mulhi3
- .text.libgcc   0x0000025c        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
- .text.libgcc   0x0000025c        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_copy_data.o)
-                0x0000025c                . = ALIGN (0x2)
+                0x000002d0        0x4 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr25/libc.a(exit.o)
+                0x000002d0                exit
+ .text.libgcc   0x000002d4       0x24 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_mulhi3.o)
+                0x000002d4                __mulhi3
+ .text.libgcc   0x000002f8        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
+ .text.libgcc   0x000002f8        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_copy_data.o)
+                0x000002f8                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000025c        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
-                0x0000025c                _exit
+ .fini9         0x000002f8        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
+                0x000002f8                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -227,11 +228,11 @@ LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000025c        0x4 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
+ .fini0         0x000002f8        0x4 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a(_exit.o)
  *(.fini0)
-                0x00000260                _etext = .
+                0x000002fc                _etext = .
 
-.data           0x00800060        0x2 load address 0x00000260
+.data           0x00800060        0x2 load address 0x000002fc
                 0x00800060                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00800060        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr25/crttn45.o
@@ -262,8 +263,8 @@ LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a
  *(.bss*)
  *(COMMON)
                 0x00800062                PROVIDE (__bss_end, .)
-                0x00000260                __data_load_start = LOADADDR (.data)
-                0x00000262                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x000002fc                __data_load_start = LOADADDR (.data)
+                0x000002fe                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x00800062        0x0
                 0x00800062                PROVIDE (__noinit_start, .)
@@ -331,36 +332,36 @@ LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr25/libgcc.a
                 0x00000000       0x20 VideoThrowie.o
 
 .debug_pubnames
-                0x00000000       0x50
+                0x00000000       0x61
  *(.debug_pubnames)
  .debug_pubnames
-                0x00000000       0x50 VideoThrowie.o
+                0x00000000       0x61 VideoThrowie.o
 
-.debug_info     0x00000000      0x4a7
+.debug_info     0x00000000      0x5bc
  *(.debug_info)
- .debug_info    0x00000000      0x4a7 VideoThrowie.o
+ .debug_info    0x00000000      0x5bc VideoThrowie.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev   0x00000000      0x15b
+.debug_abbrev   0x00000000      0x180
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x15b VideoThrowie.o
+ .debug_abbrev  0x00000000      0x180 VideoThrowie.o
 
-.debug_line     0x00000000      0x4d1
+.debug_line     0x00000000      0x62b
  *(.debug_line)
- .debug_line    0x00000000      0x4d1 VideoThrowie.o
+ .debug_line    0x00000000      0x62b VideoThrowie.o
 
-.debug_frame    0x00000000       0x50
+.debug_frame    0x00000000       0x60
  *(.debug_frame)
- .debug_frame   0x00000000       0x50 VideoThrowie.o
+ .debug_frame   0x00000000       0x60 VideoThrowie.o
 
-.debug_str      0x00000000       0xde
+.debug_str      0x00000000       0xeb
  *(.debug_str)
- .debug_str     0x00000000       0xde VideoThrowie.o
-                                0x112 (size before relaxing)
+ .debug_str     0x00000000       0xeb VideoThrowie.o
+                                0x11f (size before relaxing)
 
-.debug_loc      0x00000000      0x800
+.debug_loc      0x00000000      0x8d2
  *(.debug_loc)
- .debug_loc     0x00000000      0x800 VideoThrowie.o
+ .debug_loc     0x00000000      0x8d2 VideoThrowie.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -372,5 +373,5 @@ LOAD linker stubs
  .debug_pubtypes
                 0x00000000       0x2b VideoThrowie.o
 
-.debug_ranges   0x00000000      0x1e0
- .debug_ranges  0x00000000      0x1e0 VideoThrowie.o
+.debug_ranges   0x00000000      0x228
+ .debug_ranges  0x00000000      0x228 VideoThrowie.o

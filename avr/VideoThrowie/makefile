@@ -7,7 +7,7 @@ OBJDUMP=avr-objdump
 CFLAGS=-mmcu=$(HWTARGET) -O3
 OBJCOPY=avr-objcopy
 MAKEFILE=makefile
-DEFINES=-DF_CPU=1000000 
+DEFINES=-DF_CPU=1000000 -DD006D_V3
 
 LIBS=$(LIBPATH) -lc
 OBJS=VideoThrowie.o 

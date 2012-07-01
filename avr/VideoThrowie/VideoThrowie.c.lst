@@ -3,31 +3,31 @@ VideoThrowie.o:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         000001ee  00000000  00000000  00000034  2**0
+  0 .text         0000028a  00000000  00000000  00000034  2**0
                   CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
-  1 .data         00000001  00000000  00000000  00000222  2**0
+  1 .data         00000001  00000000  00000000  000002be  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          00000000  00000000  00000000  00000223  2**0
+  2 .bss          00000000  00000000  00000000  000002bf  2**0
                   ALLOC
-  3 .debug_abbrev 0000015b  00000000  00000000  00000223  2**0
+  3 .debug_abbrev 00000180  00000000  00000000  000002bf  2**0
                   CONTENTS, READONLY, DEBUGGING
-  4 .debug_info   000004a7  00000000  00000000  0000037e  2**0
+  4 .debug_info   000005bc  00000000  00000000  0000043f  2**0
                   CONTENTS, RELOC, READONLY, DEBUGGING
-  5 .debug_line   000004d1  00000000  00000000  00000825  2**0
+  5 .debug_line   0000062b  00000000  00000000  000009fb  2**0
                   CONTENTS, RELOC, READONLY, DEBUGGING
-  6 .debug_frame  00000050  00000000  00000000  00000cf8  2**2
+  6 .debug_frame  00000060  00000000  00000000  00001028  2**2
                   CONTENTS, RELOC, READONLY, DEBUGGING
-  7 .debug_loc    00000800  00000000  00000000  00000d48  2**0
+  7 .debug_loc    000008d2  00000000  00000000  00001088  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_pubnames 00000050  00000000  00000000  00001548  2**0
+  8 .debug_pubnames 00000061  00000000  00000000  0000195a  2**0
                   CONTENTS, RELOC, READONLY, DEBUGGING
-  9 .debug_pubtypes 0000002b  00000000  00000000  00001598  2**0
+  9 .debug_pubtypes 0000002b  00000000  00000000  000019bb  2**0
                   CONTENTS, RELOC, READONLY, DEBUGGING
- 10 .debug_aranges 00000020  00000000  00000000  000015c3  2**0
+ 10 .debug_aranges 00000020  00000000  00000000  000019e6  2**0
                   CONTENTS, RELOC, READONLY, DEBUGGING
- 11 .debug_ranges 000001e0  00000000  00000000  000015e3  2**0
+ 11 .debug_ranges 00000228  00000000  00000000  00001a06  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_str    00000112  00000000  00000000  000017c3  2**0
+ 12 .debug_str    0000011f  00000000  00000000  00001c2e  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -185,318 +185,488 @@ void flashLed(void)
 }
   96:	08 95       	ret
 
-00000098 <main>:
+00000098 <mainD006D_V3>:
 
-main(void)
+//
+// This variation powers up as soon as the power button is clicked
+//
+void mainD006D_V3(void)
 {
   98:	df 93       	push	r29
   9a:	cf 93       	push	r28
   9c:	0f 92       	push	r0
   9e:	cd b7       	in	r28, 0x3d	; 61
   a0:	de b7       	in	r29, 0x3e	; 62
-  a2:	20 ec       	ldi	r18, 0xC0	; 192
-  a4:	3d e5       	ldi	r19, 0x5D	; 93
-  a6:	40 ee       	ldi	r20, 0xE0	; 224
-  a8:	5e e2       	ldi	r21, 0x2E	; 46
+        TCCR0B |= (_BV(CS00) | _BV(CS02));    // clock enabled, /1024
+        TIMSK |= _BV(TOIE0);         // timer 0 overflow
         sei();
 
         volatile unsigned char breakit = 0;
-        while (!breakit)
-        {
-            interval = INTERVAL_INIT;
-  aa:	68 e7       	ldi	r22, 0x78	; 120
+        interval = INTERVAL_INIT;
+  a2:	78 e7       	ldi	r23, 0x78	; 120
+  a4:	20 ec       	ldi	r18, 0xC0	; 192
+  a6:	3d e5       	ldi	r19, 0x5D	; 93
+  a8:	40 ec       	ldi	r20, 0xC0	; 192
+  aa:	5d e5       	ldi	r21, 0x5D	; 93
             while (interval) // wait for timer to expire
             {
                 if (PINB & POWER)
                 {
-                    flashLed();
+            //        flashLed();
                     breakit = 1;
-  ac:	71 e0       	ldi	r23, 0x01	; 1
-
-main(void)
+  ac:	e1 e0       	ldi	r30, 0x01	; 1
+//
+void mainD006D_V3(void)
 {
     while (1)
     {
         while (!(PINB & POWER)); // wait for a power button keypress
   ae:	b3 9b       	sbis	0x16, 3	; 22
-  b0:	00 c0       	rjmp	.+0      	; 0xb2 <main+0x1a>
-  b2:	c9 01       	movw	r24, r18
-  b4:	01 97       	sbiw	r24, 0x01	; 1
-  b6:	01 f4       	brne	.+0      	; 0xb8 <main+0x20>
-    }
-}
+  b0:	00 c0       	rjmp	.+0      	; 0xb2 <mainD006D_V3+0x1a>
 
-void flashLed(void)
+        TCNT0 = 0;
+  b2:	12 be       	out	0x32, r1	; 50
+        TCCR0B |= (_BV(CS00) | _BV(CS02));    // clock enabled, /1024
+  b4:	83 b7       	in	r24, 0x33	; 51
+  b6:	85 60       	ori	r24, 0x05	; 5
+  b8:	83 bf       	out	0x33, r24	; 51
+        TIMSK |= _BV(TOIE0);         // timer 0 overflow
+  ba:	89 b7       	in	r24, 0x39	; 57
+  bc:	82 60       	ori	r24, 0x02	; 2
+  be:	89 bf       	out	0x39, r24	; 57
+        sei();
+  c0:	78 94       	sei
+
+        volatile unsigned char breakit = 0;
+  c2:	19 82       	std	Y+1, r1	; 0x01
+        interval = INTERVAL_INIT;
+  c4:	70 93 00 00 	sts	0x0000, r23
+        while (!breakit)
+  c8:	89 81       	ldd	r24, Y+1	; 0x01
+  ca:	88 23       	and	r24, r24
+  cc:	01 f4       	brne	.+0      	; 0xce <mainD006D_V3+0x36>
+
+//
+// This variation powers up as soon as the power button is clicked
+//
+void mainD006D_V3(void)
 {
-    DDRB |= POWER;
-  b8:	bb 9a       	sbi	0x17, 3	; 23
-    unsigned char ii;
-    for (ii = 0; ii < 5; ii++)
-    {
-        PORTB |= POWER;
-  ba:	c3 9a       	sbi	0x18, 3	; 24
-  bc:	c9 01       	movw	r24, r18
-  be:	01 97       	sbiw	r24, 0x01	; 1
-  c0:	01 f4       	brne	.+0      	; 0xc2 <main+0x2a>
-        delayMs(100, 1);
-        PORTB &= ~POWER;
-  c2:	c3 98       	cbi	0x18, 3	; 24
-  c4:	c9 01       	movw	r24, r18
-  c6:	01 97       	sbiw	r24, 0x01	; 1
-  c8:	01 f4       	brne	.+0      	; 0xca <main+0x32>
-{
-    DDRB |= POWER;
-    unsigned char ii;
-    for (ii = 0; ii < 5; ii++)
-    {
-        PORTB |= POWER;
-  ca:	c3 9a       	sbi	0x18, 3	; 24
-  cc:	c9 01       	movw	r24, r18
-  ce:	01 97       	sbiw	r24, 0x01	; 1
-  d0:	01 f4       	brne	.+0      	; 0xd2 <main+0x3a>
-        delayMs(100, 1);
-        PORTB &= ~POWER;
-  d2:	c3 98       	cbi	0x18, 3	; 24
-  d4:	c9 01       	movw	r24, r18
-  d6:	01 97       	sbiw	r24, 0x01	; 1
-  d8:	01 f4       	brne	.+0      	; 0xda <main+0x42>
-{
-    DDRB |= POWER;
-    unsigned char ii;
-    for (ii = 0; ii < 5; ii++)
-    {
-        PORTB |= POWER;
-  da:	c3 9a       	sbi	0x18, 3	; 24
-  dc:	c9 01       	movw	r24, r18
-  de:	01 97       	sbiw	r24, 0x01	; 1
-  e0:	01 f4       	brne	.+0      	; 0xe2 <main+0x4a>
-        delayMs(100, 1);
-        PORTB &= ~POWER;
-  e2:	c3 98       	cbi	0x18, 3	; 24
-  e4:	c9 01       	movw	r24, r18
-  e6:	01 97       	sbiw	r24, 0x01	; 1
-  e8:	01 f4       	brne	.+0      	; 0xea <main+0x52>
-{
-    DDRB |= POWER;
-    unsigned char ii;
-    for (ii = 0; ii < 5; ii++)
-    {
-        PORTB |= POWER;
-  ea:	c3 9a       	sbi	0x18, 3	; 24
-  ec:	c9 01       	movw	r24, r18
-  ee:	01 97       	sbiw	r24, 0x01	; 1
-  f0:	01 f4       	brne	.+0      	; 0xf2 <main+0x5a>
-        delayMs(100, 1);
-        PORTB &= ~POWER;
-  f2:	c3 98       	cbi	0x18, 3	; 24
-  f4:	c9 01       	movw	r24, r18
-  f6:	01 97       	sbiw	r24, 0x01	; 1
-  f8:	01 f4       	brne	.+0      	; 0xfa <main+0x62>
-{
-    DDRB |= POWER;
-    unsigned char ii;
-    for (ii = 0; ii < 5; ii++)
-    {
-        PORTB |= POWER;
-  fa:	c3 9a       	sbi	0x18, 3	; 24
-  fc:	c9 01       	movw	r24, r18
-  fe:	01 97       	sbiw	r24, 0x01	; 1
- 100:	01 f4       	brne	.+0      	; 0x102 <main+0x6a>
-        delayMs(100, 1);
-        PORTB &= ~POWER;
- 102:	c3 98       	cbi	0x18, 3	; 24
- 104:	c9 01       	movw	r24, r18
- 106:	01 97       	sbiw	r24, 0x01	; 1
- 108:	01 f4       	brne	.+0      	; 0x10a <main+0x72>
-        delayMs(100, 1);
-    }
-    DDRB &= ~POWER;
- 10a:	bb 98       	cbi	0x17, 3	; 23
- 10c:	ee e1       	ldi	r30, 0x1E	; 30
- 10e:	c9 01       	movw	r24, r18
- 110:	01 97       	sbiw	r24, 0x01	; 1
- 112:	01 f4       	brne	.+0      	; 0x114 <main+0x7c>
- 114:	e1 50       	subi	r30, 0x01	; 1
+  ce:	62 e4       	ldi	r22, 0x42	; 66
+  d0:	c9 01       	movw	r24, r18
+  d2:	01 97       	sbiw	r24, 0x01	; 1
+  d4:	01 f4       	brne	.+0      	; 0xd6 <mainD006D_V3+0x3e>
+  d6:	61 50       	subi	r22, 0x01	; 1
 void delayMs(unsigned char ms, unsigned char repeat)
 {
     do
     {
         _delay_loop_2(ms * 240);
     } while (--repeat);
- 116:	01 f4       	brne	.+0      	; 0x118 <main+0x80>
-        delayMs(100, 1);
-        flashLed();
-
-        delayMs(100, 30); // 100ms * 30 times = 3s
-
-        TCNT0 = 0;
- 118:	12 be       	out	0x32, r1	; 50
-        TCCR0B |= (_BV(CS00) | _BV(CS02));    // clock enabled, /1024
- 11a:	83 b7       	in	r24, 0x33	; 51
- 11c:	85 60       	ori	r24, 0x05	; 5
- 11e:	83 bf       	out	0x33, r24	; 51
-        TIMSK |= _BV(TOIE0);         // timer 0 overflow
- 120:	89 b7       	in	r24, 0x39	; 57
- 122:	82 60       	ori	r24, 0x02	; 2
- 124:	89 bf       	out	0x39, r24	; 57
-        sei();
- 126:	78 94       	sei
-
-        volatile unsigned char breakit = 0;
- 128:	19 82       	std	Y+1, r1	; 0x01
+  d8:	01 f4       	brne	.+0      	; 0xda <mainD006D_V3+0x42>
         while (!breakit)
- 12a:	89 81       	ldd	r24, Y+1	; 0x01
- 12c:	88 23       	and	r24, r24
- 12e:	01 f0       	breq	.+0      	; 0x130 <main+0x98>
- 130:	00 c0       	rjmp	.+0      	; 0x132 <main+0x9a>
         {
-            interval = INTERVAL_INIT;
- 132:	60 93 00 00 	sts	0x0000, r22
-            // Power On
-            DDRB |= (POWER | SHUTTER);
- 136:	87 b3       	in	r24, 0x17	; 23
- 138:	88 61       	ori	r24, 0x18	; 24
- 13a:	87 bb       	out	0x17, r24	; 23
-            PORTB |= POWER;
- 13c:	c3 9a       	sbi	0x18, 3	; 24
- 13e:	c9 01       	movw	r24, r18
- 140:	01 97       	sbiw	r24, 0x01	; 1
- 142:	01 f4       	brne	.+0      	; 0x144 <main+0xac>
- 144:	c9 01       	movw	r24, r18
- 146:	01 97       	sbiw	r24, 0x01	; 1
- 148:	01 f4       	brne	.+0      	; 0x14a <main+0xb2>
- 14a:	c9 01       	movw	r24, r18
- 14c:	01 97       	sbiw	r24, 0x01	; 1
- 14e:	01 f4       	brne	.+0      	; 0x150 <main+0xb8>
- 150:	c9 01       	movw	r24, r18
- 152:	01 97       	sbiw	r24, 0x01	; 1
- 154:	01 f4       	brne	.+0      	; 0x156 <main+0xbe>
- 156:	c9 01       	movw	r24, r18
- 158:	01 97       	sbiw	r24, 0x01	; 1
- 15a:	01 f4       	brne	.+0      	; 0x15c <main+0xc4>
- 15c:	c9 01       	movw	r24, r18
- 15e:	01 97       	sbiw	r24, 0x01	; 1
- 160:	01 f4       	brne	.+0      	; 0x162 <main+0xca>
- 162:	c9 01       	movw	r24, r18
- 164:	01 97       	sbiw	r24, 0x01	; 1
- 166:	01 f4       	brne	.+0      	; 0x168 <main+0xd0>
- 168:	c9 01       	movw	r24, r18
- 16a:	01 97       	sbiw	r24, 0x01	; 1
- 16c:	01 f4       	brne	.+0      	; 0x16e <main+0xd6>
- 16e:	c9 01       	movw	r24, r18
- 170:	01 97       	sbiw	r24, 0x01	; 1
- 172:	01 f4       	brne	.+0      	; 0x174 <main+0xdc>
- 174:	c9 01       	movw	r24, r18
- 176:	01 97       	sbiw	r24, 0x01	; 1
- 178:	01 f4       	brne	.+0      	; 0x17a <main+0xe2>
- 17a:	c9 01       	movw	r24, r18
- 17c:	01 97       	sbiw	r24, 0x01	; 1
- 17e:	01 f4       	brne	.+0      	; 0x180 <main+0xe8>
- 180:	c9 01       	movw	r24, r18
- 182:	01 97       	sbiw	r24, 0x01	; 1
- 184:	01 f4       	brne	.+0      	; 0x186 <main+0xee>
- 186:	c9 01       	movw	r24, r18
- 188:	01 97       	sbiw	r24, 0x01	; 1
- 18a:	01 f4       	brne	.+0      	; 0x18c <main+0xf4>
-            delayMs(100, 13); // 100ms * 13 times = 1.3s
-            PORTB &= ~POWER;
- 18c:	c3 98       	cbi	0x18, 3	; 24
-
-            WAIT_TIL_LED_OFF;
- 18e:	b2 9b       	sbis	0x16, 2	; 22
- 190:	00 c0       	rjmp	.+0      	; 0x192 <main+0xfa>
-            WAIT_TIL_LED_ON;
- 192:	b2 99       	sbic	0x16, 2	; 22
- 194:	00 c0       	rjmp	.+0      	; 0x196 <main+0xfe>
- 196:	c9 01       	movw	r24, r18
- 198:	01 97       	sbiw	r24, 0x01	; 1
- 19a:	01 f4       	brne	.+0      	; 0x19c <main+0x104>
+            delayMs(100, 66); // 100ms * 66 times = 6.6s
 
             // Shutter
-            delayMs(100, 1); // 100ms
+            DDRB |= SHUTTER;
+  da:	bc 9a       	sbi	0x17, 4	; 23
             PORTB |= SHUTTER;
- 19c:	c4 9a       	sbi	0x18, 4	; 24
- 19e:	ca 01       	movw	r24, r20
- 1a0:	01 97       	sbiw	r24, 0x01	; 1
- 1a2:	01 f4       	brne	.+0      	; 0x1a4 <main+0x10c>
-            delayMs(50, 1); // 50ms
+  dc:	c4 9a       	sbi	0x18, 4	; 24
+  de:	ca 01       	movw	r24, r20
+  e0:	01 97       	sbiw	r24, 0x01	; 1
+  e2:	01 f4       	brne	.+0      	; 0xe4 <mainD006D_V3+0x4c>
+  e4:	ca 01       	movw	r24, r20
+  e6:	01 97       	sbiw	r24, 0x01	; 1
+  e8:	01 f4       	brne	.+0      	; 0xea <mainD006D_V3+0x52>
+            delayMs(100, 2); // 200ms
             PORTB &= ~SHUTTER;
- 1a4:	c4 98       	cbi	0x18, 4	; 24
+  ea:	c4 98       	cbi	0x18, 4	; 24
+            DDRB &= ~SHUTTER;
+  ec:	bc 98       	cbi	0x17, 4	; 23
             WAIT_TIL_LED_OFF;
- 1a6:	b2 9b       	sbis	0x16, 2	; 22
- 1a8:	00 c0       	rjmp	.+0      	; 0x1aa <main+0x112>
+  ee:	b2 9b       	sbis	0x16, 2	; 22
+  f0:	00 c0       	rjmp	.+0      	; 0xf2 <mainD006D_V3+0x5a>
 
             // Power Off
             WAIT_TIL_LED_ON;
- 1aa:	b2 99       	sbic	0x16, 2	; 22
- 1ac:	00 c0       	rjmp	.+0      	; 0x1ae <main+0x116>
- 1ae:	c9 01       	movw	r24, r18
- 1b0:	01 97       	sbiw	r24, 0x01	; 1
- 1b2:	01 f4       	brne	.+0      	; 0x1b4 <main+0x11c>
+  f2:	b2 99       	sbic	0x16, 2	; 22
+  f4:	00 c0       	rjmp	.+0      	; 0xf6 <mainD006D_V3+0x5e>
+  f6:	c9 01       	movw	r24, r18
+  f8:	01 97       	sbiw	r24, 0x01	; 1
+  fa:	01 f4       	brne	.+0      	; 0xfc <mainD006D_V3+0x64>
             delayMs(100, 1);
+            DDRB |= POWER;
+  fc:	bb 9a       	sbi	0x17, 3	; 23
             PORTB |= POWER;
- 1b4:	c3 9a       	sbi	0x18, 3	; 24
+  fe:	c3 9a       	sbi	0x18, 3	; 24
             WAIT_TIL_LED_OFF;
- 1b6:	b2 9b       	sbis	0x16, 2	; 22
- 1b8:	00 c0       	rjmp	.+0      	; 0x1ba <main+0x122>
+ 100:	b2 9b       	sbis	0x16, 2	; 22
+ 102:	00 c0       	rjmp	.+0      	; 0x104 <mainD006D_V3+0x6c>
             PORTB &= ~POWER;
- 1ba:	c3 98       	cbi	0x18, 3	; 24
-            DDRB &= ~(POWER | SHUTTER);
- 1bc:	87 b3       	in	r24, 0x17	; 23
- 1be:	87 7e       	andi	r24, 0xE7	; 231
- 1c0:	87 bb       	out	0x17, r24	; 23
+ 104:	c3 98       	cbi	0x18, 3	; 24
+            DDRB &= ~POWER;
+ 106:	bb 98       	cbi	0x17, 3	; 23
 
             while (interval) // wait for timer to expire
- 1c2:	80 91 00 00 	lds	r24, 0x0000
- 1c6:	88 23       	and	r24, r24
- 1c8:	01 f4       	brne	.+0      	; 0x1ca <main+0x132>
- 1ca:	00 c0       	rjmp	.+0      	; 0x1cc <main+0x134>
+ 108:	80 91 00 00 	lds	r24, 0x0000
+ 10c:	88 23       	and	r24, r24
+ 10e:	01 f0       	breq	.+0      	; 0x110 <mainD006D_V3+0x78>
             {
                 if (PINB & POWER)
- 1cc:	b3 9b       	sbis	0x16, 3	; 22
- 1ce:	00 c0       	rjmp	.+0      	; 0x1d0 <main+0x138>
+ 110:	b3 9b       	sbis	0x16, 3	; 22
+ 112:	00 c0       	rjmp	.+0      	; 0x114 <mainD006D_V3+0x7c>
+                {
+            //        flashLed();
+                    breakit = 1;
+ 114:	e9 83       	std	Y+1, r30	; 0x01
+                    break;
+                }
+            }
+            interval = INTERVAL_INIT;
+ 116:	70 93 00 00 	sts	0x0000, r23
+            // Power On
+            DDRB |= POWER;
+ 11a:	bb 9a       	sbi	0x17, 3	; 23
+            PORTB |= POWER;
+ 11c:	c3 9a       	sbi	0x18, 3	; 24
+ 11e:	c9 01       	movw	r24, r18
+ 120:	01 97       	sbiw	r24, 0x01	; 1
+ 122:	01 f4       	brne	.+0      	; 0x124 <mainD006D_V3+0x8c>
+            delayMs(100, 1); // 100ms 1times = 100ms
+            PORTB &= ~POWER;
+ 124:	c3 98       	cbi	0x18, 3	; 24
+            DDRB &= ~POWER;
+ 126:	bb 98       	cbi	0x17, 3	; 23
+        TIMSK |= _BV(TOIE0);         // timer 0 overflow
+        sei();
+
+        volatile unsigned char breakit = 0;
+        interval = INTERVAL_INIT;
+        while (!breakit)
+ 128:	89 81       	ldd	r24, Y+1	; 0x01
+ 12a:	88 23       	and	r24, r24
+ 12c:	01 f0       	breq	.+0      	; 0x12e <mainD006D_V3+0x96>
+ 12e:	00 c0       	rjmp	.+0      	; 0x130 <mainD006D_V3+0x98>
+ 130:	00 c0       	rjmp	.+0      	; 0x132 <main>
+
+00000132 <main>:
+        }
     }
 }
 
-void flashLed(void)
+main(void)
 {
-    DDRB |= POWER;
- 1d0:	bb 9a       	sbi	0x17, 3	; 23
- 1d2:	e5 e0       	ldi	r30, 0x05	; 5
-    unsigned char ii;
-    for (ii = 0; ii < 5; ii++)
-    {
-        PORTB |= POWER;
- 1d4:	c3 9a       	sbi	0x18, 3	; 24
- 1d6:	c9 01       	movw	r24, r18
- 1d8:	01 97       	sbiw	r24, 0x01	; 1
- 1da:	01 f4       	brne	.+0      	; 0x1dc <main+0x144>
-        delayMs(100, 1);
-        PORTB &= ~POWER;
- 1dc:	c3 98       	cbi	0x18, 3	; 24
- 1de:	c9 01       	movw	r24, r18
- 1e0:	01 97       	sbiw	r24, 0x01	; 1
- 1e2:	01 f4       	brne	.+0      	; 0x1e4 <main+0x14c>
- 1e4:	e1 50       	subi	r30, 0x01	; 1
+ 132:	df 93       	push	r29
+ 134:	cf 93       	push	r28
+ 136:	0f 92       	push	r0
+ 138:	cd b7       	in	r28, 0x3d	; 61
+ 13a:	de b7       	in	r29, 0x3e	; 62
+#ifdef D006D_V3
+    mainD006D_V3();
+ 13c:	00 d0       	rcall	.+0      	; 0x13e <main+0xc>
+ 13e:	20 ec       	ldi	r18, 0xC0	; 192
+ 140:	3d e5       	ldi	r19, 0x5D	; 93
+ 142:	40 ee       	ldi	r20, 0xE0	; 224
+ 144:	5e e2       	ldi	r21, 0x2E	; 46
+        sei();
 
-void flashLed(void)
-{
-    DDRB |= POWER;
-    unsigned char ii;
-    for (ii = 0; ii < 5; ii++)
- 1e6:	01 f4       	brne	.+0      	; 0x1e8 <main+0x150>
-        PORTB |= POWER;
-        delayMs(100, 1);
-        PORTB &= ~POWER;
-        delayMs(100, 1);
-    }
-    DDRB &= ~POWER;
- 1e8:	bb 98       	cbi	0x17, 3	; 23
+        volatile unsigned char breakit = 0;
+        while (!breakit)
+        {
+            interval = INTERVAL_INIT;
+ 146:	68 e7       	ldi	r22, 0x78	; 120
             while (interval) // wait for timer to expire
             {
                 if (PINB & POWER)
                 {
                     flashLed();
                     breakit = 1;
- 1ea:	79 83       	std	Y+1, r23	; 0x01
- 1ec:	00 c0       	rjmp	.+0      	; 0x1ee <main+0x156>
+ 148:	71 e0       	ldi	r23, 0x01	; 1
+    // power up. This lets us intercept a brief click to initialize ourselves.
+    //
+
+    while (1)
+    {
+        while (!(PINB & POWER)); // wait for a power button keypress
+ 14a:	b3 9b       	sbis	0x16, 3	; 22
+ 14c:	00 c0       	rjmp	.+0      	; 0x14e <main+0x1c>
+ 14e:	c9 01       	movw	r24, r18
+ 150:	01 97       	sbiw	r24, 0x01	; 1
+ 152:	01 f4       	brne	.+0      	; 0x154 <main+0x22>
+    }
+}
+
+void flashLed(void)
+{
+    DDRB |= POWER;
+ 154:	bb 9a       	sbi	0x17, 3	; 23
+    unsigned char ii;
+    for (ii = 0; ii < 5; ii++)
+    {
+        PORTB |= POWER;
+ 156:	c3 9a       	sbi	0x18, 3	; 24
+ 158:	c9 01       	movw	r24, r18
+ 15a:	01 97       	sbiw	r24, 0x01	; 1
+ 15c:	01 f4       	brne	.+0      	; 0x15e <main+0x2c>
+        delayMs(100, 1);
+        PORTB &= ~POWER;
+ 15e:	c3 98       	cbi	0x18, 3	; 24
+ 160:	c9 01       	movw	r24, r18
+ 162:	01 97       	sbiw	r24, 0x01	; 1
+ 164:	01 f4       	brne	.+0      	; 0x166 <main+0x34>
+{
+    DDRB |= POWER;
+    unsigned char ii;
+    for (ii = 0; ii < 5; ii++)
+    {
+        PORTB |= POWER;
+ 166:	c3 9a       	sbi	0x18, 3	; 24
+ 168:	c9 01       	movw	r24, r18
+ 16a:	01 97       	sbiw	r24, 0x01	; 1
+ 16c:	01 f4       	brne	.+0      	; 0x16e <main+0x3c>
+        delayMs(100, 1);
+        PORTB &= ~POWER;
+ 16e:	c3 98       	cbi	0x18, 3	; 24
+ 170:	c9 01       	movw	r24, r18
+ 172:	01 97       	sbiw	r24, 0x01	; 1
+ 174:	01 f4       	brne	.+0      	; 0x176 <main+0x44>
+{
+    DDRB |= POWER;
+    unsigned char ii;
+    for (ii = 0; ii < 5; ii++)
+    {
+        PORTB |= POWER;
+ 176:	c3 9a       	sbi	0x18, 3	; 24
+ 178:	c9 01       	movw	r24, r18
+ 17a:	01 97       	sbiw	r24, 0x01	; 1
+ 17c:	01 f4       	brne	.+0      	; 0x17e <main+0x4c>
+        delayMs(100, 1);
+        PORTB &= ~POWER;
+ 17e:	c3 98       	cbi	0x18, 3	; 24
+ 180:	c9 01       	movw	r24, r18
+ 182:	01 97       	sbiw	r24, 0x01	; 1
+ 184:	01 f4       	brne	.+0      	; 0x186 <main+0x54>
+{
+    DDRB |= POWER;
+    unsigned char ii;
+    for (ii = 0; ii < 5; ii++)
+    {
+        PORTB |= POWER;
+ 186:	c3 9a       	sbi	0x18, 3	; 24
+ 188:	c9 01       	movw	r24, r18
+ 18a:	01 97       	sbiw	r24, 0x01	; 1
+ 18c:	01 f4       	brne	.+0      	; 0x18e <main+0x5c>
+        delayMs(100, 1);
+        PORTB &= ~POWER;
+ 18e:	c3 98       	cbi	0x18, 3	; 24
+ 190:	c9 01       	movw	r24, r18
+ 192:	01 97       	sbiw	r24, 0x01	; 1
+ 194:	01 f4       	brne	.+0      	; 0x196 <main+0x64>
+{
+    DDRB |= POWER;
+    unsigned char ii;
+    for (ii = 0; ii < 5; ii++)
+    {
+        PORTB |= POWER;
+ 196:	c3 9a       	sbi	0x18, 3	; 24
+ 198:	c9 01       	movw	r24, r18
+ 19a:	01 97       	sbiw	r24, 0x01	; 1
+ 19c:	01 f4       	brne	.+0      	; 0x19e <main+0x6c>
+        delayMs(100, 1);
+        PORTB &= ~POWER;
+ 19e:	c3 98       	cbi	0x18, 3	; 24
+ 1a0:	c9 01       	movw	r24, r18
+ 1a2:	01 97       	sbiw	r24, 0x01	; 1
+ 1a4:	01 f4       	brne	.+0      	; 0x1a6 <main+0x74>
+        delayMs(100, 1);
+    }
+    DDRB &= ~POWER;
+ 1a6:	bb 98       	cbi	0x17, 3	; 23
+ 1a8:	ee e1       	ldi	r30, 0x1E	; 30
+ 1aa:	c9 01       	movw	r24, r18
+ 1ac:	01 97       	sbiw	r24, 0x01	; 1
+ 1ae:	01 f4       	brne	.+0      	; 0x1b0 <main+0x7e>
+ 1b0:	e1 50       	subi	r30, 0x01	; 1
+void delayMs(unsigned char ms, unsigned char repeat)
+{
+    do
+    {
+        _delay_loop_2(ms * 240);
+    } while (--repeat);
+ 1b2:	01 f4       	brne	.+0      	; 0x1b4 <main+0x82>
+        while (!(PINB & POWER)); // wait for a power button keypress
+        delayMs(100, 1);
+        flashLed();
+        delayMs(100, 30); // 100ms * 30 times = 3s
+
+        TCNT0 = 0;
+ 1b4:	12 be       	out	0x32, r1	; 50
+        TCCR0B |= (_BV(CS00) | _BV(CS02));    // clock enabled, /1024
+ 1b6:	83 b7       	in	r24, 0x33	; 51
+ 1b8:	85 60       	ori	r24, 0x05	; 5
+ 1ba:	83 bf       	out	0x33, r24	; 51
+        TIMSK |= _BV(TOIE0);         // timer 0 overflow
+ 1bc:	89 b7       	in	r24, 0x39	; 57
+ 1be:	82 60       	ori	r24, 0x02	; 2
+ 1c0:	89 bf       	out	0x39, r24	; 57
+        sei();
+ 1c2:	78 94       	sei
+
+        volatile unsigned char breakit = 0;
+ 1c4:	19 82       	std	Y+1, r1	; 0x01
+        while (!breakit)
+ 1c6:	89 81       	ldd	r24, Y+1	; 0x01
+ 1c8:	88 23       	and	r24, r24
+ 1ca:	01 f0       	breq	.+0      	; 0x1cc <main+0x9a>
+ 1cc:	00 c0       	rjmp	.+0      	; 0x1ce <main+0x9c>
+        {
+            interval = INTERVAL_INIT;
+ 1ce:	60 93 00 00 	sts	0x0000, r22
+            // Power On
+            DDRB |= (POWER | SHUTTER);
+ 1d2:	87 b3       	in	r24, 0x17	; 23
+ 1d4:	88 61       	ori	r24, 0x18	; 24
+ 1d6:	87 bb       	out	0x17, r24	; 23
+            PORTB |= POWER;
+ 1d8:	c3 9a       	sbi	0x18, 3	; 24
+ 1da:	c9 01       	movw	r24, r18
+ 1dc:	01 97       	sbiw	r24, 0x01	; 1
+ 1de:	01 f4       	brne	.+0      	; 0x1e0 <main+0xae>
+ 1e0:	c9 01       	movw	r24, r18
+ 1e2:	01 97       	sbiw	r24, 0x01	; 1
+ 1e4:	01 f4       	brne	.+0      	; 0x1e6 <main+0xb4>
+ 1e6:	c9 01       	movw	r24, r18
+ 1e8:	01 97       	sbiw	r24, 0x01	; 1
+ 1ea:	01 f4       	brne	.+0      	; 0x1ec <main+0xba>
+ 1ec:	c9 01       	movw	r24, r18
+ 1ee:	01 97       	sbiw	r24, 0x01	; 1
+ 1f0:	01 f4       	brne	.+0      	; 0x1f2 <main+0xc0>
+ 1f2:	c9 01       	movw	r24, r18
+ 1f4:	01 97       	sbiw	r24, 0x01	; 1
+ 1f6:	01 f4       	brne	.+0      	; 0x1f8 <main+0xc6>
+ 1f8:	c9 01       	movw	r24, r18
+ 1fa:	01 97       	sbiw	r24, 0x01	; 1
+ 1fc:	01 f4       	brne	.+0      	; 0x1fe <main+0xcc>
+ 1fe:	c9 01       	movw	r24, r18
+ 200:	01 97       	sbiw	r24, 0x01	; 1
+ 202:	01 f4       	brne	.+0      	; 0x204 <main+0xd2>
+ 204:	c9 01       	movw	r24, r18
+ 206:	01 97       	sbiw	r24, 0x01	; 1
+ 208:	01 f4       	brne	.+0      	; 0x20a <main+0xd8>
+ 20a:	c9 01       	movw	r24, r18
+ 20c:	01 97       	sbiw	r24, 0x01	; 1
+ 20e:	01 f4       	brne	.+0      	; 0x210 <main+0xde>
+ 210:	c9 01       	movw	r24, r18
+ 212:	01 97       	sbiw	r24, 0x01	; 1
+ 214:	01 f4       	brne	.+0      	; 0x216 <main+0xe4>
+ 216:	c9 01       	movw	r24, r18
+ 218:	01 97       	sbiw	r24, 0x01	; 1
+ 21a:	01 f4       	brne	.+0      	; 0x21c <main+0xea>
+ 21c:	c9 01       	movw	r24, r18
+ 21e:	01 97       	sbiw	r24, 0x01	; 1
+ 220:	01 f4       	brne	.+0      	; 0x222 <main+0xf0>
+ 222:	c9 01       	movw	r24, r18
+ 224:	01 97       	sbiw	r24, 0x01	; 1
+ 226:	01 f4       	brne	.+0      	; 0x228 <main+0xf6>
+            delayMs(100, 13); // 100ms * 13 times = 1.3s
+            PORTB &= ~POWER;
+ 228:	c3 98       	cbi	0x18, 3	; 24
+
+            WAIT_TIL_LED_OFF;
+ 22a:	b2 9b       	sbis	0x16, 2	; 22
+ 22c:	00 c0       	rjmp	.+0      	; 0x22e <main+0xfc>
+            WAIT_TIL_LED_ON;
+ 22e:	b2 99       	sbic	0x16, 2	; 22
+ 230:	00 c0       	rjmp	.+0      	; 0x232 <main+0x100>
+ 232:	c9 01       	movw	r24, r18
+ 234:	01 97       	sbiw	r24, 0x01	; 1
+ 236:	01 f4       	brne	.+0      	; 0x238 <main+0x106>
+
+            // Shutter
+            delayMs(100, 1); // 100ms
+            PORTB |= SHUTTER;
+ 238:	c4 9a       	sbi	0x18, 4	; 24
+ 23a:	ca 01       	movw	r24, r20
+ 23c:	01 97       	sbiw	r24, 0x01	; 1
+ 23e:	01 f4       	brne	.+0      	; 0x240 <main+0x10e>
+            delayMs(50, 1); // 50ms
+            PORTB &= ~SHUTTER;
+ 240:	c4 98       	cbi	0x18, 4	; 24
+            WAIT_TIL_LED_OFF;
+ 242:	b2 9b       	sbis	0x16, 2	; 22
+ 244:	00 c0       	rjmp	.+0      	; 0x246 <main+0x114>
+
+            // Power Off
+            WAIT_TIL_LED_ON;
+ 246:	b2 99       	sbic	0x16, 2	; 22
+ 248:	00 c0       	rjmp	.+0      	; 0x24a <main+0x118>
+ 24a:	c9 01       	movw	r24, r18
+ 24c:	01 97       	sbiw	r24, 0x01	; 1
+ 24e:	01 f4       	brne	.+0      	; 0x250 <main+0x11e>
+            delayMs(100, 1);
+            PORTB |= POWER;
+ 250:	c3 9a       	sbi	0x18, 3	; 24
+            WAIT_TIL_LED_OFF;
+ 252:	b2 9b       	sbis	0x16, 2	; 22
+ 254:	00 c0       	rjmp	.+0      	; 0x256 <main+0x124>
+            PORTB &= ~POWER;
+ 256:	c3 98       	cbi	0x18, 3	; 24
+            DDRB &= ~(POWER | SHUTTER);
+ 258:	87 b3       	in	r24, 0x17	; 23
+ 25a:	87 7e       	andi	r24, 0xE7	; 231
+ 25c:	87 bb       	out	0x17, r24	; 23
+
+            while (interval) // wait for timer to expire
+ 25e:	80 91 00 00 	lds	r24, 0x0000
+ 262:	88 23       	and	r24, r24
+ 264:	01 f4       	brne	.+0      	; 0x266 <main+0x134>
+ 266:	00 c0       	rjmp	.+0      	; 0x268 <main+0x136>
+            {
+                if (PINB & POWER)
+ 268:	b3 9b       	sbis	0x16, 3	; 22
+ 26a:	00 c0       	rjmp	.+0      	; 0x26c <main+0x13a>
+    }
+}
+
+void flashLed(void)
+{
+    DDRB |= POWER;
+ 26c:	bb 9a       	sbi	0x17, 3	; 23
+ 26e:	e5 e0       	ldi	r30, 0x05	; 5
+    unsigned char ii;
+    for (ii = 0; ii < 5; ii++)
+    {
+        PORTB |= POWER;
+ 270:	c3 9a       	sbi	0x18, 3	; 24
+ 272:	c9 01       	movw	r24, r18
+ 274:	01 97       	sbiw	r24, 0x01	; 1
+ 276:	01 f4       	brne	.+0      	; 0x278 <main+0x146>
+        delayMs(100, 1);
+        PORTB &= ~POWER;
+ 278:	c3 98       	cbi	0x18, 3	; 24
+ 27a:	c9 01       	movw	r24, r18
+ 27c:	01 97       	sbiw	r24, 0x01	; 1
+ 27e:	01 f4       	brne	.+0      	; 0x280 <main+0x14e>
+ 280:	e1 50       	subi	r30, 0x01	; 1
+
+void flashLed(void)
+{
+    DDRB |= POWER;
+    unsigned char ii;
+    for (ii = 0; ii < 5; ii++)
+ 282:	01 f4       	brne	.+0      	; 0x284 <main+0x152>
+        PORTB |= POWER;
+        delayMs(100, 1);
+        PORTB &= ~POWER;
+        delayMs(100, 1);
+    }
+    DDRB &= ~POWER;
+ 284:	bb 98       	cbi	0x17, 3	; 23
+            while (interval) // wait for timer to expire
+            {
+                if (PINB & POWER)
+                {
+                    flashLed();
+                    breakit = 1;
+ 286:	79 83       	std	Y+1, r23	; 0x01
+ 288:	00 c0       	rjmp	.+0      	; 0x28a <main+0x158>

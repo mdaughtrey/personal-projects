@@ -1,5 +1,5 @@
-DROP TABLE station
-DROP TABLE wxhistory
+DROP TABLE station;
+DROP TABLE wxhistory;
 
 
 CREATE TABLE station (
@@ -16,12 +16,21 @@ CREATE TABLE station (
         airmet CHARACTER(1),
         artcc CHARACTER(1),
         taf CHARACTER(1),
-        plot_priority NUMERIC,
+        upperair CHARACTER(1),
+        rawinsonde CHARACTER(1),
+        windprofiler CHARACTER(1),
+        asos CHARACTER(1),
+        awos CHARACTER(1),
+        meso CHARACTER(1),
+        human CHARACTER(1),
+        augmented CHARACTER(1),
+        office_wfo CHARACTER(1),
+        office_rfc CHARACTER(1),
+        office_ncep CHARACTER(1),
         country CHARACTER(2)
 );
 
 CREATE TABLE wxhistory (
-    raw_text TEXT,
     icao CHARACTER(4),
     observation_time TIMESTAMP WITH TIME ZONE,
     temp_c NUMERIC,
@@ -46,9 +55,9 @@ CREATE TABLE wxhistory (
     pcp6hr_in NUMERIC,
     pcp24hr_in NUMERIC,
     snow_in NUMERIC,
-    vert_vis_fr NUMERIC,
+    vert_vis_fr NUMERIC
     );
 
 ALTER TABLE wxhistory ADD PRIMARY KEY (icao, observation_time);
-ALTER TABLE station ADD PRIMARY KEY (icao)
+ALTER TABLE station ADD PRIMARY KEY (longname,icao,iata,synop);
 

@@ -1,3 +1,47 @@
+! Author: Greg Thompson  NCAR/RAP
+!         please mail corrections to gthompsn (at) ucar (dot) edu
+! Date: 22 Mar 2012
+! This file is continuously maintained at:
+! http://www.rap.ucar.edu/weather/surface/stations.txt
+!
+! This file is organized by state alphabetically, then by Canadian
+! province and then all other stations.  The file was compiled from lists
+! of the following:
+!      METAR sites
+!      NEXRADs
+!      rawinsonde sites
+!      wind profilers
+!      WFOs, RFCs, NCEP-Centers
+!      AIRMET/SIGMET station list (VORs?)
+!      ARTCCs (Air Route Traffic Control Centers - FAA)
+!      old SAO sites for archive data access  (flagged in a special manner)
+!
+!   Country abbreviations from ISO 3166
+!   source:  ftp://ftp.fu-berlin.de/doc/iso/iso3166-countrycodes.txt
+!   another: http://www.iso.org/iso/en/prods-services/iso3166ma/02iso-3166-code-lists/list-en1.html
+!
+!   CD = 2 letter state (province) abbreviation
+!   STATION = 16 character station long name
+!   ICAO = 4-character international id
+!   IATA = 3-character (FAA) id
+!   SYNOP = 5-digit international synoptic number
+!   LAT = Latitude (degrees minutes)
+!   LON = Longitude (degree minutes)
+!   ELEV = Station elevation (meters)
+!   M = METAR reporting station.   Also Z=obsolete? site
+!   N = NEXRAD (WSR-88D) Radar site
+!   V = Aviation-specific flag (V=AIRMET/SIGMET end point, A=ARTCC T=TAF U=T+V)
+!   U = Upper air (rawinsonde=X) or Wind Profiler (W) site
+!   A = Auto (A=ASOS, W=AWOS, M=Meso, H=Human, G=Augmented) (H/G not yet impl.)
+!   C = Office type F=WFO/R=RFC/C=NCEP Center
+!   Digit that follows is a priority for plotting (0=highest)
+!   Country code (2-char) is last column
+!
+!23456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+!
+
+ALASKA             30-DEC-11                                                  
+CD  STATION         ICAO  IATA  SYNOP   LAT     LONG   ELEV   M  N  V  U  A  C
 AK ADAK NAS         PADK  ADK   70454  51 53N  176 39W    4   X     T          7 US
 AK AKHIOK           PAKH  AKK          56 56N  154 11W   14   X                8 US
 AK AMBLER           PAFM  AFM          67 06N  157 51W   88   X                7 US

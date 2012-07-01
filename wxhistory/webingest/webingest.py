@@ -50,7 +50,8 @@ def main():
                     config.get('logging', 'threshold').upper(),
                     None),
                 format = '%(asctime)s %(levelname)s %(name)s %(message)s',
-                datefmt = '%Y%d%m %H:%M:%S')
+                datefmt = '%Y%d%m %H:%M:%S',
+                filename = 'webingest.log')
         log = logging.getLogger('webingest')
 
     except KeyError:
