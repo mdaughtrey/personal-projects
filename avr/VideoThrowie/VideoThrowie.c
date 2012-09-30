@@ -53,6 +53,7 @@ void flashLed(void)
 //
 // This variation powers up as soon as the power button is clicked
 //
+#ifdef D006D_V3
 void mainD006D_V3(void)
 {
     while (1)
@@ -106,6 +107,7 @@ void mainD006D_V3(void)
         }
     }
 }
+#endif // D006D_V3
 
 main(void)
 {
