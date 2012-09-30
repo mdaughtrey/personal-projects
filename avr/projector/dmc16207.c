@@ -4,6 +4,7 @@
 
 extern char hexTable[]; // PROGMEM = "0123456789abcdef";
 
+
 void e(void)
 {
     E1HIGH;
@@ -72,6 +73,7 @@ void lcdInit(void)
 void lcdStringPtr(unsigned char * string)
 {
     unsigned char ch;
+    lcdData(0x01); // clear screen
     while (ch = pgm_read_byte_near(string))
     {
         lcdChar(ch);

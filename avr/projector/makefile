@@ -4,7 +4,7 @@ INCLUDES=-I. -I/usr/lib/avr/include/avr
 LIBPATH=-L/usr/avr/lib
 CC=avr-gcc
 OBJDUMP=avr-objdump
-CFLAGS=-mmcu=$(HWTARGET) -Os
+CFLAGS=-mmcu=$(HWTARGET) -O3
 OBJCOPY=avr-objcopy
 MAKEFILE=makefile
 DEFINES=-DF_CPU=8000000 
@@ -12,7 +12,7 @@ DEFINES=-DF_CPU=8000000
 
 
 LIBS=$(LIBPATH) -lc
-OBJS=main.o serutil.o stepper.o dmc16207.o
+OBJS=main.o serutil.o
 
 
 all: clean $(TARGET).hex
@@ -25,8 +25,8 @@ $(TARGET).out: $(MAKEFILE) $(OBJS)
 
 writefuse: 
 #	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Ulfuse:w:0xe2:m
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Ulfuse:w:0xc2:m
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Uhfuse:w:0xd9:m
+	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m
+	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
 
 erase:
 	avrdude -q -P /dev/ttyS0 -p m169 -c stk500v2 
@@ -37,7 +37,7 @@ clean:
 	rm -f *.o *.out *.map *.hex
 
 upload:
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -U flash:w:$(TARGET).hex
+	avrdude -c avrisp2 -p m169 -P usb -U flash:w:$(TARGET).hex
 
 %.o: %.c
 	$(CC) -c -g $(CFLAGS) $(DEFINES) $(INCLUDES) $<
