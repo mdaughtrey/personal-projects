@@ -22,28 +22,39 @@
 "L : lamp off\r\n";
 */
 
-// Pin 1 = pe7
-// Pin 2 = pb4
-// Pin 3 = pb5
-// Pin 4 = pb6
 
 #define AC_MOTOR_ON PORTF |= 0x10
 #define AC_MOTOR_OFF PORTF &= ~0x10
 
-unsigned char motorIsOn = 0;
+//unsigned char motorIsOn = 0;
 
-unsigned char ledTestBit = 0;
-unsigned char ledControl = 0;
+//unsigned char ledTestBit = 1;
+//unsigned char ledControl = 0;
 
-#define LED_SERIAL 1
-#define LED_MOTOR  2
-#define LED_CAMERA 3
-#define LED_LAMP   4 
+// led 1 = pf1
+// led 2 = pf2
+// led 3 = pf3
+// led 4 = pf5
+// led 5 = pf6
 
-#define LEDBIT_SERIAL _BV(LED_SERIAL)
-#define LEDBIT_MOTOR  _BV(LED_MOTOR)
-#define LEDBIT_CAMERA _BV(LED_CAMERA)
-#define LEDBIT_LAMP   _BV(LED_LAMP)
+#define LED_IR_ON      PORTF &= ~_BV(1)
+#define LED_CAMERA_ON  PORTF &= ~_BV(2)
+#define LED_LAMP_ON    PORTF &= ~_BV(3) 
+#define LED_MOTOR_ON   PORTF &= ~_BV(5)
+#define LED_SERIAL_ON  PORTF &= ~_BV(6)
+
+#define LED_IR_OFF      PORTF |= _BV(1)
+#define LED_CAMERA_OFF  PORTF |= _BV(2)
+#define LED_LAMP_OFF    PORTF |= _BV(3) 
+#define LED_MOTOR_OFF   PORTF |= _BV(5)
+#define LED_SERIAL_OFF  PORTF |= _BV(6)
+
+#define LED_ALL_ON      PORTF &= ~0x6e
+#define LED_ALL_OFF     PORTF |= 0x6e
+//#define LEDBIT_IR     _BV(LED_IR)
+//#define LEDBIT_MOTOR  _BV(LED_MOTOR)
+//#define LEDBIT_CAMERA _BV(LED_CAMERA)
+//#define LEDBIT_LAMP   _BV(LED_LAMP)
 
 void delay20ms(unsigned char count)
 {
@@ -53,85 +64,88 @@ void delay20ms(unsigned char count)
     }
 }
 
-void ledIlluminate(unsigned char which)
-{
-    switch (which)
-    {
-        case 0:
-            PORTE |= _BV(7);
-            PORTB |= (_BV(4) | _BV(5) |_BV(6));
-            break;
-
-        case LED_SERIAL:
-            PORTB &= ~_BV(4);
-            PORTE |=  _BV(7);
-            break;
-
-        case LED_MOTOR:
-            PORTB |=  _BV(4);
-            PORTE &= ~_BV(7);
-            break;
-
-        case LED_CAMERA:
-            PORTB |=  _BV(5);
-            PORTB &= ~_BV(6);
-            break;
-
-        case LED_LAMP:
-            PORTB &= ~_BV(5);
-            PORTB |=  _BV(6);
-            break;
-    }
-}
+//void ledIlluminate(unsigned char which)
+//{
+//    switch (which)
+//    {
+//        case 0:
+//            PORTF |= 0x6e;
+//            break;
+//
+//        default:
+//            PORTF &= ~_BV(which);
+//            break;
+//    }
+//}
 
 void ledInit(void)
 {
-    DDRE |= _BV(7);
-    DDRB |= (_BV(4) | _BV(5) |_BV(6));
-    PORTE |= _BV(7);
-    PORTB |= (_BV(4) | _BV(5) |_BV(6));
+	DDRF = 0x7e; // 0110 1110  bit 4 is ac motor control
 
-    unsigned char count;
-    for (count = 0; count < 4; count++)
-    {
-        ledIlluminate((count % 4) + 1);
+    LED_ALL_OFF;
+	LED_IR_ON;
+    delay20ms(25);
+LED_CAMERA_ON;
+    delay20ms(25);
+LED_LAMP_ON;
+    delay20ms(50);
+    LED_ALL_OFF;
+
+}
+
+void ledError(void)
+{
+  unsigned char count;
+  for (count = 0; count < 5; count++)
+{
+	LED_ALL_ON;
         delay20ms(5);
-        ledIlluminate(0);
-    }
+	LED_ALL_OFF;
+        delay20ms(5);
+}
 }
 
 void motorOn(void)
 {
-    if (!motorIsOn)
-    {
-        ledControl |= LEDBIT_MOTOR;
+//    if (!motorIsOn)
+//    {
+LED_MOTOR_ON;
         AC_MOTOR_ON;
-    }
-    motorIsOn = 1;
+//    }
+//    motorIsOn = 1;
 }
 
 void motorOff(void)
 {
-    if (motorIsOn)
-    {
-        ledControl &= ~LEDBIT_MOTOR;
+ //   if (motorIsOn)
+  //  {
+LED_MOTOR_OFF;
         AC_MOTOR_OFF;
-    }
-    motorIsOn = 0;
+ //   }
+ //   motorIsOn = 0;
 }
 
 
-void updateLedStatus(void)
-{
-    if (ledControl & _BV(ledTestBit))
-    {
-        ledIlluminate(0);
-        ledIlluminate(ledTestBit);
-    }
-    ledTestBit++;
-    ledTestBit %= 4;
-}
-
+//void updateLedStatus(void)
+//{
+//
+//    if (ledControl == 0)
+//    {
+//	ledIlluminate(0);
+//	return;
+//    }
+//    if (ledControl & _BV(ledTestBit))
+//    {
+//        ledIlluminate(0);
+//        ledIlluminate(ledTestBit);
+//    }
+//    ledTestBit++;
+//    if (ledTestBit == 5)
+//    {
+//	    ledTestBit = 1;
+//    }
+//}
+//
 void testMain(void)
 {
     DDRA |= _BV(6);
@@ -155,32 +169,37 @@ void testMain(void)
 int main(void)
 {
     //testMain();
-    PORTC = _BV(2);
-    DDRC = _BV(3) | _BV(2);
+    //PORTC = _BV(2);
+    DDRC = _BV(3) | _BV(2); // camera + lamp
     PORTC |= _BV(3); // lamp off
+    PORTC &= ~_BV(2); // camera 0ff
     DDRF = 0x10; // Motor control
-    motorOff();
     uart_init();
+//    sei(); // need for serial
     ledInit();
+    motorOff();
 
     char direction = STOP;
-    unsigned char irData = 0;
-    unsigned advanceCount = 0;
+    unsigned char irThreshold = 50;	
+    unsigned char irData = 0;	
+    char advanceCount = 0;
+//    unsigned char bit;
 
 
     while (1)
     {
-        updateLedStatus();
+//        updateLedStatus();
 
         u16 data = uart_get_buffered(); 
         if (0x0100 & data)
         {
+            LED_SERIAL_ON;
             data &= 0xff;
             switch (data)
             {
                 case 'a':
                 case 'A':
-                    direction = NEXT;
+						direction = NEXT;
                     advanceCount = 1;
                     break;
 
@@ -198,51 +217,87 @@ int main(void)
                 case 'C':
                 case 'c':
                     PORTC &= ~_BV(3);
-                    ledIlluminate(0);
-                    ledIlluminate(LED_CAMERA);
+		    LED_CAMERA_ON;
                     _delay_ms(250);
-                    ledIlluminate(0);
+		    LED_CAMERA_OFF;	
                     PORTC |= _BV(3);
                     break;
 
                 case 'l':
                     // lampOn
-                    ledControl |= LEDBIT_LAMP;
+                    LED_LAMP_ON;
                     PORTC |= _BV(2);
                     break;
 
                 case 'L':
                     // lampOff
-                    ledControl &= ~LEDBIT_LAMP;
+                    LED_LAMP_OFF;
                     PORTC &= ~_BV(2);
                     break;
+
+		case 's':
+		case 'S':
+                    motorOff();
+	            direction = STOP;
+			break;
 
                 case 'x':
                 case 'X':
                     motorOff();
-                    ledControl &= ~LEDBIT_MOTOR;
-                    ledControl &= ~LEDBIT_LAMP;
+	            direction = STOP;
                     PORTC &= ~_BV(2);
                     PORTC |= _BV(3);
-                    ledInit();
+	            ledInit();
                     break;
+
+		case '\n':
+		case '\r':
+			break;
+
+                 default:
+		    ledError();
+                    //uart_init();
+		    break;
             }
+        }
+        else
+        {
+	    LED_SERIAL_OFF;
         }
         if (direction == FORWARD || direction == NEXT)
         {
             motorOn();
         }
 
-        irData <<= 1;
-        irData |= (PINC & _BV(1)) >> 1;
-        //if (0xf0 == irData && direction == NEXT || direction == PREVIOUS)
-        if (0xf0 == irData && direction == NEXT)
+	if (PINC & _BV(1))
+	{
+		LED_IR_ON;
+		if (irThreshold)
+			irThreshold--;
+	}
+	else
+	{
+	        LED_IR_OFF;
+		if (irThreshold < 100)
+			irThreshold++;
+	}
+	if (irThreshold == 0)
         {
+		irData <<= 1;
+        }
+	if (irThreshold == 100)
+        {
+		irData <<= 1;
+		irData |= 1;
+        }
+	//if (irData == 0xf0
+	if (irData == 0x0f
+		&& direction == NEXT)
+	{
             if (--advanceCount <= 0)
             {
                 direction = STOP;
                 motorOff();
-                irData = 0;
             }
         }
     }
