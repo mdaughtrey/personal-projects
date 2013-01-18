@@ -9,14 +9,12 @@ export USBDEV
 #set -o xtrace
 while ((count < numframes))
 do
-./c
-sleep 1
-./n
-sleep 1
 ./l
 sleep 1
-./L
+./c
 sleep 1
+#./L
+./n
 ((count++))
 echo $(date +%T) Done $count of $numframes
 done
