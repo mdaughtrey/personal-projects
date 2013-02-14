@@ -235,7 +235,8 @@ void cmd_dataHandler(u08 input)
         break;
         
     case '*': 
-        _wdt_write(1);
+        //_wdt_write(1);
+        wdt_enable(1);
         break;
                                 /* manual invocation of timer handler */
     case '/':

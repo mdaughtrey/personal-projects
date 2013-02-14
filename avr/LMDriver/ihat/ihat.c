@@ -36,13 +36,10 @@ unsigned char text[] PROGMEM = {
 "rofl"
 "lmao"
 "noob"
-"pr0n"
-"hth "
 "hx0r"
 "gtg "
 "ttyl"
 "IIRC"
-"orly"
 "btw "
 "l8r "
 "ftw "
@@ -182,3 +179,4 @@ int main(void)
     }
     return 0;
 }
+

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <avr/wdt.h>
 #include <avr/pgmspace.h>
+#include <spi.h>
 
 unsigned char C0C1[] PROGMEM = { "C0C1"};
 unsigned char c0c1[] PROGMEM = { "c0c1"};
@@ -54,14 +55,15 @@ unsigned char strGlanceLeft4[] PROGMEM = { "45d641" };
 #endif
 
 // PORTC
-#define BOTH_RESET _BV(6)
+#define BOTH_RESET _BV(2)
 #define BOTH_SCK _BV(5)
 #define BOTH_MOSI _BV(3)
-#define RIGHT_SS _BV(2)
-#define LEFT_SS _BV(1)
+#define RIGHT_SS _BV(1)
+#define LEFT_SS _BV(0)
  
 #define SPIBIT_DELAYUS 80
 // msb first, sck low on idle, sample on leading edge
+#if 0
 void spiOut(unsigned char data)
 {
     // set the SS lines
@@ -84,6 +86,11 @@ void spiOut(unsigned char data)
     // reset the SS lines
     PORTC |= LEFT_SS;
     PORTC |= RIGHT_SS;
+}
+#endif // 0
+void spiOut(unsigned char data)
+{
+    mosi_push(data);
 }
 
 void stringOut(unsigned char * stringPtr)
@@ -134,21 +141,86 @@ void glanceLeft(void)
     _delay_ms(200);
 }
 
+#define SET_LEFT_SS PORTC |= _BV(0)
+#define RESET_LEFT_SS PORTC &= ~_BV(0) 
+
+#define SET_RIGHT_SS PORTC |= _BV(1)
+#define RESET_RIGHT_SS PORTC &= ~_BV(1) 
+
+#define SET_SCK PORTB |= _BV(1)
+#define RESET_SCK PORTB &= ~_BV(1)
+
+#define SET_MOSI PORTB |= _BV(2)
+#define RESET_MOSI PORTB &= ~_BV(2)
+
+void delay1s(void)
+{
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+    _delay_ms(100);
+}
+
+void testMain(void)
+{
+    DDRC |= _BV(0) | _BV(1) |_BV(2);
+    DDRB |= _BV(1) | _BV(2);
+    PORTC |= _BV(2); // leave reset high
+    while (1)
+    {
+        SET_LEFT_SS;
+        delay1s();
+        RESET_LEFT_SS;
+        delay1s();
+        SET_RIGHT_SS;
+        delay1s();
+        RESET_RIGHT_SS;
+
+        SET_SCK;
+        delay1s();
+        RESET_SCK;
+
+        SET_MOSI;
+        delay1s();
+        RESET_MOSI;
+    }
+}
+
 int main(void)
 {
+    unsigned char data = 0;
+    //testMain();
     // A little settling time...
-    _delay_ms(10);
+    //_delay_ms(10);
     // initialize
-    DDRC = 0x6e; // 0110 1110  rst,sck,mosi,ss1,ss2
-    PORTC = 0x46; // 0100 0110 reset, SS idle
 
-    // reset the displays
-    PORTC |= BOTH_RESET; // high
-    _delay_ms(100);
-    PORTC &= ~BOTH_RESET; // low
-    _delay_ms(100);
-    PORTC |= BOTH_RESET; // high
-    _delay_ms(100);
+//    DDRC = _BV(0) | _BV(1) | _BV(2); // left ss right ss rst
+    DDRC = LEFT_SS | RIGHT_SS | BOTH_RESET;
+    PORTC = LEFT_SS | RIGHT_SS | BOTH_RESET;
+    spi_init();
+
+    delay1s();
+    data = 'x';
+    while (1)
+    {
+        spiOut('a');
+        //delay1s();
+//        spiOut('x');
+        _delay_ms(1);
+        spiOut(data);
+        //delay1s();
+        _delay_ms(1);
+    //delay1s();
+        data++;
+//        stringOut(strSimpleTest);
+    }
+
 
     stringOut(strReset);
     _delay_ms(100);

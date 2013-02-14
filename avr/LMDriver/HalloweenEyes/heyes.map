@@ -1,12 +1,17 @@
 Archive member included because of file (symbol)
 
-/usr/avr/lib/libc.a(exit.o)   /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o (exit)
-/usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
-                              /usr/avr/lib/libc.a(exit.o) (_exit)
-/usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
-                              heyes.o (__do_copy_data)
-/usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
-                              heyes.o (__do_clear_bss)
+/usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a(exit.o)
+                              /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o (exit)
+/usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_exit.o)
+                              /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a(exit.o) (_exit)
+/usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_clear_bss.o)
+                              spi.o (__do_clear_bss)
+
+Allocating common symbols
+Common symbol       size              file
+
+misoBuffer          0x8               spi.o
+mosiBuffer          0x8               spi.o
 
 Memory Configuration
 
@@ -22,12 +27,13 @@ signature        0x00840000         0x00000400         rw !x
 Linker script and memory map
 
 Address of section .data set to 0x800100
-LOAD /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
 LOAD heyes.o
-LOAD /usr/avr/lib/libc.a
-LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
-LOAD /usr/avr/lib/libc.a
-LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
+LOAD spi.o
+LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a
+LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a
+LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a
+LOAD /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a
 
 .hash
  *(.hash)
@@ -119,29 +125,29 @@ LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x3b8
+.text           0x00000000      0x446
  *(.vectors)
- .vectors       0x00000000       0x5c /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .vectors       0x00000000       0x5c /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
                 0x00000000                __vectors
                 0x00000000                __vector_default
  *(.vectors)
  *(.progmem.gcc*)
  *(.progmem*)
  .progmem.data  0x0000005c      0x10b heyes.o
-                0x00000136                strGlanceRight2
-                0x0000006f                strLookStraightAhead
                 0x0000005c                C0C1
-                0x00000068                strSimpleTest
-                0x00000098                strSlowBlink
-                0x0000014b                strGlanceLeft1
-                0x00000159                strGlanceLeft3
-                0x0000013d                strGlanceRight3
-                0x0000012f                strGlanceRight1
-                0x00000066                strReset
-                0x00000144                strGlanceRight4
-                0x00000160                strGlanceLeft4
-                0x00000152                strGlanceLeft2
                 0x00000061                c0c1
+                0x00000066                strReset
+                0x00000068                strSimpleTest
+                0x0000006f                strLookStraightAhead
+                0x00000098                strSlowBlink
+                0x0000012f                strGlanceRight1
+                0x00000136                strGlanceRight2
+                0x0000013d                strGlanceRight3
+                0x00000144                strGlanceRight4
+                0x0000014b                strGlanceLeft1
+                0x00000152                strGlanceLeft2
+                0x00000159                strGlanceLeft3
+                0x00000160                strGlanceLeft4
                 0x00000168                . = ALIGN (0x2)
  *fill*         0x00000167        0x1 00
                 0x00000168                __trampolines_start = .
@@ -162,21 +168,19 @@ LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
  SORT(*)(.ctors)
  SORT(*)(.dtors)
  *(.init0)
- .init0         0x00000168        0x0 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .init0         0x00000168        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
                 0x00000168                __init
  *(.init0)
  *(.init1)
  *(.init1)
  *(.init2)
- .init2         0x00000168        0xc /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .init2         0x00000168        0xc /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
  *(.init2)
  *(.init3)
  *(.init3)
  *(.init4)
- .init4         0x00000174       0x16 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
-                0x00000174                __do_copy_data
- .init4         0x0000018a       0x10 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
-                0x0000018a                __do_clear_bss
+ .init4         0x00000174       0x10 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_clear_bss.o)
+                0x00000174                __do_clear_bss
  *(.init4)
  *(.init5)
  *(.init5)
@@ -187,55 +191,61 @@ LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
  *(.init8)
  *(.init8)
  *(.init9)
- .init9         0x0000019a        0x8 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .init9         0x00000184        0x8 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
  *(.init9)
  *(.text)
- .text          0x000001a2        0x4 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
-                0x000001a2                __vector_22
-                0x000001a2                __vector_1
-                0x000001a2                __vector_12
-                0x000001a2                __bad_interrupt
-                0x000001a2                __vector_6
-                0x000001a2                __vector_3
-                0x000001a2                __vector_11
-                0x000001a2                __vector_13
-                0x000001a2                __vector_17
-                0x000001a2                __vector_19
-                0x000001a2                __vector_7
-                0x000001a2                __vector_5
-                0x000001a2                __vector_4
-                0x000001a2                __vector_9
-                0x000001a2                __vector_2
-                0x000001a2                __vector_21
-                0x000001a2                __vector_15
-                0x000001a2                __vector_8
-                0x000001a2                __vector_14
-                0x000001a2                __vector_10
-                0x000001a2                __vector_16
-                0x000001a2                __vector_18
-                0x000001a2                __vector_20
- .text          0x000001a6      0x20e heyes.o
-                0x000001f8                slowBlink
-                0x000001a6                spiOut
-                0x000002fa                main
-                0x000001d8                stringOut
-                0x00000202                glanceRight
-                0x000002d6                fastBlink
-                0x0000026c                glanceLeft
- .text          0x000003b4        0x2 /usr/avr/lib/libc.a(exit.o)
-                0x000003b4                exit
- .text          0x000003b6        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
- .text          0x000003b6        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
- .text          0x000003b6        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
-                0x000003b6                . = ALIGN (0x2)
+ .text          0x0000018c        0x4 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
+                0x0000018c                __vector_20
+                0x0000018c                __vector_1
+                0x0000018c                __vector_12
+                0x0000018c                __bad_interrupt
+                0x0000018c                __vector_6
+                0x0000018c                __vector_3
+                0x0000018c                __vector_11
+                0x0000018c                __vector_13
+                0x0000018c                __vector_17
+                0x0000018c                __vector_19
+                0x0000018c                __vector_7
+                0x0000018c                __vector_5
+                0x0000018c                __vector_4
+                0x0000018c                __vector_9
+                0x0000018c                __vector_2
+                0x0000018c                __vector_21
+                0x0000018c                __vector_15
+                0x0000018c                __vector_8
+                0x0000018c                __vector_14
+                0x0000018c                __vector_10
+                0x0000018c                __vector_16
+                0x0000018c                __vector_18
+                0x0000018c                __vector_22
+ .text          0x00000190      0x24e heyes.o
+                0x00000190                spiOut
+                0x00000196                stringOut
+                0x000001b8                fastBlink
+                0x000001dc                slowBlink
+                0x000001e6                glanceRight
+                0x00000250                glanceLeft
+                0x000002ba                delay1s
+                0x00000370                testMain
+                0x000003a4                main
+ .text          0x000003de       0x5e spi.o
+                0x000003de                spi_init
+                0x000003ec                miso_push
+                0x0000040a                mosi_push
+ .text          0x0000043c        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a(exit.o)
+ .text          0x0000043c        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_exit.o)
+ .text          0x0000043c        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_clear_bss.o)
+                0x0000043c                . = ALIGN (0x2)
  *(.text.*)
- .text.libgcc   0x000003b6        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
- .text.libgcc   0x000003b6        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
- .text.libgcc   0x000003b6        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
-                0x000003b6                . = ALIGN (0x2)
+ .text.avr-libc
+                0x0000043c        0x6 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a(exit.o)
+                0x0000043c                exit
+ .text.libgcc   0x00000442        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_exit.o)
+ .text.libgcc   0x00000442        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_clear_bss.o)
+                0x00000442                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x000003b6        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
-                0x000003b6                _exit
+ .fini9         0x00000442        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_exit.o)
+                0x00000442                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -254,19 +264,19 @@ LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x000003b6        0x2 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
+ .fini0         0x00000442        0x4 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_exit.o)
  *(.fini0)
-                0x000003b8                _etext = .
+                0x00000446                _etext = .
 
-.data           0x00800100        0x0 load address 0x000003b8
+.data           0x00800100        0x0 load address 0x00000446
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
- .data          0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .data          0x00800100        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
  .data          0x00800100        0x0 heyes.o
- .data          0x00800100        0x0 /usr/avr/lib/libc.a(exit.o)
- .data          0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
- .data          0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
- .data          0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+ .data          0x00800100        0x0 spi.o
+ .data          0x00800100        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a(exit.o)
+ .data          0x00800100        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_exit.o)
+ .data          0x00800100        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_clear_bss.o)
  *(.data*)
  *(.rodata)
  *(.rodata*)
@@ -275,27 +285,35 @@ LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
                 0x00800100                _edata = .
                 0x00800100                PROVIDE (__data_end, .)
 
-.bss            0x00800100        0x0 load address 0x000003b8
+.bss            0x00800100       0x15
                 0x00800100                PROVIDE (__bss_start, .)
  *(.bss)
- .bss           0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .bss           0x00800100        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
  .bss           0x00800100        0x0 heyes.o
- .bss           0x00800100        0x0 /usr/avr/lib/libc.a(exit.o)
- .bss           0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_exit.o)
- .bss           0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_copy_data.o)
- .bss           0x00800100        0x0 /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a(_clear_bss.o)
+ .bss           0x00800100        0x5 spi.o
+                0x00800100                mosiHead
+                0x00800101                mosiTail
+                0x00800102                misoHead
+                0x00800103                misoTail
+                0x00800104                spiEvent
+ .bss           0x00800105        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a(exit.o)
+ .bss           0x00800105        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_exit.o)
+ .bss           0x00800105        0x0 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/avr5/libgcc.a(_clear_bss.o)
  *(.bss*)
  *(COMMON)
-                0x00800100                PROVIDE (__bss_end, .)
-                0x000003b8                __data_load_start = LOADADDR (.data)
-                0x000003b8                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x00800105       0x10 spi.o
+                0x00800105                misoBuffer
+                0x0080010d                mosiBuffer
+                0x00800115                PROVIDE (__bss_end, .)
+                0x00000446                __data_load_start = LOADADDR (.data)
+                0x00000446                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800100        0x0
-                0x00800100                PROVIDE (__noinit_start, .)
+.noinit         0x00800115        0x0
+                0x00800115                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x00800100                PROVIDE (__noinit_end, .)
-                0x00800100                _end = .
-                0x00800100                PROVIDE (__heap_start, .)
+                0x00800115                PROVIDE (__noinit_end, .)
+                0x00800115                _end = .
+                0x00800115                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -313,17 +331,15 @@ LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
 .signature
  *(.signature*)
 
-.stab           0x00000000     0x1554
+.stab           0x00000000      0x6fc
  *(.stab)
- .stab          0x00000000      0x378 /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
- .stab          0x00000378     0x11b8 heyes.o
-                               0x11c4 (size before relaxing)
- .stab          0x00001530       0x24 /usr/avr/lib/libc.a(exit.o)
-                                 0x30 (size before relaxing)
+ .stab          0x00000000      0x6cc /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
+ .stab          0x000006cc       0x30 /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/libc.a(exit.o)
+                                 0x3c (size before relaxing)
 
-.stabstr        0x00000000      0xcdc
+.stabstr        0x00000000       0xda
  *(.stabstr)
- .stabstr       0x00000000      0xcdc /usr/lib/gcc/avr/4.2.2/../../../../avr/lib/avr5/crtm169.o
+ .stabstr       0x00000000       0xda /usr/local/CrossPack-AVR-20120217/lib/gcc/avr/4.5.1/../../../../avr/lib/avr5/crtm169.o
 
 .stab.excl
  *(.stab.excl)
@@ -352,32 +368,62 @@ LOAD /usr/lib/gcc/avr/4.2.2/avr5/libgcc.a
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges
+.debug_aranges  0x00000000       0x40
  *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x20 heyes.o
+ .debug_aranges
+                0x00000020       0x20 spi.o
 
 .debug_pubnames
+                0x00000000      0x219
  *(.debug_pubnames)
+ .debug_pubnames
+                0x00000000      0x17f heyes.o
+ .debug_pubnames
+                0x0000017f       0x9a spi.o
 
-.debug_info
+.debug_info     0x00000000      0xc19
  *(.debug_info)
+ .debug_info    0x00000000      0xa5e heyes.o
+ .debug_info    0x00000a5e      0x1bb spi.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev
+.debug_abbrev   0x00000000      0x28a
  *(.debug_abbrev)
+ .debug_abbrev  0x00000000      0x1c9 heyes.o
+ .debug_abbrev  0x000001c9       0xc1 spi.o
 
-.debug_line
+.debug_line     0x00000000      0x4e8
  *(.debug_line)
+ .debug_line    0x00000000      0x37a heyes.o
+ .debug_line    0x0000037a      0x16e spi.o
 
-.debug_frame
+.debug_frame    0x00000000       0xe0
  *(.debug_frame)
+ .debug_frame   0x00000000       0xa0 heyes.o
+ .debug_frame   0x000000a0       0x40 spi.o
 
-.debug_str
+.debug_str      0x00000000      0x2a0
  *(.debug_str)
+ .debug_str     0x00000000      0x234 heyes.o
+                                0x26d (size before relaxing)
+ .debug_str     0x00000234       0x6c spi.o
+                                0x148 (size before relaxing)
 
-.debug_loc
+.debug_loc      0x00000000      0x121
  *(.debug_loc)
+ .debug_loc     0x00000000       0xe3 heyes.o
+ .debug_loc     0x000000e3       0x3e spi.o
 
 .debug_macinfo
  *(.debug_macinfo)
 OUTPUT(heyes.out elf32-avr)
 LOAD linker stubs
+
+.debug_pubtypes
+                0x00000000       0x5e
+ .debug_pubtypes
+                0x00000000       0x38 heyes.o
+ .debug_pubtypes
+                0x00000038       0x26 spi.o

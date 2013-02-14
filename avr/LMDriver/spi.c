@@ -11,7 +11,8 @@ u08 misoTail = 0;
 u08 spiEvent = 0;
 
 
-ISR(SIG_SPI)
+//ISR(SIG_SPI)
+ISR(SPI_STC_vect)
 {
     mosiBuffer[mosiHead++] = SPDR;
     mosiHead &= (MOSIBUFFERSIZE - 1);

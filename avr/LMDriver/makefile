@@ -1,6 +1,6 @@
 TARGET=LMDriver
 HWTARGET=atmega169
-INCLUDES=-I. -I/usr/avr/include
+INCLUDES=-I. -I/usr/local/CrossPack-AVR-20120217/avr/include/
 LIBPATH=-L/usr/avr/lib
 CC=avr-gcc
 OBJDUMP=avr-objdump
@@ -40,8 +40,10 @@ mmreadfuse:
 	avrdude -p m169 -c mattsmod -Uhfuse:r:hfuse.txt:i
 
 writefuse: 
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Ulfuse:w:0xe2:m
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Uhfuse:w:0xd9:m
+	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m
+	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
+#avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Ulfuse:w:0xe2:m
+#	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Uhfuse:w:0xd9:m
 
 erase:
 	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -e
@@ -54,7 +56,8 @@ clean:
 
 upload:
 #	avrdude -qq -P /dev/ttyS0 -c stk500v2 -p m169 -U flash:w:$(TARGET).hex
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -U flash:w:$(TARGET).hex
+#	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -U flash:w:$(TARGET).hex
+	avrdude -c avrisp2 -p m169 -P usb -U flash:w:$(TARGET).hex
 
 # -Wa,-ahls=$<.lst
 

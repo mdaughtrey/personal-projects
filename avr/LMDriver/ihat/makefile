@@ -1,6 +1,6 @@
 TARGET=ihat
 HWTARGET=atmega169
-INCLUDES=-I. -I/usr/avr/include
+INCLUDES=-I. -I/usr/local/CrossPack-AVR-20120217/avr/include/
 LIBPATH=-L/usr/avr/lib
 CC=avr-gcc
 OBJDUMP=avr-objdump
@@ -56,7 +56,7 @@ clean:
 
 upload:
 #	avrdude -qq -P /dev/ttyS0 -c stk500v2 -p m169 -U flash:w:$(TARGET).hex
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -U flash:w:$(TARGET).hex
+	avrdude -c avrisp2 -p m169 -P usb -U flash:w:$(TARGET).hex
 
 # -Wa,-ahls=$<.lst
 

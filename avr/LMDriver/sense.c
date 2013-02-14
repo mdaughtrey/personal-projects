@@ -16,10 +16,10 @@ u08 count = 0;
 
 State senseState;
 /* Timer 0 overflow interrupt handler */
-ISR(SIG_OVERFLOW0)
-{
-}
-
+//ISR(SIG_OVERFLOW0)
+//{
+//}
+//
 
 u08 sense_get(void)
 {
