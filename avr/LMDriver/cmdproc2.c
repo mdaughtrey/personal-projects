@@ -1,3 +1,4 @@
+#include <string.h>
 #include <avr/io.h>
 #include <typedefs.h>
 #include <inttypes.h>
@@ -40,10 +41,7 @@ u08 input[LAST];
 
 void cmdInit(void)
 {
-    for (state = FIRST; state < LAST; state++)
-    {
-        input[state] = 0;
-    }
+    memset(input, 0, LAST - FIRST);
     state = FIRST;
 }
 
@@ -73,16 +71,41 @@ u08 asciiToHex(u08 ascii1, u08 ascii2)
     
 }
 
-///
-/// \brief t = Set Text
-/// \details { Set all text characters in one command }
-/// \example tXcccc
-/// \param X - {number of characters (1-9, a=10, b=11...)}
-/// \param c - character
-///
-void cmdSetText(u08 cmdInput)
+char charToNum(u08 input)
 {
-    u08 length;
+    //
+    // Validate length parameter (0-9,a-z)
+    //
+    if (input >= '0' && input <= '9')
+    {
+        return input  - '0';
+    }
+    if (input >= 'a' && input <= 'z')
+    {
+        return input - 'a' + 10;
+    }
+    return -1;
+}
+
+char numToChar(char input)
+{
+    if (input >= 0 && input <= 9)
+    {
+        return input + '0';
+    }
+    if (input > 9 && input < 36)
+    {
+        return input - 10 + 'a';
+    }
+    return 0;
+}
+
+
+
+//void cmdSetText(u08 cmdInput)
+void cmdCountedLength(u08 cmdInput)
+{
+    char length;
     //
     // If we're expecting the length parameter...
     //
@@ -91,15 +114,7 @@ void cmdSetText(u08 cmdInput)
         //
         // Validate length parameter (0-9,a-z)
         //
-        if (cmdInput >= '0' && cmdInput <= '9')
-        {
-            length = cmdInput  - '0';
-        }
-        else if (cmdInput >= 'a' && cmdInput <= 'z')
-        {
-            length = cmdInput - 'a' + 10;
-        }
-        else
+        if (-1 == (length = charToNum(cmdInput)))
         {
             cmdInit();
             return;
@@ -109,26 +124,11 @@ void cmdSetText(u08 cmdInput)
         // next controller in the chain
         //
         input[REMAINING] = length;
-        if (length > 2)
+        length -= 2;
+        if (length)
         {
-            uart_send_buffered('t');
-            if (cmdInput >= '0' && cmdInput <= '9')
-            {
-                cmdInput -= 2;
-            }
-            else if (cmdInput >= 'a' && cmdInput <= 'z')
-            {
-                cmdInput -= 2;
-                if (0x60 == cmdInput)
-                {
-                    cmdInput = '9';
-                }
-                if (0x5f == cmdInput)
-                {
-                    cmdInput = '8';
-                }
-            }
-            uart_send_buffered(cmdInput);
+            uart_send_buffered(input[COMMAND]);
+            uart_send_buffered(numToChar(length));
         }
         input[INDEX] = 0;
         state = PARAM1;
@@ -139,7 +139,23 @@ void cmdSetText(u08 cmdInput)
     //
     if (0 == input[INDEX] || 1 == input[INDEX])
     {
-        dm_setChar(input[INDEX], cmdInput);
+        switch (input[COMMAND])
+        {
+            case 't':
+                dm_setChar(input[INDEX], cmdInput);
+                break;
+
+            case 'p':
+                dm_setPalette(input[INDEX], cmdInput - '0');
+                break;
+
+            case 'l':
+            case 'r':
+            case 'd':
+            case 'u':
+                dm_roll(input[INDEX], input[COMMAND], cmdInput - '0');
+                break;
+        }
     }
     else
     {
@@ -153,6 +169,87 @@ void cmdSetText(u08 cmdInput)
     }
 }
 
+///
+/// \brief f = flip character
+/// \details { flip character vertically }
+/// \example fX
+/// \param X - { character position (1-9, a=10, b=11...)}
+///
+///
+/// \brief F = unflip character
+/// \details { unflip character vertically }
+/// \example FX
+/// \param X - { character position (1-9, a=10, b=11...)}
+///
+void cmdFlip(u08 cmdInput)
+{
+    char position = charToNum(cmdInput);
+    if (0 == position || 1 == position)
+    {
+        dm_setFlip(position, (input[COMMAND] == 'F' ? 0 : 1)); 
+    }
+    else
+    {
+        uart_send_buffered(input[COMMAND]);
+        uart_send_buffered(numToChar(position - 2));
+    }
+    cmdInit();
+}
+
+///
+/// \brief m = mirror character
+/// \details { mirror character horizontally }
+/// \example mX
+/// \param X - { character position (0-9, a=10, b=11...)}
+///
+///
+/// \brief M = unmirror character
+/// \details { unmirror character horizontally }
+/// \example MX
+/// \param X - { character position (0-9, a=10, b=11...)}
+///
+void cmdMirror(u08 cmdInput)
+{
+    char position = charToNum(cmdInput);
+    if (position < 2)
+    {
+        dm_setMirror(position, (input[COMMAND] == 'M' ? 0 : 1)); 
+    }
+    else
+    {
+        uart_send_buffered(input[COMMAND]);
+        uart_send_buffered(numToChar(position - 2));
+    }
+    cmdInit();
+}
+
+///
+/// \brief i = invert character pixels
+/// \details { flip each pixel state (on to off, off to on) }
+/// \example iX
+/// \param X - { character position (0-9, a=10, b=11...)}
+///
+/// \brief I = uninvert character pixels
+/// \details { revert each pixel state to normal }
+/// \example IX
+/// \param X - { character position (0-9, a=10, b=11...)}
+///
+void cmdInvert(u08 cmdInput)
+{
+    char position = charToNum(cmdInput);
+    if (position < 2)
+    {
+        dm_setReverse(position, (input[COMMAND] == 'I' ? 0 : 1)); 
+    }
+    else
+    {
+        uart_send_buffered(input[COMMAND]);
+        uart_send_buffered(numToChar(position - 2));
+    }
+    cmdInit();
+}
+
+
 void cmd_dataHandler(u08 cmdInput)
 {
     u08 ii;
@@ -160,23 +257,97 @@ void cmd_dataHandler(u08 cmdInput)
     {
         input[COMMAND] = cmdInput;
         state = PARAM1;
-        switch (cmdInput)
+        switch (cmdInput & 0xdf)
         {
-            case 't':
+            case 'T':
+            case 'P':
+            case 'L':
+            case 'R':
+            case 'U':
+            case 'D':
                 state = LENGTH;
+                break;
+
+            case 'F':
+            case 'I':
+            case 'M':
+                state = POSITION;
                 break;
 
             default:
                 cmdInit();
-                state = POSITION;
+    //            state = POSITION;
                 break;
         }
         return;
     }
-    switch (input[COMMAND])
+    switch (input[COMMAND] & 0xdf)
     {
-        case 't': // Set Text
-            cmdSetText(cmdInput);
+        case '*':
+            wdt_enable(1);
+            break;
+
+///
+/// \brief r = roll characters right
+/// \details {roll characters right}
+/// \example rdnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to roll character
+///
+///
+/// \brief l = roll characters left
+/// \details {roll characters left}
+/// \example ldnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to roll character
+///
+///
+/// \brief u = roll characters up
+/// \details {roll characters up}
+/// \example udnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to roll character
+///
+///
+/// \brief d = roll characters down
+/// \details {roll characters down}
+/// \example ddnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to roll character
+///
+        case 'L':
+        case 'R':
+        case 'U':
+        case 'D':
+
+///
+/// \brief t = Set Text
+/// \details { Set all text characters in one command }
+/// \example tXcccc
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param c - character
+///
+        case 'T': // Set Text
+///
+/// \brief p = set palette
+/// \details { set the palette 
+/// \example pX
+/// \param X - { character position (0-9, a=10, b=11...)}
+///
+        case 'P': // Set Palette
+            cmdCountedLength(cmdInput);
+            break;
+
+        case 'F': // Flip
+            cmdFlip(cmdInput);
+            break;
+
+        case 'I': // Invert
+            cmdInvert(cmdInput);
+            break;
+
+        case 'M': // Mirror
+            cmdMirror(cmdInput);
             break;
     }
 //    if (POSITION == state)

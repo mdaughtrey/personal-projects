@@ -9,5 +9,6 @@ int main(void)
     PORTC |= _BV(0);
     _delay_ms(100);
     _delay_ms(100);
+    PORTC &= ~_BV(0);
     while (1);
 }

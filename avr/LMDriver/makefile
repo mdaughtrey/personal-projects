@@ -4,7 +4,8 @@ INCLUDES=-I. -I/usr/local/CrossPack-AVR-20120217/avr/include/
 LIBPATH=-L/usr/avr/lib
 CC=avr-gcc
 OBJDUMP=avr-objdump
-CFLAGS=-mmcu=$(HWTARGET) -Os
+#CFLAGS=-mmcu=$(HWTARGET) -Os
+CFLAGS=-mmcu=$(HWTARGET) -O1
 OBJCOPY=avr-objcopy
 MAKEFILE=makefile
 #DEFINES=-DLTP1157=1
@@ -18,8 +19,8 @@ DEFINES=-DKB_TBC12=1 \
 # -DSTEPDISP
 
 
-LIBS=$(LIBPATH) -lc
-OBJS=main.o displaymux.o cmdproc.o font5x7.o spi.o sense.o
+#LIBS=$(LIBPATH) -lc
+OBJS=main.o displaymux.o cmdproc2.o font5x7.o spi.o serutil.o
 
 #serutil.o
 

@@ -8,6 +8,9 @@ union
     unsigned short asShort;
 }data;
 
+const unsigned int SOI = 0xffd8;
+const unsigned int EOI = 0xffd9;
+
 FILE * openNew(int count, unsigned char byte)
 {
     FILE * output;
@@ -16,7 +19,7 @@ FILE * openNew(int count, unsigned char byte)
     strcat(filename, ".JPG");
     output = fopen(filename, "w");
     printf("Opened %s\n", filename);
-    fputc(data.asByte[1], output);
+    fputc(byte, output);
     return output;
 }
     
@@ -32,26 +35,24 @@ int main(int argc, char ** argv)
         data.asByte[1] = data.asByte[0];
         data.asByte[0] = fgetc(input);
         printf("data is %04x\n", data.asShort);
-        if (data.asShort == 0xffd9)
+    //    if (data.asShort == EOI)
+    //    {
+    //        if (output != NULL)
+    //        {
+    //            printf("Closing\n");
+    //            fputc(data.asByte[1], output);
+    //            fputc(data.asByte[0], output);
+    //            fclose(output);
+    //        }
+    //    }
+        if (data.asShort == SOI)
         {
             if (output != NULL)
             {
-                printf("Closing\n");
-//                fputc(data.asByte[1], output);
-                fputc(data.asByte[0], output);
                 fclose(output);
-                output = NULL;
-                continue;
             }
-        }
-        if (data.asShort == 0xffd8)
-        {
-            if (output == NULL)
-            {
-                output = openNew(count, data.asByte[1]);
-                count++;
-            }
-            continue;
+            output = openNew(count, data.asByte[1]);
+            count++;
         }
         else
         {
@@ -60,8 +61,6 @@ int main(int argc, char ** argv)
                 fputc(data.asByte[1], output);
             }
         }
-
-
     }
     fclose(input);
 }

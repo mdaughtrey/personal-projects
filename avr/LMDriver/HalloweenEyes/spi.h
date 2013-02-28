@@ -4,6 +4,17 @@
 #include <avr/interrupt.h>
 #include <typedefs.h>
 
+#define SET_LEFT_SS PORTC |= _BV(0)
+#define RESET_LEFT_SS PORTC &= ~_BV(0) 
+
+#define SET_RIGHT_SS PORTC |= _BV(1)
+#define RESET_RIGHT_SS PORTC &= ~_BV(1) 
+
+#define SET_SCK PORTB |= _BV(1)
+#define RESET_SCK PORTB &= ~_BV(1)
+
+#define SET_MOSI PORTB |= _BV(2)
+#define RESET_MOSI PORTB &= ~_BV(2)
 #define MOSIBUFFERSIZE 8
 #define MISOBUFFERSIZE 8
 

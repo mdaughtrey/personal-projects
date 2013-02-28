@@ -3,7 +3,7 @@
 
 #include <typedefs.h>
 
-void cmd_Init(void);
+void cmdInit(void);
 void cmd_dataHandler(u08 input);
 
 #endif /* __CMDPROC_H */

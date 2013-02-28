@@ -5,15 +5,16 @@
 #include <stdint.h>
 #include <avr/wdt.h>
 #include <avr/pgmspace.h>
+#include <spi.h>
 
 // PORTC
-#define RIGHT_SS _BV(5)
-#define RIGHT_MOSI _BV(4)
-#define LEFT_SS _BV(3)
-#define LEFT_MOSI _BV(2)
-#define BOTH_SCK _BV(1)
- 
-#define SPIBIT_DELAYUS 80
+//#define RIGHT_SS _BV(5)
+//#define RIGHT_MOSI _BV(4)
+//#define LEFT_SS _BV(3)
+//#define LEFT_MOSI _BV(2)
+//#define BOTH_SCK _BV(1)
+// 
+//#define SPIBIT_DELAYUS 80
 unsigned char text[] PROGMEM = {
 "lol "
 "mp3 "
@@ -77,40 +78,8 @@ unsigned char txStrShiftLeftRight[] PROGMEM = { "s0l1s1r1s0l2s1r2s0l3s1r3s0l4s1r
 // msb first, sck low on idle, sample on leading edge
 void spiOut(unsigned char dataleft, unsigned char dataright)
 {
-    // set the SS lines
-    PORTC &= ~LEFT_SS;
-    PORTC &= ~RIGHT_SS;
-
-    unsigned char ii;
-    for (ii = 0; ii < 8; ii++)
-    {
-        if (dataright & 0x80) { PORTC |= RIGHT_MOSI; } 
-        else { PORTC &= ~RIGHT_MOSI; }
-
-        if (dataleft & 0x80) { PORTC |= LEFT_MOSI; } 
-        else { PORTC &= ~LEFT_MOSI; }
-
-        _delay_us(SPIBIT_DELAYUS);
-        PORTC |= BOTH_SCK;
-        _delay_us(SPIBIT_DELAYUS);
-        PORTC &= ~BOTH_SCK;
-        dataleft <<= 1;
-        dataright <<= 1;
-    }
-    // reset the SS lines
-    PORTC |= LEFT_SS;
-    PORTC |= RIGHT_SS;
-}
-
-void stringOut(unsigned char * stringPtr)
-{
-    unsigned char data = pgm_read_byte_near(stringPtr++);
-    while (data)
-    {
-//        spiOut (data);
- //       data = pgm_read_byte_near(stringPtr++);
-    //    _delay_ms(1);
-    }
+    mosi_push_left(dataleft);
+    mosi_push_right(dataright);
 }
 
 unsigned char pickTransform(int random, unsigned char ** ptr)
@@ -131,11 +100,8 @@ unsigned char pickTransform(int random, unsigned char ** ptr)
 int main(void)
 {
     unsigned long x = 0;
-    // A little settling time...
-    _delay_ms(10);
+    spi_init();
     // initialize
-    DDRC = 0x3e; // 0011 1110  both ss,mosi,sck  
-    PORTC = 0x28; // 0010 1000
 
     spiOut('*', '*');
     _delay_ms(100);

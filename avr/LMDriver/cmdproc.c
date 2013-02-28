@@ -16,6 +16,7 @@ u08 paramsRemaining;
 u08 hexTable[16] PROGMEM = "0123456789abcdef";
 
 extern u08 disploop;
+extern u08 node;
 
 void cmd_Init(void)
 {
@@ -89,17 +90,17 @@ void cmd_dataHandler(u08 input)
         
             /* General Purpose Output: g<0-F> */
             /* Returns General Purpose Input via SPI */
-        case 'G':
-            which = asciiToHex(0, parameter[0]) << 3;
-            unsigned char data = PORTD;
-            data &= (0x87 | which);
-            data |= which;
-            PORTD = data;
-            which = PINE & 0xc3;
-//            dm_setChar(0, pgm_read_byte_near(hexTable + ((which & 0xf0 )>> 4))); 
- //           dm_setChar(1, pgm_read_byte_near(hexTable + (which & 0x0f))); 
-            miso_push(pgm_read_byte_near(hexTable + ((which & 0x03) | (which >> 4))));
-            break;
+//        case 'G':
+//            which = asciiToHex(0, parameter[0]) << 3;
+//            unsigned char data = PORTD;
+//            data &= (0x87 | which);
+//            data |= which;
+//            PORTD = data;
+//            which = PINE & 0xc3;
+////            dm_setChar(0, pgm_read_byte_near(hexTable + ((which & 0xf0 )>> 4))); 
+// //           dm_setChar(1, pgm_read_byte_near(hexTable + (which & 0x0f))); 
+//            miso_push(pgm_read_byte_near(hexTable + ((which & 0x03) | (which >> 4))));
+//            break;
             
             /* Invert display bits - i<01> */
             /* Uninvert display bits - I<01> */
@@ -121,7 +122,11 @@ void cmd_dataHandler(u08 input)
         case 'M':
             dm_setMirror(which, (command == 'm' ? 1 : 0)); 
             break;
-            
+
+        case 'N': /* Node setting - nX - you are node X */
+            main_setNode(parameter[0] - '0');
+            break;
+
             /* Copy character to custom character 0 - p<hex> */
             /* Copy character to custom character 1 - P<hex> */
         case 'P':
@@ -146,15 +151,18 @@ void cmd_dataHandler(u08 input)
             dm_pixel(which, (command == 't' ? 1 : 0), parameter[1] - '0', parameter[2] - '0');
             break;
             
+            // Z<#><# of characters>
+        case 'z':
+            break;
 
             /* Enable light sense - z<row><column> */
             /* Disable light sense - Z<row><column>*/
             /* columns 0-4: display 0 */
             /* columns 5-9: display 1 */
-        case 'Z':
-            dm_setsense('Z' == command ? 'X':  parameter[0] - '0',
-                        'Z' == command ? 'X':  parameter[1] - '0');
-            break;
+//        case 'Z':
+//            dm_setsense('Z' == command ? 'X':  parameter[0] - '0',
+//                        'Z' == command ? 'X':  parameter[1] - '0');
+//            break;
             
         default:
             /* Reset all transforms - !<01> */
@@ -196,6 +204,8 @@ void cmd_dataHandler(u08 input)
     case 'I':
     case 'm':
     case 'M':
+    case 'n':
+    case 'N':
     case 'R':
     case '!':
         command = input;
@@ -206,8 +216,8 @@ void cmd_dataHandler(u08 input)
     case 'P':
     case 'l':
     case 'L':
-    case 'z':
-    case 'Z':
+//    case 'z':
+//    case 'Z':
         command = input;
         paramsRemaining = 2;
         break;

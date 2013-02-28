@@ -11,18 +11,10 @@ MAKEFILE=makefile
 #DEFINES=-DKB_TBC12=1 -DALTFONT=1
 DEFINES=-DKB_TBC12=1 \
 -DF_CPU=8000000 \
--DDEBUG \
--DSMALL_PUPIL
-
-#-DHARDCODED_DISPLAY
-
-# -DSTEPDISP
-
+-DDEBUG 
 
 LIBS=$(LIBPATH) -lc
-OBJS=$(TARGET).o
-
-#serutil.o
+OBJS=$(TARGET).o spi.o
 
 all: clean $(TARGET).hex 
 
@@ -39,8 +31,8 @@ mmreadfuse:
 	avrdude -p m169 -c mattsmod -Uhfuse:r:hfuse.txt:i
 
 writefuse: 
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Ulfuse:w:0xe2:m
-	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Uhfuse:w:0xd9:m
+	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xe2:m
+	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
 #	avrdude -q -P /dev/ttyS0 -p m169 -c stk500v2 -Uhfuse:w:0xd9:m
 #	avrdude -q -P /dev/ttyS0 -p m169 -c stk500v2 -Ulfuse:w:0xe2:m
 #	avrdude -q -P /dev/ttyS0 -p m169 -c stk500v2 -Uefuse:w:0xff:m
