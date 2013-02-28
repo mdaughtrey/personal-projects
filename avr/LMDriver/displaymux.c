@@ -1,3 +1,4 @@
+#include <string.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
@@ -5,9 +6,10 @@
 #include <typedefs.h>
 #include <stddef.h>
 #include <spi.h>
-#include <sense.h>
+#include <util/delay.h>
+//#include <sense.h>
 
-//#include <serutil.h>
+#include <serutil.h>
 /* #define PALETTE */
 #define USE_CURRENTCOLUMN 1
 
@@ -141,26 +143,26 @@ u08 rowCtlOrange[NUM_DISPLAYS][NUM_ROWS][2] PROGMEM =
 #ifdef KB_TBC12
 typedef struct
 {
-    uint8_t * port;
-    uint8_t pin;
+    u08 * port;
+    u08 pin;
 }PortPin;
 
 PortPin columnCtl[NUM_DISPLAYS][NUM_COLUMNS] PROGMEM =
 {
     {
-        { &PORTC, 4 },			/* PORTC */
-        { &PORTC, 3 },			/* PORTC */
-        { &PORTC, 2 },			/* PORTC */
-        { &PORTC, 1 },			/* PORTC */
-        { &PORTC, 0 },			/* PORTC */
+        { (uint8_t *)&PORTC, 4 },			/* PORTC */
+        { (uint8_t *)&PORTC, 3 },			/* PORTC */
+        { (uint8_t *)&PORTC, 2 },			/* PORTC */
+        { (uint8_t *)&PORTC, 1 },			/* PORTC */
+        { (uint8_t *)&PORTC, 0 },			/* PORTC */
     },
     {
         /* Display 1 */
-        { &PORTD, 0 },			/* PORTD */
-        { &PORTG, 4 },			/* PORTG */
-        { &PORTG, 3 },			/* PORTG */
-        { &PORTB, 7 },			/* PORTB */
-        { &PORTB, 6 }			/* PORTB */
+        { (uint8_t *)&PORTD, 0 },			/* PORTD */
+        { (uint8_t *)&PORTG, 4 },			/* PORTG */
+        { (uint8_t *)&PORTG, 3 },			/* PORTG */
+        { (uint8_t *)&PORTB, 7 },			/* PORTB */
+        { (uint8_t *)&PORTB, 6 }			/* PORTB */
     }
 };
 
@@ -168,24 +170,24 @@ PortPin rowCtlGreen[NUM_DISPLAYS][NUM_ROWS] PROGMEM =
 {
     {
         /* Display 0 */
-        { &PORTG, 2 },			/* PORTG */
-        { &PORTA, 6 },			/* PORTA */
-        { &PORTA, 4 },			/* PORTA */
-        { &PORTA, 2 },			/* &PORTA */
-        { &PORTA, 0 },			/* &PORTA */
-        { &PORTG, 1 },			/* PORTG */
-        { &PORTC, 6 },			/* PORTC */
+        { (uint8_t *)&PORTG, 2 },			/* PORTG */
+        { (uint8_t *)&PORTA, 6 },			/* PORTA */
+        { (uint8_t *)&PORTA, 4 },			/* PORTA */
+        { (uint8_t *)&PORTA, 2 },			/* &PORTA */
+        { (uint8_t *)&PORTA, 0 },			/* &PORTA */
+        { (uint8_t *)&PORTG, 1 },			/* PORTG */
+        { (uint8_t *)&PORTC, 6 },			/* PORTC */
     },
     {
         /* Display 1 */
 
-        { &PORTF, 6 },		/* PORTF */
-        { &PORTF, 4 },			/* PORTF */
-        { &PORTF, 2 },			/* PORTF */
-        { &PORTF, 0 },			/* PORTF */
-        { &PORTE, 3 },			/* PORTE */
-        { &PORTB, 5 },			/* PORTB */
-        { &PORTD, 2 }			/* PORTD */
+        { (uint8_t *)&PORTF, 6 },		/* PORTF */
+        { (uint8_t *)&PORTF, 4 },			/* PORTF */
+        { (uint8_t *)&PORTF, 2 },			/* PORTF */
+        { (uint8_t *)&PORTF, 0 },			/* PORTF */
+        { (uint8_t *)&PORTE, 3 },			/* PORTE */
+        { (uint8_t *)&PORTB, 5 },			/* PORTB */
+        { (uint8_t *)&PORTD, 2 }			/* PORTD */
     }
 };
 
@@ -193,23 +195,23 @@ PortPin rowCtlOrange[NUM_DISPLAYS][NUM_ROWS] PROGMEM =
 {
     {
         /* Display 0 */
-        { &PORTC, 7 },			/* PORTC */
-        { &PORTA, 7 },			/* PORTA */
-        { &PORTA, 5 },			/* PORTA */
-        { &PORTA, 3 },			/* PORTA */
-        { &PORTA, 1 },			/* PORTA */
-        { &PORTG, 0 },			/* PORTG */
-        { &PORTC, 5 },			/* PORTC */
+        { (uint8_t *)&PORTC, 7 },			/* PORTC */
+        { (uint8_t *)&PORTA, 7 },			/* PORTA */
+        { (uint8_t *)&PORTA, 5 },			/* PORTA */
+        { (uint8_t *)&PORTA, 3 },			/* PORTA */
+        { (uint8_t *)&PORTA, 1 },			/* PORTA */
+        { (uint8_t *)&PORTG, 0 },			/* PORTG */
+        { (uint8_t *)&PORTC, 5 },			/* PORTC */
     },
     {
         /* Display 1 */
-        { &PORTF, 7 },			/* PORTF */
-        { &PORTF, 5 },			/* PORTF */
-        { &PORTF, 3 },			/* PORTF */
-        { &PORTF, 1 },			/* PORTF */
-        { &PORTE, 2 },			/* PORTE */
-        { &PORTB, 4 },			/* PORTB */
-        { &PORTD, 1 }			/* PORTD */
+        { (uint8_t *)&PORTF, 7 },			/* PORTF */
+        { (uint8_t *)&PORTF, 5 },			/* PORTF */
+        { (uint8_t *)&PORTF, 3 },			/* PORTF */
+        { (uint8_t *)&PORTF, 1 },			/* PORTF */
+        { (uint8_t *)&PORTE, 2 },			/* PORTE */
+        { (uint8_t *)&PORTB, 4 },			/* PORTB */
+        { (uint8_t *)&PORTD, 1 }			/* PORTD */
     }
 };
 #endif
@@ -236,7 +238,7 @@ struct _display
     u08 * oldRowCtlPtr;
     uint8_t * litPort;
     u08 litBit;
-    u08 senseRowColumn;         /* high nibble = row, low nibble = column */
+    //u08 senseRowColumn;         /* high nibble = row, low nibble = column */
 }display[NUM_DISPLAYS];
 
 #define FLAG_PROGCOLS (_BV(4))	/* display programmed columns */
@@ -255,6 +257,19 @@ static void dm_rollLeft(struct _display * display, u08 count);
 static void dm_clearRows(struct _display * display, u08 start, u08 count);
 static void dm_clearColumns(struct _display * display, u08 start, u08 count);
 
+void dumpTxList(struct _display * disp, u08 marker)
+{
+    u08 ii;
+    uart_send_buffered('-');
+    uart_send_buffered(marker);
+    for (ii = 0; ii < TRANSFORM_LIST_LENGTH; ii++)
+    {
+        uart_send_hex_byte(disp->txList[ii]);
+        uart_send_buffered(' ');
+    }
+    uart_send_buffered(marker & 0xdf);
+    uart_send_buffered('-');
+}
 
 void dm_timerHandler(void)
 {
@@ -266,7 +281,7 @@ void dm_timerHandler(void)
         u08 flags = disp->flags;
         u08 litBitIndex = disp->currentColumnBit;
         u08 colIndex = disp->colIndex;
-        u08 senseCol = disp->senseRowColumn & 0x0f;
+        //u08 senseCol = disp->senseRowColumn & 0x0f;
 
         /* SENSE */
 /*         if (7 == litBitIndex && colIndex == senseCol) */
@@ -277,10 +292,10 @@ void dm_timerHandler(void)
 /*             } */
 /*         } */
 
-        const u08 * colCtlPtr = &columnCtl[whichIndex][colIndex];
+        const u08 * colCtlPtr = (u08 *)&columnCtl[whichIndex][colIndex];
         u08 * rowCtlPtr = disp->rowCtlPtr;
         u08 * oldRowCtlPtr = disp->oldRowCtlPtr;
-        u08 senseRow = disp->senseRowColumn >> 4;
+        //u08 senseRow = disp->senseRowColumn >> 4;
 
         /* If we're at the start of a new frame... */
         if (litBitIndex == 7 &&
@@ -294,11 +309,11 @@ void dm_timerHandler(void)
                 if (0 == disp->paletteSelected) /* palette zero = orange */
 #endif
                 {
-                    disp->rowCtlPtr = &rowCtlOrange[whichIndex][0]; 
+                    disp->rowCtlPtr = (u08 *)&rowCtlOrange[whichIndex][0]; 
                 }
                 else
                 {
-                    disp->rowCtlPtr = &rowCtlGreen[whichIndex][0]; /* palette 1 == green */
+                    disp->rowCtlPtr = (u08 *)&rowCtlGreen[whichIndex][0]; /* palette 1 == green */
                 }
             if (rowCtlPtr != disp->rowCtlPtr) /*  If we changed palettes... */
             {
@@ -324,7 +339,7 @@ void dm_timerHandler(void)
             litBitIndex = 0;
         }
       
-        u08 * colOnPort = pgm_read_byte_near(colCtlPtr + offsetof(PortPin, port));
+        u08 * colOnPort = (u08 *)pgm_read_byte_near(colCtlPtr + offsetof(PortPin, port));
         u08 colOnBit = pgm_read_byte_near(colCtlPtr + offsetof(PortPin, pin));
       
         /* If we're starting a new frame... */
@@ -355,9 +370,9 @@ void dm_timerHandler(void)
                 continue;
             }
 #endif
-            u08 * newPort = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, port));
+            u08 * newPort = (u08 *)pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, port));
             u08 newBit = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, pin));
-            u08 * oldPort = pgm_read_byte_near(oldRowCtlPtr + offsetof(PortPin, port));
+            u08 * oldPort = (u08 *)pgm_read_byte_near(oldRowCtlPtr + offsetof(PortPin, port));
             u08 oldBit = pgm_read_byte_near(oldRowCtlPtr + offsetof(PortPin, pin));
 
             (*oldPort) &= ~_BV(oldBit); /* turn off the bit of the previous column */
@@ -442,10 +457,10 @@ void dm_init(void)
 
     display[0].colIndex = 4;
     display[1].colIndex = 4;
-    display[0].rowCtlPtr = &rowCtlGreen[0][0];
-    display[1].rowCtlPtr = &rowCtlGreen[1][0];
-    display[0].oldRowCtlPtr = &rowCtlGreen[0][0];
-    display[1].oldRowCtlPtr = &rowCtlGreen[1][0];
+    display[0].rowCtlPtr = (u08 *)&rowCtlGreen[0][0];
+    display[1].rowCtlPtr = (u08 *)&rowCtlGreen[1][0];
+    display[0].oldRowCtlPtr = (u08 *)&rowCtlGreen[0][0];
+    display[1].oldRowCtlPtr = (u08 *)&rowCtlGreen[1][0];
     display[0].currentColumnBit = 7;
     display[1].currentColumnBit = 7;
 
@@ -481,11 +496,12 @@ void dm_init(void)
     display[1].litPort = PORTB;
     display[1].litBit = 6;
 #endif
-    display[0].senseRowColumn = 0xff;
-    display[1].senseRowColumn = 0xff;
+    //display[0].senseRowColumn = 0xff;
+    //display[1].senseRowColumn = 0xff;
 #if 0
     TCCR0A = _BV(CS00) | _BV(CS02);		/* Timer 0 prescaler =CLK/256 */ 
 #endif
+
 }
 
 
@@ -494,6 +510,7 @@ void dm_setChar(u08 which, u08 set)
     display[which].charIndex = set;
     dm_applyTransforms(which);
 }
+
 
 static void dm_applyTransforms(u08 which)
 {
@@ -524,12 +541,20 @@ static void dm_applyTransforms(u08 which)
     /* test */
     disp->currentColumnBit = 8;
 
+//    dumpTxList(disp, 'a');
+
     transform = dm_findFirstTransform(disp);
+//    uart_send_buffered('f');
+//    uart_send_hex_byte(transform);
     while ((transform & 0x0f) != TRANSFORM_EOL)
     {
         int tmp = (int)disp;
         u08 data;
         u08 count2;
+
+//        uart_send_buffered(' ');
+//        uart_send_hex_byte(transform);
+//#if 0
         switch (transform & 0x0f)
         {
 
@@ -625,8 +650,13 @@ static void dm_applyTransforms(u08 which)
         break;
 
         }
+//#endif // 0
         transform = dm_findNextTransform(disp);
+//        uart_send_buffered('n');
+//        uart_send_hex_byte(transform);
     }
+//    uart_send_buffered('F');
+//    uart_send_hex_byte(transform);
 /*   sei(); */
 /*   TIMSK0 |= _BV(TOIE0); */
 }
@@ -816,23 +846,31 @@ static void dm_setTransform(u08 which, u08 command)
 {
     struct _display * disp = &display[which];
 
+//    uart_send_buffered('x');
+//    dm_applyTransforms(0);
+//
+//    dumpTxList(disp, 's');
 
     u08 test = dm_findFirstTransform(disp);
-  
     while ((test & 0x0f) != TRANSFORM_EOL)
     {
         if (test == command)
         {
-            break;
+            return;
+            //break;
         }
         test = dm_findNextTransform(disp);
     }
 
-    disp->txList[disp->txListBookmark++] = command;
-    if ((test & 0x0f) == TRANSFORM_EOL)
-    {
-        disp->txList[disp->txListBookmark] = TRANSFORM_EOL;
-    }
+    disp->txList[disp->txListBookmark] = command;
+    disp->txList[disp->txListBookmark + 1] = TRANSFORM_EOL;
+//    if ((test & 0x0f) == TRANSFORM_EOL)
+//    {
+//        disp->txList[disp->txListBookmark] = TRANSFORM_EOL;
+//    }
+//   dumpTxList(disp, 't');
+//    uart_send_buffered('y');
+//    dm_applyTransforms(0);
 }
 
 static u08 dm_findFirstTransform(struct _display * display)
@@ -861,7 +899,13 @@ static u08 dm_cmdLength(u08 command)
 
 static u08 dm_findNextTransform(struct _display * display)
 {
+    //uart_send_buffered('b');
+    //uart_send_hex_byte(display->txListBookmark);
+    //uart_send_buffered('l');
+    //uart_send_hex_byte(dm_cmdLength(display->txList[display->txListBookmark] & 0x0f));
     display->txListBookmark += dm_cmdLength(display->txList[display->txListBookmark] & 0x0f);
+    //uart_send_buffered('B');
+    //uart_send_hex_byte(display->txListBookmark);
     return display->txList[display->txListBookmark];
 }
 
@@ -982,36 +1026,36 @@ void dm_copyToCustom(u08 which, u08 charIndex)
     dm_applyTransforms(which);
 }
 
-void dm_setsense(u08 row, u08 column)
-{
-    extern u08 * sensePort;
-    extern u08 * senseBit;
-
-    if ('X' == column)
-    {
-/* disable the timer interrupt */
-        TIMSK0 &= ~_BV(TOIE0);
-/* senseport = PORTX, senseport -1 = DDRX */
-        *(sensePort - 1) &= ~_BV(*senseBit); /* set column driver to input */
-        display[0].senseRowColumn = 0xff;
-        display[1].senseRowColumn = 0xff;
-        return;
-    }
-    if (column <= 4)
-    {
-        display[0].senseRowColumn = (row << 4) | column;
-        sensePort = pgm_read_byte_near(&columnCtl[0][column].port);
-        senseBit = pgm_read_byte_near(&columnCtl[0][column].pin);
-    }
-    else if (column >= 5 && column <= 9)
-    {
-        display[1].senseRowColumn = (row << 4) | column;
-        sensePort = pgm_read_byte_near(&columnCtl[1][column - 5].port);
-        senseBit = pgm_read_byte_near(&columnCtl[1][column - 5].pin);
-    }
-    /* senseport = PORTX, senseport -1 = DDRX */
-    *(sensePort - 1) |= _BV(*senseBit); /* set column driver to output */
-    /* enable the timer interrupt */
-    TIMSK0 |= _BV(TOIE0);
-}
+//void dm_setsense(u08 row, u08 column)
+//{
+//    extern u08 * sensePort;
+//    extern u08 * senseBit;
+//
+//    if ('X' == column)
+//    {
+///* disable the timer interrupt */
+//        TIMSK0 &= ~_BV(TOIE0);
+///* senseport = PORTX, senseport -1 = DDRX */
+//        *(sensePort - 1) &= ~_BV(*senseBit); /* set column driver to input */
+//        display[0].senseRowColumn = 0xff;
+//        display[1].senseRowColumn = 0xff;
+//        return;
+//    }
+//    if (column <= 4)
+//    {
+//        display[0].senseRowColumn = (row << 4) | column;
+//        sensePort = pgm_read_byte_near(&columnCtl[0][column].port);
+//        senseBit = pgm_read_byte_near(&columnCtl[0][column].pin);
+//    }
+//    else if (column >= 5 && column <= 9)
+//    {
+//        display[1].senseRowColumn = (row << 4) | column;
+//        sensePort = pgm_read_byte_near(&columnCtl[1][column - 5].port);
+//        senseBit = pgm_read_byte_near(&columnCtl[1][column - 5].pin);
+//    }
+//    /* senseport = PORTX, senseport -1 = DDRX */
+//    *(sensePort - 1) |= _BV(*senseBit); /* set column driver to output */
+//    /* enable the timer interrupt */
+//    TIMSK0 |= _BV(TOIE0);
+//}
 
