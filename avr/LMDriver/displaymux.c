@@ -269,6 +269,9 @@ void dumpTxList(struct _display * disp, u08 marker)
     }
     uart_send_buffered(marker & 0xdf);
     uart_send_buffered('-');
+    uart_send_buffered('\r');
+    uart_send_buffered('\n');
+
 }
 
 void dm_timerHandler(void)
@@ -541,7 +544,7 @@ static void dm_applyTransforms(u08 which)
     /* test */
     disp->currentColumnBit = 8;
 
-//    dumpTxList(disp, 'a');
+    //dumpTxList(disp, 'a');
 
     transform = dm_findFirstTransform(disp);
 //    uart_send_buffered('f');
@@ -598,6 +601,10 @@ static void dm_applyTransforms(u08 which)
         {
             u08 data;
             data = dm_getTransformData(disp, 0);
+            //dumpTxList(disp, 'm');
+            //uart_send_hex_byte(data);
+            //uart_send_buffered('\r');
+            //uart_send_buffered('\n');
             switch (data & 0xf0)
             {
             case DIR_UP: dm_rollUp(disp, data & 0x0f); break;
@@ -787,22 +794,22 @@ void dm_roll(u08 which, u08 direction, u08 count)
         {
         case 'u':
             dm_setTransform(which, TRANSFORM_ROLL_VERT);
-            dm_setTransformData(disp, 0, DIR_UP | count);
+            dm_setTransformData(disp, 1, DIR_UP | count);
             break;
 
         case 'd':
             dm_setTransform(which, TRANSFORM_ROLL_VERT);
-            dm_setTransformData(disp, 0, DIR_DOWN | count);
+            dm_setTransformData(disp, 1, DIR_DOWN | count);
             break;
 
         case 'l':
             dm_setTransform(which, TRANSFORM_ROLL_HORZ);
-            dm_setTransformData(disp, 0, DIR_LEFT | count);
+            dm_setTransformData(disp, 1, DIR_LEFT | count);
             break;
 
         case 'r':
             dm_setTransform(which, TRANSFORM_ROLL_HORZ);
-            dm_setTransformData(disp, 0, DIR_RIGHT | count);
+            dm_setTransformData(disp, 1, DIR_RIGHT | count);
             break;
         }
     }
@@ -932,6 +939,11 @@ static void dm_rollUp(struct _display * display, u08 count)
 {
     u08 temp;
     u08 index;
+
+    //uart_send_buffered('U');
+    //uart_send_hex_byte(count);
+    //uart_send_buffered('\r');
+    //uart_send_buffered('\n');
 
     for (index = 0; index < NUM_COLUMNS; index++)
     {

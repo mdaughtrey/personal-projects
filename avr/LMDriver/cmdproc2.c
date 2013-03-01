@@ -39,6 +39,22 @@ typedef enum
 u08 state;
 u08 input[LAST];
 
+
+void dumpInput(void)
+{
+    u08 ii;
+    uart_send_buffered('i');
+
+    for (ii = 0; ii < LAST; ii++)
+    {
+        uart_send_hex_byte(input[ii]);
+        uart_send_buffered(' ');
+    }
+    uart_send_buffered('I');
+    uart_send_buffered('\r');
+    uart_send_buffered('\n');
+}
+
 void cmdInit(void)
 {
     memset(input, 0, LAST - FIRST);
@@ -101,8 +117,6 @@ char numToChar(char input)
 }
 
 
-
-//void cmdSetText(u08 cmdInput)
 void cmdCountedLength(u08 cmdInput)
 {
     char length;
@@ -125,7 +139,7 @@ void cmdCountedLength(u08 cmdInput)
         //
         input[REMAINING] = length;
         length -= 2;
-        if (length)
+        if (length > 0)
         {
             uart_send_buffered(input[COMMAND]);
             uart_send_buffered(numToChar(length));
@@ -257,20 +271,20 @@ void cmd_dataHandler(u08 cmdInput)
     {
         input[COMMAND] = cmdInput;
         state = PARAM1;
-        switch (cmdInput & 0xdf)
+        switch (cmdInput)
         {
-            case 'T':
-            case 'P':
-            case 'L':
-            case 'R':
-            case 'U':
-            case 'D':
+            case 't':
+            case 'p':
+            case 'l':
+            case 'r':
+            case 'u':
+            case 'd':
                 state = LENGTH;
                 break;
 
-            case 'F':
-            case 'I':
-            case 'M':
+            case 'f':
+            case 'i':
+            case 'm':
                 state = POSITION;
                 break;
 
@@ -281,7 +295,7 @@ void cmd_dataHandler(u08 cmdInput)
         }
         return;
     }
-    switch (input[COMMAND] & 0xdf)
+    switch (input[COMMAND])
     {
         case '*':
             wdt_enable(1);
@@ -315,10 +329,10 @@ void cmd_dataHandler(u08 cmdInput)
 /// \param X - {number of characters (1-9, a=10, b=11...)}
 /// \param n - number of pixels to roll character
 ///
-        case 'L':
-        case 'R':
-        case 'U':
-        case 'D':
+        case 'l':
+        case 'r':
+        case 'u':
+        case 'd':
 
 ///
 /// \brief t = Set Text
@@ -327,26 +341,26 @@ void cmd_dataHandler(u08 cmdInput)
 /// \param X - {number of characters (1-9, a=10, b=11...)}
 /// \param c - character
 ///
-        case 'T': // Set Text
+        case 't': // Set Text
 ///
 /// \brief p = set palette
 /// \details { set the palette 
 /// \example pX
 /// \param X - { character position (0-9, a=10, b=11...)}
 ///
-        case 'P': // Set Palette
+        case 'p': // Set Palette
             cmdCountedLength(cmdInput);
             break;
 
-        case 'F': // Flip
+        case 'f': // Flip
             cmdFlip(cmdInput);
             break;
 
-        case 'I': // Invert
+        case 'i': // Invert
             cmdInvert(cmdInput);
             break;
 
-        case 'M': // Mirror
+        case 'm': // Mirror
             cmdMirror(cmdInput);
             break;
     }
