@@ -116,6 +116,52 @@ char numToChar(char input)
     return 0;
 }
 
+void cmdIndexed(u08 cmdInput)
+{
+    switch (state)
+    {
+        case INDEX:
+            //
+            // Validate index parameter (0-9,a-z)
+            //
+            if (-1 == (input[INDEX] = charToNum(cmdInput)))
+            {
+                cmdInit();
+                return;
+            }
+            state =  PARAM1;
+            break;
+
+        case PARAM1:
+            input[PARAM1] = cmdInput;
+            state = PARAM2;
+            break;
+
+        case PARAM2:
+            if (input[INDEX] > 1)
+            {
+                uart_send_buffered(input[COMMAND]);
+                uart_send_buffered(numToChar(input[INDEX] - 2));
+                uart_send_buffered(input[PARAM1]);
+                uart_send_buffered(cmdInput);
+            }
+            else
+            {
+                switch (input[COMMAND])
+                {
+                    case 'x':
+                    case 'X':
+                        dm_pixel(input[INDEX],
+                                (input[COMMAND] == 'x' ? 1 : 0),
+                                input[PARAM1] - '0',
+                                cmdInput - '0');
+                        break;
+                }
+            }
+            cmdInit();
+            break;
+    }
+}
 
 void cmdCountedLength(u08 cmdInput)
 {
@@ -163,11 +209,27 @@ void cmdCountedLength(u08 cmdInput)
                 dm_setPalette(input[INDEX], cmdInput - '0');
                 break;
 
+            case 'L':
+            case 'R':
+            case 'D':
+            case 'U':
+                dm_shift(input[INDEX], input[COMMAND], cmdInput - '0');
+                break;
+
             case 'l':
             case 'r':
             case 'd':
             case 'u':
                 dm_roll(input[INDEX], input[COMMAND], cmdInput - '0');
+                break;
+
+            case '!':
+                dm_reset(input[INDEX]);
+                break;
+
+            case 'c':
+            case 'C':
+                dm_displayProgrammed(input[INDEX], (input[COMMAND] == 'c' ? 1 : 0)); 
                 break;
         }
     }
@@ -279,6 +341,10 @@ void cmd_dataHandler(u08 cmdInput)
             case 'r':
             case 'u':
             case 'd':
+            case 'L':
+            case 'R':
+            case 'U':
+            case 'D':
                 state = LENGTH;
                 break;
 
@@ -286,6 +352,11 @@ void cmd_dataHandler(u08 cmdInput)
             case 'i':
             case 'm':
                 state = POSITION;
+                break;
+
+            case 'x':
+            case 'X':
+                state = INDEX;
                 break;
 
             default:
@@ -302,29 +373,61 @@ void cmd_dataHandler(u08 cmdInput)
             break;
 
 ///
+/// \brief R = shift characters right
+/// \details {shift characters right.} 
+/// \example Rdnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to shift character
+///
+///
+/// \brief L = shift characters left
+/// \details {shift characters left.}
+/// \example Ldnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to shift character
+///
+///
+/// \brief U = shift characters up
+/// \details {shift characters up.}
+/// \example Udnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to shift character
+///
+///
+/// \brief D = shift characters down
+/// \details {shift characters down.}
+/// \example Ddnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to shift character
+///
+        case 'L':
+        case 'R':
+        case 'U':
+        case 'D':
+///
 /// \brief r = roll characters right
-/// \details {roll characters right}
+/// \details {roll characters right. The pixels on the right will wrap around to the left side.}
 /// \example rdnnnn
 /// \param X - {number of characters (1-9, a=10, b=11...)}
 /// \param n - number of pixels to roll character
 ///
 ///
 /// \brief l = roll characters left
-/// \details {roll characters left}
+/// \details {roll characters left. The pixels on the left will wrap around to the right side.}
 /// \example ldnnnn
 /// \param X - {number of characters (1-9, a=10, b=11...)}
 /// \param n - number of pixels to roll character
 ///
 ///
 /// \brief u = roll characters up
-/// \details {roll characters up}
+/// \details {roll characters up. The pixels on the top will wrap around to the bottom.}
 /// \example udnnnn
 /// \param X - {number of characters (1-9, a=10, b=11...)}
 /// \param n - number of pixels to roll character
 ///
 ///
 /// \brief d = roll characters down
-/// \details {roll characters down}
+/// \details {roll characters down.The pixels on the bottom will wrap around to the top.}
 /// \example ddnnnn
 /// \param X - {number of characters (1-9, a=10, b=11...)}
 /// \param n - number of pixels to roll character
@@ -349,7 +452,51 @@ void cmd_dataHandler(u08 cmdInput)
 /// \param X - { character position (0-9, a=10, b=11...)}
 ///
         case 'p': // Set Palette
+///
+/// \brief ! = Reset Transforms
+/// \details { Reset characters transforms}
+/// \example !Xnnnnnnnn
+/// \param X - { length (0-9, a=10, b=11...)}
+/// \param n - 0 or 1
+///
+        case '!': // Reset Transforms
+///
+/// \brief c = Enable custom character
+/// \details {Enable custom character}
+/// \example cdnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to roll character
+///
+        case 'c':
+///
+/// \brief C = Disable custom character
+/// \details {Disable custom character}
+/// \example Cdnnnn
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param n - number of pixels to roll character
+///
+        case 'C':
             cmdCountedLength(cmdInput);
+            break;
+///
+/// \brief x = Turn on pixel
+/// \details {Turn on a single pixel}
+/// \example xIrc
+/// \param I - character index
+/// \param r = row (0-6)
+/// \param c = column (0-4)
+///
+        case 'x':
+///
+/// \brief X = Turn off pixel
+/// \details {Turn off a single pixel}
+/// \example XIrc
+/// \param I - character index
+/// \param r = row (0-6)
+/// \param c = column (0-4)
+///
+        case 'X':
+            cmdIndexed(cmdInput);
             break;
 
         case 'f': // Flip

@@ -745,24 +745,24 @@ void dm_shift(u08 which, u08 direction, u08 count)
     default:
         switch (direction)
         {
-        case 'u':
+        case 'U':
             dm_setTransform(which, TRANSFORM_SHIFT_VERT);
-            dm_setTransformData(disp, 0, DIR_UP | count);
+            dm_setTransformData(disp, 1, DIR_UP | count);
             break;
 
-        case 'd':
+        case 'D':
             dm_setTransform(which, TRANSFORM_SHIFT_VERT);
-            dm_setTransformData(disp, 0, DIR_DOWN | count);
+            dm_setTransformData(disp, 1, DIR_DOWN | count);
             break;
 
-        case 'l':
+        case 'L':
             dm_setTransform(which, TRANSFORM_SHIFT_HORZ);
-            dm_setTransformData(disp, 0, DIR_LEFT | count);
+            dm_setTransformData(disp, 1, DIR_LEFT | count);
             break;
 
-        case 'r':
+        case 'R':
             dm_setTransform(which, TRANSFORM_SHIFT_HORZ);
-            dm_setTransformData(disp, 0, DIR_RIGHT | count);
+            dm_setTransformData(disp, 1, DIR_RIGHT | count);
             break;
         }
     }
