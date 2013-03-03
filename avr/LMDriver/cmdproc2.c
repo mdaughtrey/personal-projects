@@ -166,6 +166,7 @@ void cmdIndexed(u08 cmdInput)
 void cmdCountedLength(u08 cmdInput)
 {
     char length;
+    char indexOffset;
     //
     // If we're expecting the length parameter...
     //
@@ -231,7 +232,55 @@ void cmdCountedLength(u08 cmdInput)
             case 'C':
                 dm_displayProgrammed(input[INDEX], (input[COMMAND] == 'c' ? 1 : 0)); 
                 break;
+
+            case 's':
+                dm_copyToCustom(input[INDEX], cmdInput);
+                break;
         }
+    }
+    else
+    {
+        uart_send_buffered(cmdInput);
+    }
+    input[INDEX]++;
+    input[REMAINING]--;
+    if (0 == input[REMAINING])
+    {
+        cmdInit();
+    }
+}
+
+void cmdSetBits(u08 cmdInput)
+{
+    char length;
+    if (LENGTH == state)
+    {
+        //
+        // Validate length parameter (0-9,a-z)
+        //
+        if (-1 == (length = charToNum(cmdInput)))
+        {
+            cmdInit();
+            return;
+        }
+        //
+        // if length > 2 then subtract 2 and pass this command on to the
+        // next controller in the chain
+        //
+        input[REMAINING] = length * 5;
+        length -= 2;
+        if (length > 0)
+        {
+            uart_send_buffered(input[COMMAND]);
+            uart_send_buffered(numToChar(length));
+        }
+        input[INDEX] = 0;
+        state = PARAM1;
+        return;
+    }
+    if (input[INDEX] < 10)
+    {
+        dm_progColumn(input[INDEX] / 5, input[INDEX] % 5, cmdInput);
     }
     else
     {
@@ -345,6 +394,10 @@ void cmd_dataHandler(u08 cmdInput)
             case 'R':
             case 'U':
             case 'D':
+            case 'c':
+            case 'C':
+            case 's':
+            case 'b':
                 state = LENGTH;
                 break;
 
@@ -476,7 +529,30 @@ void cmd_dataHandler(u08 cmdInput)
 /// \param n - number of pixels to roll character
 ///
         case 'C':
+
+///
+/// \brief s = copy to custom character
+/// \details {Copy to custom character buffer}
+/// \example sXccc
+/// \param X - {number of characters (1-9, a=10, b=11...)}
+/// \param c - code for character INDEX
+///
+        case 's':
+
+            ///
+            /// \brief b = set/reset individual bits
+            /// \details {bits}
+            /// \example sXccccddddeeee
+            /// \param X - {number of characters (1-9, a=10, b=11...)}
+            /// \param ccccc - bits for columns 0-4, character 0
+            /// \param ddddd - bits for columns 0-4, character 1
+            ///
+
             cmdCountedLength(cmdInput);
+            break;
+
+        case 'b':
+            cmdSetBits(cmdInput);
             break;
 ///
 /// \brief x = Turn on pixel
