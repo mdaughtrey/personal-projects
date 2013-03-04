@@ -10,12 +10,6 @@
 #include <spi.h>
 #include <serutil.h>
 
-//u08 position = 0;
-//u08 command = 0;
-//u08 parameter[4];
-//u08 paramIndex = 0;
-//u08 paramsRemaining;
-
 u08 hexTable[16] PROGMEM = "0123456789abcdef";
 
 extern u08 disploop;

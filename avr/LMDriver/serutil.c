@@ -27,7 +27,7 @@
 //#include <cmdproc.h>
 
 /* #define F_CPU            8000000      /\* 4Mhz *\/ */
-#define UART_BAUD_RATE      9600      /* 9600 baud */
+#define UART_BAUD_RATE      38400      
 
 #define UART_BAUD_SELECT (F_CPU/(UART_BAUD_RATE*16l)-1)
 #define BUFFERSIZE 8 

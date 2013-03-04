@@ -231,9 +231,9 @@ struct _display
 #endif
     //  u08 portDataSelect;		/* palette currently being displayed */
     u08 paletteSelected;		/* Change to this pallete */
-#ifdef PALETTE
+//#ifdef PALETTE
     u08 paletteCountdown;		/* countdown to next palette change */
-#endif
+//#endif
     u08 * rowCtlPtr;
     u08 * oldRowCtlPtr;
     uint8_t * litPort;
@@ -306,24 +306,47 @@ void dm_timerHandler(void)
         {
             //	  oldRowCtlPtr = rowCtlPtr;
             /* Set up the color choice for this frame */
-#ifdef PALETTE
-            if (disp->paletteCountdown < disp->paletteSelected)
-#else
-                if (0 == disp->paletteSelected) /* palette zero = orange */
-#endif
-                {
+            switch (disp->paletteSelected)
+            {
+            case 0:
                     disp->rowCtlPtr = (u08 *)&rowCtlOrange[whichIndex][0]; 
-                }
-                else
-                {
+                    break;
+
+            case 1:
                     disp->rowCtlPtr = (u08 *)&rowCtlGreen[whichIndex][0]; /* palette 1 == green */
-                }
+                    break;
+
+            case 2:
+                    if (disp->rowCtlPtr == (u08 *)&rowCtlOrange[whichIndex][0])
+                    {
+                        disp->rowCtlPtr = (u08 *)&rowCtlGreen[whichIndex][0]; /* palette 1 == green */
+                    }
+                    else
+                    {
+                        disp->rowCtlPtr = (u08 *)&rowCtlOrange[whichIndex][0]; /* palette 1 == green */
+                    }
+                    break;
+            }
+
+//#ifdef PALETTE
+//            if (disp->paletteCountdown < disp->paletteSelected)
+//#else
+//                if (0 == disp->paletteSelected) /* palette zero = orange */
+//#endif
+//                {
+//                    disp->rowCtlPtr = (u08 *)&rowCtlOrange[whichIndex][0]; 
+//                }
+//                else
+//                {
+//                    disp->rowCtlPtr = (u08 *)&rowCtlGreen[whichIndex][0]; /* palette 1 == green */
+//                }
             if (rowCtlPtr != disp->rowCtlPtr) /*  If we changed palettes... */
             {
                 oldRowCtlPtr = rowCtlPtr; /* get the old palette pointer */
                 rowCtlPtr = disp->rowCtlPtr; /* get the new palette pointer */
                 disp->oldRowCtlPtr = oldRowCtlPtr; /* store the old palette pointer */
             }
+            disp->paletteCountdown--;
 #ifdef PALETTE
             if (disp->paletteCountdown-- == 0)
             {
