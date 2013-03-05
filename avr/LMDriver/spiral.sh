@@ -93,8 +93,10 @@ draw ()
 }
 
 
+stty -f /dev/cu.SLAB_USBtoUART 38400
 #init
 out c41111
+out p40120
 while [[ 0 ]]
 do
 draw 1
