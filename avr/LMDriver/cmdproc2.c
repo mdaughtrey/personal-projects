@@ -170,11 +170,20 @@ void cmdCountedLength(u08 cmdInput)
         //
         // Validate length parameter (0-9,a-z)
         //
-        if (-1 == (length = charToNum(cmdInput)))
-        {
-            cmdInit();
-            return;
-        }
+//        switch (input[COMMAND])
+//        {
+//            case CMD_SET_TEXT:
+                length = cmdInput;
+//                break;
+//
+//            default:
+//                if (-1 == (length = charToNum(cmdInput)))
+//                {
+//                    cmdInit();
+//                    return;
+//                }
+//                break;
+//        }
         //
         // if length > 2 then subtract 2 and pass this command on to the
         // next controller in the chain
@@ -184,7 +193,8 @@ void cmdCountedLength(u08 cmdInput)
         if (length > 0)
         {
             uart_send_buffered(input[COMMAND]);
-            uart_send_buffered(numToChar(length));
+            //uart_send_buffered(numToChar(length));
+            uart_send_buffered(length);
         }
         input[INDEX] = 0;
         state = PARAM1;
@@ -197,11 +207,11 @@ void cmdCountedLength(u08 cmdInput)
     {
         switch (input[COMMAND])
         {
-            case 't':
+            case CMD_SET_TEXT:
                 dm_setChar(input[INDEX], cmdInput);
                 break;
 
-            case 'p':
+            case CMD_SET_PALETTE:
                 dm_setPalette(input[INDEX], cmdInput - '0');
                 break;
 
@@ -212,23 +222,22 @@ void cmdCountedLength(u08 cmdInput)
                 dm_shift(input[INDEX], input[COMMAND], cmdInput - '0');
                 break;
 
-            case 'l':
-            case 'r':
-            case 'd':
-            case 'u':
+            case CMD_ROLL_LEFT:
+            case CMD_ROLL_RIGHT:
+            case CMD_ROLL_DOWN:
+            case CMD_ROLL_UP:
                 dm_roll(input[INDEX], input[COMMAND], cmdInput - '0');
                 break;
 
-            case '!':
+            case CMD_RESET_TRANSFORMS:
                 dm_reset(input[INDEX]);
                 break;
 
-            case 'c':
-            case 'C':
-                dm_displayProgrammed(input[INDEX], (input[COMMAND] == 'c' ? 1 : 0)); 
+            case CMD_CUSTOM_CHARACTER:
+                dm_displayProgrammed(input[INDEX], cmdInput - '0');
                 break;
 
-            case 's':
+            case CMD_COPY_CUSTOM:
                 dm_copyToCustom(input[INDEX], cmdInput);
                 break;
 
@@ -236,7 +245,7 @@ void cmdCountedLength(u08 cmdInput)
                 dm_setFlip(input[INDEX], cmdInput - '0'); 
                 break;
 
-            case 'i':
+            case CMD_INVERT:
                 dm_setReverse(input[INDEX], cmdInput - '0'); 
                 break;
 
@@ -312,20 +321,19 @@ void cmd_dataHandler(u08 cmdInput)
         state = PARAM1;
         switch (cmdInput)
         {
-            case 't':
-            case 'p':
-            case 'l':
-            case 'r':
-            case 'u':
-            case 'd':
+            case CMD_SET_TEXT:
+            case CMD_SET_PALETTE:
+            case CMD_ROLL_LEFT:
+            case CMD_ROLL_RIGHT:
+            case CMD_ROLL_UP:
+            case CMD_ROLL_DOWN:
             case CMD_SHIFT_RIGHT:
             case CMD_SHIFT_LEFT:
             case CMD_SHIFT_UP:
             case CMD_SHIFT_DOWN:
-            case 'c':
-            case 'C':
-            case 's':
-            case 'b':
+            case CMD_CUSTOM_CHARACTER:
+            case CMD_COPY_CUSTOM:
+            case CMD_BITMAP:
             case CMD_FLIP:
             case CMD_INVERT:
             case CMD_MIRROR:
@@ -354,21 +362,18 @@ void cmd_dataHandler(u08 cmdInput)
             break;
 
         case CMD_SHIFT_RIGHT:
-        case 'L':
-        case 'U':
-        case 'D':
-        case 'l':
-        case 'r':
-        case 'u':
-        case 'd':
-
-        case 't': // Set Text
-        case 'p': // Set Palette
-        case '!': // Reset Transforms
-        case 'c':
-        case 'C':
-
-        case 's':
+        case CMD_SHIFT_LEFT:
+        case CMD_SHIFT_UP:
+        case CMD_SHIFT_DOWN:
+        case CMD_ROLL_LEFT:
+        case CMD_ROLL_RIGHT:
+        case CMD_ROLL_UP:
+        case CMD_ROLL_DOWN:
+        case CMD_SET_TEXT:
+        case CMD_SET_PALETTE:
+        case CMD_RESET_TRANSFORMS:
+        case CMD_CUSTOM_CHARACTER:
+        case CMD_COPY_CUSTOM:
 
             ///
             /// \brief b = set/reset individual bits
@@ -382,7 +387,7 @@ void cmd_dataHandler(u08 cmdInput)
             cmdCountedLength(cmdInput);
             break;
 
-        case 'b':
+        case CMD_BITMAP:
             cmdSetBits(cmdInput);
             break;
 
