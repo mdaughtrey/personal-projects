@@ -11,3 +11,6 @@ run:
 
 gdb:
 	gdb interpreter
+
+poke:
+	./poke.py
