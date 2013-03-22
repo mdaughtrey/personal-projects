@@ -1,0 +1,11 @@
+# String Constants Initialization
+    sconst top1 "t\x04this"
+    sconst top2 "t\x04 is "
+    sconst top3 "t\x04the "
+    sconst top4 "t\x04top."
+
+# main
+    semit top1
+    semit top2
+    semit top3
+    semit top4

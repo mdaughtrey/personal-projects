@@ -1,9 +1,12 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <termios.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 
-#define DEBUGOUT 0
+//#define DEBUGOUT 0
 
 //!c - declare const a-zA-Z
 #define CMD_PAUSE 'p'
@@ -30,20 +33,21 @@
 
 int outDev;
 unsigned short ip;
+unsigned char * eeprom;
 
-const char eeprom[] = "\x00\x07"    // Program start offset big endian
-// ---------- Constants
-    "a\x03t\x02""a"         // 
-// ------- Instructions
-    "sA\x06t\x04""matt"        // 0007:  declare string variable A matt
-    "sB\x01""a"                // 0010: 
-    "ia\x00\x02"               // 0014: declare integer variable a
-    "Ea"                       // 0018:
-    "-a"                       // 001a: dec a
-    "za\x00\x23"               // 001c: jump if a == 0
-    "j\x00\x18"                // 0020: jump to 0018
-    "Ea"                       // 0023
-    "!";                       // end
+//const char eeprom[] = "\x00\x07"    // Program start offset big endian
+//// ---------- Constants
+//    "a\x03t\x02""a"         // 
+//// ------- Instructions
+//    "sA\x06t\x04""matt"        // 0007:  declare string variable A matt
+//    "sB\x01""a"                // 0010: 
+//    "ia\x00\x02"               // 0014: declare integer variable a
+//    "Ea"                       // 0018:
+//    "-a"                       // 001a: dec a
+//    "za\x00\x23"               // 001c: jump if a == 0
+//    "j\x00\x18"                // 0020: jump to 0018
+//    "Ea"                       // 0023
+//    "!";                       // end
 
 unsigned char ram[RAM_SIZE] = {0};
 unsigned short ramUsed = 0;
@@ -81,13 +85,9 @@ void emitConst(char constName)
             count = eeprom[ii++];
             while (count--)
             {
-#ifdef DEBUGOUT
-                printf("%02x/%c ", eeprom[ii] & 0xff, eeprom[ii] & 0xff);
-#else
                 write(outDev, &eeprom[ii], 1);
-#endif
                 ii++;
-                return;
+     //           return;
             }
         }
         else
@@ -123,11 +123,7 @@ void emitVariable(void)
     ii++; // start of data
     while (ii < jj)
     {
-#ifdef DEBUGOUT
-        printf("%02x/%c ", ram[ii] & 0xff, ram[ii] & 0xff);
-#else
         write(outDev, &ram[ii], 1);
-#endif
         ii++;
     }
     ip++;
@@ -327,16 +323,28 @@ void interpreter(void)
 
 int main(int argc, char ** argv)
 {
+    struct stat fStat;
+    stat(argv[1], &fStat);
+    eeprom = malloc(fStat.st_size);
+    FILE * opCodes = fopen(argv[1], "r");
+    fread(eeprom, fStat.st_size, 1, opCodes);
+    fclose(opCodes);
+
     struct termios termio;
-    outDev = open("/dev/cu.SLAB_USBtoUART", O_WRONLY | O_NOCTTY | O_NONBLOCK);
+#ifdef DEBUGOUT
+    outDev = open("obj.out", O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
+#else
+    outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY);
+    //outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
    // outDev = open("/dev/tty.SLAB_USBtoUART", O_WRONLY | O_NOCTTY | O_NONBLOCK);
     cfmakeraw(&termio);
     cfsetospeed(&termio, B38400);
     tcsetattr(outDev, TCSANOW, &termio);
+#endif
 
     interpreter();
 
-//    emitConst('a');
     close(outDev);
+    free(eeprom);
 
 }

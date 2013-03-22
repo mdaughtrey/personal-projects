@@ -7,10 +7,10 @@ interpreter: makefile $(OBJS)
 	gcc -g -c $<
 
 run:
-	./interpreter
+	./interpreter obj.bin
 
 gdb:
 	gdb interpreter
 
 poke:
-	./poke.py
+	./poke.py -v

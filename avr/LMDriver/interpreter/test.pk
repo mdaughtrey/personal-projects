@@ -1,0 +1,27 @@
+# String Constants Initialization
+    sconst top1 "t4this"
+    sconst top2 "t4 is "
+    sconst top3 "t4the "
+    sconst top4 "t4top."
+
+# main loop
+init:
+    ivar count 100
+
+label1:
+    iemit count
+    dec count
+    jz count next
+    jump label1
+
+next:
+    semit top1
+    sleep 1000
+    semit top2
+    sleep 1000
+    semit top3
+    sleep 1000
+    semit top4
+    sleep 1000
+
+    jump init
