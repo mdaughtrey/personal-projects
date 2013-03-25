@@ -5,6 +5,7 @@ import pdb
 import re
 import ByteStream
 import array
+import re
 
 verbose = False
 
@@ -54,22 +55,23 @@ class Parser:
         return result
 
     def finalize(self):
-#        pdb.set_trace()
-        self.streamer.finalize(self.sconsts, 0, 0)
+        self.streamer.finalize(self.sconsts, self.svars, self.ivars)
 
     def cmd_comment(self, param):
         pass
 
     def cmd_sconst(self, param):
-        (op, name, value) = param.split(' ', 2)
-#        pdb.set_trace()
+        name = param.split()[1]
+        value = ' '.join(param.split()[2:])
         self.sconsts[name] = self.unescapeString(value.replace('"', '')).tostring()
         vOut ("Setting SCONST %s to [%s]\n" % (name, self.sconsts[name]))
 
     def cmd_svar(self, param):
-        (op, name, value) = param.split(' ', 2)
+        name = param.split()[1]
+        value = ' '.join(param.split()[2:])
         self.svars[name] = self.unescapeString(value.replace('"', '')).tostring()
         vOut ("Setting SVAR %s to [%s]\n" % (name, self.svars[name]))
+        self.streamer.svar(name, self.svars[name])
 
     def cmd_ivar(self, param):
         (op, name, value) = param.split(' ', 2)
@@ -98,8 +100,8 @@ class Parser:
         pass
 
     def cmd_jump(self, param):
-    # does label exist?
-        pass
+        labelname = param.split()[1]
+        self.streamer.jump(labelname)
 
     def cmd_iemit(self, param):
     # does var exist?
@@ -113,9 +115,16 @@ class Parser:
         pass
 
     def cmd_label(self, param):
-    # does label already exist?
-        pass
+        (name) = param.split(':', 1)[0]
+        self.streamer.label(name)
 
+    def cmd_pausems(self, param):
+        value = param.split()[1]
+        self.streamer.pausems(int(value))
+
+    def cmd_pauses(self, param):
+        value = param.split()[1]
+        self.streamer.pauses(int(value))
 
     commandMap = {
         '^#' : 'cmd_comment',
@@ -129,7 +138,9 @@ class Parser:
         '^iemit\s'  : 'cmd_iemit',
         '^semit\s'  : 'cmd_semit',
         '^sleep\s'  : 'cmd_sleep',
-        '^\S+:'     : 'cmd_label'
+        '^\S+:'     : 'cmd_label',
+        '^pausems'   : 'cmd_pausems',
+        '^pauses'    : 'cmd_pauses'
     }
 
 

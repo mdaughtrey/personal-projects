@@ -8,8 +8,10 @@
 
 //#define DEBUGOUT 0
 
-//!c - declare const a-zA-Z
-#define CMD_PAUSE 'p'
+//!p pause in ms
+#define CMD_PAUSE_MS 'p'
+//!P pause in secs
+#define CMD_PAUSE_S 'P'
 //!e - emit constant
 #define CMD_EMIT_CONSTANT 'e'
 //!E - emit variable
@@ -86,6 +88,7 @@ void emitConst(char constName)
             while (count--)
             {
                 write(outDev, &eeprom[ii], 1);
+                usleep(1000);
                 ii++;
      //           return;
             }
@@ -124,6 +127,7 @@ void emitVariable(void)
     while (ii < jj)
     {
         write(outDev, &ram[ii], 1);
+                usleep(1000);
         ii++;
     }
     ip++;
@@ -171,10 +175,17 @@ void declareString(void)
     ramUsed = ii;
 }
 
-void doPause(void)
+void doPauseMs(void)
 {
     unsigned short value = (eeprom[ip] << 8) | eeprom[ip + 1];
     usleep(value * 1000);
+    ip += 2;
+}
+
+void doPauseSecs(void)
+{
+    unsigned short value = (eeprom[ip] << 8) | eeprom[ip + 1];
+    usleep(value * 1e6);
     ip += 2;
 }
 
@@ -291,9 +302,14 @@ void interpreter(void)
                 declareString();
                 break;
 
-            case CMD_PAUSE:
+            case CMD_PAUSE_MS:
                 ip++;
-                doPause();
+                doPauseMs();
+                break;
+
+            case CMD_PAUSE_S:
+                ip++;
+                doPauseSecs();
                 break;
 
             case CMD_JUMP:
