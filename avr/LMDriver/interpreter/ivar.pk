@@ -1,0 +1,5 @@
+main:
+    ivar theVar 1000
+    iemit TheVar
+    dec theVar
+    jump main

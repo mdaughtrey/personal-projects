@@ -6,7 +6,13 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-//#define DEBUGOUT 0
+//#define EMBEDDED
+//#define OBJOUT
+#define DEBUGOUT 0
+//#define DEBUGOUT
+#ifdef EMBEDDED
+#undef DEBUGOUT
+#endif
 
 //!p pause in ms
 #define CMD_PAUSE_MS 'p'
@@ -16,6 +22,8 @@
 #define CMD_EMIT_CONSTANT 'e'
 //!E - emit variable
 #define CMD_EMIT_VARIABLE 'E'
+//!I - emit integer
+#define CMD_EMIT_INTEGER 'I'
 //!j - jump <mark>
 #define CMD_JUMP 'j'
 //!d - decrement var
@@ -75,7 +83,7 @@ void emitConst(char constName)
     unsigned short constEnd = (eeprom[0] << 8) | eeprom[1];
 
 #ifdef DEBUGOUT
-    printf("emitConst %c: ", eeprom[ip] & 0xff);
+    printf("emitConst %u: ", eeprom[ip] & 0xff);
 #endif
 
     while (ii < constEnd)
@@ -85,8 +93,14 @@ void emitConst(char constName)
             unsigned char count;
             ii++;               // point to const length
             count = eeprom[ii++];
-            while (count--)
+#ifdef DEBUGOUT
+            printf(" length %02x ", count);
+#endif
+            while (--count)
             {
+#ifdef DEBUGOUT
+        printf(" %02x", eeprom[ii]);
+#endif
                 write(outDev, &eeprom[ii], 1);
                 usleep(1000);
                 ii++;
@@ -105,12 +119,16 @@ void emitConst(char constName)
     ip++;
 }
 
+void emitInteger(void)
+{
+}
+
 void emitVariable(void)
 {
     unsigned short ii = locateVariable(eeprom[ip]);
     unsigned char jj;
 #ifdef DEBUGOUT
-    printf("emitVariable %c: ", eeprom[ip] & 0xff);
+    printf("emitVariable %u: ", eeprom[ip] & 0xff);
 #endif
 
     if (ram[ii] != eeprom[ip])
@@ -121,11 +139,14 @@ void emitVariable(void)
         return;
     }
     ii++; // length
-    jj = ii + ram[ii] + 1;
+    jj = ii + ram[ii];
 
     ii++; // start of data
     while (ii < jj)
     {
+#ifdef DEBUGOUT
+        printf(" %02x", ram[ii]);
+#endif
         write(outDev, &ram[ii], 1);
                 usleep(1000);
         ii++;
@@ -156,6 +177,9 @@ void declareShort(void)
 
 void declareString(void)
 {
+#ifdef DEBUGOUT
+    printf("declareString %u length %02x", eeprom[ip], eeprom[ip + 1]);
+#endif
     unsigned short ii = locateVariable(eeprom[ip]);
     if (ramUsed + eeprom[ip + 1] > RAM_SIZE)
     {
@@ -168,11 +192,18 @@ void declareString(void)
     ram[ii++] = eeprom[ip++]; // store name
     unsigned char jj =  ip + eeprom[ip];
     ram[ii++] = eeprom[ip++]; // store length
-    while (ip <= jj)
+    //while (ip <= jj)
+    while (ip < jj)
     {
+#ifdef DEBUGOUT
+        printf(" %02x", eeprom[ip]);
+#endif
         ram[ii++] = eeprom[ip++]; // store MSB
     }
     ramUsed = ii;
+#ifdef DEBUGOUT
+    printf("\n");
+#endif
 }
 
 void doPauseMs(void)
@@ -292,6 +323,11 @@ void interpreter(void)
                 emitVariable();
                 break;
 
+            case CMD_EMIT_INTEGER:
+                ip++;
+                emitInteger();
+                break;
+
             case CMD_DECLARE_SHORT_VAR:
                 ip++;
                 declareShort();
@@ -347,7 +383,7 @@ int main(int argc, char ** argv)
     fclose(opCodes);
 
     struct termios termio;
-#ifdef DEBUGOUT
+#ifdef OBJOUT
     outDev = open("obj.out", O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
 #else
     outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY);

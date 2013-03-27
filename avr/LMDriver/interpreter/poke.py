@@ -19,7 +19,7 @@ class Parser:
     def __init__(self, lines):
         self.sconsts = {}
         self.svars = {}
-        self.ivars = {}
+#        self.ivars = {}
         self.streamer = ByteStream.ByteStream()
         for line in lines:
             line = line.strip()
@@ -30,6 +30,7 @@ class Parser:
             try:
                 for (regex, command) in Parser.commandMap.items():
                     if re.search(regex, line):
+                        pdb.set_trace()
                         getattr(self, command)(line)
                         raise StopIteration
 
@@ -55,7 +56,7 @@ class Parser:
         return result
 
     def finalize(self):
-        self.streamer.finalize(self.sconsts, self.svars, self.ivars)
+        self.streamer.finalize(self.sconsts, self.svars) #, self.ivars)
 
     def cmd_comment(self, param):
         pass
@@ -74,7 +75,8 @@ class Parser:
         self.streamer.svar(name, self.svars[name])
 
     def cmd_ivar(self, param):
-        (op, name, value) = param.split(' ', 2)
+        name = param.split()[1]
+        value = int(' '.join(param.split()[2:]))
 
         try:
             float(value)
@@ -83,16 +85,18 @@ class Parser:
             sys.stdout.write("Value [%s] is not a number\n" % value)
             sys.exit(1)
 
-        self.ivars[name] = value
-        vOut ("Setting IVAR %s to [%s]\n" % (name, value))
+#        self.ivars[name] = value
+        vOut ("Setting IVAR %s to [%d]\n" % (name, value))
+        self.streamer.ivar(name, value)
+#        self.streamer.ivar(name, self.ivars[name])
 
     def cmd_dec(self, param):
-    # does ivar exist?
-        pass
+        name = param.split()[1]
+        self.streamer.dec(name)
 
     def cmd_inc(self, param):
-    # does ivar exist?
-        pass
+        name = param.split()[1]
+        self.streamer.inc(name)
 
     def cmd_jz(self, param):
     # does ivar exist?
@@ -104,15 +108,12 @@ class Parser:
         self.streamer.jump(labelname)
 
     def cmd_iemit(self, param):
-    # does var exist?
-        pass
+        (op, name) = param.split(' ', 2)
+         self.streamer.iemit(name)
 
     def cmd_semit(self, param):
         (op, name) = param.split(' ', 2)
         self.streamer.semit(name)
-
-    def cmd_sleep(self, param):
-        pass
 
     def cmd_label(self, param):
         (name) = param.split(':', 1)[0]
@@ -137,7 +138,6 @@ class Parser:
         '^jump\s'   : 'cmd_jump',
         '^iemit\s'  : 'cmd_iemit',
         '^semit\s'  : 'cmd_semit',
-        '^sleep\s'  : 'cmd_sleep',
         '^\S+:'     : 'cmd_label',
         '^pausems'   : 'cmd_pausems',
         '^pauses'    : 'cmd_pauses'
@@ -146,6 +146,6 @@ class Parser:
 
 verbose = ('-v' in sys.argv)
 
-parser = Parser(open('semit.pk').readlines())
+parser = Parser(open('ivar.pk').readlines())
 parser.finalize()
 

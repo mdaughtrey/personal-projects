@@ -7,27 +7,27 @@
     sconst top6 "t\x04 do "
     sconst top7 "t\x04for "
     sconst top8 "t\x04your"
-    sconst top9 "t\x04 dog"
+#    sconst top9 "t\x04 dog"
 
 
 main:
+    svar top9 "t\x04 dog"
     pausems 500
     semit top1
-    jump main
-#    pausems 500
-#    semit top2
-#    pausems 500
-#    semit top3
-#    pausems 500
-#    semit top4
-#    pausems 500
-#    semit top5
-#    pausems 500
-#    semit top6
-#    pausems 500
-#    semit top7
-#    pausems 500
-#    semit top8
-#    pausems 500
-#    semit top9
-#    jump main 
+    pausems 500
+    semit top2
+    pausems 500
+    semit top3
+    pausems 500
+    semit top4
+    pausems 500
+    semit top5
+    pausems 500
+    semit top6
+    pausems 500
+    semit top7
+    pausems 500
+    semit top8
+    pausems 500
+    semit top9
+    jump main 
