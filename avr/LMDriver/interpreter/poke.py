@@ -18,7 +18,7 @@ def vOut(text):
 class Parser:
     def __init__(self, lines):
         self.sconsts = {}
-        self.svars = {}
+#        self.svars = {}
 #        self.ivars = {}
         self.streamer = ByteStream.ByteStream()
         for line in lines:
@@ -30,7 +30,7 @@ class Parser:
             try:
                 for (regex, command) in Parser.commandMap.items():
                     if re.search(regex, line):
-                        pdb.set_trace()
+#                        pdb.set_trace()
                         getattr(self, command)(line)
                         raise StopIteration
 
@@ -56,7 +56,7 @@ class Parser:
         return result
 
     def finalize(self):
-        self.streamer.finalize(self.sconsts, self.svars) #, self.ivars)
+        self.streamer.finalize(self.sconsts) #, self.svars) # , self.ivars)
 
     def cmd_comment(self, param):
         pass
@@ -70,9 +70,11 @@ class Parser:
     def cmd_svar(self, param):
         name = param.split()[1]
         value = ' '.join(param.split()[2:])
-        self.svars[name] = self.unescapeString(value.replace('"', '')).tostring()
-        vOut ("Setting SVAR %s to [%s]\n" % (name, self.svars[name]))
-        self.streamer.svar(name, self.svars[name])
+        value = self.unescapeString(value.replace('"', '')).tostring()
+#        self.svars[name] = { 'value' : value , 'length' : len(value) }
+        vOut ("Setting SVAR %s to [%s]\n" % (name, value))
+#        self.streamer.svar(name, self.svars[name]['value'])
+        self.streamer.svar(name, value)
 
     def cmd_ivar(self, param):
         name = param.split()[1]
@@ -109,7 +111,7 @@ class Parser:
 
     def cmd_iemit(self, param):
         (op, name) = param.split(' ', 2)
-         self.streamer.iemit(name)
+        self.streamer.iemit(name)
 
     def cmd_semit(self, param):
         (op, name) = param.split(' ', 2)

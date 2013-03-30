@@ -1,5 +1,10 @@
+start:
+    svar outs "t\x04abc"
+init:
+    ivar outi 255
 main:
-    ivar theVar 1000
-    iemit TheVar
-    dec theVar
+    semit outs
+    iemit outi
+    dec outi
+    jz outi init
     jump main

@@ -7,9 +7,9 @@
 #include <stdlib.h>
 
 //#define EMBEDDED
-//#define OBJOUT
-#define DEBUGOUT 0
-//#define DEBUGOUT
+#define OBJOUT
+//#define DEBUGOUT 0
+#define DEBUGOUT
 #ifdef EMBEDDED
 #undef DEBUGOUT
 #endif
@@ -21,7 +21,7 @@
 //!e - emit constant
 #define CMD_EMIT_CONSTANT 'e'
 //!E - emit variable
-#define CMD_EMIT_VARIABLE 'E'
+#define CMD_EMIT_STRING 'S'
 //!I - emit integer
 #define CMD_EMIT_INTEGER 'I'
 //!j - jump <mark>
@@ -121,37 +121,45 @@ void emitConst(char constName)
 
 void emitInteger(void)
 {
+    unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
+    unsigned short value = (ram[location] << 8) | ram[location + 1];
+#ifdef DEBUGOUT
+    printf("emitInteger Loc %04x Value %02x", location, value);
+#endif
+    if (ram[location])
+    {
+#ifdef DEBUGOUT
+        printf(" %02x", ram[location]);
+#endif
+        write(outDev, &ram[location], 1);
+        usleep(1000);
+    }
+#ifdef DEBUGOUT
+    printf(" %02x", ram[location + 1]);
+#endif
+    write(outDev, &ram[location + 1], 1);
+    usleep(1000);
+    ip += 2;
+#ifdef DEBUGOUT
+    printf("\n");
+#endif
 }
 
-void emitVariable(void)
+void emitString(void)
 {
-    unsigned short ii = locateVariable(eeprom[ip]);
-    unsigned char jj;
+    unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
+    unsigned short length = ram[location++];
 #ifdef DEBUGOUT
-    printf("emitVariable %u: ", eeprom[ip] & 0xff);
+    printf("emitString Loc %04x Len %02x", location, length);
 #endif
-
-    if (ram[ii] != eeprom[ip])
+    ip += 2;
+    while (--length)
     {
 #ifdef DEBUGOUT
-        printf("Variable %c not found\n", eeprom[ip]);
+        printf(" %02x", ram[location]);
 #endif
-        return;
+        write(outDev, &ram[location++], 1);
     }
-    ii++; // length
-    jj = ii + ram[ii];
-
-    ii++; // start of data
-    while (ii < jj)
-    {
-#ifdef DEBUGOUT
-        printf(" %02x", ram[ii]);
-#endif
-        write(outDev, &ram[ii], 1);
-                usleep(1000);
-        ii++;
-    }
-    ip++;
 #ifdef DEBUGOUT
     printf("\n");
 #endif
@@ -159,51 +167,34 @@ void emitVariable(void)
 
 void declareShort(void)
 {
-    unsigned short ii = locateVariable(eeprom[ip]);
-    if (ramUsed + 4 > RAM_SIZE)
-    {
+    unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
+    ram[location] = eeprom[ip + 2];     // store MSB
+    ram[location + 1] = eeprom[ip + 3]; // store LSB
+    ip += 4;
 #ifdef DEBUGOUT
-        printf("Not enough RAM left to declare short var %c: RAM_SIZE %d ramUsed %d\n", 
-                eeprom[ii], RAM_SIZE, ramUsed);
+    printf("declareShort Loc %04x Value %04x\n", location, (ram[location] << 8) | ram[location + 1]);
 #endif
-        return;
-    }
-    ram[ii++] = eeprom[ip++]; // store name
-    ram[ii++] = 2;            // length = 2 bytes
-    ram[ii++] = eeprom[ip++]; // store MSB
-    ram[ii++] = eeprom[ip++]; // store LSB
-    ramUsed = ii;
 }
 
 void declareString(void)
 {
+    unsigned char location = (eeprom[ip] << 8) | eeprom[ip + 1];
+    unsigned char length = eeprom[ip + 2];
 #ifdef DEBUGOUT
-    printf("declareString %u length %02x", eeprom[ip], eeprom[ip + 1]);
-#endif
-    unsigned short ii = locateVariable(eeprom[ip]);
-    if (ramUsed + eeprom[ip + 1] > RAM_SIZE)
-    {
-#ifdef DEBUGOUT
-        printf("Not enough RAM left to declare string var %c: RAM_SIZE %d ramUsed %d\n", 
-                eeprom[ii], RAM_SIZE, ramUsed);
-#endif
-        return;
-    }
-    ram[ii++] = eeprom[ip++]; // store name
-    unsigned char jj =  ip + eeprom[ip];
-    ram[ii++] = eeprom[ip++]; // store length
-    //while (ip <= jj)
-    while (ip < jj)
+    printf("declareString Loc %04x Len %02x", location, length);
+#endif // DEBUGOUT
+    ip += 3;
+    ram[location++] = length;
+    while (--length)
     {
 #ifdef DEBUGOUT
         printf(" %02x", eeprom[ip]);
-#endif
-        ram[ii++] = eeprom[ip++]; // store MSB
+#endif // DEBUGOUT
+        ram[location++] = eeprom[ip++];
     }
-    ramUsed = ii;
 #ifdef DEBUGOUT
-    printf("\n");
-#endif
+        printf("\n");
+#endif // DEBUGOUT
 }
 
 void doPauseMs(void)
@@ -220,37 +211,55 @@ void doPauseSecs(void)
     ip += 2;
 }
 
-void decInteger(void)
+void decShort(void)
 {
-    short ii = locateVariable(eeprom[ip++]) + 2;
-    short value = (ram[ii] << 8) | ram[ii + 1];
+    unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
+#ifdef DEBUGOUT
+    printf("decShort @ %04x", location);
+#endif
+
+    unsigned short value = (ram[location] << 8) | ram[location + 1];
     value--;
-    ram[ii] = value >> 8;
-    ram[ii + 1] = value & 0xff;
+    ram[location] = (value >> 8) & 0xff;
+    ram[location + 1] = value & 0xff;
+
+#ifdef DEBUGOUT
+    printf(" new value %04x\n", value);
+#endif
+    ip += 2;
 }
 
-void incInteger(void)
+void incShort(void)
 {
-    short ii = locateVariable(eeprom[ip++]) + 2;
-    short value = (ram[ii] << 8) | ram[ii + 1];
+    unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
+#ifdef DEBUGOUT
+    printf("incShort @ %04x", location);
+#endif
+
+    unsigned short value = (ram[location] << 8) | ram[location + 1];
     value++;
-    ram[ii] = value >> 8;
-    ram[ii + 1] = value & 0xff;
+    ram[location] = (value >> 8) & 0xff;
+    ram[location + 1] = value & 0xff;
+
+#ifdef DEBUGOUT
+    printf(" new value %04x\n", value);
+#endif
+    ip += 2;
 }
 
-void decString(void)
-{
-    short ii = locateVariable(eeprom[ip++]) + 1;
-    ii += ram[ii];
-    ram[ii]--;
-}
-
-void incString(void)
-{
-    short ii = locateVariable(eeprom[ip++]) + 1;
-    ii += ram[ii];
-    ram[ii]++;
-}
+//void decShort(void)
+//{
+//    short ii = locateVariable(eeprom[ip++]) + 1;
+//    ii += ram[ii];
+//    ram[ii]--;
+//}
+//
+//void incShort(void)
+//{
+//    short ii = locateVariable(eeprom[ip++]) + 1;
+//    ii += ram[ii];
+//    ram[ii]++;
+//}
 
 void jump(void)
 {
@@ -291,26 +300,12 @@ void interpreter(void)
         {
             case CMD_DECREMENT:
                 ip++;
-                if ((eeprom[ip] & 0xdf) == eeprom[ip])
-                {
-                    decString();
-                }
-                else
-                {
-                    decInteger();
-                }
+                decShort();
                 break;
 
             case CMD_INCREMENT:
                 ip++;
-                if ((eeprom[ip] & 0xdf) == eeprom[ip])
-                {
-                    incString();
-                }
-                else
-                {
-                    incInteger();
-                }
+                incShort(); 
                 break;
 
             case CMD_EMIT_CONSTANT:
@@ -318,9 +313,9 @@ void interpreter(void)
                 emitConst(eeprom[ip]);
                 break;
 
-            case CMD_EMIT_VARIABLE:
+            case CMD_EMIT_STRING:
                 ip++;
-                emitVariable();
+                emitString();
                 break;
 
             case CMD_EMIT_INTEGER:
