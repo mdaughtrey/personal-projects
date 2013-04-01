@@ -3,6 +3,7 @@ start:
 init:
     ivar outi 255
 main:
+    pausems 500
     semit outs
     iemit outi
     dec outi

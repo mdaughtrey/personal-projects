@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 //#define EMBEDDED
-#define OBJOUT
+//#define OBJOUT
 //#define DEBUGOUT 0
 #define DEBUGOUT
 #ifdef EMBEDDED
@@ -124,7 +124,7 @@ void emitInteger(void)
     unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
     unsigned short value = (ram[location] << 8) | ram[location + 1];
 #ifdef DEBUGOUT
-    printf("emitInteger Loc %04x Value %02x", location, value);
+    printf("emitInteger Loc %04x Value %04x", location, value);
 #endif
     if (ram[location])
     {
@@ -264,28 +264,25 @@ void incShort(void)
 void jump(void)
 {
     ip = (eeprom[ip] << 8) | eeprom[ip + 1];
+#ifdef DEBUGOUT
+    printf("Jumping to %04x\n", ip);
+#endif
 }
 
 void jz(dump)
 {
-    unsigned short ii = locateVariable(eeprom[ip]) + 2;
-    unsigned value = (ram[ii] << 8) | ram[ii + 1];
-#ifdef DEBUGOUT
-    printf("jz: var %c is %04x\n", eeprom[ip], value);
-#endif
-
-    ip++;
-    if (0 == value)
+    unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
+    unsigned short varValue = (ram[location] << 8) | ram[location + 1];
+    if (0 == varValue)
     {
-        ip = (eeprom[ip] << 8) | eeprom[ip + 1];
+        location = (eeprom[ip + 2] << 8) | eeprom[ip + 3];
+     //   unsigned short jumpTo = (ram[location] << 8) | ram[location + 1];
+        ip = location;
     }
     else
     {
-        ip += 2;
+        ip += 4;
     }
-#ifdef DEBUGOUT
-        printf("ip is now %04x\n", ip);
-#endif
 }
 
 void interpreter(void)
@@ -293,6 +290,9 @@ void interpreter(void)
     ip = (eeprom[0] << 8) | eeprom[1];
     while (1)
     {
+        // read dev and throw away stuff
+        char buffer[10];
+        read(outDev, buffer, 10);
 #ifdef DEBUGOUT
         printf("%04x: %02x %c\n", ip, eeprom[ip], eeprom[ip]);
 #endif
@@ -381,7 +381,7 @@ int main(int argc, char ** argv)
 #ifdef OBJOUT
     outDev = open("obj.out", O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
 #else
-    outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY);
+    outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
     //outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
    // outDev = open("/dev/tty.SLAB_USBtoUART", O_WRONLY | O_NOCTTY | O_NONBLOCK);
     cfmakeraw(&termio);

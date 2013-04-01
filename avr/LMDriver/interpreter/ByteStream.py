@@ -23,12 +23,14 @@ class ByteStream:
         return varMap
 
     def svar(self, name, value):
-        sVar = { 'op' : 'svar', 'var' : name, 'value' : value, 'length' : len(value) + 1, 'location' : -1 }
+        sVar = { 'op' : 'svar', 'var' : name, 'value' : value,
+            'length' : len(value) + 1, 'location' : -1 }
         self.svars[name]  = sVar
         self.stream.append(sVar)
 
     def ivar(self, name, value):
-        iVar = { 'op' : 'ivar', 'name' : name, 'value' : value, 'length' : 2, 'location' : -1 }
+        iVar = { 'op' : 'ivar', 'name' : name, 'value' : value,
+            'length' : 2, 'location' : -1 }
         self.ivars[name] = iVar
         self.stream.append(iVar)
 
@@ -38,8 +40,8 @@ class ByteStream:
     def inc(self, name):
         self.stream.append({ 'op' : 'inc', 'value' : 0, 'var' : name })
 
-    def jz(self, name, label):
-        self.stream.append({ 'op' : 'jz', 'label' : label })
+    def jz(self, varname, label):
+        self.stream.append({ 'op' : 'jz', 'var' : varname, 'label' : label })
 
     def jump(self, label):
         self.stream.append({ 'op' : 'jump', 'label' : label })
@@ -60,88 +62,119 @@ class ByteStream:
     def pauses(self, value):
         self.stream.append({ 'op' : 'pauses', 'value' : value})
 
-    def emit_semit(self, param, object):
+    def emit_semit(self, param):
+        emitted = array.array('B')
         if self.sconsts.get(param['var'], None):
-            object.append(ord('e'))
-            object.append(self.sconsts[param['var']]['alias'])
+            emitted.append(ord('e'))
+            emitted.append(self.sconsts[param['var']]['alias'])
         else:
-            object.append(ord('S'))
-            object.append((self.svars[param['var']]['location'] >> 8) & 0xff)
-            object.append( self.svars[param['var']]['location'] & 0xff)
-        return object
+            emitted.append(ord('S'))
+            emitted.append((self.svars[param['var']]['location'] >> 8) & 0xff)
+            emitted.append( self.svars[param['var']]['location'] & 0xff)
+        return emitted
 
-    def emit_svar(self, param, object):
-        object.append(ord('s'))
-        object.append((param['location'] >> 8) & 0xff)
-        object.append(param['location'] & 0xff)
-        object.append(len(param['value']) + 1)
+    def emit_svar(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('s'))
+        emitted.append((param['location'] >> 8) & 0xff)
+        emitted.append(param['location'] & 0xff)
+        emitted.append(len(param['value']) + 1)
         for xx in param['value']:
-            object.append(ord(xx))
-        return object
+            emitted.append(ord(xx))
+        return emitted
 
-    def emit_pausems(self, param, object):
+    def emit_pausems(self, param):
+        emitted = array.array('B')
         value = int(param['value'])
-        object.append(ord('p'))
-        object.append((value >> 8) & 0xff)
-        object.append(value & 0xff)
-        return object
+        emitted.append(ord('p'))
+        emitted.append((value >> 8) & 0xff)
+        emitted.append(value & 0xff)
+        return emitted
 
-    def emit_pauses(self, param, object):
+    def emit_pauses(self, param):
+        emitted = array.array('B')
         value = int(param['value'])
-        object.append(ord('P'))
-        object.append((value >> 8) & 0xff)
-        object.append(value & 0xff)
-        return object
+        emitted.append(ord('P'))
+        emitted.append((value >> 8) & 0xff)
+        emitted.append(value & 0xff)
+        return emitted
 
-    def emit_labeldef(self, param, object):
-        return object
+    def emit_labeldef(self, param):
+        emitted = array.array('B')
+        return emitted
 
-    def emit_jump(self, param, object):
-        object.append(ord('j'))
+    def emit_jump(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('j'))
         jumpTo = int(self.labels[param['label']])
-        object.append((jumpTo >> 8) & 0xff)
-        object.append(jumpTo & 0xff)
-        return object
+        emitted.append((jumpTo >> 8) & 0xff)
+        emitted.append(jumpTo & 0xff)
+        return emitted
 
-    def emit_ivar(self, param, object):
-        object.append(ord('i'))
-        object.append((param['location'] >> 8) & 0xff)
-        object.append(param['location'] & 0xff)
-        object.append((param['value'] >> 8) & 0xff)
-        object.append(param['value'] & 0xff)
-        return object
+    def emit_ivar(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('i'))
+        emitted.append((param['location'] >> 8) & 0xff)
+        emitted.append(param['location'] & 0xff)
+        emitted.append((param['value'] >> 8) & 0xff)
+        emitted.append(param['value'] & 0xff)
+        return emitted
 
-    def emit_dec(self, param, object):
-        object.append(ord('-'))
+    def emit_dec(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('-'))
         location = self.ivars[param['var']]['location']
-        object.append((location >> 8) & 0xff)
-        object.append(location & 0xff)
-        return object
+        emitted.append((location >> 8) & 0xff)
+        emitted.append(location & 0xff)
+        return emitted
 
-    def emit_inc(self, param, object):
-        object.append(ord('+'))
+    def emit_inc(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('+'))
         location = self.ivars[param['var']]['location']
-        object.append((location >> 8) & 0xff)
-        object.append(location & 0xff)
-        return object
+        emitted.append((location >> 8) & 0xff)
+        emitted.append(location & 0xff)
+        return emitted
 
-    def emit_iemit(self, param, object):
-        object.append(ord('I'))
-        object.append((self.ivars[param['var']]['location'] >> 8) & 0xff)
-        object.append( self.ivars[param['var']]['location'] & 0xff)
-        return object
+    def emit_iemit(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('I'))
+        emitted.append((self.ivars[param['var']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['var']]['location'] & 0xff)
+        return emitted
+
+    def emit_jz(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('z'))
+        emitted.append((self.ivars[param['var']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['var']]['location'] & 0xff)
+        emitted.append((self.labels[param['label']] >> 8) & 0xff)
+        emitted.append( self.labels[param['label']] & 0xff)
+        return emitted
+
+    def emit_add(self, param):
+        emitted = array.array('B')
+        return emitted
+
+    def emit_sub(self, param):
+        emitted = array.array('B')
+        return emitted
+
 
     emitMap = {
-        'semit' : 'emit_semit',
-        'iemit' : 'emit_iemit',
-        'svar' : 'emit_svar',
-        'ivar' : 'emit_ivar',
-        'pausems' : 'emit_pausems',
-        'pauses' : 'emit_pauses',
-        'labeldef' : 'emit_labeldef',
-        'jump' : 'emit_jump',
+        'add' : 'emit_add',
+        'sub' : 'emit_sub',
         'dec' : 'emit_dec',
+        'iemit' : 'emit_iemit',
         'inc' : 'emit_inc'
+        'ivar' : 'emit_ivar',
+        'jump' : 'emit_jump',
+        'jz'   : 'emit_jz',
+        'labeldef' : 'emit_labeldef',
+        'pauses' : 'emit_pauses',
+        'pausems' : 'emit_pausems',
+        'semit' : 'emit_semit',
+        'svar' : 'emit_svar',
     }
 
     def finalize(self, sconsts): #, svars): # , ivars):
@@ -167,20 +200,26 @@ class ByteStream:
         throwaway = array.array('B')
         offset = length 
 
+        pdb.set_trace()
         for cmd in self.stream:
             offset += throwaway.buffer_info()[1]
-            throwaway = getattr(self, ByteStream.emitMap[cmd['op']])(cmd, throwaway)
+            throwaway = getattr(self, ByteStream.emitMap[cmd['op']])(cmd)
             if 'labeldef' == cmd['op']:
+                print "resolving label %s to location %d" % (cmd['name'], offset)
                 self.labels[cmd['name']] = offset
-            if 'semit' == cmd['op']:
-                cmd['location'] = self.svars[cmd['var']]['location']
-            if 'iemit' == cmd['op']:
-                cmd['location'] = self.ivars[cmd['var']]['location']
+
+
+#            if 'semit' == cmd['op']:
+#                cmd['location'] = self.svars[cmd['var']]['location']
+#            if 'iemit' == cmd['op']:
+#                cmd['location'] = self.ivars[cmd['var']]['location']
+#            if 'jz' == cmd['op']:
+#                pdb.set_trace()
+#                cmd['location'] = self.labels[cmd['label']]
 
 
         for cmd in self.stream:
-            pdb.set_trace()
-            getattr(self, ByteStream.emitMap[cmd['op']])(cmd, self.object)
+            self.object.extend(getattr(self, ByteStream.emitMap[cmd['op']])(cmd))
 
         self.object.append(ord('!'))
         self.object.tofile(open('obj.bin', 'w'))

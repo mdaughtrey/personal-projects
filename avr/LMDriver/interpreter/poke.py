@@ -78,7 +78,11 @@ class Parser:
 
     def cmd_ivar(self, param):
         name = param.split()[1]
-        value = int(' '.join(param.split()[2:]))
+        text = param.split()[2:]
+        if re.match('0x', text):
+            value = int(text, 16)
+        else:
+            value = int(text)
 
         try:
             float(value)
@@ -101,9 +105,9 @@ class Parser:
         self.streamer.inc(name)
 
     def cmd_jz(self, param):
-    # does ivar exist?
-    # does label exist?
-        pass
+        varname = param.split()[1]
+        label = param.split()[2]
+        self.streamer.jz(varname, label)
 
     def cmd_jump(self, param):
         labelname = param.split()[1]
