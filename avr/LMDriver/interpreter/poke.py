@@ -18,6 +18,7 @@ def vOut(text):
 class Parser:
     def __init__(self, lines):
         self.sconsts = {}
+        self.iconsts = {}
 #        self.svars = {}
 #        self.ivars = {}
         self.streamer = ByteStream.ByteStream()
@@ -56,7 +57,7 @@ class Parser:
         return result
 
     def finalize(self):
-        self.streamer.finalize(self.sconsts) #, self.svars) # , self.ivars)
+        self.streamer.finalize(self.sconsts, self.iconsts) #, self.svars) # , self.ivars)
 
     def cmd_comment(self, param):
         pass
@@ -66,6 +67,12 @@ class Parser:
         value = ' '.join(param.split()[2:])
         self.sconsts[name] = self.unescapeString(value.replace('"', '')).tostring()
         vOut ("Setting SCONST %s to [%s]\n" % (name, self.sconsts[name]))
+
+    def cmd_iconst(self, param):
+        name = param.split()[1]
+        value = int(param.split()[2])
+        self.iconsts[name] = value
+        vOut ("Setting ICONST %s to [%d]\n" % (name, self.iconsts[name]))
 
     def cmd_svar(self, param):
         name = param.split()[1]
@@ -78,23 +85,21 @@ class Parser:
 
     def cmd_ivar(self, param):
         name = param.split()[1]
-        text = param.split()[2:]
-        if re.match('0x', text):
-            value = int(text, 16)
-        else:
-            value = int(text)
+        assign = param.split()[2]
+#        if re.match('0x', text):
+#            value = int(text, 16)
+#        else:
+#            value = int(text)
+#
+#        try:
+#            float(value)
+#
+#        except TypeError:
+#            sys.stdout.write("Value [%s] is not a number\n" % value)
+#            sys.exit(1)
 
-        try:
-            float(value)
-
-        except TypeError:
-            sys.stdout.write("Value [%s] is not a number\n" % value)
-            sys.exit(1)
-
-#        self.ivars[name] = value
-        vOut ("Setting IVAR %s to [%d]\n" % (name, value))
-        self.streamer.ivar(name, value)
-#        self.streamer.ivar(name, self.ivars[name])
+        vOut ("Setting IVAR %s to [%s]\n" % (name, assign))
+        self.streamer.ivar(name, assign)
 
     def cmd_dec(self, param):
         name = param.split()[1]
@@ -133,25 +138,39 @@ class Parser:
         value = param.split()[1]
         self.streamer.pauses(int(value))
 
+    def cmd_add(self, param):
+        var1 = param.split()[1]
+        var2 = param.split()[2]
+        self.streamer.add(var1, var2)
+
+    def cmd_sub(self, param):
+        var1 = param.split()[1]
+        var2 = param.split()[2]
+        self.streamer.sub(var1, var2)
+
     commandMap = {
         '^#' : 'cmd_comment',
-        '^sconst\s' : 'cmd_sconst',
-        '^svar\s'   : 'cmd_svar',
-        '^ivar\s'   : 'cmd_ivar',
+        '^add\s'    : 'cmd_add',
         '^dec\s'    : 'cmd_dec',
-        '^inc\s'    : 'cmd_inc',
-        '^jz\s'     : 'cmd_jz',
-        '^jump\s'   : 'cmd_jump',
         '^iemit\s'  : 'cmd_iemit',
+        '^inc\s'    : 'cmd_inc',
+        '^ivar\s'   : 'cmd_ivar',
+        '^jump\s'   : 'cmd_jump',
+        '^jz\s'     : 'cmd_jz',
+        '^mod\s'    : 'cmd_mod',
+        '^pausems'  : 'cmd_pausems',
+        '^pauses'   : 'cmd_pauses',
+        '^sconst\s' : 'cmd_sconst',
+        '^iconst\s' : 'cmd_iconst',
         '^semit\s'  : 'cmd_semit',
+        '^sub\s'    : 'cmd_sub',
+        '^svar\s'   : 'cmd_svar',
         '^\S+:'     : 'cmd_label',
-        '^pausems'   : 'cmd_pausems',
-        '^pauses'    : 'cmd_pauses'
     }
 
 
 verbose = ('-v' in sys.argv)
 
-parser = Parser(open('ivar.pk').readlines())
+parser = Parser(open('clock.pk').readlines())
 parser.finalize()
 

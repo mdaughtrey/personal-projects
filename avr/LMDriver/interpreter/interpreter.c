@@ -14,6 +14,10 @@
 #undef DEBUGOUT
 #endif
 
+//!a - add ivar2 to ivar1
+#define CMD_ADD 'a'
+//!u - sub ivar2 from ivar1
+#define CMD_SUB 'u'
 //!p pause in ms
 #define CMD_PAUSE_MS 'p'
 //!P pause in secs
@@ -32,6 +36,8 @@
 #define CMD_INCREMENT '+'
 //!v - declare short int variable a-z
 #define CMD_DECLARE_SHORT_VAR 'i'
+// assign ivar to ivar
+#define CMD_ASSIGN_IVAR_IVAR 'm'
 //!V - declare string variable A-Z
 #define CMD_DECLARE_STRING_VAR 's'
 //!z - jump if integer is zero
@@ -269,7 +275,7 @@ void jump(void)
 #endif
 }
 
-void jz(dump)
+void jz(void)
 {
     unsigned short location = (eeprom[ip] << 8) | eeprom[ip + 1];
     unsigned short varValue = (ram[location] << 8) | ram[location + 1];
@@ -285,6 +291,50 @@ void jz(dump)
     }
 }
 
+void add(void)
+{
+    unsigned short location1 = (eeprom[ip] << 8) | eeprom[ip + 1];
+    unsigned short varValue1 = (ram[location1] << 8) | ram[location1 + 1];
+    unsigned short location2 = (eeprom[ip + 2] << 8) | eeprom[ip + 3];
+    unsigned short varValue2 = (ram[location2] << 8) | ram[location2 + 1];
+
+#ifdef DEBUGOUT
+    printf("%d += %d\n", varValue1, varValue2);
+#endif
+    varValue1 += varValue2;
+    ram[location1] = (varValue1 >> 8) & 0xff;
+    ram[location1 + 1] = varValue1 & 0xff;
+    ip += 4;
+}
+
+void sub(void)
+{
+    unsigned short location1 = (eeprom[ip] << 8) | eeprom[ip + 1];
+    unsigned short varValue1 = (ram[location1] << 8) | ram[location1 + 1];
+    unsigned short location2 = (eeprom[ip + 2] << 8) | eeprom[ip + 3];
+    unsigned short varValue2 = (ram[location2] << 8) | ram[location2 + 1];
+
+#ifdef DEBUGOUT
+    printf("%d -= %d\n", varValue1, varValue2);
+#endif
+    varValue1 -= varValue2;
+    ram[location1] = (varValue1 >> 8) & 0xff;
+    ram[location1 + 1] = varValue1 & 0xff;
+    ip += 4;
+}
+
+void assignIvarIvar(void)
+{
+    unsigned short location1 = (eeprom[ip] << 8) | eeprom[ip + 1];
+    unsigned short location2 = (eeprom[ip + 2] << 8) | eeprom[ip + 3];
+    unsigned short value = (ram[location2] << 8) | ram[location2 + 1];
+
+    ram[location1] = (value >> 8) & 0xff;
+    ram[location1 + 1] = value & 0xff;
+    ip += 4;
+}
+
+
 void interpreter(void)
 {
     ip = (eeprom[0] << 8) | eeprom[1];
@@ -298,6 +348,16 @@ void interpreter(void)
 #endif
         switch (eeprom[ip])
         {
+            case CMD_ADD:
+                ip++;
+                add();
+                break;
+
+            case CMD_SUB:
+                ip++;
+                sub();
+                break;
+
             case CMD_DECREMENT:
                 ip++;
                 decShort();
@@ -351,6 +411,11 @@ void interpreter(void)
             case CMD_JZ:
                 ip++;
                 jz();
+                break;
+
+            case CMD_ASSIGN_IVAR_IVAR:
+                ip++;
+                assignIvarIvar();
                 break;
 
             case CMD_END:

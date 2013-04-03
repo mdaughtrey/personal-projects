@@ -1,11 +1,9 @@
 start:
     svar outs "t\x04abc"
+    ivar decit 2
 init:
     ivar outi 255
+    ivar assignto decit
 main:
-    pausems 500
-    semit outs
-    iemit outi
-    dec outi
-    jz outi init
+    sub outi decit 
     jump main

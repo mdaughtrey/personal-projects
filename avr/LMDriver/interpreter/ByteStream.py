@@ -1,5 +1,6 @@
 import array
 import pdb
+import re
 
 class ByteStream:
     def __init__(self):
@@ -11,6 +12,7 @@ class ByteStream:
         self.ramLocation = 0
 
     def _buildVarAliases(self, varMap, aliasBase):
+        pdb.set_trace()
         for key, value in varMap.iteritems():
             varMap[key]['alias'] = aliasBase
             aliasBase += 1
@@ -28,11 +30,35 @@ class ByteStream:
         self.svars[name]  = sVar
         self.stream.append(sVar)
 
-    def ivar(self, name, value):
-        iVar = { 'op' : 'ivar', 'name' : name, 'value' : value,
-            'length' : 2, 'location' : -1 }
+    def ivar(self, name, assign):
+        value = {}
+        if re.match('0x', assign):
+            value = { 'op' : 'ivarvalue', 'value' : int(assign, 16), 'length' : 2 }
+        else:
+            try:
+                value = { 'op' : 'ivarvalue', 'value' : int(assign), 'length' : 2 }
+
+            except:
+                value = { 'op' : 'ivarivar', 'assignfrom' : assign, 'length' : 2 }
+
+        iVar = { 'name' : name, 'location' : -1 }
+        for k, v in value.iteritems():
+            iVar[k] = v
+
         self.ivars[name] = iVar
         self.stream.append(iVar)
+
+#        if re.match('0x', text):
+#            value = int(text, 16)
+#        else:
+#            value = int(text)
+#
+#        try:
+#            float(value)
+#
+#        except TypeError:
+#            sys.stdout.write("Value [%s] is not a number\n" % value)
+#            sys.exit(1)
 
     def dec(self, name):
         self.stream.append({ 'op' : 'dec', 'value' : 0, 'var' : name })
@@ -61,6 +87,12 @@ class ByteStream:
 
     def pauses(self, value):
         self.stream.append({ 'op' : 'pauses', 'value' : value})
+
+    def add(self, var1, var2):
+        self.stream.append({ 'op' : 'add', 'var1' : var2, 'var2' : var2 })
+
+    def sub(self, var1, var2):
+        self.stream.append({ 'op' : 'sub', 'var1' : var1, 'var2' : var2 })
 
     def emit_semit(self, param):
         emitted = array.array('B')
@@ -111,7 +143,16 @@ class ByteStream:
         emitted.append(jumpTo & 0xff)
         return emitted
 
-    def emit_ivar(self, param):
+    def emit_ivarivar(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('m'))
+        emitted.append((self.ivars[param['name']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['name']]['location']  & 0xff)
+        emitted.append((self.ivars[param['assignfrom']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['assignfrom']]['location']  & 0xff)
+        return emitted
+
+    def emit_ivarvalue(self, param):
         emitted = array.array('B')
         emitted.append(ord('i'))
         emitted.append((param['location'] >> 8) & 0xff)
@@ -154,30 +195,41 @@ class ByteStream:
 
     def emit_add(self, param):
         emitted = array.array('B')
+        emitted.append(ord('a'))
+        emitted.append((self.ivars[param['var1']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['var1']]['location'] & 0xff)
+        emitted.append((self.ivars[param['var2']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['var2']]['location'] & 0xff)
         return emitted
 
     def emit_sub(self, param):
+        pdb.set_trace()
         emitted = array.array('B')
+        emitted.append(ord('u'))
+        emitted.append((self.ivars[param['var1']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['var1']]['location'] & 0xff)
+        emitted.append((self.ivars[param['var2']]['location'] >> 8) & 0xff)
+        emitted.append( self.ivars[param['var2']]['location'] & 0xff)
         return emitted
-
 
     emitMap = {
         'add' : 'emit_add',
-        'sub' : 'emit_sub',
         'dec' : 'emit_dec',
         'iemit' : 'emit_iemit',
-        'inc' : 'emit_inc'
-        'ivar' : 'emit_ivar',
+        'inc' : 'emit_inc',
+        'ivarvalue' : 'emit_ivarvalue',
+        'ivarivar' : 'emit_ivarivar', 
         'jump' : 'emit_jump',
         'jz'   : 'emit_jz',
         'labeldef' : 'emit_labeldef',
         'pauses' : 'emit_pauses',
         'pausems' : 'emit_pausems',
         'semit' : 'emit_semit',
+        'sub' : 'emit_sub',
         'svar' : 'emit_svar',
     }
 
-    def finalize(self, sconsts): #, svars): # , ivars):
+    def finalize(self, sconsts, iconsts): #, svars): # , ivars):
         [self.object.append(xx) for xx in (0, 0)] # make room for code start offset
 
         # map sconsts to single byte aliases
@@ -187,6 +239,14 @@ class ByteStream:
             self.object.append(const['alias'])
             self.object.append(len(const['value']) + 1)
             [self.object.append(ord(xx)) for xx in const['value']]
+
+        # map iconsts to single byte aliases
+        self.iconsts = self._buildVarAliases(iconsts, aliasId)
+        for name, const in iconsts.iteritems():
+            self.object.append(const['alias'])
+            self.object.append(2)
+            self.object.append((const['value'] >> 8) & 0xff)
+            self.object.append(const['value'] & 0xff)
 
         self.svars = self._buildVarLocations(self.svars)
         self.ivars = self._buildVarLocations(self.ivars)

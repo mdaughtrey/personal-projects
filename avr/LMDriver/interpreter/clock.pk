@@ -1,0 +1,17 @@
+# Clock-style countdown display
+init:
+    ivar min1 48 
+    ivar min2 48
+    ivar sec1  48
+    ivar sec2  48
+    sconst show 't\x04'
+
+main:
+# update the display
+    semit show
+    iemit hour1
+    iemit hour2
+    iemit min1
+    iemit min2
+    pauses 1
+    jump main
