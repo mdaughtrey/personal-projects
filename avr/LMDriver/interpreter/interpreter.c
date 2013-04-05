@@ -342,8 +342,17 @@ void interpreter(void)
     {
         // read dev and throw away stuff
         char buffer[10];
-        read(outDev, buffer, 10);
+        int numRead = read(outDev, buffer, 10);
 #ifdef DEBUGOUT
+        if (-1 != numRead)
+        {
+            printf("Read:");
+            while (numRead-- > 0)
+            {
+                printf(" %02x", buffer[numRead]);
+            }
+            printf("\n");
+        }
         printf("%04x: %02x %c\n", ip, eeprom[ip], eeprom[ip]);
 #endif
         switch (eeprom[ip])
@@ -447,6 +456,9 @@ int main(int argc, char ** argv)
     outDev = open("obj.out", O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
 #else
     outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
+#ifdef DEBUGOUT
+    printf("outDev %d\n", outDev);
+#endif
     //outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
    // outDev = open("/dev/tty.SLAB_USBtoUART", O_WRONLY | O_NOCTTY | O_NONBLOCK);
     cfmakeraw(&termio);

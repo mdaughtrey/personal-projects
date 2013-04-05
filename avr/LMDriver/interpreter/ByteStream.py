@@ -12,7 +12,6 @@ class ByteStream:
         self.ramLocation = 0
 
     def _buildVarAliases(self, varMap, aliasBase):
-        pdb.set_trace()
         for key, value in varMap.iteritems():
             varMap[key]['alias'] = aliasBase
             aliasBase += 1
@@ -155,8 +154,10 @@ class ByteStream:
     def emit_ivarvalue(self, param):
         emitted = array.array('B')
         emitted.append(ord('i'))
-        emitted.append((param['location'] >> 8) & 0xff)
-        emitted.append(param['location'] & 0xff)
+
+        location = self.ivars[param['name']]['location']
+
+        emitted.append(location & 0xff)
         emitted.append((param['value'] >> 8) & 0xff)
         emitted.append(param['value'] & 0xff)
         return emitted
@@ -203,7 +204,6 @@ class ByteStream:
         return emitted
 
     def emit_sub(self, param):
-        pdb.set_trace()
         emitted = array.array('B')
         emitted.append(ord('u'))
         emitted.append((self.ivars[param['var1']]['location'] >> 8) & 0xff)
@@ -248,8 +248,10 @@ class ByteStream:
             self.object.append((const['value'] >> 8) & 0xff)
             self.object.append(const['value'] & 0xff)
 
-        self.svars = self._buildVarLocations(self.svars)
-        self.ivars = self._buildVarLocations(self.ivars)
+        if self.svars:
+            self.svars = self._buildVarLocations(self.svars)
+        if self.ivars:
+            self.ivars = self._buildVarLocations(self.ivars)
             
         # set instruction offset into object
         (address, length) = self.object.buffer_info()
@@ -260,7 +262,6 @@ class ByteStream:
         throwaway = array.array('B')
         offset = length 
 
-        pdb.set_trace()
         for cmd in self.stream:
             offset += throwaway.buffer_info()[1]
             throwaway = getattr(self, ByteStream.emitMap[cmd['op']])(cmd)
@@ -268,16 +269,7 @@ class ByteStream:
                 print "resolving label %s to location %d" % (cmd['name'], offset)
                 self.labels[cmd['name']] = offset
 
-
-#            if 'semit' == cmd['op']:
-#                cmd['location'] = self.svars[cmd['var']]['location']
-#            if 'iemit' == cmd['op']:
-#                cmd['location'] = self.ivars[cmd['var']]['location']
-#            if 'jz' == cmd['op']:
-#                pdb.set_trace()
-#                cmd['location'] = self.labels[cmd['label']]
-
-
+        pdb.set_trace()
         for cmd in self.stream:
             self.object.extend(getattr(self, ByteStream.emitMap[cmd['op']])(cmd))
 

@@ -1,17 +1,45 @@
 # Clock-style countdown display
 init:
-    ivar min1 48 
-    ivar min2 48
-    ivar sec1  48
-    ivar sec2  48
-    sconst show 't\x04'
+    ivar min1 57 
+    ivar min2 57
+    ivar sec1  57
+    ivar sec2  57
+    ivar zero 48
+    sconst show "t\x04"
 
 main:
 # update the display
     semit show
-    iemit hour1
-    iemit hour2
     iemit min1
     iemit min2
+    iemit sec1
+    iemit sec2
     pauses 1
+
+    ivar tmp sec2
+    sub tmp zero
+    jz tmp decSec1
+    dec sec2
+    jump main
+
+decSec1:
+    ivar sec2 57
+    jz sec1 decMin2
+    dec sec1
+    jump main
+
+decMin2:
+    ivar sec1 57
+    jz min2 decMin1
+    dec min2
+    jump main
+
+decMin1:
+    ivar min2 57
+    jz min1 rollOver
+    dec min1
+    jump main
+
+rollOver:
+    ivar min1 57
     jump main

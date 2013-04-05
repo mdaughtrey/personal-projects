@@ -63,15 +63,25 @@ class Parser:
         pass
 
     def cmd_sconst(self, param):
+        pdb.set_trace()
         name = param.split()[1]
         value = ' '.join(param.split()[2:])
-        self.sconsts[name] = self.unescapeString(value.replace('"', '')).tostring()
+
+        if re.match('"', value):
+            value = re.sub(r'\"(.*)\"$', r'\1', value)
+            value = self.unescapeString(value).tostring()
+
+        if re.match("'", value):
+            value = re.sub(r"\'(.*)\'$", r'\1', value)
+            value = self.unescapeString(value).tostring()
+
+        self.sconsts[name] = { 'value' : value }
         vOut ("Setting SCONST %s to [%s]\n" % (name, self.sconsts[name]))
 
     def cmd_iconst(self, param):
         name = param.split()[1]
         value = int(param.split()[2])
-        self.iconsts[name] = value
+        self.iconsts[name] = { 'value' : value }
         vOut ("Setting ICONST %s to [%d]\n" % (name, self.iconsts[name]))
 
     def cmd_svar(self, param):
