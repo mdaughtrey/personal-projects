@@ -20,7 +20,7 @@ DEFINES=-DKB_TBC12=1 \
 
 
 #LIBS=$(LIBPATH) -lc
-OBJS=main.o displaymux.o cmdproc2.o font5x7.o spi.o serutil.o
+OBJS=main.o displaymux.o cmdproc2.o font4x7.o spi.o serutil.o
 
 #serutil.o
 

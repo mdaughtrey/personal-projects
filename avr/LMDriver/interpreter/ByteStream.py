@@ -59,6 +59,9 @@ class ByteStream:
 #            sys.stdout.write("Value [%s] is not a number\n" % value)
 #            sys.exit(1)
 
+    def end(self):
+        self.stream.append({ 'op' : 'end' })
+
     def dec(self, name):
         self.stream.append({ 'op' : 'dec', 'value' : 0, 'var' : name })
 
@@ -157,6 +160,7 @@ class ByteStream:
 
         location = self.ivars[param['name']]['location']
 
+        emitted.append((location >> 8) & 0xff)
         emitted.append(location & 0xff)
         emitted.append((param['value'] >> 8) & 0xff)
         emitted.append(param['value'] & 0xff)
@@ -212,6 +216,11 @@ class ByteStream:
         emitted.append( self.ivars[param['var2']]['location'] & 0xff)
         return emitted
 
+    def emit_end(self, param):
+        emitted = array.array('B')
+        emitted.append(ord('!'))
+        return emitted
+
     emitMap = {
         'add' : 'emit_add',
         'dec' : 'emit_dec',
@@ -227,6 +236,7 @@ class ByteStream:
         'semit' : 'emit_semit',
         'sub' : 'emit_sub',
         'svar' : 'emit_svar',
+        'end'  : 'emit_end'
     }
 
     def finalize(self, sconsts, iconsts): #, svars): # , ivars):
@@ -269,7 +279,6 @@ class ByteStream:
                 print "resolving label %s to location %d" % (cmd['name'], offset)
                 self.labels[cmd['name']] = offset
 
-        pdb.set_trace()
         for cmd in self.stream:
             self.object.extend(getattr(self, ByteStream.emitMap[cmd['op']])(cmd))
 

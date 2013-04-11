@@ -1,13 +1,17 @@
 # Clock-style countdown display
 init:
-    ivar min1 57 
+    ivar min1 53 
     ivar min2 57
-    ivar sec1  57
+    ivar sec1  53
     ivar sec2  57
     ivar zero 48
     sconst show "t\x04"
+#    sconst test "t\x04dcba"
 
 main:
+#    semit test
+#    pauses 1
+#    jump main
 # update the display
     semit show
     iemit min1
@@ -24,22 +28,28 @@ main:
 
 decSec1:
     ivar sec2 57
-    jz sec1 decMin2
+    ivar tmp sec1
+    sub tmp zero
+    jz tmp decMin2
     dec sec1
     jump main
 
 decMin2:
-    ivar sec1 57
-    jz min2 decMin1
+    ivar sec1 53
+    ivar tmp min2
+    sub tmp zero
+    jz tmp decMin1
     dec min2
     jump main
 
 decMin1:
     ivar min2 57
-    jz min1 rollOver
+    ivar tmp min1
+    sub tmp zero
+    jz  tmp rollOver
     dec min1
     jump main
 
 rollOver:
-    ivar min1 57
+    ivar min1 53
     jump main

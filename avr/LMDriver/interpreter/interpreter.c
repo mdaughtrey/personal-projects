@@ -6,13 +6,19 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#define STATEFUL
 //#define EMBEDDED
-//#define OBJOUT
+#define OBJOUT
 //#define DEBUGOUT 0
 #define DEBUGOUT
 #ifdef EMBEDDED
 #undef DEBUGOUT
 #endif
+
+#ifdef STATEFUL
+#include <sys/time.h>
+struct timeval pauseStart;
+#endif // STATEFUL
 
 //!a - add ivar2 to ivar1
 #define CMD_ADD 'a'
@@ -46,6 +52,23 @@
 #define CMD_END '!'
 #define RAM_SIZE 64
 #define CONST_OFFSET 2
+
+#ifdef STATEFUL
+typedef enum
+{
+    INTERPRETER = 0,
+    EMIT_VAR,
+    EMIT_CONST,
+    PAUSE_MS,
+    PAUSE_S
+} StateType;
+
+StateType state;
+unsigned char length;
+unsigned short remaining;
+unsigned short stateLocation;
+
+#endif // STATEFUL
 
 int outDev;
 unsigned short ip;
@@ -96,6 +119,7 @@ void emitConst(char constName)
     {
         if (constName == eeprom[ii])
         {
+#ifndef STATEFUL
             unsigned char count;
             ii++;               // point to const length
             count = eeprom[ii++];
@@ -107,11 +131,21 @@ void emitConst(char constName)
 #ifdef DEBUGOUT
         printf(" %02x", eeprom[ii]);
 #endif
-                write(outDev, &eeprom[ii], 1);
-                usleep(1000);
+                write(outDev, eeprom + ii, 1);
+                usleep(100000);
                 ii++;
-     //           return;
             }
+#ifdef DEBUGOUT
+            printf("\n");
+#endif
+#else // STATEFUL
+            ii++;     // point to const length
+            state = EMIT_CONST;
+            remaining = eeprom[ii++];
+            stateLocation = ii;
+#endif // STATEFUL
+            ip++;
+            return;
         }
         else
         {
@@ -132,19 +166,33 @@ void emitInteger(void)
 #ifdef DEBUGOUT
     printf("emitInteger Loc %04x Value %04x", location, value);
 #endif
+#ifdef STATEFUL
+    state = EMIT_VAR;
+    if (ram[location])
+    {
+        remaining = 2;
+        stateLocation = location;
+    }
+    else
+    {
+        remaining = 1;
+        stateLocation = location + 1;
+    }
+#else // STATEFUL
     if (ram[location])
     {
 #ifdef DEBUGOUT
         printf(" %02x", ram[location]);
 #endif
-        write(outDev, &ram[location], 1);
-        usleep(1000);
+        write(outDev, ram + location, 1);
+        usleep(100000);
     }
 #ifdef DEBUGOUT
     printf(" %02x", ram[location + 1]);
 #endif
-    write(outDev, &ram[location + 1], 1);
-    usleep(1000);
+    write(outDev, ram + location + 1, 1);
+    usleep(100000);
+#endif // STATEFUL
     ip += 2;
 #ifdef DEBUGOUT
     printf("\n");
@@ -159,13 +207,19 @@ void emitString(void)
     printf("emitString Loc %04x Len %02x", location, length);
 #endif
     ip += 2;
+#ifdef STATEFUL
+    state = EMIT_VAR;
+    remaining = length;
+    stateLocation = location;
+#else // STATEFUL 
     while (--length)
     {
 #ifdef DEBUGOUT
         printf(" %02x", ram[location]);
 #endif
-        write(outDev, &ram[location++], 1);
+        write(outDev, ram + location++, 1);
     }
+#endif // STATEFUL
 #ifdef DEBUGOUT
     printf("\n");
 #endif
@@ -206,14 +260,26 @@ void declareString(void)
 void doPauseMs(void)
 {
     unsigned short value = (eeprom[ip] << 8) | eeprom[ip + 1];
+#ifdef STATEFUL
+    remaining = value;
+    state = PAUSE_MS;
+    gettimeofday(&pauseStart, NULL);
+#else // STATEFUL
     usleep(value * 1000);
+#endif // STATEFUL
     ip += 2;
 }
 
 void doPauseSecs(void)
 {
     unsigned short value = (eeprom[ip] << 8) | eeprom[ip + 1];
+#ifdef STATEFUL
+    remaining = value;
+    state = PAUSE_S;
+    gettimeofday(&pauseStart, NULL);
+#else // STATEFUL
     usleep(value * 1e6);
+#endif // STATEFUL
     ip += 2;
 }
 
@@ -252,20 +318,6 @@ void incShort(void)
 #endif
     ip += 2;
 }
-
-//void decShort(void)
-//{
-//    short ii = locateVariable(eeprom[ip++]) + 1;
-//    ii += ram[ii];
-//    ram[ii]--;
-//}
-//
-//void incShort(void)
-//{
-//    short ii = locateVariable(eeprom[ip++]) + 1;
-//    ii += ram[ii];
-//    ram[ii]++;
-//}
 
 void jump(void)
 {
@@ -335,6 +387,74 @@ void assignIvarIvar(void)
 }
 
 
+#ifdef STATEFUL
+void stateVar(void)
+{
+    remaining--;
+#ifdef DEBUGOUT
+    printf("stateVar location %04d Remaining %d [%02x]\n", stateLocation, remaining, *(ram + stateLocation));
+#endif
+    if (remaining)
+    {
+        write(outDev, ram + stateLocation, 1);
+        usleep(1e5);
+        stateLocation++;
+    }
+    else
+    {
+        state = INTERPRETER;
+    }
+}
+
+void stateConst(void)
+{
+    remaining--;
+#ifdef DEBUGOUT
+    printf("stateConst location %04d Remaining %d [%02x]\n", stateLocation, remaining, *(eeprom + stateLocation));
+#endif
+    if (remaining)
+    {
+        write(outDev, eeprom + stateLocation, 1);
+        usleep(1e5);
+        stateLocation++;
+    }
+    else
+    {
+        state = INTERPRETER;
+    }
+}
+
+void statePauseS(void)
+{
+    struct timeval timeNow;
+    gettimeofday(&timeNow, NULL);
+
+    if ((timeNow.tv_sec - pauseStart.tv_sec) > remaining)
+    {
+#ifdef DEBUGOUT
+        printf("statePauseS end\n");
+#endif
+        state = INTERPRETER;
+    }
+}
+
+void statePauseMs()
+{
+    struct timeval timeNow;
+    gettimeofday(&timeNow, NULL);
+
+    if (((timeNow.tv_usec - pauseStart.tv_usec) * 1000) > remaining)
+    {
+#ifdef DEBUGOUT
+        printf("statePauseMs end\n");
+#endif
+        state = INTERPRETER;
+    }
+}
+
+#endif // STATEFUL
+
+
 void interpreter(void)
 {
     ip = (eeprom[0] << 8) | eeprom[1];
@@ -353,6 +473,29 @@ void interpreter(void)
             }
             printf("\n");
         }
+#endif
+        if (EMIT_VAR == state)
+        {
+            stateVar();
+            continue;
+        }
+        else if (EMIT_CONST == state)
+        {
+            stateConst();
+            continue;
+        }
+        else if (PAUSE_S == state)
+        {
+            statePauseS();
+            continue;
+        }
+        else if (PAUSE_MS == state)
+        {
+            statePauseMs();
+            continue;
+        }
+
+#ifdef DEBUGOUT
         printf("%04x: %02x %c\n", ip, eeprom[ip], eeprom[ip]);
 #endif
         switch (eeprom[ip])
@@ -442,6 +585,13 @@ void interpreter(void)
     }
 }
 
+#ifdef STATEFUL
+void interpreter_init(void)
+{
+    state = INTERPRETER;
+}
+#endif // STATEFUL
+
 int main(int argc, char ** argv)
 {
     struct stat fStat;
@@ -451,19 +601,21 @@ int main(int argc, char ** argv)
     fread(eeprom, fStat.st_size, 1, opCodes);
     fclose(opCodes);
 
+#ifdef STATEFUL
+    interpreter_init();
+#endif // STATEFUL
+
     struct termios termio;
 #ifdef OBJOUT
     outDev = open("obj.out", O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
 #else
     outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
-#ifdef DEBUGOUT
-    printf("outDev %d\n", outDev);
-#endif
-    //outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
-   // outDev = open("/dev/tty.SLAB_USBtoUART", O_WRONLY | O_NOCTTY | O_NONBLOCK);
     cfmakeraw(&termio);
     cfsetospeed(&termio, B38400);
     tcsetattr(outDev, TCSANOW, &termio);
+#ifdef DEBUGOUT
+    printf("outDev %d\n", outDev);
+#endif // DEBUGOUT
 #endif
 
     interpreter();

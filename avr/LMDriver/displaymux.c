@@ -37,7 +37,8 @@
 #define DIR_LEFT 0x30
 #define DIR_RIGHT 0x40
 
-extern u08 font5x7[];
+//extern u08 font5x7[];
+extern u08 font4x7[];
 
 
 #ifdef LTP1157
@@ -543,7 +544,8 @@ static void dm_applyTransforms(u08 which)
     u08 count;
     u08 transform;
     struct _display * disp = &display[which];
-    u08 * dataPtr = font5x7 + (disp->charIndex * NUM_COLUMNS);
+    //u08 * dataPtr = font5x7 + (disp->charIndex * NUM_COLUMNS);
+    u08 * dataPtr = font4x7 + (disp->charIndex * NUM_COLUMNS);
 
 /*   cbi(TIMSK0, TOIE0); */
 /*   TIMSK0 &= ~_BV(TOIE0); */
@@ -1052,7 +1054,8 @@ void dm_copyToCustom(u08 which, u08 charIndex)
 {
     u08 count;
     struct _display * disp = &display[which];
-    u08 * dataPtr = font5x7 + (charIndex * NUM_COLUMNS);
+    //u08 * dataPtr = font5x7 + (charIndex * NUM_COLUMNS);
+    u08 * dataPtr = font4x7 + (charIndex * NUM_COLUMNS);
 
     for (count = 0; count < NUM_COLUMNS; count++)
     {

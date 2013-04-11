@@ -31,7 +31,6 @@ class Parser:
             try:
                 for (regex, command) in Parser.commandMap.items():
                     if re.search(regex, line):
-#                        pdb.set_trace()
                         getattr(self, command)(line)
                         raise StopIteration
 
@@ -63,7 +62,6 @@ class Parser:
         pass
 
     def cmd_sconst(self, param):
-        pdb.set_trace()
         name = param.split()[1]
         value = ' '.join(param.split()[2:])
 
@@ -158,6 +156,10 @@ class Parser:
         var2 = param.split()[2]
         self.streamer.sub(var1, var2)
 
+    def cmd_end(self, param):
+        self.streamer.end()    
+
+
     commandMap = {
         '^#' : 'cmd_comment',
         '^add\s'    : 'cmd_add',
@@ -176,11 +178,13 @@ class Parser:
         '^sub\s'    : 'cmd_sub',
         '^svar\s'   : 'cmd_svar',
         '^\S+:'     : 'cmd_label',
+        'end'       : 'cmd_end'
     }
 
 
 verbose = ('-v' in sys.argv)
 
 parser = Parser(open('clock.pk').readlines())
+#parser = Parser(open('sconst.pk').readlines())
 parser.finalize()
 
