@@ -12,6 +12,7 @@ MAKEFILE=makefile
 #DEFINES=-DKB_TBC12=1 -DALTFONT=1
 DEFINES=-DKB_TBC12=1 \
 -DF_CPU=8000000 \
+-DEMBEDDED \
 -DDEBUG
 
 #-DHARDCODED_DISPLAY
@@ -21,6 +22,7 @@ DEFINES=-DKB_TBC12=1 \
 
 #LIBS=$(LIBPATH) -lc
 OBJS=main.o displaymux.o cmdproc2.o font4x7.o spi.o serutil.o
+OBJS+=interpreter.o
 
 #serutil.o
 
@@ -42,9 +44,8 @@ mmreadfuse:
 
 writefuse: 
 	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m
-	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
-#avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Ulfuse:w:0xe2:m
-#	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Uhfuse:w:0xd9:m
+	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd1:m
+#avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
 
 erase:
 	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -e

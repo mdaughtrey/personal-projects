@@ -9,16 +9,21 @@
 #include <displaymux.h>
 #include <spi.h>
 #include <serutil.h>
+#include <interpreter.h>
+#include <avr/eeprom.h>
 
 u08 disploop = 1;
 u08 node = 0;
+u08 programControl = 0;
+u08 interpreterDone = 0;
 
-//void mosiPush(unsigned char data)
-//{
-//    mosiBuffer[mosiHead++] = data;
-//    mosiHead &= (MOSIBUFFERSIZE - 1);
-//    spiEvent = 1;
-//}
+
+void mosiPush(unsigned char data)
+{
+    mosiBuffer[mosiHead++] = data;
+    mosiHead &= (MOSIBUFFERSIZE - 1);
+    spiEvent = 1;
+}
 
 //unsigned char isMaster(void)
 //{
@@ -54,21 +59,41 @@ int main(void)
     cmdInit();			/* init command processor */
     spi_init();   	/* init serial peripheral interface */
     uart_init();
+    interpreter_init();
     
-    //master = isMaster();
-
     sei();
     dm_init();			/* init displaymux */
     u16 data = 0;
+
+    count = 0;
+    //programControl = eprom_read_byte(510);
 
     while (1)
     {
         count++;
 
+        if (programControl > 0 & !(count & 0xff))
+        {
+            if ((data = interpreter()) & 0x0100)
+            {
+                cmd_dataHandler(data & 0xff);
+            }
+            if (interpreterDone)
+            {
+                if (1 == programControl)
+                {
+                    programControl = 0;
+                }
+                else
+                {
+                    interpreter_init();
+                }
+            }
+        }
+
         if ((data = uart_get_buffered()) & 0x0100)
         {
             cmd_dataHandler(data & 0xff);
-            //uart_send_buffered(data & 0xff); // cascade
             continue;
         }
 

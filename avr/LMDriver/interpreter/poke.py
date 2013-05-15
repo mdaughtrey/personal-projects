@@ -21,7 +21,7 @@ class Parser:
         self.iconsts = {}
 #        self.svars = {}
 #        self.ivars = {}
-        self.streamer = ByteStream.ByteStream()
+        self.streamer = ByteStream.ByteStream(sys.argv[1])
         for line in lines:
             line = line.strip()
 
@@ -184,7 +184,7 @@ class Parser:
 
 verbose = ('-v' in sys.argv)
 
-parser = Parser(open('clock.pk').readlines())
+parser = Parser(open(sys.argv[1]).readlines())
 #parser = Parser(open('sconst.pk').readlines())
 parser.finalize()
 

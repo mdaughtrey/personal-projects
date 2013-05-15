@@ -1,0 +1,19 @@
+OBJS=textout.o
+
+uploader: makefile.textout $(OBJS)
+	gcc -o textout $(OBJS)
+
+%.o: %.c
+	gcc -g -c $<
+
+run:    	
+	./textout test
+
+#run:
+#	./interpreter obj.bin
+
+#gdb:
+#	gdb interpreter
+
+clean:
+	rm *.o

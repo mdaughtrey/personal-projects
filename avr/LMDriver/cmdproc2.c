@@ -7,6 +7,7 @@
 #include <displaymux.h>
 #include <stdint.h>
 #include <avr/wdt.h>
+#include <avr/eeprom.h>
 #include <spi.h>
 #include <serutil.h>
 #include <cmdproc2.h>
@@ -15,6 +16,8 @@ u08 hexTable[16] PROGMEM = "0123456789abcdef";
 
 extern u08 disploop;
 extern u08 node;
+extern u08 programControl;
+//extern void mosiPush(unsigned char data);
 
 typedef enum
 {
@@ -28,12 +31,16 @@ typedef enum
     INDEX = PARAM3,
     PARAM4,
     REMAINING = PARAM4,
+    UPLOAD_LENGTH_MSB,
+    UPLOAD_LENGTH_LSB,
+    UPLOAD_CODE,
     LAST
 } State;
 
-u08 state;
+u08 cpState;
 u08 input[LAST];
-
+u16 uploadRemaining;
+uint8_t * eepromAddress;
 
 void dumpInput(void)
 {
@@ -53,7 +60,7 @@ void dumpInput(void)
 void cmdInit(void)
 {
     memset(input, 0, LAST - FIRST);
-    state = FIRST;
+    cpState = FIRST;
 }
 
 u08 asciiToHex(u08 ascii1, u08 ascii2)
@@ -113,7 +120,7 @@ char numToChar(char input)
 
 void cmdIndexed(u08 cmdInput)
 {
-    switch (state)
+    switch (cpState)
     {
         case INDEX:
             //
@@ -124,12 +131,12 @@ void cmdIndexed(u08 cmdInput)
                 cmdInit();
                 return;
             }
-            state =  PARAM1;
+            cpState =  PARAM1;
             break;
 
         case PARAM1:
             input[PARAM1] = cmdInput;
-            state = PARAM2;
+            cpState = PARAM2;
             break;
 
         case PARAM2:
@@ -165,7 +172,7 @@ void cmdCountedLength(u08 cmdInput)
     //
     // If we're expecting the length parameter...
     //
-    if (LENGTH == state)
+    if (LENGTH == cpState)
     {
         //
         // Validate length parameter (0-9,a-z)
@@ -197,7 +204,7 @@ void cmdCountedLength(u08 cmdInput)
             uart_send_buffered(length);
         }
         input[INDEX] = 0;
-        state = PARAM1;
+        cpState = PARAM1;
         return;
     }
     //
@@ -269,7 +276,7 @@ void cmdCountedLength(u08 cmdInput)
 void cmdSetBits(u08 cmdInput)
 {
     char length;
-    if (LENGTH == state)
+    if (LENGTH == cpState)
     {
         //
         // Validate length parameter (0-9,a-z)
@@ -291,7 +298,7 @@ void cmdSetBits(u08 cmdInput)
             uart_send_buffered(numToChar(length));
         }
         input[INDEX] = 0;
-        state = PARAM1;
+        cpState = PARAM1;
         return;
     }
     if (input[INDEX] < 10)
@@ -310,15 +317,21 @@ void cmdSetBits(u08 cmdInput)
     }
 }
 
-
-
 void cmd_dataHandler(u08 cmdInput)
 {
     u08 ii;
-    if (COMMAND == state)
+    //uart_send_hex_byte(cmdInput);
+    //uart_send_buffered('S');
+    //uart_send_hex_byte(cpState);
+    //uart_send_buffered('P');
+    //uart_send_hex_byte(programControl);
+    //uart_send_buffered('\r');
+    //uart_send_buffered('\n');
+
+    if (COMMAND == cpState)
     {
         input[COMMAND] = cmdInput;
-        state = PARAM1;
+        cpState = PARAM1;
         switch (cmdInput)
         {
             case CMD_SET_TEXT:
@@ -337,15 +350,20 @@ void cmd_dataHandler(u08 cmdInput)
             case CMD_FLIP:
             case CMD_INVERT:
             case CMD_MIRROR:
-                state = LENGTH;
-                break;
-
-                state = POSITION;
+                cpState = LENGTH;
                 break;
 
             case CMD_PIXEL_ON:
             case CMD_PIXEL_OFF:
-                state = INDEX;
+                cpState = INDEX;
+                break;
+
+            case CMD_UPLOAD:
+                cpState = UPLOAD_LENGTH_MSB;
+                break;
+
+            case CMD_RUN_PROGRAM:
+//                state = PARAM1;
                 break;
 
             default:
@@ -355,6 +373,7 @@ void cmd_dataHandler(u08 cmdInput)
         }
         return;
     }
+
     switch (input[COMMAND])
     {
         case '*':
@@ -374,16 +393,6 @@ void cmd_dataHandler(u08 cmdInput)
         case CMD_RESET_TRANSFORMS:
         case CMD_CUSTOM_CHARACTER:
         case CMD_COPY_CUSTOM:
-
-            ///
-            /// \brief b = set/reset individual bits
-            /// \details {bits}
-            /// \example sXccccddddeeee
-            /// \param X - {number of characters (1-9, a=10, b=11...)}
-            /// \param ccccc - bits for columns 0-4, character 0
-            /// \param ddddd - bits for columns 0-4, character 1
-            ///
-
             cmdCountedLength(cmdInput);
             break;
 
@@ -394,6 +403,38 @@ void cmd_dataHandler(u08 cmdInput)
         case CMD_PIXEL_ON:
         case CMD_PIXEL_OFF:
             cmdIndexed(cmdInput);
+            break;
+
+        case CMD_RUN_PROGRAM:
+            programControl = cmdInput - '0';
+            eeprom_write_byte ((uint8_t*)510, programControl);
+            cpState = COMMAND;
+            break;
+
+        case CMD_UPLOAD:
+            switch (cpState)
+            {
+                case UPLOAD_LENGTH_MSB:
+                    uploadRemaining = cmdInput << 8;
+                    cpState = UPLOAD_LENGTH_LSB;
+                    break;
+
+                case UPLOAD_LENGTH_LSB:
+                    uploadRemaining |= cmdInput;
+                    eepromAddress = 0;
+                    cpState = UPLOAD_CODE;
+                    break;
+
+                case UPLOAD_CODE:
+                    eeprom_write_byte (eepromAddress++, cmdInput);
+                    uploadRemaining--;
+                    if (0 == uploadRemaining)
+                    {
+                        eeprom_write_byte((uint8_t*)510, 0);
+                        cpState = COMMAND;
+                    }
+                    break;
+            }
             break;
     }
 }

@@ -5,27 +5,39 @@ init:
     ivar sec1  53
     ivar sec2  57
     ivar zero 48
+    sconst enableCustom "c\x040010"
     sconst show "t\x04"
-#    sconst test "t\x04dcba"
+    sconst dotsOn "x220x240"
+    sconst dotsOff "X220X240"
+
+#    semit enableCustom
 
 main:
-#    semit test
-#    pauses 1
-#    jump main
 # update the display
     semit show
     iemit min1
     iemit min2
     iemit sec1
     iemit sec2
+
+# turn on the colon in the middle of the screen
+#    semit dotsOn
+# wait 500ms
+#    pausems 500
+# turn off the colon in the middle of the screen
+#    semit dotsOff
+# wait 500ms
+#    pausems 500 
     pauses 1
 
+# Decrement seconds 2, if > 0 then back to main else test for seconds 1 rollover
     ivar tmp sec2
     sub tmp zero
     jz tmp decSec1
     dec sec2
     jump main
 
+# Decrement seconds 1, if > 0 then back to main else test for mins 2 rollover
 decSec1:
     ivar sec2 57
     ivar tmp sec1
@@ -34,6 +46,7 @@ decSec1:
     dec sec1
     jump main
 
+# Decrement minutes 2, if > 0 then back to main else test for mins 1 rollover
 decMin2:
     ivar sec1 53
     ivar tmp min2
@@ -42,6 +55,7 @@ decMin2:
     dec min2
     jump main
 
+# Decrement minutes 1, rollover if needed
 decMin1:
     ivar min2 57
     ivar tmp min1

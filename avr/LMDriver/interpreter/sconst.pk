@@ -1,0 +1,2 @@
+sconst avar "t\x02ab"
+semit avar

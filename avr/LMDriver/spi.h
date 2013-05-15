@@ -14,7 +14,7 @@ void miso_push(u08 data);
 extern u08 mosiBuffer[MOSIBUFFERSIZE];
 extern u08 misoBuffer[MISOBUFFERSIZE];
 
-extern  u08 mosiHead;
+extern u08 mosiHead;
 extern u08 mosiTail ;
 extern u08 misoHead ;
 extern u08 misoTail ;

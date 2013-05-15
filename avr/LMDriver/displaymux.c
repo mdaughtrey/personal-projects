@@ -9,7 +9,7 @@
 #include <util/delay.h>
 //#include <sense.h>
 
-#include <serutil.h>
+//#include <serutil.h>
 /* #define PALETTE */
 #define USE_CURRENTCOLUMN 1
 

@@ -16,12 +16,12 @@ label1:
 
 next:
     semit top1
-    sleep 1000
+    pauses 1
     semit top2
-    sleep 1000
+    pauses 1
     semit top3
-    sleep 1000
+    pauses 1
     semit top4
-    sleep 1000
+    pauses 1
 
     jump init

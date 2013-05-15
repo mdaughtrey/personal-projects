@@ -14,3 +14,6 @@ gdb:
 
 poke:
 	./poke.py -v 
+
+clean:
+	rm *.o

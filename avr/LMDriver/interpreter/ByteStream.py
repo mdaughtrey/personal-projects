@@ -3,7 +3,8 @@ import pdb
 import re
 
 class ByteStream:
-    def __init__(self):
+    def __init__(self, objName):
+        self.objName = objName + '.bin';
         self.labels = {} 
         self.ivars = {}
         self.svars = {}
@@ -283,4 +284,4 @@ class ByteStream:
             self.object.extend(getattr(self, ByteStream.emitMap[cmd['op']])(cmd))
 
         self.object.append(ord('!'))
-        self.object.tofile(open('obj.bin', 'w'))
+        self.object.tofile(open(self.objName, 'w'))
