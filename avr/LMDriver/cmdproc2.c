@@ -11,6 +11,7 @@
 #include <spi.h>
 #include <serutil.h>
 #include <cmdproc2.h>
+#include <interpreter.h>
 
 u08 hexTable[16] PROGMEM = "0123456789abcdef";
 
@@ -61,6 +62,7 @@ void cmdInit(void)
 {
     memset(input, 0, LAST - FIRST);
     cpState = FIRST;
+    programControl = eeprom_read_byte ((uint8_t*)510);
 }
 
 u08 asciiToHex(u08 ascii1, u08 ascii2)
@@ -317,16 +319,32 @@ void cmdSetBits(u08 cmdInput)
     }
 }
 
+void dumpEeprom(void)
+{
+    unsigned char xx = 0;
+    uart_send_buffered('\r');
+    uart_send_buffered('\n');
+    for (xx = 0; xx < 32; xx++)
+    {
+        uart_send_hex_byte(eeprom_read_byte((uint8_t *)xx));
+        uart_send_buffered(' ');
+    }
+}
+
+
 void cmd_dataHandler(u08 cmdInput)
 {
     u08 ii;
-    //uart_send_hex_byte(cmdInput);
-    //uart_send_buffered('S');
-    //uart_send_hex_byte(cpState);
-    //uart_send_buffered('P');
-    //uart_send_hex_byte(programControl);
-    //uart_send_buffered('\r');
-    //uart_send_buffered('\n');
+
+#ifdef EMBEDDED_DEBUG   
+    uart_send_hex_byte(cmdInput);
+    uart_send_buffered('S');
+    uart_send_hex_byte(cpState);
+    uart_send_buffered('P');
+    uart_send_hex_byte(programControl);
+    uart_send_buffered('\r');
+    uart_send_buffered('\n');
+#endif // EMBEDDED_DEBUG
 
     if (COMMAND == cpState)
     {
@@ -334,6 +352,11 @@ void cmd_dataHandler(u08 cmdInput)
         cpState = PARAM1;
         switch (cmdInput)
         {
+            case CMD_DUMP_EEPROM:
+                dumpEeprom();
+                cpState = COMMAND;
+                break;
+
             case CMD_SET_TEXT:
             case CMD_SET_PALETTE:
             case CMD_ROLL_LEFT:
@@ -408,6 +431,7 @@ void cmd_dataHandler(u08 cmdInput)
         case CMD_RUN_PROGRAM:
             programControl = cmdInput - '0';
             eeprom_write_byte ((uint8_t*)510, programControl);
+            interpreter_init();
             cpState = COMMAND;
             break;
 
@@ -415,17 +439,34 @@ void cmd_dataHandler(u08 cmdInput)
             switch (cpState)
             {
                 case UPLOAD_LENGTH_MSB:
+//#ifdef EMBEDDED_DEBUG
+//                    uart_send_buffered('M');
+//                    uart_send_hex_byte(cmdInput);
+//#endif // EMBEDDED_DEBUG
                     uploadRemaining = cmdInput << 8;
                     cpState = UPLOAD_LENGTH_LSB;
                     break;
 
                 case UPLOAD_LENGTH_LSB:
+//#ifdef EMBEDDED_DEBUG
+//                    uart_send_buffered('L');
+//                    uart_send_hex_byte(cmdInput);
+//#endif // EMBEDDED_DEBUG
                     uploadRemaining |= cmdInput;
                     eepromAddress = 0;
                     cpState = UPLOAD_CODE;
                     break;
 
                 case UPLOAD_CODE:
+//#ifdef EMBEDDED_DEBUG
+//                    uart_send_hex_byte(cmdInput);
+//                    uart_send_buffered('@');
+//                    uart_send_hex_byte((int)eepromAddress >> 8);
+//                    uart_send_hex_byte((int)eepromAddress & 0xff);
+//                    uart_send_buffered('\r');
+//                    uart_send_buffered('\n');
+//#endif // EMBEDDED_DEBUG
+
                     eeprom_write_byte (eepromAddress++, cmdInput);
                     uploadRemaining--;
                     if (0 == uploadRemaining)

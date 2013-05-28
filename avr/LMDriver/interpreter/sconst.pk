@@ -1,2 +1,5 @@
-sconst avar "t\x02ab"
-semit avar
+sconst avar "t\x04abcd"
+main:
+    semit avar
+    pauses 1
+    jump main

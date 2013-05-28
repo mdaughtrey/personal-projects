@@ -2,15 +2,25 @@
 init:
     ivar min1 53 
     ivar min2 57
-    ivar sec1  53
-    ivar sec2  57
+    ivar sec1 53
+    ivar sec2 57
     ivar zero 48
-    sconst enableCustom "c\x040010"
-    sconst show "t\x04"
-    sconst dotsOn "x220x240"
-    sconst dotsOff "X220X240"
+    sconst enableCustom "c\x041111"
+    sconst show "s\x04"
+    
+#    sconst dotsOn "x220x240"
+#    sconst dotsOff "X220X240"
 
-#    semit enableCustom
+    sconst dots0 "x200"
+    sconst dots1 "X200x210"
+    sconst dots2 "X210x220"
+    sconst dots3 "X220x230"
+    sconst dots4 "X230x240"
+    sconst dots5 "X240x250"
+    sconst dots6 "X250x260"
+    sconst dots7 "X260"
+
+    semit enableCustom
 
 main:
 # update the display
@@ -20,15 +30,23 @@ main:
     iemit sec1
     iemit sec2
 
-# turn on the colon in the middle of the screen
-#    semit dotsOn
-# wait 500ms
-#    pausems 500
-# turn off the colon in the middle of the screen
-#    semit dotsOff
-# wait 500ms
-#    pausems 500 
-    pauses 1
+# light chaser
+    semit dots0
+    pausems 140
+    semit dots1
+    pausems 140
+    semit dots2
+    pausems 140
+    semit dots3
+    pausems 140
+    semit dots4
+    pausems 140
+    semit dots5
+    pausems 140
+    semit dots6
+    pausems 140
+    semit dots7
+    pausems 140
 
 # Decrement seconds 2, if > 0 then back to main else test for seconds 1 rollover
     ivar tmp sec2
@@ -67,3 +85,4 @@ decMin1:
 rollOver:
     ivar min1 53
     jump main
+

@@ -4,10 +4,10 @@ uploader: makefile $(OBJS)
 	gcc -o uploader $(OBJS)
 
 %.o: %.c
-	gcc -g -c $<
+	gcc -DDEBUGOUT -g -c $<
 
 run:    	
-	./uploader ../interpreter/sconst.pk.bin    	
+	./uploader ../interpreter/clock.pk.bin    	
 
 #run:
 #	./interpreter obj.bin

@@ -181,6 +181,7 @@
 /// \param X - 2 = run program in a loop
 ///
 #define CMD_RUN_PROGRAM 'Y'
+#define CMD_DUMP_EEPROM 'y'
 
 ///
 /// \brief Z = upload program

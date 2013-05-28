@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <string.h>
 
 //#define OBJOUT
 
@@ -24,6 +25,8 @@ int main(int argc, char ** argv)
     struct termios termio;
     stat(argv[1], &fStat);
     conv.uShort = fStat.st_size;
+    unsigned char * binaryBuffer;
+    binaryBuffer = (unsigned char *)malloc(fStat.st_size);
 
     int binary = open(argv[1], O_RDONLY);
 #ifdef OBJOUT
@@ -42,27 +45,45 @@ int main(int argc, char ** argv)
 
     ch = 'Z';
     write(outDev, &ch, 1);
-        sleep(1);
+    usleep(100000);
     write(outDev, &conv.uChar[1], 1);
-        sleep(1);
+    usleep(100000);
     write(outDev, &conv.uChar[0], 1);
-        sleep(1);
+    usleep(100000);
 
-    while (read(binary, &ch, 1))
+    read(binary, binaryBuffer, fStat.st_size);
+
+    int ii;
+    int numRead;
+    unsigned char buffer[129];
+
+    for (ii = 0; ii < fStat.st_size; ii++)
     {
-        int ii;
-        char buffer[10];
-        int numRead = read(outDev, buffer, 10);
-        for ( ii = 0; ii < numRead; ii++)
+        if (ii % 10 == 0)
         {
-//            write(1, buffer + ii,1 );
+            printf("%u of %u bytes uploaded\n", (unsigned int)ii, (unsigned int)fStat.st_size);
         }
-        char strBuffer[5];
-        sprintf(strBuffer, "%02x ", ch);
-        write(1, strBuffer, 3);
-        write(outDev, &ch, 1);
-        sleep(1);
+//        write(1, binaryBuffer + ii, 1);
+        write(outDev, binaryBuffer + ii, 1);
+        numRead = read(outDev, buffer, 128);
+ //       unsigned char jj;
+ //       for (jj = 0; jj < numRead; jj++)
+ //       {
+ //           write(1, buffer + jj, 1);
+ //       }
+        usleep(100000);
     }
+
+    while ((numRead = read(outDev, buffer, 128)) > 0)
+    {
+//        unsigned char jj;
+//        for (jj = 0; jj < numRead; jj++)
+//        {
+//            write(1, buffer + jj, 1);
+//        }
+    }
+
+    free(binaryBuffer);
     close(outDev);
     close(binary);
 }

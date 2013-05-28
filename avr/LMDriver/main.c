@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include <stdint.h>
@@ -15,8 +16,24 @@
 u08 disploop = 1;
 u08 node = 0;
 u08 programControl = 0;
-u08 interpreterDone = 0;
+volatile unsigned char delayCount;
 
+//
+// This ISR is used to pause interpreter operations
+// when it has encountered a PAUSES or PAUSEMS 
+// operation. Period is 8ms.
+//
+ISR(TIMER0_OVF_vect)
+{
+    if (delayCount)
+    {
+        delayCount--;
+    }
+    else
+    {
+        TIMSK0 &= ~_BV(TOIE0); // turn off timer interrupt
+    }
+}
 
 void mosiPush(unsigned char data)
 {
@@ -64,22 +81,21 @@ int main(void)
     sei();
     dm_init();			/* init displaymux */
     u16 data = 0;
-
     count = 0;
-    //programControl = eprom_read_byte(510);
 
     while (1)
     {
         count++;
 
-        if (programControl > 0 & !(count & 0xff))
+        if ((programControl > 0) && !(count & 0x0f) && !delayCount)
         {
             if ((data = interpreter()) & 0x0100)
             {
                 cmd_dataHandler(data & 0xff);
             }
-            if (interpreterDone)
+            if (data & 0x0200)
             {
+//                uart_send_buffered('*');
                 if (1 == programControl)
                 {
                     programControl = 0;
@@ -91,8 +107,15 @@ int main(void)
             }
         }
 
-        if ((data = uart_get_buffered()) & 0x0100)
+        data = uart_get_buffered();
+        if (data & 0x0100)
         {
+            if (data == 0x0120 && programControl > 0)
+            {
+                programControl = 0;
+                interpreter_init();
+                continue;
+            }
             cmd_dataHandler(data & 0xff);
             continue;
         }

@@ -305,10 +305,10 @@ unsigned char font4x7[0x500] PROGMEM =
 #endif
 /* char char49 index 49*/
 0  , /*                  */
+0  , /*                  */
 66 , /*  X    X          */
 127, /*  XXXXXXX         */
 64 , /*  X               */
-0  , /*                  */
 /* char char50 index 50*/
 0,   /*                  */
 66 , /*  X    X          */
@@ -336,8 +336,8 @@ unsigned char font4x7[0x500] PROGMEM =
 54 , /*   XX XX          */
 #endif
 /* char char52 index 52*/
-24 , /*    XX            */
-20 , /*    X X           */
+0  , /*                  */
+28 , /*    XXX           */
 18 , /*    X  X          */
 127, /*  XXXXXXX         */
 16 , /*    X             */

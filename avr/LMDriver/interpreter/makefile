@@ -1,19 +1,21 @@
 OBJS=interpreter.o
+DEFINES=-DDEBUGOUT
 
 interpreter: makefile $(OBJS)
-	gcc -o interpreter $(OBJS)
+	gcc -O0 -g -o interpreter $(OBJS)
 
 %.o: %.c
-	gcc -g -c $<
+	gcc -O0 -g -c $(DEFINES) $<
 
 run:
-	./interpreter obj.bin
+	./interpreter clock.pk.bin
 
 gdb:
-	gdb interpreter
+	gdb ./interpreter
 
 poke:
 	./poke.py -v 
 
 clean:
 	rm *.o
+	rm interpreter
