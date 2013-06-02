@@ -1,6 +1,8 @@
 TARGET=LMDriver
 HWTARGET=atmega169
-INCLUDES=-I. -I/usr/local/CrossPack-AVR-20120217/avr/include/
+#EMBEDVM=./embedvm/trunk/vmsrc/
+INCLUDES=-I. -I/usr/local/CrossPack-AVR-20120217/avr/include/ 
+#-I${EMBEDVM}
 LIBPATH=-L/usr/avr/lib
 CC=avr-gcc
 OBJDUMP=avr-objdump
@@ -13,7 +15,8 @@ MAKEFILE=makefile
 DEFINES=-DKB_TBC12=1 \
 -DF_CPU=8000000 \
 -DEMBEDDED \
--DDEBUG 
+-DDEBUG \
+-DEMBEDVM
 #-DEMBEDDED_DEBUG
 
 #-DHARDCODED_DISPLAY
@@ -23,7 +26,9 @@ DEFINES=-DKB_TBC12=1 \
 
 #LIBS=$(LIBPATH) -lc
 OBJS=main.o displaymux.o cmdproc2.o font4x7.o spi.o serutil.o
-OBJS+=interpreter.o
+OBJS+=embedvm.o vminterface.o
+#OBJS+=${EMBEDVM}/embedvm.o
+#OBJS+=interpreter.o
 
 #serutil.o
 
@@ -55,7 +60,8 @@ boardtest:
 	avrdude -P /dev/ttyS0 -p m169 -c stk500v2
 
 clean:
-	rm -f *.o *.out *.map *.hex
+	-rm -f *.o *.out *.map *.hex
+#	-rm ${EMBEDVM}/*.o
 
 upload:
 #	avrdude -qq -P /dev/ttyS0 -c stk500v2 -p m169 -U flash:w:$(TARGET).hex

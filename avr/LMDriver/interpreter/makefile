@@ -8,7 +8,8 @@ interpreter: makefile $(OBJS)
 	gcc -O0 -g -c $(DEFINES) $<
 
 run:
-	./interpreter clock.pk.bin
+	../interpreter/poke.py ../interpreter/spiral.pk
+	./uploader ../interpreter/spiral.pk.bin
 
 gdb:
 	gdb ./interpreter

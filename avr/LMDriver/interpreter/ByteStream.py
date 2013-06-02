@@ -69,8 +69,11 @@ class ByteStream:
     def inc(self, name):
         self.stream.append({ 'op' : 'inc', 'value' : 0, 'var' : name })
 
-    def jz(self, varname, label):
-        self.stream.append({ 'op' : 'jz', 'var' : varname, 'label' : label })
+#    def jz(self, varname, label):
+#        self.stream.append({ 'op' : 'jz', 'var' : varname, 'label' : label })
+
+    def jle(self, varname, label):
+        self.stream.append({ 'op' : 'jle', 'var' : varname, 'label' : label })
 
     def jump(self, label):
         self.stream.append({ 'op' : 'jump', 'label' : label })
@@ -190,7 +193,7 @@ class ByteStream:
         emitted.append( self.ivars[param['var']]['location'] & 0xff)
         return emitted
 
-    def emit_jz(self, param):
+    def emit_jle(self, param):
         emitted = array.array('B')
         emitted.append(ord('z'))
         emitted.append((self.ivars[param['var']]['location'] >> 8) & 0xff)
@@ -198,6 +201,24 @@ class ByteStream:
         emitted.append((self.labels[param['label']] >> 8) & 0xff)
         emitted.append( self.labels[param['label']] & 0xff)
         return emitted
+
+#    def emit_jlt(self, param):
+#        emitted = array.array('B')
+#        emitted.append(ord('}'))
+#        emitted.append((self.ivars[param['var']]['location'] >> 8) & 0xff)
+#        emitted.append( self.ivars[param['var']]['location'] & 0xff)
+#        emitted.append((self.labels[param['label']] >> 8) & 0xff)
+#        emitted.append( self.labels[param['label']] & 0xff)
+#        return emitted
+#
+#    def emit_jz(self, param):
+#        emitted = array.array('B')
+#        emitted.append(ord('z'))
+#        emitted.append((self.ivars[param['var']]['location'] >> 8) & 0xff)
+#        emitted.append( self.ivars[param['var']]['location'] & 0xff)
+#        emitted.append((self.labels[param['label']] >> 8) & 0xff)
+#        emitted.append( self.labels[param['label']] & 0xff)
+#        return emitted
 
     def emit_add(self, param):
         emitted = array.array('B')
@@ -230,14 +251,16 @@ class ByteStream:
         'ivarvalue' : 'emit_ivarvalue',
         'ivarivar' : 'emit_ivarivar', 
         'jump' : 'emit_jump',
-        'jz'   : 'emit_jz',
+#        'jz'   : 'emit_jz',
         'labeldef' : 'emit_labeldef',
         'pauses' : 'emit_pauses',
         'pausems' : 'emit_pausems',
         'semit' : 'emit_semit',
         'sub' : 'emit_sub',
         'svar' : 'emit_svar',
-        'end'  : 'emit_end'
+        'end'  : 'emit_end',
+#        'jlt'  : 'emit_jlt',
+        'jle'  : 'emit_jle'
     }
 
     def finalize(self, sconsts, iconsts): #, svars): # , ivars):

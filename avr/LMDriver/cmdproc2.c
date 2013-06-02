@@ -431,7 +431,9 @@ void cmd_dataHandler(u08 cmdInput)
         case CMD_RUN_PROGRAM:
             programControl = cmdInput - '0';
             eeprom_write_byte ((uint8_t*)510, programControl);
+#ifndef EMBEDVM
             interpreter_init();
+#endif // EMBEDVM
             cpState = COMMAND;
             break;
 

@@ -10,8 +10,18 @@
 #include <displaymux.h>
 #include <spi.h>
 #include <serutil.h>
-#include <interpreter.h>
 #include <avr/eeprom.h>
+
+#ifdef EMBEDVM
+#include <embedvm.h>
+#else // EMBEDVM
+#include <interpreter.h>
+#endif // EMBEDVM
+
+#ifdef EMBEDVM
+extern struct embedvm_s vm;
+#endif // EMBEDVM
+
 
 u08 disploop = 1;
 u08 node = 0;
@@ -76,7 +86,9 @@ int main(void)
     cmdInit();			/* init command processor */
     spi_init();   	/* init serial peripheral interface */
     uart_init();
+#ifndef EMBEDVM
     interpreter_init();
+#endif // EMBEDVM
     
     sei();
     dm_init();			/* init displaymux */
@@ -86,6 +98,12 @@ int main(void)
     while (1)
     {
         count++;
+#ifdef EMBEDVM
+        if (!(count & 0x0f))
+        {
+            embedvm_exec(&vm);
+        }
+#else // EMBEDVM
 
         if ((programControl > 0) && !(count & 0x0f) && !delayCount)
         {
@@ -106,16 +124,19 @@ int main(void)
                 }
             }
         }
+#endif // EMBEDVM
 
         data = uart_get_buffered();
         if (data & 0x0100)
         {
+#ifndef EMBEDVM
             if (data == 0x0120 && programControl > 0)
             {
                 programControl = 0;
                 interpreter_init();
                 continue;
             }
+#endif // EMBEDVM
             cmd_dataHandler(data & 0xff);
             continue;
         }

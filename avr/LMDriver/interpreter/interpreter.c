@@ -58,8 +58,9 @@ extern volatile unsigned char delayCount;
 #define CMD_ASSIGN_IVAR_IVAR 'm'
 //!V - declare string variable A-Z
 #define CMD_DECLARE_STRING_VAR 's'
-//!z - jump if integer is zero
-#define CMD_JZ 'z'
+
+//!z - jump if integer is less than or equal to zero
+#define CMD_JLE 'z'
 
 #define CMD_END '!'
 #define RAM_SIZE 64
@@ -444,14 +445,13 @@ void jump(void)
 #endif
 }
 
-void jz(void)
+void jle(void)
 {
     unsigned short location = (readEeprom(ip) << 8) | readEeprom(ip + 1);
-    unsigned short varValue = (ram[location] << 8) | ram[location + 1];
-    if (0 == varValue)
+    short varValue = (ram[location] << 8) | ram[location + 1];
+    if (0 > varValue)
     {
         location = (readEeprom(ip + 2) << 8) | readEeprom(ip + 3);
-     //   unsigned short jumpTo = (ram[location] << 8) | ram[location + 1];
         ip = location;
     }
     else
@@ -459,6 +459,36 @@ void jz(void)
         ip += 4;
     }
 }
+
+//void jlt(void)
+//{
+//    unsigned short location = (readEeprom(ip) << 8) | readEeprom(ip + 1);
+//    short varValue = (ram[location] << 8) | ram[location + 1];
+//    if (0 >= varValue)
+//    {
+//        location = (readEeprom(ip + 2) << 8) | readEeprom(ip + 3);
+//        ip = location;
+//    }
+//    else
+//    {
+//        ip += 4;
+//    }
+//}
+//
+//void jz(void)
+//{
+//    unsigned short location = (readEeprom(ip) << 8) | readEeprom(ip + 1);
+//    short varValue = (ram[location] << 8) | ram[location + 1];
+//    if (0 == varValue)
+//    {
+//        location = (readEeprom(ip + 2) << 8) | readEeprom(ip + 3);
+//        ip = location;
+//    }
+//    else
+//    {
+//        ip += 4;
+//    }
+//}
 
 void add(void)
 {
@@ -760,10 +790,20 @@ unsigned short interpreter(void)
                     jump();
                     break;
 
-                case CMD_JZ:
+                case CMD_JLE:
                     ip++;
-                    jz();
+                    jle();
                     break;
+
+//                case CMD_JLT:
+//                    ip++;
+//                    jlt();
+//                    break;
+//
+//                case CMD_JZ:
+//                    ip++;
+//                    jz();
+//                    break;
 
                 case CMD_ASSIGN_IVAR_IVAR:
                     ip++;
@@ -840,7 +880,7 @@ int main(int argc, char ** argv)
             sprintf(txt, "Emit %02x\n", ch);
             write(1, txt, strlen(txt));
             write(outDev, &ch, 1);
-//            usleep(100000);
+            usleep(100000);
         }
     }
 

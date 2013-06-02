@@ -6,8 +6,13 @@ uploader: makefile $(OBJS)
 %.o: %.c
 	gcc -DDEBUGOUT -g -c $<
 
-run:    	
-	./uploader ../interpreter/clock.pk.bin    	
+run:
+	../interpreter/poke.py bubbles.pk
+	./uploader bubbles.pk.bin
+
+#run:    	
+#	../interpreter/poke.py ../interpreter/spiral.pk
+#	./uploader ../interpreter/spiral.pk.bin
 
 #run:
 #	./interpreter obj.bin

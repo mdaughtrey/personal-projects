@@ -80,7 +80,7 @@ class Parser:
         name = param.split()[1]
         value = int(param.split()[2])
         self.iconsts[name] = { 'value' : value }
-        vOut ("Setting ICONST %s to [%d]\n" % (name, self.iconsts[name]))
+        vOut ("Setting ICONST %s to [%d]\n" % (name, self.iconsts[name]['value']))
 
     def cmd_svar(self, param):
         name = param.split()[1]
@@ -117,10 +117,21 @@ class Parser:
         name = param.split()[1]
         self.streamer.inc(name)
 
-    def cmd_jz(self, param):
+    def cmd_jle(self, param):
+#        pdb.set_trace()
         varname = param.split()[1]
         label = param.split()[2]
-        self.streamer.jz(varname, label)
+        self.streamer.jle(varname, label)
+
+#    def cmd_jlt(self, param):
+#        varname = param.split()[1]
+#        label = param.split()[2]
+#        self.streamer.jlt(varname, label)
+#
+#    def cmd_jz(self, param):
+#        varname = param.split()[1]
+#        label = param.split()[2]
+#        self.streamer.jz(varname, label)
 
     def cmd_jump(self, param):
         labelname = param.split()[1]
@@ -168,7 +179,7 @@ class Parser:
         '^inc\s'    : 'cmd_inc',
         '^ivar\s'   : 'cmd_ivar',
         '^jump\s'   : 'cmd_jump',
-        '^jz\s'     : 'cmd_jz',
+#        '^jz\s'     : 'cmd_jz',
         '^mod\s'    : 'cmd_mod',
         '^pausems'  : 'cmd_pausems',
         '^pauses'   : 'cmd_pauses',
@@ -178,6 +189,8 @@ class Parser:
         '^sub\s'    : 'cmd_sub',
         '^svar\s'   : 'cmd_svar',
         '^\S+:'     : 'cmd_label',
+        '^jle\s'    : 'cmd_jle',
+#        '^jlt\s'    : 'cmd_jlt',
         'end'       : 'cmd_end'
     }
 

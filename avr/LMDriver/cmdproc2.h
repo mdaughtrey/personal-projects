@@ -192,6 +192,7 @@
 /// \param CC =  16-bit checksum
 ///
 #define CMD_UPLOAD 'Z'
+// RESERVED 'z' : jle
 
 #endif // INCLUDED_CMDPROC2_H
 
