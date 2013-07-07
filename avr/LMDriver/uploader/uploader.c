@@ -18,8 +18,15 @@ union
 }conv;
 
 
+//
+// Arg1: *.bin
+// Arg2: mainOffset
+// Arg3: binOffset
+//
 int main(int argc, char ** argv)
 {
+    unsigned short mainOffset;
+    unsigned int binOffset;
     unsigned char ch;
     struct stat fStat;
     struct termios termio;
@@ -43,9 +50,26 @@ int main(int argc, char ** argv)
 #endif // DEBUGOUT
 #endif
 
+    mainOffset = strtoul(argv[2], NULL, 16);
+    binOffset = strtoul(argv[3], NULL, 16);
+
+    printf("Length %04x mainOffset %04x binOffset %04x\n", fStat.st_size, mainOffset, binOffset);
+
     ch = 'Z';
     write(outDev, &ch, 1);
     usleep(100000);
+    write(outDev, &conv.uChar[1], 1);
+    usleep(100000);
+    write(outDev, &conv.uChar[0], 1);
+    usleep(100000);
+
+    conv.uShort = mainOffset;
+    write(outDev, &conv.uChar[1], 1);
+    usleep(100000);
+    write(outDev, &conv.uChar[0], 1);
+    usleep(100000);
+
+    conv.uShort = binOffset;
     write(outDev, &conv.uChar[1], 1);
     usleep(100000);
     write(outDev, &conv.uChar[0], 1);
