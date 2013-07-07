@@ -26,6 +26,8 @@
 #include <serutil.h>
 #include <vminterface.h>
 
+//#define EVM_DEBUG 1
+
 extern struct embedvm_s vm;
 
 static inline int16_t signext(uint16_t val, uint16_t mask)
@@ -38,7 +40,6 @@ static inline int16_t signext(uint16_t val, uint16_t mask)
 
 extern void embedvm_exec(void)
 {
-	//uint8_t opcode = mem_read(vm.ip, false);
 	uint8_t opcode = rom_read(vm.ip, false);
     //printf("%02x %s\n", opcode, decoder(opcode));
     //fflush(stdout);

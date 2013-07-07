@@ -13,21 +13,18 @@
 #include <avr/eeprom.h>
 
 #ifdef EMBEDVM
-#include <embedvm.h>
-#else // EMBEDVM
-#include <interpreter.h>
+#include <embedvm2.h>
 #endif // EMBEDVM
 
-#ifdef EMBEDVM
-extern struct embedvm_s vm;
-#endif // EMBEDVM
+#include <vminterface.h>
+//#include <testbin.h>
 
 
 u08 disploop = 1;
-u08 node = 0;
-u08 programControl = 0;
-volatile unsigned char delayCount;
-
+u08 programControl = 1;
+volatile unsigned char delayCount = 16;
+extern u16 binOffset;
+extern u16 mainOffset;
 //
 // This ISR is used to pause interpreter operations
 // when it has encountered a PAUSES or PAUSEMS 
@@ -41,7 +38,8 @@ ISR(TIMER0_OVF_vect)
     }
     else
     {
-        TIMSK0 &= ~_BV(TOIE0); // turn off timer interrupt
+        delayCount = 16;
+//        TIMSK0 &= ~_BV(TOIE0); // turn off timer interrupt
     }
 }
 
@@ -70,11 +68,6 @@ void mosiPush(unsigned char data)
 //    return 1;
 //}
 
-void main_setNode(u08 setNode)
-{
-    node = setNode - '0';
-}
-
 int main(void)
 {
     unsigned char count = 0;
@@ -83,60 +76,46 @@ int main(void)
     MCUSR = 0;
     wdt_disable();
     
+
     cmdInit();			/* init command processor */
     spi_init();   	/* init serial peripheral interface */
     uart_init();
-#ifndef EMBEDVM
-    interpreter_init();
-#endif // EMBEDVM
     
     sei();
     dm_init();			/* init displaymux */
     u16 data = 0;
     count = 0;
 
+#ifdef EMBEDVM
+    vminterface_init();
+    //testbinInit();
+    
+//    uart_send_hex_byte(binOffset >> 8);
+//    uart_send_hex_byte(binOffset & 0xff);
+//    uart_send_buffered('\r');
+//    uart_send_buffered('\n');
+    embedvm_interrupt(mainOffset);
+    programControl = 0;
+#endif // EMBEDVM
+
     while (1)
     {
+      //  uart_send_buffered(programControl + 0x30);
         count++;
 #ifdef EMBEDVM
-        if (!(count & 0x0f))
+//        if (!(count & 0x0f))
+        if (!(count & 0x0f) && programControl)
+        //if (programControl)
         {
-            embedvm_exec(&vm);
-        }
-#else // EMBEDVM
-
-        if ((programControl > 0) && !(count & 0x0f) && !delayCount)
-        {
-            if ((data = interpreter()) & 0x0100)
-            {
-                cmd_dataHandler(data & 0xff);
-            }
-            if (data & 0x0200)
-            {
-//                uart_send_buffered('*');
-                if (1 == programControl)
-                {
-                    programControl = 0;
-                }
-                else
-                {
-                    interpreter_init();
-                }
-            }
+//            uart_send_buffered('x');
+            embedvm_exec();
+  //          uart_send_buffered('X');
         }
 #endif // EMBEDVM
 
         data = uart_get_buffered();
         if (data & 0x0100)
         {
-#ifndef EMBEDVM
-            if (data == 0x0120 && programControl > 0)
-            {
-                programControl = 0;
-                interpreter_init();
-                continue;
-            }
-#endif // EMBEDVM
             cmd_dataHandler(data & 0xff);
             continue;
         }

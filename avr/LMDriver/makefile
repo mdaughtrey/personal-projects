@@ -26,7 +26,8 @@ DEFINES=-DKB_TBC12=1 \
 
 #LIBS=$(LIBPATH) -lc
 OBJS=main.o displaymux.o cmdproc2.o font4x7.o spi.o serutil.o
-OBJS+=embedvm.o vminterface.o
+OBJS+=embedvm2.o vminterface.o 
+#testbin.o
 #OBJS+=${EMBEDVM}/embedvm.o
 #OBJS+=interpreter.o
 
@@ -34,7 +35,7 @@ OBJS+=embedvm.o vminterface.o
 
 all: clean $(TARGET).hex 
 
-$(TARGET).hex: $(MAKEFILE) $(TARGET).out
+$(TARGET).hex: $(MAKEFILE) $(TARGET).out 
 	$(OBJCOPY) -j .text -O ihex $(TARGET).out $(TARGET).hex
 
 $(TARGET).out: $(MAKEFILE) $(OBJS)
@@ -51,7 +52,7 @@ mmreadfuse:
 writefuse: 
 	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m
 	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd1:m
-#avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
+#	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
 
 erase:
 	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -e
@@ -69,6 +70,7 @@ upload:
 	avrdude -c avrisp2 -p m169 -P usb -U flash:w:$(TARGET).hex
 
 # -Wa,-ahls=$<.lst
+
 
 %.o: %.c
 	$(CC) -c -g $(CFLAGS) $(DEFINES) $(INCLUDES) $<

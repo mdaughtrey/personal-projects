@@ -11,13 +11,15 @@
 #include <spi.h>
 #include <serutil.h>
 #include <cmdproc2.h>
-#include <interpreter.h>
+#include <vminterface.h>
 
 u08 hexTable[16] PROGMEM = "0123456789abcdef";
 
 extern u08 disploop;
 extern u08 node;
-extern u08 programControl;
+extern unsigned char programControl;
+extern unsigned char memory[RAM_SIZE];
+//extern unsigned char stop;
 //extern void mosiPush(unsigned char data);
 
 typedef enum
@@ -34,6 +36,10 @@ typedef enum
     REMAINING = PARAM4,
     UPLOAD_LENGTH_MSB,
     UPLOAD_LENGTH_LSB,
+    UPLOAD_MAINOFFSET_MSB,
+    UPLOAD_MAINOFFSET_LSB,
+    UPLOAD_BINOFFSET_MSB,
+    UPLOAD_BINOFFSET_LSB,
     UPLOAD_CODE,
     LAST
 } State;
@@ -41,7 +47,7 @@ typedef enum
 u08 cpState;
 u08 input[LAST];
 u16 uploadRemaining;
-uint8_t * eepromAddress;
+u16 uploadVar;
 
 void dumpInput(void)
 {
@@ -62,7 +68,8 @@ void cmdInit(void)
 {
     memset(input, 0, LAST - FIRST);
     cpState = FIRST;
-    programControl = eeprom_read_byte ((uint8_t*)510);
+    programControl = eeprom_read_byte ((uint8_t*)EEPROM_OFFSET_PROGRAM_CONTROL);
+
 }
 
 u08 asciiToHex(u08 ascii1, u08 ascii2)
@@ -321,12 +328,32 @@ void cmdSetBits(u08 cmdInput)
 
 void dumpEeprom(void)
 {
-    unsigned char xx = 0;
-    uart_send_buffered('\r');
-    uart_send_buffered('\n');
-    for (xx = 0; xx < 32; xx++)
+    unsigned short addr = 0;
+    for (addr = 0; addr < ROM_SIZE; addr++)
     {
-        uart_send_hex_byte(eeprom_read_byte((uint8_t *)xx));
+        if (addr % 32 == 0)
+        {
+            uart_send_buffered('\r');
+            uart_send_buffered('\n');
+            uart_send_hex_byte(addr >> 8);
+            uart_send_hex_byte(addr & 0xff);
+            uart_send_buffered(':');
+        }
+        uart_send_hex_byte(eeprom_read_byte((uint8_t *)addr));
+        uart_send_buffered(' ');
+    }
+
+    for (addr = 0; addr < RAM_SIZE; addr++)
+    {
+        if (addr % 32 == 0)
+        {
+            uart_send_buffered('\r');
+            uart_send_buffered('\n');
+            uart_send_hex_byte(addr >> 8);
+            uart_send_hex_byte(addr & 0xff);
+            uart_send_buffered(':');
+        }
+        uart_send_hex_byte(memory[addr]);
         uart_send_buffered(' ');
     }
 }
@@ -336,15 +363,15 @@ void cmd_dataHandler(u08 cmdInput)
 {
     u08 ii;
 
-#ifdef EMBEDDED_DEBUG   
-    uart_send_hex_byte(cmdInput);
-    uart_send_buffered('S');
-    uart_send_hex_byte(cpState);
-    uart_send_buffered('P');
-    uart_send_hex_byte(programControl);
-    uart_send_buffered('\r');
-    uart_send_buffered('\n');
-#endif // EMBEDDED_DEBUG
+//#ifdef EMBEDDED_DEBUG   
+//    uart_send_hex_byte(cmdInput);
+//    uart_send_buffered('S');
+//    uart_send_hex_byte(cpState);
+//    uart_send_buffered('P');
+//    uart_send_hex_byte(programControl);
+//    uart_send_buffered('\r');
+//    uart_send_buffered('\n');
+//#endif // EMBEDDED_DEBUG
 
     if (COMMAND == cpState)
     {
@@ -430,10 +457,7 @@ void cmd_dataHandler(u08 cmdInput)
 
         case CMD_RUN_PROGRAM:
             programControl = cmdInput - '0';
-            eeprom_write_byte ((uint8_t*)510, programControl);
-#ifndef EMBEDVM
-            interpreter_init();
-#endif // EMBEDVM
+            eeprom_write_byte ((uint8_t*)EEPROM_OFFSET_PROGRAM_CONTROL, programControl);
             cpState = COMMAND;
             break;
 
@@ -455,8 +479,32 @@ void cmd_dataHandler(u08 cmdInput)
 //                    uart_send_hex_byte(cmdInput);
 //#endif // EMBEDDED_DEBUG
                     uploadRemaining |= cmdInput;
-                    eepromAddress = 0;
+                    cpState = UPLOAD_MAINOFFSET_MSB;
+                    break;
+
+                case UPLOAD_MAINOFFSET_MSB:
+                    uploadVar = cmdInput << 8;
+                    cpState = UPLOAD_MAINOFFSET_LSB;
+                    break;
+
+                case UPLOAD_MAINOFFSET_LSB:
+                    uploadVar |= cmdInput;
+                    cpState = UPLOAD_BINOFFSET_MSB;
+                    eeprom_write_byte((uint8_t*)EEPROM_OFFSET_MAINOFFSET_MSB, uploadVar >> 8);
+                    eeprom_write_byte((uint8_t*)EEPROM_OFFSET_MAINOFFSET_LSB, uploadVar & 0xff);
+                    break;
+
+                case UPLOAD_BINOFFSET_MSB:
+                    uploadVar = cmdInput << 8;
+                    cpState = UPLOAD_BINOFFSET_LSB;
+                    break;
+
+                case UPLOAD_BINOFFSET_LSB:
+                    uploadVar |= cmdInput;
                     cpState = UPLOAD_CODE;
+                    eeprom_write_byte((uint8_t*)EEPROM_OFFSET_BINOFFSET_MSB, uploadVar >> 8);
+                    eeprom_write_byte((uint8_t*)EEPROM_OFFSET_BINOFFSET_LSB, uploadVar & 0xff);
+                    uploadVar = 0;
                     break;
 
                 case UPLOAD_CODE:
@@ -469,11 +517,11 @@ void cmd_dataHandler(u08 cmdInput)
 //                    uart_send_buffered('\n');
 //#endif // EMBEDDED_DEBUG
 
-                    eeprom_write_byte (eepromAddress++, cmdInput);
+                    eeprom_write_byte ((uint8_t*)uploadVar++, cmdInput);
                     uploadRemaining--;
                     if (0 == uploadRemaining)
                     {
-                        eeprom_write_byte((uint8_t*)510, 0);
+                        eeprom_write_byte((uint8_t*)EEPROM_OFFSET_PROGRAM_CONTROL, 0);
                         cpState = COMMAND;
                     }
                     break;

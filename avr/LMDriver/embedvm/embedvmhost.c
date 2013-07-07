@@ -7,31 +7,38 @@
 #include <stdlib.h>
 #include <string.h>
 #include <embedvm.h>
+#include <cmdproc2.h>
+#ifndef EMBEDDED
+#include <sys/time.h>
+struct timeval pauseStart;
+#endif // EMBEDDED
 
-#define RAM_SIZE 128
+#define RAM_SIZE 512 
 
 extern volatile unsigned char delayCount;
 
-typedef enum
-{
-    INTERPRETER = 0,
-    EMIT_VAR,
-    EMIT_CONST,
-    PAUSE_MS,
-    PAUSE_S
-} StateType;
-
-StateType iState;
-unsigned char length;
+//typedef enum
+//{
+//    INTERPRETER = 0,
+//    EMIT_VAR,
+//    EMIT_CONST,
+//    PAUSE_MS,
+//    PAUSE_S
+//} StateType;
+//
+//StateType iState;
+//unsigned char length;
 unsigned short remaining;
-unsigned short stateLocation;
+//unsigned short stateLocation;
+bool stop = false;
 
 int outDev;
-unsigned short ip;
+//unsigned short ip;
 unsigned char * eeprom;
-unsigned char memory[RAM_SIZE] = {0};
-unsigned short memoryUsed = 0;
+unsigned char * memory;
+//unsigned char memory[RAM_SIZE] = {0};
 unsigned short msTick;
+unsigned char inDelay = 0;
 
 #define UNUSED __attribute__((unused))
 
@@ -41,7 +48,7 @@ static int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv, void *ctx 
 static int8_t rom_read(uint16_t addr, void *ctx UNUSED);
 
 struct embedvm_s vm = {
-	0xffff, 0, 0, NULL,
+    0xffff, RAM_SIZE, RAM_SIZE, NULL,
 	&mem_read, &mem_write, &call_user, &rom_read
 };
 
@@ -69,33 +76,69 @@ static void mem_write(uint16_t addr, int16_t value, bool is16bit, void *ctx UNUS
 
 static int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv, void *ctx UNUSED)
 {
-//	int16_t ret = 0;
-//	int i;
-//
-//	if (funcid == 0) {
-//		stop = true;
-//		printf("Called user function 0 => stop.\n");
-//		fflush(stdout);
-//		return ret;
-//	}
-//
-//	printf("Called user function %d with %d args:", funcid, argc);
-//
-//	for (i = 0; i < argc; i++) {
-//		printf(" %d", argv[i]);
-//		ret += argv[i];
-//	}
-//
-//	printf("\n");
+	int i;
+    char  tmp;
+
+    switch (funcid)
+    {
+        case 0: // stop
+            stop = true;
+//            printf("Called user function 0 => stop.\n");
+//            fflush(stdout);
+            return 0;
+
+        case 1: // emit
+            tmp = *(char *)argv;
+            printf("Writing out %c %02x\n", tmp, tmp);
+            write(outDev, &tmp, 1);
+            break;
+
+        case 2: // printf
+            tmp = *(char *)argv;
+ //           printf("Result %02x\n", tmp);
+  //          fflush(stdout);
+            break;
+
+        case 3: // pause ms
+            gettimeofday(&pauseStart, NULL);
+            inDelay = 1;
+            remaining = *(int *)argv;
+            break;
+    }
+
+//	printf("Called user function %d with %d args:\n", funcid, argc);
 //	fflush(stdout);
-//
-//	return ret ^ funcid;
-    return 0;
+
+	return 0;
 }
 
 static int8_t rom_read(uint16_t addr, void *ctx UNUSED)
 {
-    return 0;
+    return eeprom[addr];
+}
+
+void doVm(struct embedvm_s *vm)
+{
+    if (inDelay)
+    {
+        struct timeval timeNow;
+        gettimeofday(&timeNow, NULL);
+        int startedAt = pauseStart.tv_usec / 1000;
+        int now = timeNow.tv_usec / 1000;
+        if (timeNow.tv_sec > pauseStart.tv_sec)
+        {
+            now += 1000;
+        }
+
+        if ((now - startedAt) > remaining)
+        {
+            inDelay = 0;
+        }
+    }
+    else
+    {
+		embedvm_exec(vm);
+    }
 }
 
 //ISR(SIG_OVERFLOW0)
@@ -213,29 +256,36 @@ void statePauseMs()
 
 int main(int argc, char ** argv)
 {
-    bool stop = false;
-    bool verbose = true;
+    bool verbose = false;
     struct stat fStat;
     stat(argv[1], &fStat);
-    eeprom = malloc(fStat.st_size);
+    if (fStat.st_size > RAM_SIZE)
+    {
+        fprintf(stderr, "image too large for RAM\n");
+        exit(1);
+    }
+        
+    memory = malloc(RAM_SIZE);
+    //eeprom = malloc(fStat.st_size);
     FILE * opCodes = fopen(argv[1], "r");
-    fread(eeprom, fStat.st_size, 1, opCodes);
+    //fread(eeprom, fStat.st_size, 1, opCodes);
+    fread(memory, fStat.st_size, 1, opCodes);
     fclose(opCodes);
 
     struct termios termio;
-//#ifdef OBJOUT
-//    outDev = open("obj.out", O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
-//#else
+#ifdef OBJOUT
+    outDev = open("obj.out", O_WRONLY | O_CREAT, S_IWUSR | S_IRUSR);
+#else
     outDev = open("/dev/cu.SLAB_USBtoUART", O_RDWR | O_NOCTTY | O_NONBLOCK);
+    printf("outDev %d\n", outDev);
+    fflush(stdout);
     cfmakeraw(&termio);
     tcgetattr(outDev, &termio);
     cfsetospeed(&termio, B38400);
     cfsetispeed(&termio, B38400);
     tcsetattr(outDev, TCSANOW, &termio);
-//#ifdef DEBUGOUT
-//    printf("outDev %d\n", outDev);
-//#endif // DEBUGOUT
-//#endif
+#endif
+	embedvm_interrupt(&vm, strtol(argv[2], NULL, 16));
 	stop = false;
 	while (!stop)
     {
@@ -261,7 +311,7 @@ int main(int argc, char ** argv)
 			fprintf(stderr, "SFP: %04x\n", vm.sfp);
 			fflush(stderr);
 		}
-		embedvm_exec(&vm);
+        doVm(&vm);
 	}
 
 //    while(1) 
@@ -283,7 +333,8 @@ int main(int argc, char ** argv)
 //    }
 
     close(outDev);
-    free(eeprom);
+    //free(eeprom);
+    free(memory);
 
 }
 

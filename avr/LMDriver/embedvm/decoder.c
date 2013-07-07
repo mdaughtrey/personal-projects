@@ -66,8 +66,7 @@ const char * decoder(uint8_t opcode)
         case 0xa2:
             return "| 1 | 0 | 1 | 0 | 0 |     2     |             Call (1-byte rel. address) |    |";
         case 0xa3:
-            return "| 1 | 0 | 1 | 0 | 0 |     3     |             Call (2-byte rel. address) |    |";
-        case 0xa4:
+            return "| 1 | 0 | 1 | 0 | 0 |     3     |             Call (2-byte rel. address) |    |"; case 0xa4:
             return "| 1 | 0 | 1 | 0 | 0 |     4     |   Jump IF (pop 1, 1-byte rel. address) |    |";
         case 0xa5:
             return "| 1 | 0 | 1 | 0 | 0 |     5     |   Jump IF (pop 1, 2-byte rel. address) |    |";
