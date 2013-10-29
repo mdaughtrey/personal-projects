@@ -141,6 +141,9 @@ upload: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
 	screen ${PORT} 57600
 
+screen:
+	screen ${PORT} 57600
+
 
 
 

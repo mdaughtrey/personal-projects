@@ -9,26 +9,49 @@ enum
     PREVIOUS
 };
 
-int lamp = 13;
+int led = 13;
 int camera = 12;
 int motorFwd = 11;
 int motorReverse = 10;
+int lamp = 9;
+int sensor = 6;
 int direction = STOP;
 int advanceCount = 0;
+int irThreshold = 50;
+int irData = 0;
 
 void setup ()
 {
     direction = STOP;
     advanceCount = 0;
+//    pinMode(led, OUTPUT);
     pinMode(lamp, OUTPUT);
     pinMode(camera, OUTPUT);
     pinMode(motorFwd, OUTPUT);
     pinMode(motorReverse, OUTPUT);
+
+    digitalWrite(sensor, HIGH);
+    pinMode(sensor, INPUT);
     Serial.begin(57600);
     digitalWrite(lamp, HIGH);
     digitalWrite(camera, HIGH);
     digitalWrite(motorFwd, HIGH);
     digitalWrite(motorReverse, HIGH);
+}
+
+void help()
+{
+        Serial.println("? - this text");
+        Serial.println("a - advance 1 step");
+        Serial.println("b - backstep 1 step");
+        Serial.println("c - camera");
+        Serial.println("f - forward freerunning");
+        Serial.println("l - lamp on");
+        Serial.println("L - lamp off");
+        Serial.println("n - next 3 steps");
+        Serial.println("p - previous 3 stops");
+        Serial.println("r - reverse freerunning");
+        Serial.println("s - motor stop");
 }
 
 void loop ()
@@ -37,6 +60,11 @@ void loop ()
     {
         switch (Serial.read())
         {
+            case '?': // help
+                help();
+                break;
+
+
             case 'l': // lamp on
                 digitalWrite(lamp, LOW);
                 break;
@@ -55,8 +83,18 @@ void loop ()
                 direction = FORWARD;
                 break;
 
+            case 'a': // advance
+                direction = NEXT;
+                advanceCount = 1;
+                break;
+
+            case 'b': // backstep
+                direction = PREVIOUS;
+                advanceCount = 1;
+                break;
+
             case 'n': // next
-                direction = FORWARD;
+                direction = NEXT;
                 advanceCount = 3;
                 break;
 
@@ -65,7 +103,7 @@ void loop ()
                 break;
 
             case 'p': // previous
-                direction = REVERSE;
+                direction = PREVIOUS;
                 advanceCount = 3;
                 break;
 
@@ -87,13 +125,49 @@ void loop ()
             digitalWrite(motorFwd, LOW);
             digitalWrite(motorReverse, HIGH);
         }
-        else if (REVERSE == direction || PREV == direction)
+        else if (REVERSE == direction || PREVIOUS == direction)
         {
             digitalWrite(motorFwd, HIGH);
             digitalWrite(motorReverse, LOW);
         }
         else
         {
+            digitalWrite(motorFwd, HIGH);
+            digitalWrite(motorReverse, HIGH);
+        }
+    }
+
+    if (digitalRead(sensor))
+    {
+        if (irThreshold)
+        {
+            irThreshold--;
+        }
+    }
+    else
+    {
+        if (irThreshold < 100)
+        {
+            irThreshold++;
+        }
+    }
+    
+    if (irThreshold == 0)
+    {
+        irData <<= 1;
+    }
+    else if (irThreshold == 100)
+    {
+        irData <<= 1;
+        irData |= 1;
+    }
+
+    if (irData == 0x0f && (NEXT == direction || PREVIOUS == direction))
+    {
+        if (--advanceCount <= 0)
+        {
+            direction = STOP;
+            // motor off
             digitalWrite(motorFwd, HIGH);
             digitalWrite(motorReverse, HIGH);
         }
