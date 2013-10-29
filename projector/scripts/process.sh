@@ -138,6 +138,47 @@ mpeg2()
     cat stream_${1}.yuv | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 2 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $(basename `pwd`)_${1}.mpg
 }
 
+gentitle()
+{
+#	set -o xtrace
+	firstfile=${1:-"SAM_0000.JPG"}
+#	x=${1:-1024}
+#	y=${2:-768}
+	let row=300
+	let rowincrement=300
+	let pointsize=324
+
+    	crop=($(head -1 crop.cfg)) # left, top, right, bottom 
+    	let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
+    	let height=$((${crop[3]} - ${crop[1]})) # (top - bottom)/2 + top
+
+	convert $firstfile -crop ${width}x${height}+${crop[0]}+${crop[1]} underlay.jpg
+
+	for font in "URW-Chancery-Medium-Italic"
+	#for font in `cat fonts.txt`
+	do
+			cmd="convert -size ${width}x${height} -background none xc:transparent -font $font"
+			cmd=$cmd$(cat title.txt | while read line
+			do
+				if [[ "=" == "$line" ]]
+				then
+					((pointsize-=120))
+					((rowincrement-=120))
+					continue
+				fi
+				echo " -pointsize $pointsize"
+				echo ' -fill black -stroke yellow -strokewidth 2' | tr -d '\n'
+				echo " -draw " '"' "text 40,$row" "'""$line""'"'"' | tr -d '\n'
+				((row+=rowincrement))
+			done
+			)" title_${font}.png"
+			echo $cmd
+			echo composite -gravity center title_${font}.png underlay.jpg title.jpg
+			echo rm title_${font}.png
+			echo rm underlay.jpg
+	done
+}
+
 
 
 while getopts "sv" OPT
@@ -149,8 +190,9 @@ do
     esac
 done
 shift $((OPTIND-1))
-echo $@
+#echo $@
 case "$1" in 
+	title) gentitle $2 $3 ;;
 	renumber) renumber $2 ;;
     preview) preview ;;
     genyuv) genyuv web; genyuv dvd; genyuv hd ;;
