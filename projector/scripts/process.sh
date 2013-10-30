@@ -2,6 +2,7 @@
 
 let verbose=0
 let simulate=0
+let numTitleFrames=90
 
 vOut()
 {
@@ -47,17 +48,32 @@ renumber()
     let count=0
 
     dest=SAM_`printf "%04u" $to`.JPG
-    while [[  -f $dest ]]
-    do
-        ((to++))
-        dest=SAM_`printf "%04u" $to`.JPG
-    done
-    if (( $to == $numFiles ))
+
+
+#    while [[  -f $dest ]]
+#    do
+#        ((to++))
+#        dest=SAM_`printf "%04u" $to`.JPG
+#    done
+#    if (( $to == $numFiles ))
+#    then
+#        vOut Nothing to do
+#        return
+#    fi
+#    let from=$to
+
+        source=SAM_`printf "%04u" $from`.JPG
+        while [[ ! -f $source ]]
+        do
+            ((from++))
+            source=SAM_`printf "%04u" $from`.JPG
+        done
+
+    if (($from == $to))
     then
-        vOut Nothing to do
+        echo source = dest
         return
-    fi
-    let from=$to
+     fi
 
 	while (($count < $numFiles))
     do
@@ -92,8 +108,13 @@ preview()
     ffmpeg -i SAM_%04d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video preview.mpg
 }
 
+let scaleX=0
+let scaleY=0
+let width=0
+let height=0 
+let bw=4000
 
-genyuv()
+scaler()
 {
     if [[ "$1" == "web" ]]
     then
@@ -103,23 +124,26 @@ genyuv()
     then
         let scaleX=720
     fi
-    crop=($(head -1 crop.cfg)) # left, top, right, bottom 
-    # w:h:x:y
-
-    #let width=$(echo "(${crop[2]}-${crop[0]})/2+${crop[0]}" | bc) # (right - left)/2 + left
-    let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
-    if [[ "$1" == "hd" ]]
+    if [ "$1" == 'hd' ]
     then
+        let bw=8000
         let scaleX=2048
     fi
-    #let height=$(((${crop[3]}-${crop[1]})/2+${crop[1]}))  # (bottom-top)/2 + top
-    let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
-    vOut width $width height $height
+    crop=($(head -1 crop.cfg)) # left, top, right, bottom 
 
+    let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
+    let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
     scaler=$(echo "scale=2;${width}/${height}" | bc) 
     let scaleY=$(echo "$scaleX/$scaler" | bc)
+
+    vOut Scaler width $width height $height scaleX $scaleX scaleY $scaleY bw $bw
+}
+
+genyuv()
+{
+    scaler $1
     rm stream.yuv
-    rm stream_${1}.yuv
+    rm stream_${0}.yuv
     doCommand mplayer mf://*.JPG -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg -vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY
     doCommand mv stream.yuv stream_${1}.yuv
 }
@@ -130,40 +154,45 @@ mpeg2()
     then
         genyuv $1
     fi
-    bw=4000
-    if [ "$1" == 'hd' ]
+    if [[ ! -f title.yuv ]]
     then
-        bw=8000
+	echo Need title.yuv
+	exit 1
     fi
-    cat stream_${1}.yuv | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 2 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $(basename `pwd`)_${1}.mpg
+	cat stream_${1}.yuv | sed '1d' > stream2_${1}.yuv
+    cat title.yuv stream2_${1}.yuv  | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 2 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $(basename `pwd`)_${1}.mpg
 }
 
 gentitle()
 {
-#	set -o xtrace
-	firstfile=${1:-"SAM_0000.JPG"}
-#	x=${1:-1024}
-#	y=${2:-768}
+	type=${1:-"dvd"}
+set -o xtrace
+	scaler $1
+	firstfile=${2:-"SAM_0000.JPG"}
 	let row=300
 	let rowincrement=300
 	let pointsize=324
+	let shrinkby=120
+	if [[ "dvd" == "$type" ]]
+	then
+		let row=100
+		let rowincrement=100
+		let pointsize=108
+		let shrinkby=40
+	fi
 
-    	crop=($(head -1 crop.cfg)) # left, top, right, bottom 
-    	let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
-    	let height=$((${crop[3]} - ${crop[1]})) # (top - bottom)/2 + top
-
-	convert $firstfile -crop ${width}x${height}+${crop[0]}+${crop[1]} underlay.jpg
+	convert $firstfile -crop ${width}x${height}+${crop[0]}+${crop[1]} -scale ${scaleX}x${scaleY} underlay.jpg
 
 	for font in "URW-Chancery-Medium-Italic"
 	#for font in `cat fonts.txt`
 	do
-			cmd="convert -size ${width}x${height} -background none xc:transparent -font $font"
+			cmd="convert -size ${scaleX}x${scaleY} -background none xc:transparent -font $font"
 			cmd=$cmd$(cat title.txt | while read line
 			do
 				if [[ "=" == "$line" ]]
 				then
-					((pointsize-=120))
-					((rowincrement-=120))
+					((pointsize-=$shrinkby))
+					((rowincrement-=$shrinkby))
 					continue
 				fi
 				echo " -pointsize $pointsize"
@@ -172,11 +201,19 @@ gentitle()
 				((row+=rowincrement))
 			done
 			)" title_${font}.png"
-			echo $cmd
-			echo composite -gravity center title_${font}.png underlay.jpg title.jpg
-			echo rm title_${font}.png
-			echo rm underlay.jpg
+			echo $cmd | sh
+			composite -gravity center title_${font}.png underlay.jpg title000.jpg
+			rm title_${font}.png
+			rm underlay.jpg
+#			for ff in `seq 0 $numTitleFrames`
+#			do
+#				cp title000.jpg title`printf "%04u" $ff`.jpg
+#			done
 	done
+
+    	doCommand mplayer mf://title000.jpg -mf fps=.2  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg #-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY
+	mv stream.yuv title.yuv
+    	cat title.yuv | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 2 -f 0 -a 1 -b $bw -V 3000 -q 1 -o title.mpg
 }
 
 
@@ -192,12 +229,12 @@ done
 shift $((OPTIND-1))
 #echo $@
 case "$1" in 
-	title) gentitle $2 $3 ;;
+	title) gentitle $2 ;;
 	renumber) renumber $2 ;;
     preview) preview ;;
     genyuv) genyuv web; genyuv dvd; genyuv hd ;;
-    web) mpeg2 web ;;
-    dvd) mpeg2 dvd ;;
+    web) scaler web; gentitle web; mpeg2 web ;;
+    dvd) scaler dvd; gentitle dvd; mpeg2 dvd ;;
     hd) mpeg2 hd ;;
     mklinks) mklinks ;;
     mpeg2) mpeg2 web; mpeg2 dvd; mpeg2 hd ;;
