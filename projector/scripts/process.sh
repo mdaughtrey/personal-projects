@@ -154,25 +154,29 @@ mpeg2()
     then
         genyuv $1
     fi
-    if [[ ! -f title.yuv ]]
+    if [[ ! -f title.mpg ]]
     then
-	echo Need title.yuv
+	echo Need title.mpg
 	exit 1
     fi
-	cat stream_${1}.yuv | sed '1d' > stream2_${1}.yuv
-    cat title.yuv stream2_${1}.yuv  | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 2 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $(basename `pwd`)_${1}.mpg
+    cat stream_${1}.yuv  | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o content.mpg
+    cat title.mpg content.mpg >> $(basename `pwd`)_${1}.mpg
 }
 
 gentitle()
 {
+	if [[ ! -f title.txt ]]
+	then
+		echo No title.txt
+		exit 1
+	fi
 	type=${1:-"dvd"}
-set -o xtrace
-	scaler $1
+	scaler $type
 	firstfile=${2:-"SAM_0000.JPG"}
 	let row=300
 	let rowincrement=300
 	let pointsize=324
-	let shrinkby=120
+	#let shrinkby=120
 	if [[ "dvd" == "$type" ]]
 	then
 		let row=100
@@ -181,22 +185,25 @@ set -o xtrace
 		let shrinkby=40
 	fi
 
-	convert $firstfile -crop ${width}x${height}+${crop[0]}+${crop[1]} -scale ${scaleX}x${scaleY} underlay.jpg
+	convert $firstfile -crop ${width}x${height}+${crop[0]}+${crop[1]} -scale ${scaleX}x${scaleY} -blur 2x2 -sepia-tone '65%' underlay.jpg
 
 	for font in "URW-Chancery-Medium-Italic"
 	#for font in `cat fonts.txt`
 	do
-			cmd="convert -size ${scaleX}x${scaleY} -background none xc:transparent -font $font"
+			cmd="convert -size ${scaleX}x${scaleY} -background none xc:transparent -font $font "
 			cmd=$cmd$(cat title.txt | while read line
 			do
 				if [[ "=" == "$line" ]]
 				then
-					((pointsize-=$shrinkby))
-					((rowincrement-=$shrinkby))
+					#((pointsize-=$shrinkby))
+					#((rowincrement-=$shrinkby))
+					((pointsize/=2))
+					((rowincrement/=2))
 					continue
 				fi
 				echo " -pointsize $pointsize"
-				echo ' -fill black -stroke yellow -strokewidth 2' | tr -d '\n'
+				#echo ' -fill blue -stroke black -strokewidth 1' | tr -d '\n'
+				echo ' -fill blue' | tr -d '\n'
 				echo " -draw " '"' "text 40,$row" "'""$line""'"'"' | tr -d '\n'
 				((row+=rowincrement))
 			done
@@ -205,15 +212,11 @@ set -o xtrace
 			composite -gravity center title_${font}.png underlay.jpg title000.jpg
 			rm title_${font}.png
 			rm underlay.jpg
-#			for ff in `seq 0 $numTitleFrames`
-#			do
-#				cp title000.jpg title`printf "%04u" $ff`.jpg
-#			done
 	done
 
     	doCommand mplayer mf://title000.jpg -mf fps=.2  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg #-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY
 	mv stream.yuv title.yuv
-    	cat title.yuv | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 2 -f 0 -a 1 -b $bw -V 3000 -q 1 -o title.mpg
+    	cat title.yuv | yuvfps -r 25:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o title.mpg
 }
 
 
