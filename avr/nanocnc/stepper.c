@@ -27,8 +27,8 @@ s08 stepSequence;
 
 void coilState(u08 state)
 {
-    uart_send_hex_byte(state);
-    uart_send_buffered(' ' );
+//    uart_send_hex_byte(state);
+//    uart_send_buffered(' ' );
     switch (state)
     {
     case 0: 
