@@ -6,12 +6,9 @@
 #include <typedefs.h>
 #include <stepper.h>
 
-
-
 const u08 StrIAmAlive [] PROGMEM = "I am alive.\r\n";
 const u08 StrIAwait [] PROGMEM = "I await.\r\n";
 
-#define STRING(str) uart_string_buffered(str, sizeof(str));
 
 void delay20ms(unsigned char count)
 {
@@ -29,6 +26,7 @@ void main(void)
     sei();
 
     u08 promptCount = 0;
+    s08 state = 0;
 
     STRING(StrIAmAlive);
 
@@ -38,15 +36,23 @@ void main(void)
 
         switch (data)
         {
+            case '=': state = nextState(state); coilState(state); break;
+            case '-': state = prevState(state); coilState(state);break;
             case 'a': coilAForward(); break;
-            case 'A': coilABackward(); break;
             case 'b': coilBForward(); break;
+            case 'A': coilABackward(); break;
             case 'B': coilBBackward(); break;
-            case ']': stepper1Forward(); break;
-            case '[': stepper1Back(); break;
+            case ']': stepForward(1); break;
+            case '[': stepBack(1); break;
             case 'x': coilAOff(); coilBOff(); break;
             case '>': stepForward(10); break;
             case '<': stepBack(10); break;
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+                      coilState(data - '0');
+                      break;
         }
     }
 }

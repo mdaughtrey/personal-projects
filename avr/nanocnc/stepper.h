@@ -15,6 +15,8 @@ void coilAOff(void);
 void coilBOff(void);
 void stepForward(s08 count);
 void stepBack(s08 count);
+u08 nextState(s08 state);
+u08 prevState(s08 state);
 
 #endif // INCLUDE_STEPPER
 

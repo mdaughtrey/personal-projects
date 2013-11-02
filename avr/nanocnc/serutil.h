@@ -17,6 +17,7 @@ void uart_send_buffered(u08 data);
 //void uart_send_hex_byte(u08 byte);
 
 
+#define STRING(str) uart_string_buffered(str, sizeof(str));
 
 #endif /* __SERUTIL_H */
 
