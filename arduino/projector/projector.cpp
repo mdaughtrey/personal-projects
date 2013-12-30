@@ -8,17 +8,21 @@ enum
     NEXT,
     PREVIOUS
 };
+#define false 0
+#define true 1
 
-int led = 13;
 int camera = 12;
 int motorFwd = 11;
 int motorReverse = 10;
 int lamp = 9;
+int tagLed = 8;
 int sensor = 6;
 int direction = STOP;
 int advanceCount = 0;
 int irThreshold = 50;
 int irData = 0;
+bool tagMode = false;
+bool tagLedState = false;
 
 void setup ()
 {
@@ -29,6 +33,7 @@ void setup ()
     pinMode(camera, OUTPUT);
     pinMode(motorFwd, OUTPUT);
     pinMode(motorReverse, OUTPUT);
+    pinMode(tagLed, OUTPUT);
 
     digitalWrite(sensor, HIGH);
     pinMode(sensor, INPUT);
@@ -37,6 +42,7 @@ void setup ()
     digitalWrite(camera, HIGH);
     digitalWrite(motorFwd, HIGH);
     digitalWrite(motorReverse, HIGH);
+    digitalWrite(tagLed, HIGH); 
 }
 
 void help()
@@ -52,6 +58,8 @@ void help()
         Serial.println("p - previous 3 stops");
         Serial.println("r - reverse freerunning");
         Serial.println("s - motor stop");
+        Serial.println("t - tag mode on");
+        Serial.println("T - tag mode Off");
 }
 
 void loop ()
@@ -100,6 +108,15 @@ void loop ()
 
             case 'r': // reverse
                 direction = REVERSE;
+                break;
+
+            case 't': // tag mode on
+                tagMode = true;
+                advanceCount = 3;
+                break;
+
+            case 'T': // tag mode off
+                tagMode = false;
                 break;
 
             case 'p': // previous
@@ -161,6 +178,24 @@ void loop ()
         irData <<= 1;
         irData |= 1;
     }
+
+    if (irData == 0x0f && tagMode == true && FORWARD == direction)
+    {
+        if (--advanceCount <= 0)
+        {
+            if (true == tagLedState)
+            {
+                digitalWrite(tagLed, LOW);
+            }
+            else
+            {
+                digitalWrite(tagLed, HIGH);
+            }
+            tagLedState = !tagLedState;
+            advanceCount = 3;
+        }
+        return;
+    } 
 
     if (irData == 0x0f && (NEXT == direction || PREVIOUS == direction))
     {
