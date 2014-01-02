@@ -47,7 +47,8 @@ TARGET=projector
 # $Id$
 
 #/dev/tty.usbserial-A501RN1O
-PORT = /dev/tty.usbserial-A501RN1O
+#PORT = /dev/tty.usbserial-A501RN1O
+PORT = /dev/ttyUSB0
 
 ARDUINO = ../core/
 SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
