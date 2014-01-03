@@ -25,13 +25,17 @@
 #include <serutil.h>
 #include <util/delay.h>
 #include <typedefs.h>
+
+#include <stdio.h>
 //#include <cmdproc.h>
 
 /* #define F_CPU            8000000      /\* 4Mhz *\/ */
 #define UART_BAUD_RATE      9600
 
 #define UART_BAUD_SELECT (F_CPU/(UART_BAUD_RATE*16l)-1)
-#define BUFFERSIZE 8 
+#define BUFFERSIZE 16 
+
+const u08 StrCrLf [] PROGMEM = "\r\n";
 
 u08 hexTable[16] PROGMEM = "0123456789abcdef";
 //extern u08 hexTable[16];
@@ -206,3 +210,26 @@ void uart_send_hex_byte(u08 byte)
   uart_send_buffered(pgm_read_byte_near(hexTable + ((byte & 0xf0) >> 4)));
   uart_send_buffered(pgm_read_byte_near(hexTable + (byte & 0x0f)));
 }
+
+void uart_send_ram_string(char * str)
+{
+    while (*str)
+    {
+        uart_send_buffered(*str);
+        str++;
+    }
+}
+
+void uart_send_u16(u16 u)
+{
+    char buffer[6];
+    sprintf(buffer, "%u", u);
+    uart_send_ram_string(buffer);
+}
+
+void uart_crlf(void)
+{
+    STRING(StrCrLf);
+}
+
+

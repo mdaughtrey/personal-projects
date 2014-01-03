@@ -1,6 +1,7 @@
 OBJS=uploader.o
 
-EVM=../embedvm/simple
+#EVM=../embedvm/simple
+EVM=../embedvm/spiral
 MAIN_OFFSET=$(shell grep main ${EVM}.sym | cut -d' ' -f1)
 #BIN_OFFSET=$(shell grep '(code)$' ${EVM}.sym | head -1 | cut -d' ' -f1)
 BIN_OFFSET=$(shell grep "(code)" ${EVM}.sym | head -1 | cut -d' ' -f1)

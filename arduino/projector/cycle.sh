@@ -11,7 +11,7 @@ let count=$1
 while ((count > 0))
 do
     echo $count frames remaining
-    echo C > $USBDEV
+    echo C | tr -d '\r\n'  > $USBDEV
     sleep 2
     ((count--))
 done

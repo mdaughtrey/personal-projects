@@ -1,17 +1,12 @@
 #!/usr/bin/python
 
-
-
+import math
 import pdb
-import Logo
 
-def main():
-#    pdb.set_trace()
-    logo = Logo.Logo()
-    logo.turnRight(90)
-    for xx in range(0,180):
-        logo.walk(2)
-        logo.turnRight(2)
+x = 0
+y = 0
 
-main()
-
+for deg in range(0, 360):
+    x = math.sin(math.radians(deg)) + x
+    y = math.cos(math.radians(deg)) + y
+    print "goto %u %u 0\r" % (x, y)

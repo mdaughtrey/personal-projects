@@ -1,3 +1,4 @@
+#include <avr/io.h>
 #include <vminterface.h>
 //#include <avr/pgmspace.h>
 #include <embedvm2.h>
@@ -9,13 +10,13 @@
 #endif
 #include <serutil.h>
 //#define VMI_DEBUG 1
-
 u16 binOffset;
 u16 mainOffset;
 unsigned char memory[RAM_SIZE];
 //unsigned char memory[RAM_SIZE] = {0};
 //unsigned char eeprom[ROM_SIZE] PROGMEM;
 extern unsigned char programControl;
+extern volatile unsigned char delayCount;
 
 struct embedvm_s vm = {
     0xffff, RAM_SIZE, RAM_SIZE, NULL,
@@ -99,6 +100,12 @@ int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv)
         uart_send_buffered('\n');
 #endif // VMI_DEBUG
         cmd_dataHandler(tmp);
+    }
+
+    if (funcid == 2)
+    {
+        delayCount = tmp;
+        TIMSK0 |= _BV(TOIE0); // turn on timer interrupt
     }
     return 0;
 //

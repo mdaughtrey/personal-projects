@@ -2,14 +2,11 @@
 
 import sys
 import serial
-import time
 import re
 import pdb
 
-CIRCLE_DIA = 10 # pixels
-
 def openDevice():
-    dev = serial.Serial('/dev/tty.usbserial-A4001g2G', 9600, timeout=0.1) 
+    dev = serial.Serial('/dev/tty.usbserial-A4001g2G', 9600, timeout=0.01) 
     return dev
 
 def expect(string):
@@ -18,7 +15,7 @@ def expect(string):
 
 def main():
     try:
-# pdb.set_trace()
+#        pdb.set_trace()
         dev = openDevice()
         dev.write("i\r");
         dev.write("zc");

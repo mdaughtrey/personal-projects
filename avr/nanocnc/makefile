@@ -1,4 +1,4 @@
-TARGET=projector
+TARGET=nanocnc
 HWTARGET=atmega169
 INCLUDES=-I. -I/usr/lib/avr/include/avr
 LIBPATH=-L/usr/avr/lib
@@ -18,7 +18,7 @@ OBJS=main.o serutil.o stepper.o
 all: clean $(TARGET).hex
 
 $(TARGET).hex: $(MAKEFILE) $(TARGET).out
-	$(OBJCOPY) -j .text -O ihex $(TARGET).out $(TARGET).hex
+	$(OBJCOPY) -j .text -j .data -O ihex $(TARGET).out $(TARGET).hex
 
 $(TARGET).out: $(MAKEFILE) $(OBJS)
 	$(CC) -o $(TARGET).out $(CFLAGS) -Wl,-Map,$(TARGET).map $(OBJS) $(LIBS)

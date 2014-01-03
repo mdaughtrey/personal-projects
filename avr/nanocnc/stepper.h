@@ -3,20 +3,30 @@
 
 #include <typedefs.h>
 
+
 void stepperInit(void);
-void stepper1Forward(void);
-void stepper1Back(void);
-void stepper1Stop(void);
-void coilAForward(void);
-void coilABackward(void);
-void coilBForward(void);
-void coilBBackward(void);
-void coilAOff(void);
-void coilBOff(void);
-void stepForward(s08 count);
-void stepBack(s08 count);
-u08 nextState(s08 state);
-u08 prevState(s08 state);
+void stepForward(void);
+void stepBack(void);
+void stepLeft(void);
+void stepRight(void);
+void stepOff(void);
+void stepGoto(s16 x, s16 y, s16 z);
+void stepSetZero(void);
+void stepReportAxes(void);
+
+void coilAxisXAOff(void);
+void coilAxisXAForward(void);
+void coilAxisXABack(void);
+void coilAxisXBOff(void);
+void coilAxisXBForward(void);
+void coilAxisXBBack(void);
+
+void coilAxisYAOff(void);
+void coilAxisYAForward(void);
+void coilAxisYABack(void);
+void coilAxisYBOff(void);
+void coilAxisYBForward(void);
+void coilAxisYBBack(void);
 
 #endif // INCLUDE_STEPPER
 
