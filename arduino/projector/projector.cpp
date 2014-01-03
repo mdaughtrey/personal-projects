@@ -8,12 +8,10 @@ enum
     NEXT,
     PREVIOUS
 };
-#define false 0
-#define true 1
 
 int camera = 12;
-int motorFwd = 11;
-int motorReverse = 10;
+int motorFwd = 10;
+int motorReverse = 11;
 int lamp = 9;
 int tagLed = 8;
 int sensor = 6;
@@ -28,7 +26,6 @@ void setup ()
 {
     direction = STOP;
     advanceCount = 0;
-//    pinMode(led, OUTPUT);
     pinMode(lamp, OUTPUT);
     pinMode(camera, OUTPUT);
     pinMode(motorFwd, OUTPUT);
@@ -71,7 +68,6 @@ void loop ()
             case '?': // help
                 help();
                 break;
-
 
             case 'l': // lamp on
                 digitalWrite(lamp, LOW);
@@ -124,12 +120,13 @@ void loop ()
                 advanceCount = 3;
                 break;
 
-
             case 's': // stop
                 direction = STOP;
+                digitalWrite(tagLed, HIGH);
                 break;
 
             case 'x': // all stop
+                digitalWrite(tagLed, HIGH);
                 direction = STOP;
                 digitalWrite(lamp, HIGH);
                 digitalWrite(camera, HIGH);
