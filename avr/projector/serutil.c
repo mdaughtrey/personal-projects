@@ -23,50 +23,74 @@
 #include <avr/interrupt.h>
 #include <avr/pgmspace.h>
 #include <serutil.h>
+#include <util/delay.h>
+//#include <cmdproc.h>
 
+/* #define F_CPU            8000000      /\* 4Mhz *\/ */
+#define UART_BAUD_RATE      9600
 
-#define UART_BAUD_RATE  38400
 #define UART_BAUD_SELECT (F_CPU/(UART_BAUD_RATE*16l)-1)
+#define BUFFERSIZE 8 
 
-
-//u08 hexTable[16] PROGMEM = "0123456789abcdef";
+u08 hexTable[16] PROGMEM = "0123456789abcdef";
+//extern u08 hexTable[16];
 
 /* uart globals */
 //static volatile u08 *uart_data_ptr = 0;
 //static volatile u08 uart_counter = 0;
-//#define RXBUFFERSIZE 8
-//u08 dataRxBuffer[RXBUFFERSIZE];
-//volatile u08 rxHead;
-//volatile u08 rxTail;
+/* volatile u08 dataRx; */
+/* volatile u08 dataRxFlag; */
+volatile u08 rxBuffer[BUFFERSIZE];
+volatile u08 txBuffer[BUFFERSIZE];
+volatile u08 rxHead = 0;
+volatile u08 rxTail = 0;
+volatile u08 txHead = 0;
+volatile u08 txTail = 0;
 
-/* signal handler for tx complete interrupt */
-//ISR(USART0_UDRE_vect)
+
+//void uart_TXISR(void)
 //{
-//        if (uart_counter)
-//        {
-//                UDR = pgm_read_byte_near(uart_data_ptr);
-//                uart_data_ptr++;
-//                uart_counter--;
-//                return;
-//        }
-//        UCSRB &= ~_BV(UDRIE);
+//  if (--uart_counter)
+//    {
+//      UDR = pgm_read_byte_near(uart_data_ptr++);
+//    }
+//  else
+//    {
+//      UCSRB &= ~_BV(TXCIE);
+//    }
 //}
 
-/* signal handler for rx complete interrupt */
-//ISR(USART0_RX_vect)
-//{
-//    dataRxBuffer[rxTail++] = UDR;
-//    rxTail &= (RXBUFFERSIZE - 1);
-//}
+/* signal handler for receive complete interrupt */
+ISR(USART0_RX_vect)
+{
+  rxBuffer[rxHead++] = UDR;
+  rxHead &= (BUFFERSIZE - 1);
+}
+
+ISR(USART0_UDRE_vect)
+{
+    UDR = txBuffer[txTail];
+    txTail++;
+    txTail &= (BUFFERSIZE - 1);
+    if (txTail == txHead)
+    {
+        UCSRB &= ~_BV(UDRIE);
+    }
+}
 
 u16 uart_get_buffered (void)
 {
-  u16 result = 0;
-  while (UCSRA & _BV(RXC))
-  {
-      result = UDR | 0x0100;
-  }
-  return result;
+    u16 result = 0;
+
+    if (rxTail != rxHead) 
+    { 
+        cli();
+        result = rxBuffer[rxTail++] | 0x0100;
+        rxTail &= (BUFFERSIZE - 1);
+
+        sei();
+    } 
+    return result;
 }
 
 //void uart_send_char (u08 character)
@@ -75,16 +99,22 @@ u16 uart_get_buffered (void)
 //  loop_until_bit_is_set(UCSRA, UDRE);
 //  UDR = character;
 //}
-//
+
 //void uart_send_async (u08 *buf, u08 size)
 //{
-//  while (uart_counter);
-//  loop_until_bit_is_set(UCSRA, UDRE);
-//  uart_counter = size;
-//  uart_data_ptr = buf;
-//  UCSRB |= _BV(UDRIE);
-//}
+//    while (uart_counter);
+//    loop_until_bit_is_set(UCSRA, UDRE);
 //
+//    uart_counter = size - 1;
+//    uart_data_ptr = buf + 1;
+//    if (size > 1)
+//    {
+//        /*       sbi(UCSRB, TXCIE); */
+//        UCSRB |= _BV(TXCIE);
+//    }
+//    UDR = pgm_read_byte_near(buf);
+//}
+
 //void uart_send_sync(u08 *buf, u08 size)
 //{ 
 //  while (uart_counter);
@@ -98,23 +128,85 @@ u16 uart_get_buffered (void)
 //      size--;
 //    }
 //}
-// 
-void uart_init(void)
+
+void uart_set_buffered(u08 data)
 {
-//  uart_counter = 0;
-//  rxHead = 0;
-//  rxTail = 0;
-
-  /* set baud rate */
-  UBRR = UART_BAUD_SELECT;
-
-  //  UCSRC = 0x0;
-  UCSRB = _BV(RXEN);
-  //UCSRB = _BV(RXCIE) | _BV(RXEN) | _BV(TXEN);
+    rxBuffer[rxHead++] = data;
+    rxHead &= (BUFFERSIZE - 1);
 }
 
-//void uart_send_hex_byte(u08 byte)
-//{
-//  uart_send_char(pgm_read_byte_near(hexTable + ((byte & 0xf0) >> 4)));
-//  uart_send_char(pgm_read_byte_near(hexTable + (byte & 0x0f)));
-//}
+void uart_init(void)
+{
+    UBRR = UART_BAUD_SELECT;
+    UCSRB = _BV(RXCIE) | _BV(RXEN) | _BV(TXEN);
+}
+
+
+void uart_test(void)
+{
+    UBRR = UART_BAUD_SELECT;
+    UCSRB = _BV(RXEN) | _BV(TXEN);
+    UCSRC = _BV(UCSZ0) | _BV(UCSZ1);
+
+    int data;
+    while (1)
+    {
+        //jfor (data = 0; data < 0x80; data++)
+        //{
+        //UDR = data & 0x0f;
+        //delay20ms(20);
+        //}
+        //continue;
+        //loop_until_bit_is_set(UCSRA, RXC);
+        //data = UDR;
+            loop_until_bit_is_set(UCSRA, UDRE);
+            UDR = 'm';
+        //}
+    }
+}
+
+void dumpQueue(void)
+{
+    u08 ii;
+    UDR = '\r';
+    while (!(UCSRA & _BV(UDRE)));
+    UDR = '\n';
+    while (!(UCSRA & _BV(UDRE)));
+    for (ii = 0; ii < BUFFERSIZE; ii++)
+    {
+        UDR = '0' + ii;
+        while (!(UCSRA & _BV(UDRE)));
+        UDR = txBuffer[ii];
+        while (!(UCSRA & _BV(UDRE)));
+    }
+    UDR = 't';
+    while (!(UCSRA & _BV(UDRE)));
+    UDR = '0' + txTail;
+    while (!(UCSRA & _BV(UDRE)));
+    UDR = '0' + txHead;
+    while (!(UCSRA & _BV(UDRE)));
+    UDR = '\r';
+    while (!(UCSRA & _BV(UDRE)));
+    UDR = '\n';
+    while (!(UCSRA & _BV(UDRE)));
+}
+
+void uart_send_buffered(u08 data)
+{
+    txBuffer[txHead] = data;
+    u08 tempHead = txHead;
+    tempHead++;
+    tempHead &= (BUFFERSIZE - 1);
+    while (tempHead == txTail) ;
+    cli();
+    txHead = tempHead;
+//    dumpQueue();
+    sei();
+    UCSRB |= _BV(UDRIE);
+}
+
+void uart_send_hex_byte(u08 byte)
+{
+  uart_send_buffered(pgm_read_byte_near(hexTable + ((byte & 0xf0) >> 4)));
+  uart_send_buffered(pgm_read_byte_near(hexTable + (byte & 0x0f)));
+}

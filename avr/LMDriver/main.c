@@ -21,8 +21,8 @@
 
 
 u08 disploop = 1;
-u08 programControl = 1;
-volatile unsigned char delayCount = 16;
+u08 programControl = 0;
+volatile unsigned char delayCount = 0;
 extern u16 binOffset;
 extern u16 mainOffset;
 //
@@ -38,8 +38,8 @@ ISR(TIMER0_OVF_vect)
     }
     else
     {
-        delayCount = 16;
-//        TIMSK0 &= ~_BV(TOIE0); // turn off timer interrupt
+//        delayCount = 16;
+        TIMSK0 &= ~_BV(TOIE0); // turn off timer interrupt
     }
 }
 
@@ -78,13 +78,19 @@ int main(void)
     
 
     cmdInit();			/* init command processor */
+    // TODO temp for safety
+    programControl = 0;
     spi_init();   	/* init serial peripheral interface */
     uart_init();
+
+    TCNT0 = 0;
+    TCCR0A |= _BV(CS02);
     
     sei();
     dm_init();			/* init displaymux */
     u16 data = 0;
     count = 0;
+
 
 #ifdef EMBEDVM
     vminterface_init();
@@ -95,7 +101,6 @@ int main(void)
 //    uart_send_buffered('\r');
 //    uart_send_buffered('\n');
     embedvm_interrupt(mainOffset);
-    programControl = 0;
 #endif // EMBEDVM
 
     while (1)
@@ -104,8 +109,8 @@ int main(void)
         count++;
 #ifdef EMBEDVM
 //        if (!(count & 0x0f))
-        if (!(count & 0x0f) && programControl)
-        //if (programControl)
+//        if (!(count & 0x05) && programControl)
+        if (programControl && !delayCount)
         {
 //            uart_send_buffered('x');
             embedvm_exec();

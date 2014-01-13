@@ -24,8 +24,7 @@ $(TARGET).out: $(MAKEFILE) $(OBJS)
 	$(CC) -o $(TARGET).out $(CFLAGS) -Wl,-Map,$(TARGET).map $(OBJS) $(LIBS)
 
 writefuse: 
-#	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -Ulfuse:w:0xe2:m
-	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m
+	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0x62:m 
 	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
 
 erase:

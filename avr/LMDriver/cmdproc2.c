@@ -409,6 +409,8 @@ void cmd_dataHandler(u08 cmdInput)
                 break;
 
             case CMD_UPLOAD:
+                programControl = 0;
+                eeprom_write_byte((uint8_t*)EEPROM_OFFSET_PROGRAM_CONTROL, 0);
                 cpState = UPLOAD_LENGTH_MSB;
                 break;
 

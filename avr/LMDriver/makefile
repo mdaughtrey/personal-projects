@@ -51,8 +51,8 @@ mmreadfuse:
 
 writefuse: 
 	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m
-	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd1:m
-#	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
+	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd1:m # dont erase eeprom
+#	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m # erase eeprom
 
 erase:
 	avrdude -qq -C /etc/avrdude.conf -c usbtiny -p m169 -e

@@ -1,10 +1,11 @@
 TARGET=vmhost
-OBJS=embedvmhost.o embedvm.o decoder.o
+OBJS=vminterface.o ../embedv2m.o decoder.o main.o
+//OBJS=main.o
 DEFINES=-DDEBUGOUT
 INCLUDES=-I. -I..
 EVMCOMP=trunk/tools/evmcomp
-TEST=simple
-#TEST=spiral
+#TEST=simple
+TEST=spiral
 #TEST=inctest
 TESTEVM=${TEST}.evm
 TESTEVMBIN=${TEST}.bin

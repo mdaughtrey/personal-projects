@@ -1,5 +1,5 @@
 #include <WProgram.h>
-
+#pragma GCC diagnostic ignored "-Wwrite-strings"
 enum
 {
     STOP,
@@ -9,34 +9,83 @@ enum
     PREVIOUS
 };
 
-int led = 13;
+enum
+{
+    CYCLE_IDLE,
+    CYCLE_LAMPON,
+    CYCLE_SHUTTER,
+    CYCLE_LAMPOFF,
+    CYCLE_NEXT
+};
+
 int camera = 12;
-int motorFwd = 11;
-int motorReverse = 10;
+int motorFwd = 10;
+int motorReverse = 11;
 int lamp = 9;
+int tagLed = 8;
 int sensor = 6;
 int direction = STOP;
 int advanceCount = 0;
 int irThreshold = 50;
 int irData = 0;
+bool tagMode = false;
+bool tagLedState = false;
+int cycleState = CYCLE_IDLE;
+
+void lampOn()
+{
+    digitalWrite(lamp, LOW);
+}
+
+void lampOff()
+{
+    digitalWrite(lamp, HIGH);
+}
+
+void motorForward()
+{
+    digitalWrite(motorFwd, LOW);
+    digitalWrite(motorReverse, HIGH);
+}
+
+void motorBack()
+{
+    digitalWrite(motorFwd, HIGH);
+    digitalWrite(motorReverse, LOW);
+}
+
+void motorStop()
+{
+    digitalWrite(motorFwd, HIGH);
+    digitalWrite(motorReverse, HIGH);
+}
+
+void shutter()
+{
+    digitalWrite(camera, LOW);
+    delay(200);
+    digitalWrite(camera, HIGH);
+}
 
 void setup ()
 {
     direction = STOP;
     advanceCount = 0;
-//    pinMode(led, OUTPUT);
     pinMode(lamp, OUTPUT);
     pinMode(camera, OUTPUT);
     pinMode(motorFwd, OUTPUT);
     pinMode(motorReverse, OUTPUT);
+    pinMode(tagLed, OUTPUT);
 
     digitalWrite(sensor, HIGH);
     pinMode(sensor, INPUT);
     Serial.begin(57600);
-    digitalWrite(lamp, HIGH);
+    lampOff();
     digitalWrite(camera, HIGH);
     digitalWrite(motorFwd, HIGH);
     digitalWrite(motorReverse, HIGH);
+    digitalWrite(tagLed, HIGH); 
+    motorStop();
 }
 
 void help()
@@ -45,6 +94,7 @@ void help()
         Serial.println("a - advance 1 step");
         Serial.println("b - backstep 1 step");
         Serial.println("c - camera");
+        Serial.println("C - cycle");
         Serial.println("f - forward freerunning");
         Serial.println("l - lamp on");
         Serial.println("L - lamp off");
@@ -52,31 +102,67 @@ void help()
         Serial.println("p - previous 3 stops");
         Serial.println("r - reverse freerunning");
         Serial.println("s - motor stop");
+        Serial.println("t - tag mode on");
+        Serial.println("T - tag mode Off");
 }
 
 void loop ()
 {
+    switch (cycleState)
+    {
+        case CYCLE_IDLE:
+            break;
+
+        case CYCLE_LAMPON:
+            lampOn();
+            delay(200);
+            cycleState = CYCLE_SHUTTER;
+            break;
+
+        case CYCLE_SHUTTER:
+            shutter();
+            delay(500);
+            cycleState = CYCLE_LAMPOFF;
+            break;
+
+        case CYCLE_LAMPOFF:
+            lampOff();
+            cycleState = CYCLE_NEXT;
+            direction = NEXT;
+            advanceCount = 3;
+            break;
+
+        case CYCLE_NEXT:
+            break;
+
+    }
     if (Serial.available())
     {
+        if (CYCLE_IDLE != cycleState)
+        {
+            cycleState = CYCLE_IDLE;
+            return;
+        }
         switch (Serial.read())
         {
             case '?': // help
                 help();
                 break;
 
-
             case 'l': // lamp on
-                digitalWrite(lamp, LOW);
+                lampOn();
                 break;
 
             case 'L':  // lamp off
-                digitalWrite(lamp, HIGH);
+                lampOff();
                 break;
 
             case 'c': // camera 
-                digitalWrite(camera, LOW);
-                delay(200);
-                digitalWrite(camera, HIGH);
+                shutter();
+                break;
+
+            case 'C': // cycle 
+                cycleState = CYCLE_LAMPON;
                 break;
 
             case 'f': // forward
@@ -102,39 +188,45 @@ void loop ()
                 direction = REVERSE;
                 break;
 
+            case 't': // tag mode on
+                tagMode = true;
+                advanceCount = 3;
+                break;
+
+            case 'T': // tag mode off
+                tagMode = false;
+                break;
+
             case 'p': // previous
                 direction = PREVIOUS;
                 advanceCount = 3;
                 break;
 
-
             case 's': // stop
                 direction = STOP;
+                digitalWrite(tagLed, HIGH);
                 break;
 
             case 'x': // all stop
+                digitalWrite(tagLed, HIGH);
                 direction = STOP;
-                digitalWrite(lamp, HIGH);
+                lampOff();
+                motorStop();
                 digitalWrite(camera, HIGH);
-                digitalWrite(motorFwd, HIGH);
-                digitalWrite(motorReverse, HIGH);
                 break;
         }
-        if (FORWARD == direction || NEXT == direction)
-        {
-            digitalWrite(motorFwd, LOW);
-            digitalWrite(motorReverse, HIGH);
-        }
-        else if (REVERSE == direction || PREVIOUS == direction)
-        {
-            digitalWrite(motorFwd, HIGH);
-            digitalWrite(motorReverse, LOW);
-        }
-        else
-        {
-            digitalWrite(motorFwd, HIGH);
-            digitalWrite(motorReverse, HIGH);
-        }
+    }
+    if (FORWARD == direction || NEXT == direction)
+    {
+        motorForward();
+    }
+    else if (REVERSE == direction || PREVIOUS == direction)
+    {
+        motorBack();
+    }
+    else
+    {
+        motorStop();
     }
 
     if (digitalRead(sensor))
@@ -162,14 +254,34 @@ void loop ()
         irData |= 1;
     }
 
+    if (irData == 0x0f && tagMode == true && FORWARD == direction)
+    {
+        if (--advanceCount <= 0)
+        {
+            if (true == tagLedState)
+            {
+                digitalWrite(tagLed, LOW);
+            }
+            else
+            {
+                digitalWrite(tagLed, HIGH);
+            }
+            tagLedState = !tagLedState;
+            advanceCount = 3;
+        }
+        return;
+    } 
+
     if (irData == 0x0f && (NEXT == direction || PREVIOUS == direction))
     {
         if (--advanceCount <= 0)
         {
             direction = STOP;
-            // motor off
-            digitalWrite(motorFwd, HIGH);
-            digitalWrite(motorReverse, HIGH);
+            motorStop();
+            if (CYCLE_NEXT == cycleState)
+            {
+                cycleState = CYCLE_IDLE;
+            }
         }
     }
 }

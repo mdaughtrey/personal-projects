@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <embedvm.h>
+#include <embedvm2.h>
 #include <cmdproc2.h>
 #ifndef EMBEDDED
 #include <sys/time.h>
@@ -17,19 +17,7 @@ struct timeval pauseStart;
 
 extern volatile unsigned char delayCount;
 
-//typedef enum
-//{
-//    INTERPRETER = 0,
-//    EMIT_VAR,
-//    EMIT_CONST,
-//    PAUSE_MS,
-//    PAUSE_S
-//} StateType;
-//
-//StateType iState;
-//unsigned char length;
 unsigned short remaining;
-//unsigned short stateLocation;
 bool stop = false;
 
 int outDev;
@@ -39,20 +27,21 @@ unsigned char * memory;
 //unsigned char memory[RAM_SIZE] = {0};
 unsigned short msTick;
 unsigned char inDelay = 0;
+u16 mainOffset;
 
 #define UNUSED __attribute__((unused))
 
-static int16_t mem_read(uint16_t addr, bool is16bit, void *ctx UNUSED);
-static void mem_write(uint16_t addr, int16_t value, bool is16bit, void *ctx UNUSED);
-static int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv, void *ctx UNUSED);
-static int8_t rom_read(uint16_t addr, void *ctx UNUSED);
+int16_t mem_read(uint16_t addr, bool is16bit);
+void mem_write(uint16_t addr, int16_t value, bool is16bit);
+int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv);
+int8_t rom_read(uint16_t addr);
 
 struct embedvm_s vm = {
-    0xffff, RAM_SIZE, RAM_SIZE, NULL,
-	&mem_read, &mem_write, &call_user, &rom_read
+    0xffff, RAM_SIZE, RAM_SIZE, NULL
+//	&mem_read, &mem_write, &call_user, &rom_read
 };
 
-static int16_t mem_read(uint16_t addr, bool is16bit, void *ctx UNUSED)
+int16_t mem_read(uint16_t addr, bool is16bit)
 {
 	if (is16bit)
     {
@@ -61,7 +50,7 @@ static int16_t mem_read(uint16_t addr, bool is16bit, void *ctx UNUSED)
 	return memory[addr];
 }
 
-static void mem_write(uint16_t addr, int16_t value, bool is16bit, void *ctx UNUSED)
+void mem_write(uint16_t addr, int16_t value, bool is16bit)
 {
 	if (is16bit)
     {
@@ -74,7 +63,7 @@ static void mem_write(uint16_t addr, int16_t value, bool is16bit, void *ctx UNUS
     }
 }
 
-static int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv, void *ctx UNUSED)
+int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv)
 {
 	int i;
     char  tmp;
@@ -112,7 +101,7 @@ static int16_t call_user(uint8_t funcid, uint8_t argc, int16_t *argv, void *ctx 
 	return 0;
 }
 
-static int8_t rom_read(uint16_t addr, void *ctx UNUSED)
+int8_t rom_read(uint16_t addr)
 {
     return eeprom[addr];
 }
@@ -141,118 +130,6 @@ void doVm(struct embedvm_s *vm)
     }
 }
 
-//ISR(SIG_OVERFLOW0)
-//{
-//    if (msTick)
-//    {
-//        msTick--;
-//    }
-//}
-
-void doPauseMs(void)
-{
-//    unsigned short value = (readEeprom(ip) << 8) | readEeprom(ip + 1);
-//#ifdef EMBEDDED
-//    delayCount = value >> 4; // convert to 8ms intervals
-//    if (delayCount == 0)
-//    {
-//        delayCount = 1;
-//    }
-//    TIMSK0 |= _BV(TOIE0); // enable timer
-//#else // EMBEDDED
-////#ifdef STATEFUL
-//    remaining = value;
-//    iState = PAUSE_MS;
-//    gettimeofday(&pauseStart, NULL);
-////#else // STATEFUL
-////    usleep(value * 1000);
-////#endif // STATEFUL
-//#endif // EMBEDDED
-//    ip += 2;
-}
-
-void doPauseSecs(void)
-{
-//    unsigned short value = (readEeprom(ip) << 8) | readEeprom(ip + 1);
-//#ifdef EMBEDDED
-//    delayCount = value << 7; // convert to 8ms intervals
-//    if (delayCount == 0)
-//    {
-//        delayCount = 1;
-//    }
-//    TIMSK0 |= _BV(TOIE0); // enable timer
-//    // start the tick interrupt
-//#else // EMBEDDED
-////#ifdef STATEFUL
-//    remaining = value;
-//    iState = PAUSE_S;
-//    gettimeofday(&pauseStart, NULL);
-////#else // STATEFUL
-////    usleep(value * 1e6);
-////#endif // STATEFUL
-//#endif // EMBEDDED
-//    ip += 2;
-}
-
-void statePauseS(void)
-{
-//#ifdef EMBEDDED
-//    if (0 == delayCount)
-//    {
-//        iState = INTERPRETER;
-//    }
-//#else // EMBEDDED
-//    struct timeval timeNow;
-//    gettimeofday(&timeNow, NULL);
-//
-//    if ((timeNow.tv_sec - pauseStart.tv_sec) > remaining)
-//    {
-//#ifdef DEBUGOUT
-//#ifdef EMBEDDED
-//#else // EMBEDDED
-//    char txt[64];
-//    sprintf(txt, "statePauseS end\n");
-//    write(1, txt, strlen(txt));
-//#endif // EMBEDDED
-//#endif
-//    // start the tick interrupt
-//        iState = INTERPRETER;
-//    }
-//#endif // EMBEDDED
-}
-
-void statePauseMs()
-{
-//#ifdef EMBEDDED
-//    if (0 == delayCount)
-//    {
-//        iState = INTERPRETER;
-//    }
-//#else // EMBEDDED
-//    struct timeval timeNow;
-//    gettimeofday(&timeNow, NULL);
-//    int startedAt = pauseStart.tv_usec / 1000;
-//    int now = timeNow.tv_usec / 1000;
-//    if (timeNow.tv_sec > pauseStart.tv_sec)
-//    {
-//        now += 1000;
-//    }
-//
-//    if ((now - startedAt) > remaining)
-//    {
-//#ifdef DEBUGOUT
-//#ifdef EMBEDDED
-//#else // EMBEDDED
-//    char txt[64];
-//    sprintf(txt, "statePauseMs end\n");
-//    write(1, txt, strlen(txt));
-//#endif // EMBEDDED
-//#endif
-//    // start the tick interrupt
-//        iState = INTERPRETER;
-//    }
-//#endif // EMBEDDED
-}
 
 int main(int argc, char ** argv)
 {
@@ -285,7 +162,8 @@ int main(int argc, char ** argv)
     cfsetispeed(&termio, B38400);
     tcsetattr(outDev, TCSANOW, &termio);
 #endif
-	embedvm_interrupt(&vm, strtol(argv[2], NULL, 16));
+	//embedvm_interrupt(&vm, strtol(argv[2], NULL, 16));
+    embedvm_interrupt(16);
 	stop = false;
 	while (!stop)
     {

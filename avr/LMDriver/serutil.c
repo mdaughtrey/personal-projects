@@ -129,33 +129,16 @@ u16 uart_get_buffered (void)
 //    }
 //}
 
+void uart_set_buffered(u08 data)
+{
+  rxBuffer[rxHead++] = data;
+  rxHead &= (BUFFERSIZE - 1);
+}
+
 void uart_init(void)
 {
-  //uart_counter = 0;
-  //rxHead = 0;
-  //rxTail = 0;
-  //txHead = 0;
-  //txTail = 0;
-
-  /* set baud rate */
   UBRR = UART_BAUD_SELECT;
   UCSRB = _BV(RXCIE) | _BV(RXEN) | _BV(TXEN);
-  //UCSRB =  _BV(RXCIE) | _BV(TXCIE) | _BV(RXEN) | _BV(TXEN);
-
-//  sei();
-//  u08 data;
-//  while (1)
-//  {
-//  for (data = 'a'; data <= 'j'; data++)
-//  {
-//      uart_send_buffered(data);
-//  }
-//      _delay_ms(100);
-//      _delay_ms(100);
-//      _delay_ms(100);
-//      _delay_ms(100);
-//      _delay_ms(100);
-//  }
 }
 
 void dumpQueue(void)

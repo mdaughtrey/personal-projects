@@ -1,9 +1,5 @@
-#include <avr/io.h>
 #include <vminterface.h>
-//#include <avr/pgmspace.h>
-#include <embedvm2.h>
 #include <stddef.h>
-#include <avr/eeprom.h>
 
 #ifdef EMBEDDED
 #include <cmdproc.h>
@@ -17,6 +13,7 @@ unsigned char memory[RAM_SIZE];
 //unsigned char eeprom[ROM_SIZE] PROGMEM;
 extern unsigned char programControl;
 extern volatile unsigned char delayCount;
+extern u16 mainOffset;
 
 struct embedvm_s vm = {
     0xffff, RAM_SIZE, RAM_SIZE, NULL,
@@ -25,12 +22,14 @@ struct embedvm_s vm = {
 
 #define UNUSED __attribute__((unused))
 
-void vminterface_init(void)
+void vminterface_init(int argc, char [] argv)
 {
     int ii;
     vm.ip = 0xffff;
     vm.sp = RAM_SIZE;
     vm.sfp = RAM_SIZE;
+
+    mainOffset = strtol(argv[1], NULL, 16);
 
     mainOffset = eeprom_read_byte((uint8_t*)EEPROM_OFFSET_MAINOFFSET_MSB) << 8;
     mainOffset |= eeprom_read_byte((uint8_t*)EEPROM_OFFSET_MAINOFFSET_LSB);

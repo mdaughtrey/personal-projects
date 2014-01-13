@@ -37,7 +37,6 @@ function main()
     local ii;
     local palette;
 
-
     sendString(&custom);
 
     palette = 0;
@@ -45,7 +44,7 @@ function main()
     while (1)
     {
         left = 0;
-        right = 19;
+        right = 9;
         top = 0;
         bottom = 6;
         on = !on;
@@ -70,7 +69,7 @@ function main()
             for (ii = left; ii <= right; ii++)
             {
                 pixelOn(top, ii);
-                $uf3(50);
+//                $uf3(50);
             }
             top++;
 
@@ -80,7 +79,7 @@ function main()
             for (ii = top; ii <= bottom; ii++)
             {
                 pixelOn(ii, right);
-                $uf3(50);
+ //               $uf3(50);
             }
             right--;
 
@@ -90,7 +89,7 @@ function main()
             for (ii = right; ii >= left; ii--)
             {
                 pixelOn(bottom, ii);
-                $uf3(50);
+  //              $uf3(50);
             }
             bottom--;
 
@@ -100,7 +99,7 @@ function main()
             for (ii = bottom; ii >= top; ii--)
             {
                 pixelOn(ii, left);
-                $uf3(50);
+   //             $uf3(50);
             }
             left++;
         }
