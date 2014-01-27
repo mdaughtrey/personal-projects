@@ -24,7 +24,8 @@ $(TARGET).out: $(MAKEFILE) $(OBJS)
 	$(CC) -o $(TARGET).out $(CFLAGS) -Wl,-Map,$(TARGET).map $(OBJS) $(LIBS)
 
 writefuse: 
-	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m 
+#avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xc2:m 
+	avrdude -c avrisp2 -p m169 -P usb -Ulfuse:w:0xe2:m 
 	avrdude -c avrisp2 -p m169 -P usb -Uhfuse:w:0xd9:m
 
 erase:
