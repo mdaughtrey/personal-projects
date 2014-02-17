@@ -4,6 +4,9 @@ let verbose=0
 let simulate=0
 let numTitleFrames=90
 let fps=30
+SCRIPT_DIR=~/scripts
+SCRIPT_TEMPLATE1=${SCRIPT_DIR}/pptemplate1.avs
+SCRIPT_TEMPLATE2=${SCRIPT_DIR}/pptemplate2.avs
 
 vOut()
 {
@@ -131,6 +134,15 @@ genyuv()
     doCommand mv stream.yuv stream_${1}.yuv
 }
 
+avi()
+{
+    if [[ ! -f stream_${1}.yuv ]]
+    then
+        genyuv $1
+    fi
+    cat stream_${1}.yuv  | yuvfps -r 18:1 -v 1 | ffmpeg -i - -vcodec rawvideo -y rawframes.avi
+}
+
 mpeg2()
 {
     if [[ ! -f stream_${1}.yuv ]]
@@ -146,6 +158,37 @@ mpeg2()
 
     cat stream_${1}.yuv  | yuvfps -r ${fps}:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $dvdfile
     mv $dvdfile $HOME/imageinput/dvd
+}
+
+postprocess()
+{
+	if [[ ! -f rawframes.avi ]]
+	then
+		avi dvd
+	fi
+
+	LOCALSCRIPT=postprocess.avs
+
+	if [[ ! -f ${LOCALSCRIPT} ]]
+	then
+
+			rawFrames=$(echo -n "film=\"Z:"; echo -n $PWD | sed 's/\//\\\\/g;'; echo "\\\\rawframes.avi\"")
+			cat $SCRIPT_TEMPLATE1 > ${LOCALSCRIPT}
+			echo $rawFrames >> postprocess.avs
+			cat $SCRIPT_TEMPLATE2 >> ${LOCALSCRIPT}
+	fi
+
+	FIFO=${LOCALSCRIPT}.fifo
+
+	if [[ -e "${FIFO}" ]]
+	then
+		rm ${FIFO}
+	fi
+
+	mkfifo  ${FIFO}
+	wine avs2yuv.exe ${LOCALSCRIPT} - > ${FIFO}  &
+	ffmpeg -i ${FIFO} -b 4000K -y ${LOCALSCRIPT}.mpg 
+	rm ${FIFO}
 }
 
 gentitle()
@@ -391,11 +434,6 @@ gentagged()
 	done
 }
 
-brighten()
-{
-	for ff in *.JPG; do convert $ff -modulate 140 $ff; done
-}
-
 
 while getopts "sv" OPT
 do
@@ -424,6 +462,7 @@ case "$1" in
 	mp42jpg) mp42jpg $2 ;;
 	mktags) mktags $2;;
 	gentagged) gentagged $2 ;;
-	brighten) brighten ;;
+	avi) avi dvd ;;
+	pp) postprocess ;;
 	*) echo What? ;;
 esac
