@@ -1,8 +1,3 @@
-#PARAMETERS
-#----------------------------------------------------------------------------------------------------------------------------
-#result="resultS1" # specify the wanted output here 
-result="result1" # specify the wanted output here 
-
 trim_begin=2  trim_end=10  play_speed=18   #trim frames and play speed (PAL: 16.6666 or 18.75)
 
 numerator= 30  #numerator for the interpolator (final frame rate)
@@ -11,7 +6,8 @@ denumerator= 1 #denumerator  example: 60000/1001= 59.94fps
 
 #COLOR AND LEVELS PARAMATERS
 #----------------------------------------------------------------------------------------------------------------------------
-saturation=1.2   #for all outputs
+#saturation=1.2   #for all outputs
+saturation=1.0   #for all outputs
 
 gamma= 1.2 # for all outputs 
 
@@ -92,7 +88,7 @@ last_blur= 0.2 #this smooths out the heavy sharpening effects
 #=================================================================================================================================
 
 
-SetMemoryMax(2000)  #set this to 1/3 of the available memory
+SetMemoryMax(800)  #set this to 1/3 of the available memory
 
 
 
