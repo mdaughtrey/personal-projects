@@ -54,13 +54,13 @@ renumber()
 	let to=0
 	for from in $(ls SAM_??????.JPG | cut -c5-10 | sort -n)
 	do
-		echo mv SAM_${from}.JPG SAM_`printf "%06d" ${to}`.JPG
+		mv SAM_${from}.JPG SAM_`printf "%06d" ${to}`.JPG
 		((to++))
 	done
 	return
 	for from in $(ls SAM_????.JPG | cut -c5-8 | sort -n)
 	do
-		echo mv SAM_${from}.JPG SAM_`printf "%04d" ${to}`.JPG
+		mv SAM_${from}.JPG SAM_`printf "%04d" ${to}`.JPG
 		((to++))
 	done
 }
@@ -87,9 +87,9 @@ preview()
     previewfile=${PWD//\//_}preview.mpg
 	if [[ -f SAM_0000.JPG ]]
 	then
-    	ffmpeg -i SAM_%04d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
+    	ffmpeg -i SAM_%04d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
 	else
-    	ffmpeg -i SAM_%06d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
+    	ffmpeg -i SAM_%06d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
 	fi
     mv $previewfile $HOME/imageinput/previews 
 }
@@ -130,7 +130,7 @@ genyuv()
     scaler $1
     rm stream.yuv
     rm stream_${0}.yuv
-    doCommand mplayer mf://*.JPG -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg -vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY
+    doCommand mplayer mf://*.JPG -quiet -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg -vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY
     doCommand mv stream.yuv stream_${1}.yuv
 }
 
@@ -140,7 +140,7 @@ avi()
     then
         genyuv $1
     fi
-    cat stream_${1}.yuv  | yuvfps -r 18:1 -v 1 | ffmpeg -i - -vcodec rawvideo -y rawframes.avi
+    cat stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | ffmpeg -loglevel quiet -i - -vcodec rawvideo -y rawframes.avi
 }
 
 mpeg2()
@@ -169,14 +169,16 @@ postprocess()
 
 	LOCALSCRIPT=postprocess.avs
 
-	if [[ ! -f ${LOCALSCRIPT} ]]
+	rawFrames=$(echo -n "film=\"Z:"; echo -n $PWD | sed 's/\//\\\\/g;'; echo "\\\\rawframes.avi\"")
+	result=$(echo -n "result=\"result1\" # specify the wanted output here" )
+	if [[ "$1" == "pps" ]]
 	then
-
-			rawFrames=$(echo -n "film=\"Z:"; echo -n $PWD | sed 's/\//\\\\/g;'; echo "\\\\rawframes.avi\"")
-			cat $SCRIPT_TEMPLATE1 > ${LOCALSCRIPT}
-			echo $rawFrames >> postprocess.avs
-			cat $SCRIPT_TEMPLATE2 >> ${LOCALSCRIPT}
+		result=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
 	fi
+	cat $SCRIPT_TEMPLATE1 > ${LOCALSCRIPT}
+	echo $rawFrames >> postprocess.avs
+	echo $result >> postprocess.avs
+	cat $SCRIPT_TEMPLATE2 >> ${LOCALSCRIPT}
 
 	FIFO=${LOCALSCRIPT}.fifo
 
@@ -187,8 +189,14 @@ postprocess()
 
 	mkfifo  ${FIFO}
 	wine avs2yuv.exe ${LOCALSCRIPT} - > ${FIFO}  &
-	ffmpeg -i ${FIFO} -b 4000K -y ${LOCALSCRIPT}.mpg 
+	ffmpeg -loglevel quiet -i ${FIFO} -b:v 4000K -y ${LOCALSCRIPT}.mpg 
 	rm ${FIFO}
+    dvdfile=${PWD//\//_}pp_dvd.mpg
+	if [[ "$1" == "pps" ]]
+	then
+    	dvdfile=${PWD//\//_}pps_dvd.mpg
+	fi
+    mv ${LOCALSCRIPT}.mpg $HOME/imageinput/dvd/${dvdfile}
 }
 
 gentitle()
@@ -464,5 +472,6 @@ case "$1" in
 	gentagged) gentagged $2 ;;
 	avi) avi dvd ;;
 	pp) postprocess ;;
+	pps) postprocess pps ;;
 	*) echo What? ;;
 esac
