@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/ldscripts_no_vector
+END
+avr1.x
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/ldscripts_no_vector/avr1.x
+END
+avr2.x
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/ldscripts_no_vector/avr2.x
+END
+avr3.x
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/ldscripts_no_vector/avr3.x
+END
+avr4.x
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/ldscripts_no_vector/avr4.x
+END
+avr5.x
+K 25
+svn:wc:ra_dav:version-url
+V 99
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/ldscripts_no_vector/avr5.x
+END
