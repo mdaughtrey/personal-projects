@@ -5,8 +5,11 @@ let simulate=0
 let numTitleFrames=90
 let fps=30
 SCRIPT_DIR=~/scripts
-SCRIPT_TEMPLATE1=${SCRIPT_DIR}/pptemplate1.avs
-SCRIPT_TEMPLATE2=${SCRIPT_DIR}/pptemplate2.avs
+SCRIPT_INTERPOLATE1=${SCRIPT_DIR}/pp_interpolate1.avs
+SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
+SCRIPT_CLEAN1=${SCRIPT_DIR}/pp_clean1.avs
+SCRIPT_CLEAN2=${SCRIPT_DIR}/pp_clean2.avs
+
 
 vOut()
 {
@@ -27,12 +30,11 @@ doCommand()
 
 mklinks()
 {
-	let to=0
+	let to=100
 
-#set -o xtrace
 	for ff in *PHOTO/SAM_0*.JPG
-        do
-             mv $ff $(echo $ff | sed 's/_0/_1/')
+    do
+    	mv $ff $(echo $ff | sed 's/_0/_1/')
 	done
 	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
 
@@ -49,15 +51,32 @@ mklinks()
 	done
 }
 
+mkrlinks()
+{
+	let to=$(ls */*.JPG | wc -l)
+
+	for ff in *PHOTO/SAM_0*.JPG
+    do
+    	mv $ff $(echo $ff | sed 's/_0/_1/')
+	done
+	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
+
+	for dir in $dirs
+	do
+		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
+
+		for number in $numbers
+		do
+			filename=SAM_$(printf '%04u' $number).JPG
+			ln -s ${dir}PHOTO/$filename SAM_$(printf '%04u' $to).JPG
+			((to--))
+		done
+	done
+}
+
 renumber()
 {
 	let to=0
-	for from in $(ls SAM_??????.JPG | cut -c5-10 | sort -n)
-	do
-		mv SAM_${from}.JPG SAM_`printf "%06d" ${to}`.JPG
-		((to++))
-	done
-	return
 	for from in $(ls SAM_????.JPG | cut -c5-8 | sort -n)
 	do
 		mv SAM_${from}.JPG SAM_`printf "%04d" ${to}`.JPG
@@ -65,15 +84,6 @@ renumber()
 	done
 }
 
-renumber2()
-{
-	let to=0
-	for from in $(ls img*.JPG | cut -c4-9 | sort -n)
-	do
-		echo mv img${from}.JPG SAM_`printf "%04d" ${to}`.JPG
-		((to++))
-	done
-}
 
 preview()
 {
@@ -90,6 +100,16 @@ preview()
     	ffmpeg -i SAM_%04d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
 	else
     	ffmpeg -i SAM_%06d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
+	fi
+    mv $previewfile $HOME/imageinput/previews 
+}
+
+previewTitle()
+{
+    previewfile=${PWD//\//_}title_preview.mpg
+	if [[ -f SAM_0000.JPG ]]
+	then
+    	ffmpeg -i SAM_00%02d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
 	fi
     mv $previewfile $HOME/imageinput/previews 
 }
@@ -130,7 +150,16 @@ genyuv()
     scaler $1
     rm stream.yuv
     rm stream_${0}.yuv
-    doCommand mplayer mf://*.JPG -quiet -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg -vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY
+	options="-quiet -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg -vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
+	if [[ -f "flip" ]]
+	then
+		options="${options},flip"
+	fi
+	if [[ -f "mirror" ]]
+	then
+		options="${options},mirror"
+	fi
+    doCommand mplayer mf://*.JPG ${options}
     doCommand mv stream.yuv stream_${1}.yuv
 }
 
@@ -162,25 +191,47 @@ mpeg2()
 
 postprocess()
 {
+	majorMode=$1
+
 	if [[ ! -f rawframes.avi ]]
 	then
 		avi dvd
 	fi
 
-	LOCALSCRIPT=postprocess.avs
+	case "$majorMode" in
+		icompare) 
+			RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
+			TEMPLATE=${SCRIPT_INTERPOLATE2}
+			LOCALSCRIPT="interpolate_compare.avs"
+			;;
+		interpolate)
+			RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
+			TEMPLATE=${SCRIPT_INTERPOLATE2}
+			LOCALSCRIPT="interpolate.avs"
+			;;
+		clean)
+			RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
+			TEMPLATE=${SCRIPT_CLEAN2}
+			LOCALSCRIPT="clean.avs"
+			;;
+		ccompare)
+			RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
+			TEMPLATE=${SCRIPT_CLEAN2}
+			LOCALSCRIPT="clean_compare.avs"
+			;;
+    esac
 
 	rawFrames=$(echo -n "film=\"Z:"; echo -n $PWD | sed 's/\//\\\\/g;'; echo "\\\\rawframes.avi\"")
-	result=$(echo -n "result=\"result1\" # specify the wanted output here" )
-	if [[ "$1" == "pps" ]]
-	then
-		result=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
-	fi
-	cat $SCRIPT_TEMPLATE1 > ${LOCALSCRIPT}
-	echo $rawFrames >> postprocess.avs
-	echo $result >> postprocess.avs
-	cat $SCRIPT_TEMPLATE2 >> ${LOCALSCRIPT}
-
-	FIFO=${LOCALSCRIPT}.fifo
+#	result=$(echo -n "result=\"result1\" # specify the wanted output here" )
+#	if [[ "$1" == "compare" ]]
+#	then
+#		result=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
+#	fi
+#	cat $TEMPLATE1 > ${LOCALSCRIPT}
+	echo $rawFrames > ${LOCALSCRIPT}
+	echo $RESULT >> ${LOCALSCRIPT}
+    cat $TEMPLATE >> ${LOCALSCRIPT}
+    FIFO=${LOCALSCRIPT}.fifo
 
 	if [[ -e "${FIFO}" ]]
 	then
@@ -191,11 +242,7 @@ postprocess()
 	wine avs2yuv.exe ${LOCALSCRIPT} - > ${FIFO}  &
 	ffmpeg -loglevel quiet -i ${FIFO} -b:v 4000K -y ${LOCALSCRIPT}.mpg 
 	rm ${FIFO}
-    dvdfile=${PWD//\//_}pp_dvd.mpg
-	if [[ "$1" == "pps" ]]
-	then
-    	dvdfile=${PWD//\//_}pps_dvd.mpg
-	fi
+    dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
     mv ${LOCALSCRIPT}.mpg $HOME/imageinput/dvd/${dvdfile}
 }
 
@@ -208,11 +255,10 @@ gentitle()
 	fi
 	type=${1:-"dvd"}
 	scaler $type
-	firstfile=${2:-"SAM_0000.JPG"}
+	firstfile=${2:-"SAM_0100.JPG"}
 	let row=300
-	let rowincrement=300
-	let pointsize=324
-	#let shrinkby=120
+	let rowincrement=700
+	let pointsize=720
 	if [[ "dvd" == "$type" ]]
 	then
 		let row=100
@@ -221,12 +267,18 @@ gentitle()
 		let shrinkby=40
 	fi
 
-	convert $firstfile -crop ${width}x${height}+${crop[0]}+${crop[1]} -scale ${scaleX}x${scaleY} -blur 2x2 -sepia-tone '65%' underlay.jpg
+	let translateX=${crop[0]}
+	let translateY=${crop[1]}
+	((translateX+=300))
+	((translateY+=300))
 
-	for font in "URW-Chancery-Medium-Italic"
-	#for font in `cat fonts.txt`
+	for font in "/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
 	do
-			cmd="convert -size ${scaleX}x${scaleY} -background none xc:transparent -font $font "
+		font=${font// /-}
+		for sepia in `seq 0 99`
+		do
+			convert $firstfile -blur 2x2 -modulate 100,${sepia} underlay.png
+			cmd="convert -font $font "
 			cmd=$cmd$(cat title.txt | while read line
 			do
 				if [[ "=" == "$line" ]]
@@ -240,25 +292,16 @@ gentitle()
 				echo " -pointsize $pointsize"
 				#echo ' -fill blue -stroke black -strokewidth 1' | tr -d '\n'
 				echo ' -fill blue' | tr -d '\n'
-				echo " -draw " '"' "text 40,$row" "'""$line""'"'"' | tr -d '\n'
+				echo " -draw " '"' "translate ${translateX},${translateY} text 40,$row" "'""$line""'"'"' | tr -d '\n'
 				((row+=rowincrement))
 			done
-			)" title_${font}.png"
+			)" underlay.png SAM_$(printf '%04u' $sepia).JPG"
 			echo $cmd | sh
-			composite -gravity center title_${font}.png underlay.jpg title000.jpg
-			rm title_${font}.png
-			rm underlay.jpg
+			rm underlay.png
+		done
 	done
-
-    	doCommand mplayer mf://title000.jpg -mf fps=.2  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg #-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY
-	mv stream.yuv title.yuv
-    	cat title.yuv | yuvfps -r ${fps}:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o title.mpg
 }
 
-rrenumber()
-{
-	for ff in ???PHOTO; do cd $ff; process.sh renumber 1000; cd -; done
-}
 
 mp42jpg()
 {
@@ -456,9 +499,8 @@ shift $((OPTIND-1))
 case "$1" in 
 	title) gentitle $2 ;;
 	renumber) renumber $2 ;;
-	renumber2) renumber2 ;;
-	rrenumber) rrenumber ;;
     preview) preview ;;
+	previewtitle) previewTitle ;;
     #genyuv) genyuv web; genyuv dvd; genyuv hd ;;
     genyuv) genyuv dvd;;
     web) scaler web; gentitle web; mpeg2 web ;;
@@ -466,12 +508,12 @@ case "$1" in
     dvd) scaler dvd; mpeg2 dvd ;;
     hd) mpeg2 hd ;;
     mklinks) mklinks ;;
+    mkrlinks) mkrlinks ;;
     mpeg2) mpeg2 web; mpeg2 dvd; mpeg2 hd ;;
 	mp42jpg) mp42jpg $2 ;;
 	mktags) mktags $2;;
 	gentagged) gentagged $2 ;;
 	avi) avi dvd ;;
-	pp) postprocess ;;
-	pps) postprocess pps ;;
+	interpolate|[ic]compare|clean) postprocess $1 ;;
 	*) echo What? ;;
 esac
