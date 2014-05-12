@@ -9,7 +9,9 @@ SCRIPT_INTERPOLATE1=${SCRIPT_DIR}/pp_interpolate1.avs
 SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
 SCRIPT_CLEAN1=${SCRIPT_DIR}/pp_clean1.avs
 SCRIPT_CLEAN2=${SCRIPT_DIR}/pp_clean2.avs
-
+let TITLE_STREAM_FRAMES=200
+let NATIVE_WIDTH=5472
+let NATIVE_HEIGHT=3648
 
 vOut()
 {
@@ -30,7 +32,7 @@ doCommand()
 
 mklinks()
 {
-	let to=100
+	let to=${TITLE_STREAM_FRAMES}
 
 	for ff in *PHOTO/SAM_0*.JPG
     do
@@ -136,9 +138,26 @@ scaler()
         let scaleX=2048
     fi
     crop=($(head -1 crop.cfg)) # left, top, right, bottom 
-
     let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
     let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
+
+#	if [[ -f "flip" ]]
+#	then
+#		vOut flip option set
+#		options="${options},flip"
+#	fi
+    vOut XXXBefore Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
+	if [[ -f "mirror" ]]
+	then
+		let distanceLeft=${crop[0]}
+		let distanceRight=$(($NATIVE_WIDTH-${crop[2]}))
+		let crop[0]=$distanceRight
+		let crop[2]=$((${crop[0]}+${width}))
+		vOut mirror option set
+	fi
+#    vOut XXXAfter Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
+#	exit
+
     scaler=$(echo "scale=2;${width}/${height}" | bc) 
     let scaleY=$(echo "$scaleX/$scaler" | bc)
 
@@ -150,17 +169,39 @@ genyuv()
     scaler $1
     rm stream.yuv
     rm stream_${0}.yuv
+	rm -f titlelist.txt
+	rm -f contentlist.txt
+
+	for ii in `seq 0 $((TITLE_STREAM_FRAMES-1))`
+	do
+		echo SAM_$(printf "%04u" $ii).JPG >> titlelist.txt
+	done
+
+	for ii in `seq ${TITLE_STREAM_FRAMES} $(ls SAM_*.JPG | wc -l)`
+	do
+		echo SAM_$(printf "%04u" $ii).JPG >> contentlist.txt
+	done
+
 	options="-quiet -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg -vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
+    doCommand mplayer mf://@titlelist.txt ${options}
+	doCommand mv stream.yuv titlestream.yuv
+
 	if [[ -f "flip" ]]
 	then
+		vOut flip option set
 		options="${options},flip"
 	fi
 	if [[ -f "mirror" ]]
 	then
+		vOut mirror option set
 		options="${options},mirror"
 	fi
-    doCommand mplayer mf://*.JPG ${options}
-    doCommand mv stream.yuv stream_${1}.yuv
+
+    doCommand mplayer mf://@contentlist.txt ${options}
+    doCommand mv stream.yuv contentstream.yuv
+	(cat titlestream.yuv; cat contentstream.yuv | (read junk; cat)) > stream_${1}.yuv
+	rm titlelist.txt
+	rm contentlist.txt
 }
 
 avi()
@@ -248,6 +289,7 @@ postprocess()
 
 gentitle()
 {
+	FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
 	if [[ ! -f title.txt ]]
 	then
 		echo No title.txt
@@ -255,53 +297,75 @@ gentitle()
 	fi
 	type=${1:-"dvd"}
 	scaler $type
-	firstfile=${2:-"SAM_0100.JPG"}
-	let row=300
-	let rowincrement=700
-	let pointsize=720
-	if [[ "dvd" == "$type" ]]
-	then
-		let row=100
-		let rowincrement=100
-		let pointsize=108
-		let shrinkby=40
-	fi
+	firstfile=${2:-"SAM_0${TITLE_STREAM_FRAMES}.JPG"}
+	
+	let rowsize=200
+	let linecount=0
+	let translateY=${crop[1]}
+	
+	compositecmd=$(cat title.txt | while read line
+	do
+		font=${font// /-}
+		if [[ "=" == "$line" ]]
+		then
+			((rowsize-=rowsize/3))
+			continue
+		fi
+
+		if [[ "" == "$line" ]]
+		then
+			((translateY+=rowsize+20))
+			continue
+		fi
+
+		convert -background transparent \
+			-stroke yellow -strokewidth 2 \
+			-fill blue -font ${FONT} \
+			-size x${rowsize} label:"${line}" titleline_${linecount}.png
+		((translateY+=rowsize+20))
+		echo -n " -page +${crop[0]}+$((translateY)) titleline_${linecount}.png"
+		((linecount++))
+	done) 
+
+	compositecmd="convert ${compositecmd} -background transparent -layers merge titletext.png"
+	echo $compositecmd
+	$compositecmd
+	rm titleline_*.png
 
 	let translateX=${crop[0]}
 	let translateY=${crop[1]}
-	((translateX+=300))
-	((translateY+=300))
+	((translateX+=150))
+	((translateY+=150))
 
-	for font in "/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
+	let NUMTASKS=$(cat /proc/cpuinfo | grep processor | wc -l)
+#	((NUMTASKS*=2))
+
+	for sepia in `seq 0 $((TITLE_STREAM_FRAMES-1))`
 	do
-		font=${font// /-}
-		for sepia in `seq 0 99`
-		do
-			convert $firstfile -blur 2x2 -modulate 100,${sepia} underlay.png
-			cmd="convert -font $font "
-			cmd=$cmd$(cat title.txt | while read line
-			do
-				if [[ "=" == "$line" ]]
-				then
-					#((pointsize-=$shrinkby))
-					#((rowincrement-=$shrinkby))
-					((pointsize/=2))
-					((rowincrement/=2))
-					continue
-				fi
-				echo " -pointsize $pointsize"
-				#echo ' -fill blue -stroke black -strokewidth 1' | tr -d '\n'
-				echo ' -fill blue' | tr -d '\n'
-				echo " -draw " '"' "translate ${translateX},${translateY} text 40,$row" "'""$line""'"'"' | tr -d '\n'
-				((row+=rowincrement))
-			done
-			)" underlay.png SAM_$(printf '%04u' $sepia).JPG"
-			echo $cmd | sh
-			rm underlay.png
-		done
+		(
+		echo Frame $sepia of ${TITLE_STREAM_FRAMES}
+		inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
+		value=$(echo "${inc}*${sepia}" | bc -l)
+		index=$(printf '%04u' $sepia)
+
+		option=""
+		if [[ -f "mirror" ]]
+		then
+			option="-flop"
+		fi
+
+		convert $firstfile $option -blur 2x2 -modulate 100,${value} underlay_${index}.png
+		convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
+			 titletext.png -layers merge SAM_${index}.JPG
+		rm underlay_${index}.png
+		) &
+		let numTasks=$(ps --no-headers --ppid $$ | wc -l)
+		if ((numTasks > NUMTASKS))
+		then
+			sleep 5
+		fi
 	done
 }
-
 
 mp42jpg()
 {
@@ -485,6 +549,15 @@ gentagged()
 	done
 }
 
+all()
+{
+	rm -f *.avi *.avs *.yuv *.JPG *.png
+	mklinks
+	gentitle
+	renumber
+	preview
+	postprocess interpolate
+}
 
 while getopts "sv" OPT
 do
@@ -515,5 +588,6 @@ case "$1" in
 	gentagged) gentagged $2 ;;
 	avi) avi dvd ;;
 	interpolate|[ic]compare|clean) postprocess $1 ;;
+	all) all ;;
 	*) echo What? ;;
 esac
