@@ -177,31 +177,48 @@ genyuv()
 		echo SAM_$(printf "%04u" $ii).JPG >> titlelist.txt
 	done
 
-	for ii in `seq ${TITLE_STREAM_FRAMES} $(ls SAM_*.JPG | wc -l)`
+	for ii in `seq ${TITLE_STREAM_FRAMES} $(($(ls SAM_*.JPG | wc -l)-1))`
 	do
 		echo SAM_$(printf "%04u" $ii).JPG >> contentlist.txt
 	done
 
-	options="-quiet -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg -vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-    doCommand mplayer mf://@titlelist.txt ${options}
-	doCommand mv stream.yuv titlestream.yuv
+	rm -f *.fifo
+	mkfifo titlestream.fifo
+	mkfifo contentstream.fifo
+	
+	cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
+	options="-quiet -mf fps=18  -benchmark -nosound -noframedrop -noautosub  -vo yuv4mpeg" 
+    doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.fifo &
 
+	vfoptions="-vf "
 	if [[ -f "flip" ]]
 	then
 		vOut flip option set
-		options="${options},flip"
+		vfoptions="${vfoptions} flip"
+		if [[ -f "mirror" ]]
+		then
+			vfoptions="${vfoptions},"
+		fi
 	fi
 	if [[ -f "mirror" ]]
 	then
 		vOut mirror option set
-		options="${options},mirror"
+		vfoptions="${vfoptions}mirror"
 	fi
+	if [[ "-vf " == "$vfoptions" ]]
+	then
+		vfoptions=""
+	fi
+	options="${cropoptions} ${vfoptions} ${options}:file=contentstream.fifo"
 
-    doCommand mplayer mf://@contentlist.txt ${options}
-    doCommand mv stream.yuv contentstream.yuv
-	(cat titlestream.yuv; cat contentstream.yuv | (read junk; cat)) > stream_${1}.yuv
+    doCommand mplayer mf://@contentlist.txt ${options} &
+
+	vOut Concatenating YUV Streams
+	(cat titlestream.fifo; cat contentstream.fifo | (read junk; cat)) > stream_${1}.yuv
+	vOut Concatenation Done
 	rm titlelist.txt
 	rm contentlist.txt
+	rm -f *.fifo
 }
 
 avi()
@@ -274,14 +291,12 @@ postprocess()
     cat $TEMPLATE >> ${LOCALSCRIPT}
     FIFO=${LOCALSCRIPT}.fifo
 
-	if [[ -e "${FIFO}" ]]
-	then
-		rm ${FIFO}
-	fi
-
+	rm -f $FIFO
 	mkfifo  ${FIFO}
 	wine avs2yuv.exe ${LOCALSCRIPT} - > ${FIFO}  &
+	#wine avs2yuv.exe ${LOCALSCRIPT} - > out.yuv
 	ffmpeg -loglevel quiet -i ${FIFO} -b:v 4000K -y ${LOCALSCRIPT}.mpg 
+	#ffmpeg -loglevel verbose -i out.yuv  -b:v 4000K -y ${LOCALSCRIPT}.mpg 
 	rm ${FIFO}
     dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
     mv ${LOCALSCRIPT}.mpg $HOME/imageinput/dvd/${dvdfile}
