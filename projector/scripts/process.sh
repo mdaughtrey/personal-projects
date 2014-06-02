@@ -1,5 +1,7 @@
 #!/bin/bash
 
+exec 2>&1 >> process.log
+
 let verbose=0
 let simulate=0
 let numTitleFrames=90
@@ -56,6 +58,8 @@ mklinks()
 mkrlinks()
 {
 	let to=$(ls */*.JPG | wc -l)
+	((to+=$TITLE_STREAM_FRAMES))
+	((to--))
 
 	for ff in *PHOTO/SAM_0*.JPG
     do
@@ -123,49 +127,67 @@ let height=0
 let bw=4000
 let xOffset=0
 let yOffset=0
+let origYOffset=0
+let origXOffset=0
 
 scaler()
 {
 	vOut === scaler
     if [[ "$1" == "web" ]]
     then
-        let scaleX=300
+        let scaleX=400
+		let scaleY=300
     fi
     if [[ "$1" == "dvd" ]]
     then
         let scaleX=720
+#        let scaleY=576
     fi
     if [ "$1" == 'hd' ]
     then
         let bw=8000
         let scaleX=2048
+        let scaleY=1536
     fi
+	if [[ ! -f "crop.cfg" ]]
+	then
+		vOut no crop.cfg
+		echo no crop.cfg
+		exit 1
+	fi
     crop=($(head -1 crop.cfg)) # left, top, right, bottom 
 
 	let xOffset=${crop[0]}
+	let xOrigOffset=${crop[0]}
 	let yOffset=${crop[1]}
+	let yOrigOffset=${crop[1]}
     let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
     let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
 
-#	if [[ -f "flip" ]]
-#	then
-#		vOut flip option set
-#		options="${options},flip"
-#	fi
-    vOut XXXBefore Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
+    vOut Scaler before flags L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
 	if [[ -f "mirror" ]]
 	then
+		vOut mirror option set
 		let distanceLeft=${crop[0]}
 		let distanceRight=$(($NATIVE_WIDTH-${crop[2]}))
 		let crop[0]=$distanceRight
-		let crop[2]=$((${crop[0]}+${width}))
-		vOut mirror option set
+		let crop[2]=$(($NATIVE_WIDTH-$distanceLeft))
 	fi
-#    vOut XXXAfter Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
-#	exit
+
+	if [[ -f "flip" ]]
+	then
+		vOut flip option set
+		let distanceTop=${crop[1]}
+		let distanceBottom=$((NATIVE_HEIGHT-${crop[3]}))
+		let crop[1]=$distanceBottom
+		let crop[3]=$distanceTop
+	fi
+    vOut Scaler after flags L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
 
     scaler=$(echo "scale=2;${width}/${height}" | bc) 
     let scaleY=$(echo "$scaleX/$scaler" | bc)
+	let xOffset=${crop[0]}
+	let yOffset=${crop[1]}
 
     vOut Scaler width $width height $height scaleX $scaleX scaleY $scaleY bw $bw
 }
@@ -175,7 +197,7 @@ genyuv()
 	vOut === genyuv
     scaler $1
     rm stream.yuv
-    rm stream_${0}.yuv
+    rm stream_${1}.yuv
 	rm -f titlelist.txt
 	rm -f contentlist.txt
 
@@ -190,19 +212,17 @@ genyuv()
 	done
 
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
-	if [[ "$2" == "inter3" ]]
+	cropoptions="-vf crop=$width:$height:${xOffset}:${yOffset},scale=$scaleX:$scaleY"
+	if [[ ! -f titlestream.yuv ]]
 	then
-		cropoptions="-vf "
-    	doCommand mplayer mf://@titlelist.txt ${options}:file=titlestream.yuv
-	else
-		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
+   		doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
 	fi
 
 	if [[ -f "flip" ]]
 	then
 		vOut flip option set
-		cropoptions="${cropoptions},flip"
+		cropoptions="-vf-add flip ${cropoptions}"
+#		options="-flip $options"
 	fi
 
 	if [[ -f "mirror" ]]
@@ -211,35 +231,34 @@ genyuv()
 		cropoptions="${cropoptions},mirror"
 	fi
 
-	if [[ "-vf=" == "$cropoptions" ]]
-	then
-		cropoptions=""
-	fi
+#	if [[ "-vf=" == "$cropoptions" ]]
+#	then
+#		cropoptions=""
+#	fi
 
-	cropoptions=${cropoptions/ ,/}
-	if [[ "-vf " == "$cropoptions" ]]
-	then
-		cropoptions=""
-	fi
+#	cropoptions=${cropoptions/ ,/}
+#	if [[ "-vf " == "$cropoptions" ]]
+#	then
+#		cropoptions=""
+#	fi
 
 	vOut cropoptions $cropoptions
 	options="${cropoptions} ${options}:file=contentstream.yuv"
-    doCommand mplayer mf://@contentlist.txt ${options} 
+	if [[ ! -f contentstream.yuv ]]
+	then
+    	doCommand mplayer mf://@contentlist.txt ${options} 
+	fi
 
 	vOut Concatenating YUV Streams
 	(cat titlestream.yuv; cat contentstream.yuv | (read junk; cat)) > stream_${1}.yuv
 	vOut Concatenation Done
+	rm -f titlelist.txt
+	rm -f contentlist.txt
 }
 
 avi()
 {
-	vOut === avi
-    if [[ ! -f stream_${1}.yuv ]]
-    then
-		vOut preGenyuv
-        genyuv $1 $2
-		vOut postGenyuv
-    fi
+    genyuv $1 $2
     cat stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | ffmpeg -loglevel quiet -i - -vcodec rawvideo -y rawframes.avi
 }
 
@@ -260,10 +279,7 @@ postprocess()
 	vOut === postprocess
 	majorMode=$1
 
-	if [[ ! -f rawframes.avi ]]
-	then
-		avi dvd $majorMode
-	fi
+    avi dvd $majorMode
 
 	case "$majorMode" in
 		icompare) 
@@ -271,7 +287,7 @@ postprocess()
 			TEMPLATE=${SCRIPT_INTERPOLATE2}
 			LOCALSCRIPT="interpolate_compare.avs"
 			;;
-		interpolate|inter3)
+		interpolate)
 			RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
 			TEMPLATE=${SCRIPT_INTERPOLATE2}
 			LOCALSCRIPT="interpolate.avs"
@@ -298,6 +314,7 @@ postprocess()
     mv ${LOCALSCRIPT}.mpg $HOME/imageinput/dvd/${dvdfile}
 }
 
+# Ignoring mirror and flip transforms as jpg->png seems to autocorrect 
 gentitle()
 {
 	FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
@@ -318,7 +335,8 @@ gentitle()
 	
 	let rowsize=200
 	let linecount=0
-	let translateY=${crop[1]}
+	let translateX=$xOrigOffset
+	let translateY=$yOrigOffset
 	
 	compositecmd=$(cat title.txt | while read line
 	do
@@ -335,12 +353,12 @@ gentitle()
 			continue
 		fi
 
-		doCommand convert -background transparent \
+	    convert -background transparent \
 			-stroke yellow -strokewidth 2 \
 			-fill blue -font ${FONT} \
 			-size x${rowsize} label:"${line}" titleline_${linecount}.png
 		((translateY+=rowsize+20))
-		echo -n " -page +${crop[0]}+$((translateY)) titleline_${linecount}.png"
+		echo -n " -page +$((translateX))+$((translateY)) titleline_${linecount}.png"
 		((linecount++))
 	done) 
 
@@ -349,10 +367,10 @@ gentitle()
 	$compositecmd
 	rm titleline_*.png
 
-	let translateX=${crop[0]}
-	let translateY=${crop[1]}
+	let translateX=$xOffset
+	let translateY=$yOffset
 	((translateX+=150))
-	((translateY+=150))
+    ((translateY+=150))
 
 	let NUMTASKS=$(cat /proc/cpuinfo | grep processor | wc -l)
 #	((NUMTASKS*=2))
@@ -371,15 +389,23 @@ gentitle()
 		fi
 
 		option=""
-		if [[ -f "mirror" ]]
-		then
-			option="-flop"
-		fi
+#		if [[ -f "mirror" ]]
+#		then
+#			option="-flop"
+#		fi
+#		if [[ -f "flip" ]]
+#		then
+#			option="$option -flip"
+#		fi
 
-		doCommand convert $firstfile $option -blur 2x2 -modulate 100,${value} underlay_${index}.png
-		doCommand convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
+		#doCommand convert $firstfile $option -blur 2x2 -modulate 100,${value} underlay_${index}.png
+		#draw="-stroke white -strokewidth 2 -fill none -draw \"rectangle $translateX,$translateY,$((translateX+$width)),$((translateY+$height))\""
+	
+		draw=""
+		eval "convert $firstfile $option  -blur 2x2 -modulate 100,${value} ${draw} underlay_${index}.png"
+		convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
 			 titletext.png -layers merge SAM_${index}.JPG
-		doCommand rm underlay_${index}.png
+		#doCommand rm underlay_${index}.png
 #		) &
 #		let numTasks=$(ps --no-headers --ppid $$ | wc -l)
 #		if ((numTasks > NUMTASKS))
@@ -571,12 +597,16 @@ gentagged()
 
 all()
 {
-	rm -f *.avi *.avs *.yuv *.JPG *.png
-	mklinks
+	rm -f *.avi *.avs *.yuv *.JPG *.png 
+	if [[ -f "rlink" ]]
+	then
+		mkrlinks
+	else
+		mklinks
+	fi
 	gentitle
 	#renumber
 	#previewtitle
-	preview
 	postprocess interpolate
 }
 

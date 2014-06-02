@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 let verbose=0
 let simulate=0
 let numTitleFrames=90
@@ -32,9 +33,23 @@ doCommand()
 
 mklinks()
 {
-	let to=${TITLE_STREAM_FRAMES}
+	let to=0
+	dir="title"
 
-	dir="cropped"
+	if [[ ! -f "SAM_$(printf '%06u' $to).JPG" ]]
+	then
+		numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
+		for number in $numbers
+		do
+			filename=SAM_$(printf '%06u' $((10#$number))).JPG
+			ln -s ${dir}/$filename SAM_$(printf '%06u' $to).JPG
+			((to++))
+		done
+	fi
+
+	let to=${TITLE_STREAM_FRAMES}
+	dir="fused"
+
 	numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
 	for number in $numbers
 	do
@@ -70,9 +85,9 @@ mkrlinks()
 renumber()
 {
 	let to=${1:-0}
-	for from in $(ls SAM_????.JPG | cut -c5-8 | sort -n)
+	for from in $(ls SAM_??????.JPG | cut -c5-10 | sort -n)
 	do
-		mv SAM_${from}.JPG SAM_`printf "%04d" ${to}`.JPG
+		mv SAM_${from}.JPG SAM_`printf "%06u" ${to}`.JPG
 		((to++))
 	done
 }
@@ -80,13 +95,6 @@ renumber()
 
 preview()
 {
-    if [[ -f preview.mpg ]]
-    then
-        echo preview.mpg already exists
-        return
-    fi
-	#set -o xtrace
-    #previewfile=$(basename $PWD)_preview.mpg
     previewfile=${PWD//\//_}preview.mpg
 	if [[ -f SAM_0000.JPG ]]
 	then
@@ -172,23 +180,24 @@ genyuv()
 
 	for ii in `seq 0 $((TITLE_STREAM_FRAMES-1))`
 	do
-		echo SAM_$(printf "%04u" $ii).JPG >> titlelist.txt
+		echo title/SAM_$(printf "%06u" $ii).JPG >> titlelist.txt
 	done
 
-	for ii in `seq ${TITLE_STREAM_FRAMES} $(($(ls SAM_*.JPG | wc -l)-1))`
+	for ii in `seq ${TITLE_STREAM_FRAMES} $(($(ls fused/SAM_*.JPG | wc -l)-1))`
 	do
-		echo SAM_$(printf "%04u" $ii).JPG >> contentlist.txt
+		echo fused/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
 	done
 
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
-	if [[ "$2" == "inter3" ]]
-	then
-		cropoptions="-vf "
-    	doCommand mplayer mf://@titlelist.txt ${options}:file=titlestream.yuv
-	else
+#	if [[ "$2" == "inter3" ]]
+#	then
+#		cropoptions="-vf scale=$scaleX:$scaleY"
 		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
-	fi
+    	doCommand mplayer mf://@titlelist.txt ${options}:file=titlestream.yuv
+#	else
+##		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
+##    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
+##	fi
 
 	if [[ -f "flip" ]]
 	then
@@ -202,16 +211,11 @@ genyuv()
 		cropoptions="${cropoptions},mirror"
 	fi
 
-	if [[ "-vf=" == "$cropoptions" ]]
-	then
-		cropoptions=""
-	fi
-
-	cropoptions=${cropoptions/ ,/}
-	if [[ "-vf " == "$cropoptions" ]]
-	then
-		cropoptions=""
-	fi
+	cropoptions=${cropoptions/ ,/ }
+#	if [[ "-vf " == "$cropoptions" ]]
+#	then
+#		cropoptions=""
+#	fi
 
 	vOut cropoptions $cropoptions
 	options="${cropoptions} ${options}:file=contentstream.yuv"
@@ -227,9 +231,7 @@ avi()
 	vOut === avi
     if [[ ! -f stream_${1}.yuv ]]
     then
-		vOut preGenyuv
         genyuv $1 $2
-		vOut postGenyuv
     fi
     cat stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | ffmpeg -loglevel quiet -i - -vcodec rawvideo -y rawframes.avi
 }
@@ -332,7 +334,7 @@ gentitle()
 			-fill blue -font ${FONT} \
 			-size x${rowsize} label:"${line}" titleline_${linecount}.png
 		((translateY+=rowsize+20))
-		echo -n " -page +${crop[0]}+$((translateY)) titleline_${linecount}.png"
+		#echo -n " -page +${crop[0]}+$((translateY)) titleline_${linecount}.png"
 		((linecount++))
 	done) 
 
@@ -341,10 +343,12 @@ gentitle()
 	$compositecmd
 	rm titleline_*.png
 
-	let translateX=${crop[0]}
-	let translateY=${crop[1]}
-	((translateX+=150))
-	((translateY+=150))
+#	let translateX=${crop[0]}
+#	let translateY=${crop[1]}
+#	((translateX+=150))
+#	((translateY+=150))
+	let translateX=0
+	let translateY=0
 
 	let NUMTASKS=$(cat /proc/cpuinfo | grep processor | wc -l)
 #	((NUMTASKS*=2))
@@ -357,10 +361,10 @@ gentitle()
 		value=$(echo "${inc}*${sepia}" | bc -l)
 		index=$(printf '%06u' $sepia)
 
-		if [[ -f "SAM_${index}.JPG" ]]
-		then
-			continue
-		fi
+#		if [[ -f "SAM_${index}.JPG" ]]
+#		then
+#			continue
+#		fi
 
 		option=""
 		if [[ -f "mirror" ]]
@@ -369,10 +373,11 @@ gentitle()
 		fi
 
 		doCommand convert $firstfile $option -blur 2x2 -modulate 100,${value} underlay_${index}.png
+		#	doCommand convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
 		doCommand convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
-			 titletext.png -layers merge SAM_${index}.JPG
-		doCommand convert SAM_${index}.JPG -crop $((width+10))x$((height+10))+$((xOffset-5))+$((yOffset-5))  		tmp.jpg
-		mv tmp.jpg  title/SAM_${index}.JPG
+			 titletext.png -layers merge title/SAM_${index}.JPG
+#		doCommand convert SAM_${index}.JPG -crop ${width}x${height}+${xOffset}+${yOffset} tmp.jpg
+#		mv tmp.jpg title/SAM_${index}.JPG
 		doCommand rm underlay_${index}.png
 #		) &
 #		let numTasks=$(ps --no-headers --ppid $$ | wc -l)
@@ -597,10 +602,6 @@ precrop()
 	mkdir cropped
 	let to=${TITLE_STREAM_FRAMES}
 
-	for ff in *PHOTO/SAM_0*.JPG
-    do
-    	mv $ff $(echo $ff | sed 's/_0/_1/')
-	done
 	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
 
 	for dir in $dirs
@@ -609,8 +610,9 @@ precrop()
 
 		for number in $numbers
 		do
-			filename=SAM_$(printf '%04u' $number).JPG
-			doCommand convert ${dir}PHOTO/${filename} -crop $((width+10))x$((height+10))+$((xOffset-5))+$((yOffset-5)) cropped/SAM_$(printf '%06u' $to).JPG
+			filename=SAM_$(printf '%04u' $((10#$number))).JPG
+			vOut ${dir}/$filename
+			doCommand convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} cropped/SAM_$(printf '%06u' $to).JPG
 			((to++))
 		done
 	done
@@ -618,6 +620,7 @@ precrop()
 
 tonefuse()
 {
+	mkdir fused
 	scaler
 	outfile=enfuse.jpg
 	let outindex=200
@@ -631,7 +634,7 @@ tonefuse()
 		file2=SAM_$(printf "%06u" $((baseindex+1)))
 		file3=SAM_$(printf "%06u" $((baseindex+2)))
 
-		outfile=SAM_$(printf "%06u" $outindex).JPG
+		outfile=fused/SAM_$(printf "%06u" $outindex).JPG
 		vOut Tonefusing $outfile
 		doCommand enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
 
