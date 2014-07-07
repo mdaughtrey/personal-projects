@@ -57,7 +57,7 @@ SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
       $(ARDUINO)/ps2/ps2mouse.cpp
 CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp
 MCU = atmega168
-#MCU = atmega328p
+#MCU = atmega328
 F_CPU = 16000000
 FORMAT = ihex
 UPLOAD_RATE = 57600
@@ -129,7 +129,7 @@ ALL_CXXFLAGS = -mmcu=$(MCU) -I. $(CXXFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 # Default target.
-all: build
+all: build upload screen
 
 build: elf hex eep
 
@@ -142,7 +142,6 @@ sym: $(TARGET).sym
 # Program the device.  
 upload: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
-	screen ${PORT} 57600
 
 screen:
 	screen ${PORT} 57600
