@@ -3,77 +3,30 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-#define KBDDATA 7
-#define KBDCLOCK 6
-#define LED 13
-
 long xx = 0;
 long yy = 0;
 unsigned long timer = 0;
+extern int xPos;
+extern int yPos;
+extern int intCount;
+void showByteLog(void);
+void resetByteLog(void);
 
 PS2Mouse mouse;
 
 void setup ()
 {
-//    digitalWrite(3, HIGH);
-//    pinMode(3, OUTPUT);
-//    digitalWrite(3, HIGH);
     Serial.begin(57600);
-    Serial.println("OK");
     timer = millis();
+    Serial.println("OK0");
     mouse.initialize();
-    mouse.set_remote_mode();
+    Serial.println("OK1");
 }
-
-#if 0
-void rawReport(unsigned char (&data)[3])
-{
-    mouse.rawReport(data);
-    if (data[0])
-    {
-        if (data[0] & (1 << 4))
-        {
-            xx -= ((data[1] ^ 0xff) + 1);
-        }
-        else
-        {
-            xx += data[1];
-        }
-        if (data[0] & (1 << 5))
-        {
-            yy -= ((data[2] ^ 0xff) + 1);
-        }
-        else
-        {
-            yy += data[2];
-        }
-    }
-}
-#endif // 0
 
 void loop ()
 {
     int data[3] = {0, 0, 0};
     int * pData = &data[0];
-
-//    mouse.report(pData);
-//    xx += data[1];
-//    yy += data[2];
-//
-//    if ((millis() - timer) > 1000)
-//    {
-//        Serial.print(data[0], 16);
-//        Serial.print(' ');
-//        Serial.print(data[1]);
-//        Serial.print(' ');
-//        Serial.print(data[2]);
-//        Serial.print(' ');
-//        Serial.print(xx);
-//        Serial.print(' ');
-//        Serial.print(yy);
-//        Serial.println(" ");
-//        timer = millis();
-//    }
 
     if (Serial.available())
     {
@@ -94,21 +47,35 @@ void loop ()
              Serial.println('.');
              break;
 
-         case 'r': // raw report
-             mouse.report(pData);
-             xx += data[1];
-             yy += data[2];
-             Serial.print(data[0], 16);
-             Serial.print(' ');
-             Serial.print(data[1]);
-             Serial.print(' ');
-             Serial.print(data[2]);
-             Serial.print(' ');
-             Serial.print(xx);
-             Serial.print(' ');
-             Serial.print(yy);
-             Serial.println(" ");
+         case 'l':
+             showByteLog();
              break;
+
+         case 'e':
+            mouse.set_remote_mode();
+            break;
+
+         case 's':
+            Serial.print('s');
+            mouse.set_stream_mode();
+            Serial.println(' ');
+            break;
+
+         case 'i':
+//            mouse.getIntCount();
+            Serial.println(intCount);
+            break;
+
+         case 'R':
+            resetByteLog();
+            break;
+
+         case 'r': // raw report
+            Serial.print("X");
+            Serial.print(xPos);
+            Serial.print(" Y");
+            Serial.println(yPos);
+            break;
         }
     }
 }
