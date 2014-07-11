@@ -131,7 +131,7 @@ ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 # Default target.
 all: build upload screen
 
-build: elf hex eep
+build: elf hex eep sym lss
 
 elf: $(TARGET).elf
 hex: $(TARGET).hex

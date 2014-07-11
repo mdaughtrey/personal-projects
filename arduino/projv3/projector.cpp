@@ -3,14 +3,15 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-long xx = 0;
-long yy = 0;
-unsigned long timer = 0;
-extern int xPos;
-extern int yPos;
-extern int intCount;
+long xx; // = 0;
+long yy; // = 0;
+unsigned long timer; // = 0;
+extern volatile int xPos;
+extern volatile int yPos;
+extern volatile int pDataCount;
+extern volatile int pClockCount;
 void showByteLog(void);
-void resetByteLog(void);
+//void resetByteLog(void);
 
 PS2Mouse mouse;
 
@@ -37,37 +38,32 @@ void loop ()
              yy = 0;
              break;
 
-         case 'm':
-             mouse.set_remote_mode();
-             break;
-
          case 'x': // reset
              Serial.print("Init");
              mouse.initialize();
              Serial.println('.');
              break;
 
-         case 'l':
+         case 's':
              showByteLog();
              break;
 
-         case 'e':
-            mouse.set_remote_mode();
-            break;
-
-         case 's':
-            Serial.print('s');
-            mouse.set_stream_mode();
-            Serial.println(' ');
-            break;
+//         case 's':
+//            Serial.print('s');
+//            mouse.set_stream_mode();
+//            Serial.println(' ');
+//            break;
 
          case 'i':
 //            mouse.getIntCount();
-            Serial.println(intCount);
+            Serial.print("D");
+            Serial.println(pDataCount);
+            Serial.print("C");
+            Serial.println(pClockCount);
             break;
 
          case 'R':
-            resetByteLog();
+//            resetByteLog();
             break;
 
          case 'r': // raw report
