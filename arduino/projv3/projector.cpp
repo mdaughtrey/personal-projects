@@ -1,17 +1,21 @@
 #include <WProgram.h>
 #include <ps2/ps2mouse.h>
+#include <avrlibtypes.h>
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-long xx; // = 0;
-long yy; // = 0;
 unsigned long timer; // = 0;
-extern volatile int xPos;
-extern volatile int yPos;
-extern volatile int pDataCount;
-extern volatile int pClockCount;
+extern volatile s16 xPos;
+extern volatile s16 yPos;
+extern u08 packet0;
+extern u08 packet1;
+extern u08 packet2;
+
+#ifdef SDEBUG
 void showByteLog(void);
-//void resetByteLog(void);
+void resetByteLog(void);
+#endif // SDEBUG
+void debugReport(void);
 
 PS2Mouse mouse;
 
@@ -26,16 +30,21 @@ void setup ()
 
 void loop ()
 {
-    int data[3] = {0, 0, 0};
-    int * pData = &data[0];
-
+    if (millis() - timer > 1000)
+    {
+            debugReport();
+            timer = millis();
+    }
     if (Serial.available())
     {
         switch (Serial.read())
         {
          case '0':
-             xx = 0;
-             yy = 0;
+             xPos = 0;
+             yPos = 0;
+#ifdef SDEBUG
+            resetByteLog();
+#endif // SDEBUG
              break;
 
          case 'x': // reset
@@ -45,32 +54,13 @@ void loop ()
              break;
 
          case 's':
+#ifdef SDEBUG
              showByteLog();
+#endif // SDEBUG
              break;
 
-//         case 's':
-//            Serial.print('s');
-//            mouse.set_stream_mode();
-//            Serial.println(' ');
-//            break;
-
-         case 'i':
-//            mouse.getIntCount();
-            Serial.print("D");
-            Serial.println(pDataCount);
-            Serial.print("C");
-            Serial.println(pClockCount);
-            break;
-
-         case 'R':
-//            resetByteLog();
-            break;
-
          case 'r': // raw report
-            Serial.print("X");
-            Serial.print(xPos);
-            Serial.print(" Y");
-            Serial.println(yPos);
+            debugReport();
             break;
         }
     }
