@@ -68,11 +68,11 @@ void analogWrite(int, int);
 
 void beginSerial(long);
 void serialWrite(unsigned char);
-int serialAvailable();
-int serialRead();
+int serialAvailable(void);
+int serialRead(void);
 void printMode(int);
 void printByte(unsigned char c);
-void printNewline();
+void printNewline(void);
 void printString(char *s);
 void printInteger(long n);
 void printHex(unsigned long n);

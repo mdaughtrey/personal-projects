@@ -1,6 +1,6 @@
 #include "WConstants.h"
 #include "HardwareSerial.h"
-#include "PS2Mouse.h"
+#include "PS2Mouse.ref.h"
 
 PS2Mouse::PS2Mouse(int clock_pin, int data_pin, int mode) {
     _clock_pin = clock_pin;
@@ -157,9 +157,11 @@ void PS2Mouse::write(int data) {
 }
 
 int * PS2Mouse::report(int data[]) {
+    digitalWrite(3, LOW);
     write(0xeb); // Send Read Data
     read_byte(); // Read Ack Byte
     data[0] = read(); // Status bit
+    return data;
     data[1] = read_movement_x(data[0]); // X Movement Packet
     data[2] = read_movement_y(data[0]); // Y Movement Packet
     return data;

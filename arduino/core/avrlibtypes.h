@@ -64,21 +64,21 @@ typedef   signed long	int64_t;
 #define MIN_S32	-2147483648
 #define MAX_S32	2147483647
 
-#ifndef WIN32
-	// more type redefinitions
-	typedef unsigned char   BOOL;
-	typedef unsigned char	BYTE;
-	typedef unsigned int	WORD;
-	typedef unsigned long	DWORD;
-
-	typedef unsigned char	UCHAR;
-	typedef unsigned int	UINT;
-	typedef unsigned short  USHORT;
-	typedef unsigned long	ULONG;
-
-	typedef char			CHAR;
-	typedef int				INT;
-	typedef long			LONG;
-#endif
+//#ifndef WIN32
+//	// more type redefinitions
+//	typedef unsigned char   BOOL;
+//	typedef unsigned char	BYTE;
+//	typedef unsigned int	WORD;
+//	typedef unsigned long	DWORD;
+//
+//	typedef unsigned char	UCHAR;
+//	typedef unsigned int	UINT;
+//	typedef unsigned short  USHORT;
+//	typedef unsigned long	ULONG;
+//
+//	typedef char			CHAR;
+//	typedef int				INT;
+//	typedef long			LONG;
+//#endif
 
 #endif
