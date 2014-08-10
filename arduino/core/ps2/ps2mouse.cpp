@@ -1,6 +1,6 @@
 #include "WConstants.h"
 #include "HardwareSerial.h"
-#include "PS2Mouse.h"
+#include "ps2mouse.h"
 #include <avr/interrupt.h>
 #include <ctype.h>
 #include <string.h>
