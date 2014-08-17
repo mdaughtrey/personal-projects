@@ -34,7 +34,7 @@ doCommand()
 
 mklinks()
 {
-	let to=${TITLE_STREAM_FRAMES}
+	let to=${1:-$TITLE_STREAM_FRAMES}
 
 	for ff in *PHOTO/SAM_0*.JPG
     do
@@ -692,7 +692,7 @@ case "$1" in
     #dvd) scaler dvd; gentitle dvd; mpeg2 dvd ;;
     dvd) scaler dvd; mpeg2 dvd ;;
     hd) mpeg2 hd ;;
-    mklinks) mklinks ;;
+    mklinks) mklinks $2 ;;
     mkrlinks) mkrlinks ;;
     mpeg2) mpeg2 web; mpeg2 dvd; mpeg2 hd ;;
 	mp42jpg) mp42jpg $2 ;;

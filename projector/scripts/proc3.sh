@@ -11,6 +11,7 @@ SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
 SCRIPT_CLEAN1=${SCRIPT_DIR}/pp_clean1.avs
 SCRIPT_CLEAN2=${SCRIPT_DIR}/pp_clean2.avs
 let TITLE_STREAM_FRAMES=200
+#let TITLE_STREAM_FRAMES=2
 let NATIVE_WIDTH=5472
 let NATIVE_HEIGHT=3648
 
@@ -122,6 +123,8 @@ let height=0
 let bw=4000
 let xOffset=0
 let yOffset=0
+let origYOffset=0
+let origXOffset=0
 
 scaler()
 {
@@ -141,6 +144,8 @@ scaler()
     fi
     crop=($(head -1 crop.cfg)) # left, top, right, bottom 
 
+	let xOrigOffset=${crop[0]}
+	let yOrigOffset=${crop[1]}
 	let xOffset=${crop[0]}
 	let yOffset=${crop[1]}
     let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
@@ -191,9 +196,9 @@ genyuv()
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
 #	if [[ "$2" == "inter3" ]]
 #	then
-#		cropoptions="-vf scale=$scaleX:$scaleY"
-		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-    	doCommand mplayer mf://@titlelist.txt ${options}:file=titlestream.yuv
+		cropoptions="-vf scale=$scaleX:$scaleY"
+	#	cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
+    	doCommand mplayer mf://@titlelist.txt $cropoptions ${options}:file=titlestream.yuv
 #	else
 ##		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
 ##    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
@@ -211,7 +216,7 @@ genyuv()
 		cropoptions="${cropoptions},mirror"
 	fi
 
-	cropoptions=${cropoptions/ ,/ }
+#	cropoptions=${cropoptions/ ,/ }
 #	if [[ "-vf " == "$cropoptions" ]]
 #	then
 #		cropoptions=""
@@ -302,7 +307,7 @@ gentitle()
 	fi
 	type=${1:-"dvd"}
 	scaler $type
-	firstfile=${2:-"cropped/SAM_$(printf "%06u" $((10#$TITLE_STREAM_FRAMES))).JPG"}
+	firstfile=${2:-"SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 
 	if [[ ! -f $firstfile ]]
 	then
@@ -312,7 +317,10 @@ gentitle()
 	
 	let rowsize=200
 	let linecount=0
-	let translateY=${crop[1]}
+	#let translateX=$xOrigOffset
+	#let translateY=$yOrigOffset
+	let translateX=0
+	let translateY=0
 	
 	compositecmd=$(cat title.txt | while read line
 	do
@@ -329,12 +337,12 @@ gentitle()
 			continue
 		fi
 
-		 convert -background transparent \
+	    convert -background transparent \
 			-stroke yellow -strokewidth 2 \
 			-fill blue -font ${FONT} \
 			-size x${rowsize} label:"${line}" titleline_${linecount}.png
 		((translateY+=rowsize+20))
-		#echo -n " -page +${crop[0]}+$((translateY)) titleline_${linecount}.png"
+		echo -n " -page +$((translateX))+$((translateY)) titleline_${linecount}.png"
 		((linecount++))
 	done) 
 
@@ -343,14 +351,15 @@ gentitle()
 	$compositecmd
 	rm titleline_*.png
 
-#	let translateX=${crop[0]}
-#	let translateY=${crop[1]}
-#	((translateX+=150))
-#	((translateY+=150))
-	let translateX=0
-	let translateY=0
+	let translateX=150
+	let translateY=150
 
-	let NUMTASKS=$(cat /proc/cpuinfo | grep processor | wc -l)
+#	let translateX=$xOffset
+#	let translateY=$yOffset
+#	((translateX+=150))
+#    ((translateY+=150))
+
+#	let NUMTASKS=$(cat /proc/cpuinfo | grep processor | wc -l)
 #	((NUMTASKS*=2))
 
 	for sepia in `seq 0 $((TITLE_STREAM_FRAMES-1))`
@@ -361,24 +370,30 @@ gentitle()
 		value=$(echo "${inc}*${sepia}" | bc -l)
 		index=$(printf '%06u' $sepia)
 
-#		if [[ -f "SAM_${index}.JPG" ]]
-#		then
-#			continue
-#		fi
-
-		option=""
-		if [[ -f "mirror" ]]
+		if [[ -f "SAM_${index}.JPG" ]]
 		then
-			option="-flop"
+			continue
 		fi
 
-		doCommand convert $firstfile $option -blur 2x2 -modulate 100,${value} underlay_${index}.png
-		#	doCommand convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
-		doCommand convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
+		option=""
+#		if [[ -f "mirror" ]]
+#		then
+#			option="-flop"
+#		fi
+#		if [[ -f "flip" ]]
+#		then
+#			option="$option -flip"
+#		fi
+
+		#doCommand convert $firstfile $option -blur 2x2 -modulate 100,${value} underlay_${index}.png
+		#draw="-stroke white -strokewidth 2 -fill none -draw \"rectangle $translateX,$translateY,$((translateX+$width)),$((translateY+$height))\""
+	
+		draw=""
+		eval "convert $firstfile $option  -blur 2x2 -modulate 100,${value} ${draw} underlay_${index}.png"
+		convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
 			 titletext.png -layers merge title/SAM_${index}.JPG
-#		doCommand convert SAM_${index}.JPG -crop ${width}x${height}+${xOffset}+${yOffset} tmp.jpg
-#		mv tmp.jpg title/SAM_${index}.JPG
-		doCommand rm underlay_${index}.png
+		ln -s title/SAM_${index}.JPG
+		#doCommand rm underlay_${index}.png
 #		) &
 #		let numTasks=$(ps --no-headers --ppid $$ | wc -l)
 #		if ((numTasks > NUMTASKS))
@@ -570,12 +585,14 @@ gentagged()
 
 all()
 {
-	rm -f *.avi *.avs *.yuv *.JPG *.png
-	mklinks
+	rm -f *.avi *.avs *.yuv *.JPG *.png 
+	if [[ -f "rlink" ]]
+	then
+		mkrlinks
+	else
+		mklinks
+	fi
 	gentitle
-	#renumber
-	#previewtitle
-	preview
 	postprocess interpolate
 }
 
@@ -589,7 +606,7 @@ deleterange()
 	for ff in `seq $1 $2`
 	do
 		template="SAM_$(printf '%06u' $ff).JPG"
-		if [[ -f $template ]]
+		if [[ -f "$template" ]]
 		then
 			doCommand "rm $template"
 		fi
@@ -678,3 +695,9 @@ case "$1" in
 	tonefuse) tonefuse ;;
 	*) echo What? ;;
 esac
+
+#
+# precrop
+# tonefuse
+
+
