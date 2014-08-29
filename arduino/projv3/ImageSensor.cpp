@@ -10,8 +10,10 @@
 #define PIN_DATA 3 // PD3 IC Pin 5 ArdPin 3 PCINT19
 
 #define PIN_INIT(pp)    { PORTD |= _BV(pp); }
+#define PIN_HIZ(pp)     { DDRD &- ~_BV(pp); PORTD &= ~_BV(pp); }
 #define PIN_LO(pp)      { DDRD |= _BV(pp); PORTD &= ~_BV(pp); }
-#define PIN_HI(pp)      { DDRD &= ~_BV(pp); PORTD |= _BV(pp); }
+//#define PIN_HI(pp)      { DDRD &= ~_BV(pp); PORTD |= _BV(pp); }
+#define PIN_HI(pp)      { DDRD |= ~_BV(pp); PORTD |= _BV(pp); }
 
 #define CLOCK_INIT()    PIN_INIT(PIN_CLOCK)
 #define CLOCK_HI()      PIN_HI(PIN_CLOCK)
@@ -22,6 +24,7 @@
 #define DATA_INIT()     PIN_INIT(PIN_DATA)
 #define DATA_HI()       PIN_HI(PIN_DATA)
 #define DATA_LO()       PIN_LO(PIN_DATA)
+#define DATA_HIZ()      PIN_HIZ(PIN_DATA)
 #define IS_DATA_HI()    (PIND & _BV(PIN_DATA))
 
 namespace ImageSensor
@@ -60,6 +63,8 @@ void writeAddress(u08 address, u08 data)
 u08 readAddress(u08 address)
 {
     writeByte(address);
+    DATA_HIZ();
+    delay(1);
     return readByte();
 }
 
@@ -70,7 +75,7 @@ u08 init()
     CLOCK_LO();
     delayMicroseconds(10);
     CLOCK_HI();
-    delay(10);
+    delay(1000);
     return 0;
 }
 
@@ -83,6 +88,7 @@ void writeByte(u08 data)
 {
     for (u08 ii = 0; ii < 8; ii++)
     {
+        CLOCK_LO();
         if (data & 0x80)
         {
             DATA_HI();
@@ -91,10 +97,9 @@ void writeByte(u08 data)
         {
             DATA_LO();
         }
-        CLOCK_LO();
-        delayMicroseconds(50);
+        //delayMicroseconds(10);
         CLOCK_HI();
-        delayMicroseconds(50);
+ //       delayMicroseconds(10);
         data <<= 1;
     }
     DATA_HI();
@@ -107,14 +112,13 @@ u08 readByte()
     for (u08 ii = 0; ii < 8; ii++)
     {
         CLOCK_LO();
-        delayMicroseconds(50);
-        CLOCK_HI();
-        if (IS_DATA_HI())
+//        delayMicroseconds(10);
+        CLOCK_HI(); if (IS_DATA_HI())
         {
             data |= 1;
         }
         data <<= 1;;
-        delayMicroseconds(50);
+        delayMicroseconds(10);
     }
     return data;
 }

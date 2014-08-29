@@ -79,9 +79,9 @@ void setup ()
     Serial.begin(57600);
     mouseTimer = millis();
     servoTimer = millis();
-    Serial.print("IS Init...");
-    ImageSensor::init();
-    Serial.println("Ok.");
+//    Serial.print("IS Init...");
+//    ImageSensor::init();
+//    Serial.println("Ok.");
 //    Serial.println("Mouse0");
 //    mouse.initialize();
 //    Serial.println("Mouse1");
@@ -121,6 +121,9 @@ void loop ()
             break;
              
         case 'i':
+            Serial.print("IS Init...");
+            ImageSensor::init();
+            Serial.println("Ok.");
 //            Serial.println("Mouse0");
 //            mouse.initialize();
 //            Serial.println("Mouse1");
