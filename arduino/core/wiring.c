@@ -93,7 +93,7 @@ void digitalWrite(int pin, int val)
 		if (analogOutPinToTimer(pin) == TIMER1B)
 			cbi(TCCR1A, COM1B1);
 			
-#if defined(__AVR_ATmega168__)
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega169)
 		if (analogOutPinToTimer(pin) == TIMER2A)
 			cbi(TCCR2A, COM2A1);
 			

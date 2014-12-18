@@ -1,0 +1,71 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/34/trunk/Hardware/libraries/Butterfly
+END
+timer2_RTC.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/34/trunk/Hardware/libraries/Butterfly/timer2_RTC.h
+END
+bfeeprom.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/28/trunk/Hardware/libraries/Butterfly/bfeeprom.c
+END
+LCD_Driver.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/34/trunk/Hardware/libraries/Butterfly/LCD_Driver.h
+END
+bfeeprom.h
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/28/trunk/Hardware/libraries/Butterfly/bfeeprom.h
+END
+keywords.txt
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/4/trunk/Hardware/libraries/Butterfly/keywords.txt
+END
+butterfly_temp.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/34/trunk/Hardware/libraries/Butterfly/butterfly_temp.cpp
+END
+dataflash.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/31/trunk/Hardware/libraries/Butterfly/dataflash.cpp
+END
+timer2_RTC.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/34/trunk/Hardware/libraries/Butterfly/timer2_RTC.cpp
+END
+butterfly_temp.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/4/trunk/Hardware/libraries/Butterfly/butterfly_temp.h
+END
+dataflash.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/34/trunk/Hardware/libraries/Butterfly/dataflash.h
+END
+LCD_Driver.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/34/trunk/Hardware/libraries/Butterfly/LCD_Driver.cpp
+END

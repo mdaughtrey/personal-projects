@@ -1,0 +1,155 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/18/trunk/Hardware/cores/butterfly
+END
+wiring_serial.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/7/trunk/Hardware/cores/butterfly/wiring_serial.c
+END
+wiring_private.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/wiring_private.h
+END
+pins_arduino.h
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/pins_arduino.h
+END
+wiring.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/17/trunk/Hardware/cores/butterfly/wiring.c
+END
+Print.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/Print.h
+END
+HardwareSerial.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/HardwareSerial.h
+END
+WProgram.h
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/6/trunk/Hardware/cores/butterfly/WProgram.h
+END
+osccal.c
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/13/trunk/Hardware/cores/butterfly/osccal.c
+END
+main.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/main.cxx
+END
+wiring.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/wiring.h
+END
+WInterrupts.c
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/9/trunk/Hardware/cores/butterfly/WInterrupts.c
+END
+wiring_pulse.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/wiring_pulse.c
+END
+WConstants.h
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/WConstants.h
+END
+osccal.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/osccal.h
+END
+pins_butterfly.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/18/trunk/Hardware/cores/butterfly/pins_butterfly.h
+END
+.DS_Store
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/.DS_Store
+END
+WMath.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/WMath.cpp
+END
+wiring_analog.c
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/6/trunk/Hardware/cores/butterfly/wiring_analog.c
+END
+binary.h
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/binary.h
+END
+pins_arduino.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/pins_arduino.c
+END
+wiring_digital.c
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/7/trunk/Hardware/cores/butterfly/wiring_digital.c
+END
+Print.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/Print.cpp
+END
+wiring_shift.c
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/wiring_shift.c
+END
+Makefile
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/Makefile
+END
+HardwareSerial.cpp
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/2/trunk/Hardware/cores/butterfly/HardwareSerial.cpp
+END
