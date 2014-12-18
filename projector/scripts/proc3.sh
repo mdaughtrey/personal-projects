@@ -188,7 +188,10 @@ genyuv()
 		echo title/SAM_$(printf "%06u" $ii).JPG >> titlelist.txt
 	done
 
-	for ii in `seq ${TITLE_STREAM_FRAMES} $(($(ls fused/SAM_*.JPG | wc -l)-1))`
+	let end=$(($(ls fused/SAM_*.JPG | wc -l)-1))
+	((end+=$TITLE_STREAM_FRAMES))
+	#for ii in `seq ${TITLE_STREAM_FRAMES} $(($(ls fused/SAM_*.JPG | wc -l)-1))`
+	for ii in `seq ${TITLE_STREAM_FRAMES} $end`
 	do
 		echo fused/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
 	done
@@ -296,6 +299,28 @@ postprocess()
     mv ${LOCALSCRIPT}.mpg $HOME/imageinput/dvd/${dvdfile}
 }
 
+oneTitleFrame()
+{
+	sepia=$1
+	TITLE_STREAM_FRAMES=$2
+	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
+	value=$(echo "${inc}*${sepia}" | bc -l)
+	index=$(printf '%06u' $sepia)
+
+	if [[ -f "SAM_${index}.JPG" ]]
+	then
+		return 0
+	fi
+
+	option=""
+	draw=""
+	eval "convert $firstfile $option  -blur 2x2 -modulate 100,${value} ${draw} underlay_${index}.png"
+	convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
+		 titletext.png -layers merge title/SAM_${index}.JPG
+	ln -s title/SAM_${index}.JPG
+}
+export -f oneTitleFrame
+
 gentitle()
 {
 	mkdir title
@@ -359,48 +384,32 @@ gentitle()
 #	((translateX+=150))
 #    ((translateY+=150))
 
-#	let NUMTASKS=$(cat /proc/cpuinfo | grep processor | wc -l)
-#	((NUMTASKS*=2))
 
 	for sepia in `seq 0 $((TITLE_STREAM_FRAMES-1))`
+#	for sepia in `seq 0 1`
 	do
-#		(
-		vOut Frame $sepia of ${TITLE_STREAM_FRAMES}
-		inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
-		value=$(echo "${inc}*${sepia}" | bc -l)
-		index=$(printf '%06u' $sepia)
-
-		if [[ -f "SAM_${index}.JPG" ]]
-		then
-			continue
-		fi
-
-		option=""
-#		if [[ -f "mirror" ]]
-#		then
-#			option="-flop"
-#		fi
-#		if [[ -f "flip" ]]
-#		then
-#			option="$option -flip"
-#		fi
-
-		#doCommand convert $firstfile $option -blur 2x2 -modulate 100,${value} underlay_${index}.png
-		#draw="-stroke white -strokewidth 2 -fill none -draw \"rectangle $translateX,$translateY,$((translateX+$width)),$((translateY+$height))\""
-	
-		draw=""
-		eval "convert $firstfile $option  -blur 2x2 -modulate 100,${value} ${draw} underlay_${index}.png"
-		convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
-			 titletext.png -layers merge title/SAM_${index}.JPG
-		ln -s title/SAM_${index}.JPG
-		#doCommand rm underlay_${index}.png
-#		) &
-#		let numTasks=$(ps --no-headers --ppid $$ | wc -l)
-#		if ((numTasks > NUMTASKS))
-#		then
-#			sleep 5
-#		fi
+		sem -P2% oneTitleFrame $sepia $TITLE_STREAM_FRAMES
+#			(
+#			vOut Frame $sepia of ${TITLE_STREAM_FRAMES}
+#			inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
+#			value=$(echo "${inc}*${sepia}" | bc -l)
+#			index=$(printf '%06u' $sepia)
+#
+#			if [[ -f "SAM_${index}.JPG" ]]
+#			then
+#				exit 0
+##				continue
+#			fi
+#
+#			option=""
+#			draw=""
+#			eval "convert $firstfile $option  -blur 2x2 -modulate 100,${value} ${draw} underlay_${index}.png"
+#			convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
+#				 titletext.png -layers merge title/SAM_${index}.JPG
+#			ln -s title/SAM_${index}.JPG
+#			) &
 	done
+	sem --wait
 }
 
 mp42jpg()
@@ -613,6 +622,21 @@ deleterange()
 	done
 }
 
+onePrecrop()
+{
+	number=$1
+	dir=$2
+	width=$3
+	height=$4
+	xOffset=$5
+	yOffset=$6
+	to=$7
+
+	filename=SAM_$(printf '%04u' $((10#$number))).JPG
+	convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} cropped/SAM_$(printf '%06u' $to).JPG
+}
+export -f onePrecrop
+
 precrop()
 {
 	scaler
@@ -627,9 +651,11 @@ precrop()
 
 		for number in $numbers
 		do
-			filename=SAM_$(printf '%04u' $((10#$number))).JPG
-			vOut ${dir}/$filename
-			doCommand convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} cropped/SAM_$(printf '%06u' $to).JPG
+			echo Frame $number
+			sem -P2% onePrecrop $number $dir $width $height $xOffset $yOffset $to
+#			filename=SAM_$(printf '%04u' $((10#$number))).JPG
+#			vOut ${dir}/$filename
+#			doCommand convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} cropped/SAM_$(printf '%06u' $to).JPG
 			((to++))
 		done
 	done
