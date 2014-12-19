@@ -294,7 +294,7 @@ postprocess()
 	echo $RESULT >> ${LOCALSCRIPT}
     cat $TEMPLATE >> ${LOCALSCRIPT}
 	wine avs2yuv.exe ${LOCALSCRIPT} - > out.yuv
-	ffmpeg -loglevel verbose -i out.yuv  -b:v 4000K -y ${LOCALSCRIPT}.mpg 
+	ffmpeg -loglevel verbose -i out.yuv -threads auto -b:v 4000K -y ${LOCALSCRIPT}.mpg 
     dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
     mv ${LOCALSCRIPT}.mpg $HOME/imageinput/dvd/${dvdfile}
 }
@@ -388,7 +388,7 @@ gentitle()
 	for sepia in `seq 0 $((TITLE_STREAM_FRAMES-1))`
 #	for sepia in `seq 0 1`
 	do
-		sem -P2% oneTitleFrame $sepia $TITLE_STREAM_FRAMES
+		sem -N0 --jobs 200%  oneTitleFrame $sepia $TITLE_STREAM_FRAMES
 #			(
 #			vOut Frame $sepia of ${TITLE_STREAM_FRAMES}
 #			inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
@@ -652,7 +652,7 @@ precrop()
 		for number in $numbers
 		do
 			echo Frame $number
-			sem -P2% onePrecrop $number $dir $width $height $xOffset $yOffset $to
+			sem -N0 --jobs 200% onePrecrop $number $dir $width $height $xOffset $yOffset $to
 #			filename=SAM_$(printf '%04u' $((10#$number))).JPG
 #			vOut ${dir}/$filename
 #			doCommand convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} cropped/SAM_$(printf '%06u' $to).JPG
@@ -660,6 +660,20 @@ precrop()
 		done
 	done
 }
+
+oneToneFuse()
+{
+	dir=$1
+	baseindex=$2
+	outindex=$3
+	file1=SAM_$(printf "%06u" $baseindex)
+	file2=SAM_$(printf "%06u" $((baseindex+1)))
+	file3=SAM_$(printf "%06u" $((baseindex+2)))
+
+	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
+	enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
+}
+export -f oneToneFuse
 
 tonefuse()
 {
@@ -673,17 +687,20 @@ tonefuse()
 
 	while [[ -f "${dir}/SAM_$(printf "%06u" $baseindex).JPG" ]]
 	do
-		file1=SAM_$(printf "%06u" $baseindex)
-		file2=SAM_$(printf "%06u" $((baseindex+1)))
-		file3=SAM_$(printf "%06u" $((baseindex+2)))
-
-		outfile=fused/SAM_$(printf "%06u" $outindex).JPG
-		vOut Tonefusing $outfile
-		doCommand enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
+		vOut Tonefusing $outindex
+		sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
+#		file1=SAM_$(printf "%06u" $baseindex)
+#		file2=SAM_$(printf "%06u" $((baseindex+1)))
+#		file3=SAM_$(printf "%06u" $((baseindex+2)))
+#
+#		outfile=fused/SAM_$(printf "%06u" $outindex).JPG
+#		vOut Tonefusing $outfile
+#		doCommand enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
 
 		((outindex++))
 		((baseindex+=3))
 	done
+	sem --wait
 }
 
 while getopts "sv" OPT
