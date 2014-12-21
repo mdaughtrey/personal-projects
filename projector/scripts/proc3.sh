@@ -15,6 +15,8 @@ let TITLE_STREAM_FRAMES=200
 let NATIVE_WIDTH=5472
 let NATIVE_HEIGHT=3648
 
+touch mirror
+
 vOut()
 {
     if (($verbose))
@@ -396,7 +398,7 @@ gentitle()
 	let renderStart=0
 	let renderEnd=$(($pagePartition-1))
 	let pageIndex=0
-	while ((renderStart < $TITLE_STREAM_FRAMES))
+	while ((renderStart < $(($TITLE_STREAM_FRAMES-1))))
 	do
 		geometry=($(identify -ping titletext${pageIndex}.png  | cut -d' ' -f3 | sed 's/x/ /g'))
 		let titleW=${geometry[0]}
@@ -602,6 +604,7 @@ gentagged()
 all()
 {
 	rm -f *.avi *.avs *.yuv *.JPG *.png 
+	rm -rf title precrop fused
 	precrop
 	tonefuse
 	mklinks
