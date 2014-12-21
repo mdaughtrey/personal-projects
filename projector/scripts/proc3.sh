@@ -37,16 +37,16 @@ mklinks()
 	let to=0
 	dir="title"
 
-	if [[ ! -f "SAM_$(printf '%06u' $to).JPG" ]]
-	then
-		numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
-		for number in $numbers
-		do
-			filename=SAM_$(printf '%06u' $((10#$number))).JPG
-			ln -s ${dir}/$filename SAM_$(printf '%06u' $to).JPG
-			((to++))
-		done
-	fi
+#	if [[ ! -f "SAM_$(printf '%06u' $to).JPG" ]]
+#	then
+#		numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
+#		for number in $numbers
+#		do
+#			filename=SAM_$(printf '%06u' $((10#$number))).JPG
+#			ln -s ${dir}/$filename SAM_$(printf '%06u' $to).JPG
+#			((to++))
+#		done
+#	fi
 
 	let to=${TITLE_STREAM_FRAMES}
 	dir="fused"
@@ -303,20 +303,17 @@ oneTitleFrame()
 {
 	sepia=$1
 	TITLE_STREAM_FRAMES=$2
+	translateX=$3
+	translateY=$4
+	titleFile=$5
+	firstfile="SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
 	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
 	value=$(echo "${inc}*${sepia}" | bc -l)
 	index=$(printf '%06u' $sepia)
 
-	if [[ -f "SAM_${index}.JPG" ]]
-	then
-		return 0
-	fi
-
-	option=""
-	draw=""
-	eval "convert $firstfile $option  -blur 2x2 -modulate 100,${value} ${draw} underlay_${index}.png"
-	convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
-		 titletext.png -layers merge title/SAM_${index}.JPG
+	eval "convert $firstfile -blur 2x2 -modulate 100,${value} underlay_${index}.png"
+	convert underlay_${index}.png -page +${translateX}+${translateY} \
+		 $titleFile -layers merge title/SAM_${index}.JPG
 	ln -s title/SAM_${index}.JPG
 }
 export -f oneTitleFrame
@@ -342,74 +339,79 @@ gentitle()
 	
 	let rowsize=200
 	let linecount=0
-	#let translateX=$xOrigOffset
-	#let translateY=$yOrigOffset
 	let translateX=0
 	let translateY=0
+	let pageIndex=0
+
+	for pageFile in title.txt title[123456789].txt
+	do
+		if [[ ! -f $pageFile ]]
+		then
+			continue
+		fi
+
+		echo Generate Title Page $pageIndex
 	
-	compositecmd=$(cat title.txt | while read line
-	do
-		font=${font// /-}
-		if [[ "=" == "$line" ]]
-		then
-			((rowsize-=rowsize/3))
-			continue
-		fi
+		compositecmd=$(cat $pageFile | while read line
+		do
+			font=${font// /-}
+			if [[ "=" == "$line" ]]
+			then
+				((rowsize-=rowsize/3))
+				continue
+			fi
 
-		if [[ "" == "$line" ]]
-		then
+			if [[ "" == "$line" ]]
+			then
+				((translateY+=rowsize+20))
+				continue
+			fi
+
+			convert -background transparent \
+				-stroke yellow -strokewidth 2 \
+				-fill blue -font ${FONT} \
+				-size x${rowsize} label:"${line}" titleline_${linecount}.png
 			((translateY+=rowsize+20))
-			continue
-		fi
+			echo -n " -page +$((translateX))+$((translateY)) titleline_${linecount}.png"
+			((linecount++))
+		done) 
 
-	    convert -background transparent \
-			-stroke yellow -strokewidth 2 \
-			-fill blue -font ${FONT} \
-			-size x${rowsize} label:"${line}" titleline_${linecount}.png
-		((translateY+=rowsize+20))
-		echo -n " -page +$((translateX))+$((translateY)) titleline_${linecount}.png"
-		((linecount++))
-	done) 
+		compositecmd="convert ${compositecmd} -background transparent -layers merge titletext${pageIndex}.png"
+		echo $compositecmd
+		$compositecmd
+		rm titleline_*.png
+		((pageIndex++))
+    done	
 
-	compositecmd="convert ${compositecmd} -background transparent -layers merge titletext.png"
-	echo $compositecmd
-	$compositecmd
-	rm titleline_*.png
+	# get the underlay geometry
+	geometry=($(identify -ping $firstfile  | cut -d' ' -f3 | sed 's/x/ /g'))
+	let underlayW=${geometry[0]}
+	let underlayH=${geometry[1]} 
 
-	let translateX=150
-	let translateY=150
+	let translateX=0
+	let translateY=0
 
-#	let translateX=$xOffset
-#	let translateY=$yOffset
-#	((translateX+=150))
-#    ((translateY+=150))
-
-
-	for sepia in `seq 0 $((TITLE_STREAM_FRAMES-1))`
-#	for sepia in `seq 0 1`
+	# number of frames each title page gets
+	let pagePartition=$(echo "scale=0;$TITLE_STREAM_FRAMES/$pageIndex" | bc) 
+	let renderStart=0
+	let renderEnd=$(($pagePartition-1))
+	let pageIndex=0
+	while ((renderEnd < $TITLE_STREAM_FRAMES))
 	do
-		sem -N0 --jobs 200%  oneTitleFrame $sepia $TITLE_STREAM_FRAMES
-#			(
-#			vOut Frame $sepia of ${TITLE_STREAM_FRAMES}
-#			inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
-#			value=$(echo "${inc}*${sepia}" | bc -l)
-#			index=$(printf '%06u' $sepia)
-#
-#			if [[ -f "SAM_${index}.JPG" ]]
-#			then
-#				exit 0
-##				continue
-#			fi
-#
-#			option=""
-#			draw=""
-#			eval "convert $firstfile $option  -blur 2x2 -modulate 100,${value} ${draw} underlay_${index}.png"
-#			convert -page +0+0 underlay_${index}.png -page +${translateX}+${translateY} \
-#				 titletext.png -layers merge title/SAM_${index}.JPG
-#			ln -s title/SAM_${index}.JPG
-#			) &
+		geometry=($(identify -ping titletext${pageIndex}.png  | cut -d' ' -f3 | sed 's/x/ /g'))
+		let titleW=${geometry[0]}
+		let titleH=${geometry[1]} 
+		let translateX=$(($underlayW/2 - $titleW/2))
+		let translateY=$(($underlayH/2 - $titleH/2))
+		for renderIndex in `seq $renderStart $renderEnd`
+		do
+			sem -N0 --jobs 200%  oneTitleFrame $renderIndex $TITLE_STREAM_FRAMES $translateX $translateY titletext${pageIndex}.png
+		done
+		((renderStart=$renderEnd))
+		((renderEnd+=$pagePartition))
+		((pageIndex++))
 	done
-	sem --wait
+#	sem --wait
 }
 
 mp42jpg()
@@ -595,13 +597,10 @@ gentagged()
 all()
 {
 	rm -f *.avi *.avs *.yuv *.JPG *.png 
-	if [[ -f "rlink" ]]
-	then
-		mkrlinks
-	else
-		mklinks
-	fi
-	gentitle
+	precrop
+	tonefuse
+	mklinks
+	title
 	postprocess interpolate
 }
 
