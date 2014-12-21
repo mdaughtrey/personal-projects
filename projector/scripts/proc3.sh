@@ -396,7 +396,7 @@ gentitle()
 	let renderStart=0
 	let renderEnd=$(($pagePartition-1))
 	let pageIndex=0
-	while ((renderEnd < $TITLE_STREAM_FRAMES))
+	while ((renderStart < $TITLE_STREAM_FRAMES))
 	do
 		geometry=($(identify -ping titletext${pageIndex}.png  | cut -d' ' -f3 | sed 's/x/ /g'))
 		let titleW=${geometry[0]}
@@ -409,7 +409,12 @@ gentitle()
 		done
 		((renderStart=$renderEnd))
 		((renderEnd+=$pagePartition))
-		((pageIndex++))
+		if (($renderEnd > $(($TITLE_STREAM_FRAMES-1))))
+		then
+			let renderEnd=$(($TITLE_STREAM_FRAMES-1))
+		else
+			((pageIndex++))
+		fi
 	done
 #	sem --wait
 }
