@@ -3,6 +3,7 @@
 
 let verbose=0
 let simulate=0
+let clean=0
 let numTitleFrames=90
 let fps=30
 SCRIPT_DIR=~/scripts
@@ -10,10 +11,11 @@ SCRIPT_INTERPOLATE1=${SCRIPT_DIR}/pp_interpolate1.avs
 SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
 SCRIPT_CLEAN1=${SCRIPT_DIR}/pp_clean1.avs
 SCRIPT_CLEAN2=${SCRIPT_DIR}/pp_clean2.avs
-let TITLE_STREAM_FRAMES=200
+declare -ix TITLE_STREAM_FRAMES=200
 #let TITLE_STREAM_FRAMES=2
 let NATIVE_WIDTH=5472
 let NATIVE_HEIGHT=3648
+FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
 
 touch mirror
 
@@ -38,6 +40,10 @@ mklinks()
 {
 	let to=0
 	dir="title"
+	if [[ "$optionM" == "1" && ! -d markers ]]
+	then
+		mkdir markers
+	fi
 
 #	if [[ ! -f "SAM_$(printf '%06u' $to).JPG" ]]
 #	then
@@ -56,6 +62,19 @@ mklinks()
 	numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
 	for number in $numbers
 	do
+		if (($to % 500 == 0))
+		then
+			if [[ "$optionM" == "1" ]]
+			then
+				markerfile=markers/marker_$(printf '%06u' $((10#$number))).JPG
+				if [[ ! -f $markerfile ]]
+				then
+					textToImage $markerfile ${dir}/$filename
+				fi
+				ln -s $markerfile SAM_$(printf '%06u' $to).JPG
+				((to++))
+			fi
+		fi
 		filename=SAM_$(printf '%06u' $((10#$number))).JPG
 		ln -s ${dir}/$filename SAM_$(printf '%06u' $to).JPG
 		((to++))
@@ -120,11 +139,15 @@ previewTitle()
 
 let scaleX=0
 let scaleY=0
-let width=0
-let height=0 
+#let width=0
+declare -ix width=0
+#let height=0 
+declare -ix height=0 
 let bw=4000
-let xOffset=0
-let yOffset=0
+#let xOffset=0
+declare -ix xOffset=0
+#let yOffset=0
+declare -ix yOffset=0
 let origYOffset=0
 let origXOffset=0
 
@@ -262,6 +285,10 @@ postprocess()
 {
 	vOut === postprocess
 	majorMode=$1
+	if ((clean == 1))
+	then
+		rm *.yuv *.av? *.mpg
+	fi
 
 	if [[ ! -f rawframes.avi ]]
 	then
@@ -304,10 +331,9 @@ postprocess()
 oneTitleFrame()
 {
 	sepia=$1
-	TITLE_STREAM_FRAMES=$2
-	translateX=$3
-	translateY=$4
-	titleFile=$5
+	translateX=$2
+	translateY=$3
+	titleFile=$4
 	firstfile="SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
 	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
 	value=$(echo "${inc}*${sepia}" | bc -l)
@@ -320,10 +346,20 @@ oneTitleFrame()
 }
 export -f oneTitleFrame
 
+textToImage()
+{
+	convert -background black \
+		-stroke yellow -strokewidth 2 \
+		-fill blue -font ${FONT} \
+		-size x100 label:"${2}" /tmp/$(basename $1)
+	geometry=($(identify -ping $firstfile  | cut -d' ' -f3 | sed 's/x/ /g'))
+	let underlayW=${geometry[0]}
+	let underlayH=${geometry[1]} 
+}
+
 gentitle()
 {
 	mkdir title
-	FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
 	if [[ ! -f title.txt ]]
 	then
 		echo No title.txt
@@ -407,7 +443,7 @@ gentitle()
 		let translateY=$(($underlayH/2 - $titleH/2))
 		for renderIndex in `seq $renderStart $renderEnd`
 		do
-			sem -N0 --jobs 200%  oneTitleFrame $renderIndex $TITLE_STREAM_FRAMES $translateX $translateY titletext${pageIndex}.png
+			sem -N0 --jobs 200%  oneTitleFrame $renderIndex $translateX $translateY titletext${pageIndex}.png
 		done
 		((renderStart=$renderEnd))
 		((renderEnd+=$pagePartition))
@@ -629,25 +665,32 @@ deleterange()
 	done
 }
 
-onePrecrop()
-{
-	number=$1
-	dir=$2
-	width=$3
-	height=$4
-	xOffset=$5
-	yOffset=$6
-	to=$7
-
-	filename=SAM_$(printf '%04u' $((10#$number))).JPG
-	convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} cropped/SAM_$(printf '%06u' $to).JPG
-}
-export -f onePrecrop
+#onePrecrop()
+#{
+#	number=$1
+#	dir=$2
+#	width=$3
+#	height=$4
+#	xOffset=$5
+#	yOffset=$6
+#	outfile=$7
+#
+#	filename=SAM_$(printf '%04u' $((10#$number))).JPG
+#	convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} $outfile
+#}
+#export -f onePrecrop
 
 precrop()
 {
 	scaler
-	mkdir cropped
+	if ((clean == 1))
+	then
+		rm -rf cropped
+	fi
+	if [[ ! -d cropped ]]
+	then
+		mkdir cropped
+	fi
 	let to=${TITLE_STREAM_FRAMES}
 
 	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
@@ -659,10 +702,15 @@ precrop()
 		for number in $numbers
 		do
 			echo Frame $number
-			sem -N0 --jobs 200% onePrecrop $number $dir $width $height $xOffset $yOffset $to
-#			filename=SAM_$(printf '%04u' $((10#$number))).JPG
-#			vOut ${dir}/$filename
-#			doCommand convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} cropped/SAM_$(printf '%06u' $to).JPG
+			outfile="cropped/SAM_$(printf '%06u' $to).JPG"
+			#outfile="/tmp/SAM_$(printf '%06u' $to).JPG"
+			if [[ ! -f $outfile ]]
+			then
+				filename=SAM_$(printf '%04u' $((10#$number))).JPG
+				sem -N0 --jobs 200% convert ${dir}PHOTO/${filename} \
+						 -crop ${width}x${height}+${xOffset}+${yOffset} $outfile
+#				sem -N0 --jobs 200% onePrecrop $number $dir $width $height $xOffset $yOffset $outfile
+			fi
 			((to++))
 		done
 	done
@@ -684,25 +732,28 @@ export -f oneToneFuse
 
 tonefuse()
 {
-	mkdir fused
 	scaler
-	outfile=enfuse.jpg
 	let outindex=200
-	dir="cropped"
 
+	if ((clean == 1))
+	then 
+		rm -rf fused
+	fi
+	if [[ ! -d fused ]]
+	then
+		mkdir fused
+	fi
 	let baseindex=200
 
-	while [[ -f "${dir}/SAM_$(printf "%06u" $baseindex).JPG" ]]
+	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
 	do
 		vOut Tonefusing $outindex
-		sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
-#		file1=SAM_$(printf "%06u" $baseindex)
-#		file2=SAM_$(printf "%06u" $((baseindex+1)))
-#		file3=SAM_$(printf "%06u" $((baseindex+2)))
-#
-#		outfile=fused/SAM_$(printf "%06u" $outindex).JPG
-#		vOut Tonefusing $outfile
-#		doCommand enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
+		outfile="$fused/SAM_$(printf "%06u" $((baseindex+3)))"
+		if [[ ! -f $outfile ]]
+		then
+			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
+			sem -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
+		fi
 
 		((outindex++))
 		((baseindex+=3))
@@ -710,11 +761,83 @@ tonefuse()
 	sem --wait
 }
 
-while getopts "sv" OPT
+oneCropFuse()
+{
+	dir=$1
+	file1=$2
+	file2=$3
+	file3=$4
+	outfile=$5
+	convert ${dir}PHOTO/${file1} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file1
+	convert ${dir}PHOTO/${file2} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file2
+	convert ${dir}PHOTO/${file3} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file3
+	enfuse --output $outfile /tmp/$file1 /tmp/$file2 /tmp/$file3 
+	rm /tmp/$file1 /tmp/$file2 /tmp/$file3
+}
+export -f oneCropFuse
+
+cropfuse()
+{
+	scaler
+	if ((clean == 1))
+	then 
+		rm -rf fused
+	fi
+	if [[ ! -d fused ]]
+	then
+		mkdir fused
+	fi
+	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
+	let baseindex=$TITLE_STREAM_FRAMES
+	
+	for dir in $dirs
+	do
+		#numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
+		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {})
+		let outindex=$baseindex
+		((baseindex+=$(echo $numbers | wc -w)/3))
+		echo $numbers | sed 's/[^ ]\+ [^ ]\+ [^ ]\+ /&\n/g' | while read file1 file2 file3
+		do
+			outfile=fused/SAM_$(printf "%06u" $outindex).JPG
+			((outindex++))
+			if [[ -f $outfile ]]
+			then
+				continue
+			fi
+			if [[ "$file1" == "" || "$file2" == "" || "$file3" == "" ]]
+			then
+				return 0
+			fi
+			sem -N0 --jobs 200% oneCropFuse $dir $file1 $file2 $file3 $outfile
+		done
+	done
+	sem --wait
+}
+
+import()
+{
+	let target=$(ls -d ???PHOTO | sed 's/[^0-9]//g' | tail -1)
+	let source=$(ls -d ../../???PHOTO | sed 's/[^0-9]//g' | head -1)
+	((target++))
+	while [[ 0 ]]
+	do
+		if [[ ! -d ../../${source}PHOTO ]]
+		then
+			break
+		fi
+		echo mv ../../${source}PHOTO ${target}PHOTO
+		((source++))
+		((target++))
+	done
+}
+
+while getopts "msvC" OPT
 do
     case $OPT in
         v) let verbose=1 ;;
         s) let simulate=1 ;;
+		C) let clean=1 ;;
+		m) let optionM=1 ;;
         *) echo What?; exit 1 ;;
     esac
 done
@@ -743,6 +866,8 @@ case "$1" in
 	all) all ;;
 	precrop) precrop ;;
 	tonefuse) tonefuse ;;
+	cropfuse) cropfuse ;;
+	import) import ;;
 	*) echo What? ;;
 esac
 
