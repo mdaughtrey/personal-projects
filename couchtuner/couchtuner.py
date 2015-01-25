@@ -11,11 +11,14 @@ import subprocess
 from HTMLParser import HTMLParser
 from optparse import OptionParser
 
+outputfile=''
+
 parser = OptionParser()
 parser.add_option('-u', '--url', dest='url')
 parser.add_option('-o', '--output', dest='output')
-parser.add_option('-s', '--showname', dest='showname')
+#parser.add_option('-s', '--showname', dest='showname')
 parser.add_option('-d', '--directory', dest='directory')
+#parser.add_option('-v', '--vendor', dest='vendor', default='allmyvideos')
 (options, args) = parser.parse_args()
 
 class TheParser(HTMLParser):
@@ -32,25 +35,44 @@ class TheParser(HTMLParser):
         self._lookForData = lookFor
         self._cbData = cb
 
+    def recurseAttrs(self, attr):
+        if 2 != len(attr):
+            for elem in attr:
+                if True == self.recurseAttrs(elem):
+                    return True
+            return False
+
+        (name, value) = attr
+
+#        if isinstance(name, unicode):
+#            name = name.encode('ascii', 'ignore')
+#        if isinstance(value, unicode):
+#            value = value.encode('ascii', 'ignore')
+        
+        if False == isinstance(name, str) or False == isinstance(value, str):
+            return False
+
+        if 'src' != name:
+            return False
+
+        if -1 != value.find(self._lookForStartTag):
+            if self._cbStartTag:
+                self._cbStartTag(value)
+                return True
+        return False
+
     def handle_starttag(self, tag, attrs):
-        print "starttag tag %s attrs %s" % (tag, attrs)
+        print 'starttag %s' % tag
         if tag != 'iframe':
             return
-        for elem in attrs:
-            if 'src' != elem[0]:
-                continue
-            if -1 != elem[1].find(self._lookForStartTag):
-                print '%s => %s' % elem
-                if self._cbStartTag:
-                    self._cbStartTag(elem[1])
-#                page = urllib.urlretrieve(elem[1])
-                
+#        pdb.set_trace()
+        self.recurseAttrs(attrs)
 
     def handle_endtag(self, tag):
-        print "endtag tag %s" % tag
+        pass
 
     def handle_data(self, data):
-        print 'Data1 %s' % data
+        print 'data %s' % data
         try:
             self._extractMP4File(data, self._outputfile)
         except AttributeError:
@@ -61,8 +83,6 @@ class TheParser(HTMLParser):
         if -1 == data.find(self._lookForData):
             return
 
-        print "Data2 %s" % data
-#        pdb.set_trace()
         data = data[data.find('{'):data.rfind('}') + 1]
         patterns = [
             ('\n',''),
@@ -74,25 +94,15 @@ class TheParser(HTMLParser):
 
         for pattern in patterns:
             fixed = data.replace(pattern[0], pattern[1])
-            if fixed == data:
-                print "Pattern replacement failed, something in the vendor code has changed"
-                print "Original data is %s" % origData
-                sys.exit(1)
             data = fixed
 
         jData = ast.literal_eval(data)
         try:
             for elem in jData['playlist'][0]['sources']:
-                if '720' == elem['label']:
+                if -1 != elem['label'].find('720'):
                     mp4File = elem['file']
-                    outputfile = "%s/%s/%s-%s.mp4" % (options.directory, options.showname, options.showname, outputfile)
-                    if os.path.isfile(outputfile):
-                        print "%s exists, skipping" % outputfile
-                        sys.exit(0)
-                    if not os.path.exists(options.directory):
-                        os.mkdir(options.directory)
                     print "Downloading %s to %s" % (mp4File, outputfile)
-                    subprocess.call(['wget', '-q', mp4File, '-O', outputfile])
+                    subprocess.call(['wget', mp4File, '-O', outputfile])
                     sys.exit(0)
 
         except AttributeError:
@@ -100,32 +110,79 @@ class TheParser(HTMLParser):
             print "Original data is %s" % origData
             sys.exit(1)
 
+def repairHtml(toFix):
+    patterns = [
+        ('</"+e+"script>', '</script>'),
+        ('sc"+"ript', 'script'),
+        ('</"+"script', '</script'),
+        ('<scr"+e+"ipt>', '<script>')
+    ]
+    toFix = toFix.decode('utf8')
+    toFix = toFix.encode('ascii','ignore')
+    for pattern in patterns:
+        fixed = toFix.replace(pattern[0], pattern[1])
+        toFix = fixed
+
+    return fixed
+
+
 def processPage(url):
+    print "Retrieving %s" % url
     page = urllib.urlretrieve(url)
+    print "Retrieved %s to %s" % (url, page[0])
     htmlFile = open(page[0])
+#    pdb.set_trace()
+    htmlData = repairHtml(''.join(htmlFile.readlines()))
     parser = TheParser()
-    parser.callBackOnStartTag('allmyvideos.net', lambda url: startTag(url))
-    parser.feed(''.join(htmlFile.readlines()))
+
+    if -1 != htmlData.find('allmyvideos.net'):
+        parser.callBackOnStartTag('allmyvideos.net', lambda url: startTagAllMyVideos(url))
+    elif -1 != htmlData.find('ishared.eu'):
+        parser.callBackOnStartTag('ishared.eu', lambda url: startTagIShared(url))
+    parser.feed(htmlData)
 
 def mp4Data(data):
-    pdb.set_trace()
     pass
 
-
-def startTag(url):
-    print 'Found startTag %s' % url
+def startTagIShared(url):
     page = urllib.urlretrieve(url)
     htmlFile = open(page[0])
-    parser = TheParser(options.output)
-#    pdb.set_trace()
-    theData = ''.join(htmlFile.readlines())
-    fixedData = theData.replace('<scr"+e+"ipt>', '<script>')
+    parser = TheParser(outputfile)
+    htmlData = repairHtml(''.join(htmlFile.readlines()))
+    iMp4 = htmlData.find('mp4')
+    iStart = htmlData.rfind('"', 0, iMp4)
+    iEnd = htmlData.find('"', iMp4)
+    mp4File = htmlData[iStart + 1: iEnd]
+    print "Downloading %s to %s" % (mp4File, outputfile)
+    subprocess.call(['wget', mp4File, '-O', outputfile])
+    sys.exit(0)
+#    parser.callBackOnData('.mp4', lambda data: mp4Data(data))
+#    parser.feed(htmlData)
+
+def startTagAllMyVideos(url):
+    page = urllib.urlretrieve(url)
+    htmlFile = open(page[0])
+    parser = TheParser(outputfile)
+    fixedData = repairHtml(''.join(htmlFile.readlines()))
     parser.callBackOnData('.mp4', lambda data: mp4Data(data))
-    if -1 != fixedData:
-        parser.feed(fixedData)
-    parser.feed(theData)
+    parser.feed(fixedData)
 
 def main():
+    global outputfile
+    outputfile = "%s/%s" % (options.directory, options.output)
+#    outputfile = "%s/%s/%s-%s.mp4" % (options.directory,
+#            options.showname,
+#            options.showname,
+#            options.output)
+
+    if os.path.isfile(outputfile):
+        print "%s exists, skipping" % outputfile
+        sys.exit(0)
+
+#outputdir="%s/%s" % (options.directory, options.showname)
+#    if not os.path.exists(outputdir):
+#        os.mkdir(outputdir)
+
     processPage(options.url)
 
 
