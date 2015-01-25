@@ -6,7 +6,7 @@ showname="$@"
 
 if [[ "$showname" != "" && -f "$showname" ]]
 then
-    cat "$showname" | head -1 | while read -a params #surl season episode description
+    cat "$showname" | while read -a params #surl season episode description
     do
         if (( ${#params[@]} > 4))
         then
