@@ -1,12 +1,11 @@
 #!/bin/bash
 
-
 let verbose=0
 let simulate=0
 let clean=0
 let numTitleFrames=90
 let fps=30
-SCRIPT_DIR=~/scripts
+SCRIPT_DIR=~/git/personal-projects/projector/scripts/
 SCRIPT_INTERPOLATE1=${SCRIPT_DIR}/pp_interpolate1.avs
 SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
 SCRIPT_CLEAN1=${SCRIPT_DIR}/pp_clean1.avs
@@ -16,7 +15,21 @@ declare -ix TITLE_STREAM_FRAMES=200
 let NATIVE_WIDTH=5472
 let NATIVE_HEIGHT=3648
 FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
+SEM="sem --will-cite"
+DIRBASE_SYMLINKS=~/symlinks
+DIRBASE_IMAGES=/mnt/imageinput
+AVS2YUV=Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe
+YUVTMP=~/tmp/videotmp_`basename $PWD`
+FFMPEG=avconv
 
+
+if [[ ! -d $YUVTMP ]]
+then
+	mkdir -p $YUVTMP
+fi
+
+symlinkSource=`pwd`
+symlinkTarget=$DIRBASE_SYMLINKS/${PWD//$DIRBASE_IMAGES/}
 touch mirror
 
 vOut()
@@ -45,16 +58,10 @@ mklinks()
 		mkdir markers
 	fi
 
-#	if [[ ! -f "SAM_$(printf '%06u' $to).JPG" ]]
-#	then
-#		numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
-#		for number in $numbers
-#		do
-#			filename=SAM_$(printf '%06u' $((10#$number))).JPG
-#			ln -s ${dir}/$filename SAM_$(printf '%06u' $to).JPG
-#			((to++))
-#		done
-#	fi
+	if [[ ! -d $symlinkTarget ]]
+	then
+		mkdir -p $symlinkTarget
+	fi
 
 	let to=${TITLE_STREAM_FRAMES}
 	dir="fused"
@@ -71,12 +78,12 @@ mklinks()
 				then
 					textToImage $markerfile ${dir}/$filename
 				fi
-				ln -s $markerfile SAM_$(printf '%06u' $to).JPG
+				ln -s $markerfile $symlinkTarget/SAM_$(printf '%06u' $to).JPG
 				((to++))
 			fi
 		fi
 		filename=SAM_$(printf '%06u' $((10#$number))).JPG
-		ln -s ${dir}/$filename SAM_$(printf '%06u' $to).JPG
+		ln -s ${dir}/$filename $symlinkTarget/SAM_$(printf '%06u' $to).JPG
 		((to++))
 	done
 }
@@ -120,9 +127,9 @@ preview()
     previewfile=${PWD//\//_}preview.mpg
 	if [[ -f SAM_0000.JPG ]]
 	then
-    	doCommand ffmpeg -i SAM_%04d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
+    	doCommand $FFMPEG -i SAM_%04d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
 	else
-    	doCommand ffmpeg -i SAM_%06d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
+    	doCommand $FFMPEG -i SAM_%06d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
 	fi
     mv $previewfile $HOME/imageinput/previews 
 }
@@ -132,7 +139,7 @@ previewTitle()
     previewfile=${PWD//\//_}title_preview.mpg
 	if [[ -f SAM_0000.JPG ]]
 	then
-    	doCommand ffmpeg -i SAM_00%02d.JPG -b:v 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
+    	doCommand $FFMPEG -i SAM_00%02d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
 	fi
     doCommand mv $previewfile $HOME/imageinput/previews 
 }
@@ -202,9 +209,9 @@ scaler()
 genyuv()
 {
 	vOut === genyuv
-    scaler $1
-    rm stream.yuv
-    rm stream_${0}.yuv
+	scaler $1
+	rm $YUVTMP/stream.yuv
+	rm $YUVTMP/stream_${0}.yuv
 	rm -f titlelist.txt
 	rm -f contentlist.txt
 
@@ -226,7 +233,7 @@ genyuv()
 #	then
 		cropoptions="-vf scale=$scaleX:$scaleY"
 	#	cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-    	doCommand mplayer mf://@titlelist.txt $cropoptions ${options}:file=titlestream.yuv
+    	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
 #	else
 ##		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
 ##    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
@@ -251,33 +258,33 @@ genyuv()
 #	fi
 
 	vOut cropoptions $cropoptions
-	options="${cropoptions} ${options}:file=contentstream.yuv"
-    doCommand mplayer mf://@contentlist.txt ${options} 
+	options="${cropoptions} ${options}:file=$YUVTMP/contentstream.yuv"
+    doCommand mplayer -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
 
 	vOut Concatenating YUV Streams
-	(cat titlestream.yuv; cat contentstream.yuv | (read junk; cat)) > stream_${1}.yuv
+	(cat $YUVTMP/titlestream.yuv; cat $YUVTMP/contentstream.yuv | (read junk; cat)) > $YUVTMP/stream_${1}.yuv
 	vOut Concatenation Done
 }
 
 avi()
 {
-	vOut === avi
-    if [[ ! -f stream_${1}.yuv ]]
+    vOut === avi
+    if [[ ! -f $YUVTMP/stream_${1}.yuv ]]
     then
         genyuv $1 $2
     fi
-    cat stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | ffmpeg -loglevel quiet -i - -vcodec rawvideo -y rawframes.avi
+    cat $YUVTMP/stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | $FFMPEG -loglevel quiet -i - -vcodec rawvideo -y $YUVTMP/rawframes.avi
 }
 
 mpeg2()
 {
-    if [[ ! -f stream_${1}.yuv ]]
+    if [[ ! -f $YUVTMP/stream_${1}.yuv ]]
     then
         genyuv $1
     fi
     dvdfile=${PWD//\//_}dvd.mpg
 
-    cat stream_${1}.yuv  | yuvfps -r ${fps}:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $dvdfile
+    cat $YUVTMP/stream_${1}.yuv  | yuvfps -r ${fps}:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $dvdfile
     mv $dvdfile $HOME/imageinput/dvd
 }
 
@@ -287,10 +294,10 @@ postprocess()
 	majorMode=$1
 	if ((clean == 1))
 	then
-		rm *.yuv *.av? *.mpg
+		rm $YUVTMP/*.yuv $YUVTMP/*.av? *.av? *.mpg
 	fi
 
-	if [[ ! -f rawframes.avi ]]
+	if [[ ! -f $YUVTMP/rawframes.avi ]]
 	then
 		avi dvd $majorMode
 	fi
@@ -299,33 +306,33 @@ postprocess()
 		icompare) 
 			RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
 			TEMPLATE=${SCRIPT_INTERPOLATE2}
-			LOCALSCRIPT="interpolate_compare.avs"
+			LOCALSCRIPT="$YUVTMP/interpolate_compare.avs"
 			;;
 		interpolate|inter3)
 			RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
 			TEMPLATE=${SCRIPT_INTERPOLATE2}
-			LOCALSCRIPT="interpolate.avs"
+			LOCALSCRIPT="$YUVTMP/interpolate.avs"
 			;;
 		clean)
 			RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
 			TEMPLATE=${SCRIPT_CLEAN2}
-			LOCALSCRIPT="clean.avs"
+			LOCALSCRIPT="$YUVTMP/clean.avs"
 			;;
 		ccompare)
 			RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
 			TEMPLATE=${SCRIPT_CLEAN2}
-			LOCALSCRIPT="clean_compare.avs"
+			LOCALSCRIPT="$YUVTMP/clean_compare.avs"
 			;;
-    esac
+    	esac
 
-	rawFrames=$(echo -n "film=\"Z:"; echo -n $PWD | sed 's/\//\\\\/g;'; echo "\\\\rawframes.avi\"")
+	rawFrames=$(echo -n "film=\"Z:\\\\home\\\\mattd\\\\tmp\\\\videotmp_`basename $PWD`\\\\rawframes.avi\"")
 	echo $rawFrames > ${LOCALSCRIPT}
 	echo $RESULT >> ${LOCALSCRIPT}
-    cat $TEMPLATE >> ${LOCALSCRIPT}
-	wine avs2yuv.exe ${LOCALSCRIPT} - > out.yuv
-	ffmpeg -loglevel verbose -i out.yuv -threads auto -b:v 4000K -y ${LOCALSCRIPT}.mpg 
-    dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
-    mv ${LOCALSCRIPT}.mpg $HOME/imageinput/dvd/${dvdfile}
+	cat $TEMPLATE >> ${LOCALSCRIPT}
+	wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
+	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 4000K -y ${LOCALSCRIPT}.mpg 
+    	dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
+    	mv ${LOCALSCRIPT}.mpg /mnt/imageinput/dvd/${dvdfile}
 }
 
 oneTitleFrame()
@@ -334,7 +341,7 @@ oneTitleFrame()
 	translateX=$2
 	translateY=$3
 	titleFile=$4
-	firstfile="SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
+	firstfile="fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
 	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
 	value=$(echo "${inc}*${sepia}" | bc -l)
 	index=$(printf '%06u' $sepia)
@@ -342,7 +349,7 @@ oneTitleFrame()
 	eval "convert $firstfile -blur 2x2 -modulate 100,${value} underlay_${index}.png"
 	convert underlay_${index}.png -page +${translateX}+${translateY} \
 		 $titleFile -layers merge title/SAM_${index}.JPG
-	ln -s title/SAM_${index}.JPG
+#	ln -s title/SAM_${index}.JPG
 }
 export -f oneTitleFrame
 
@@ -367,7 +374,7 @@ gentitle()
 	fi
 	type=${1:-"dvd"}
 	scaler $type
-	firstfile=${2:-"SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
+	firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 
 	if [[ ! -f $firstfile ]]
 	then
@@ -443,7 +450,7 @@ gentitle()
 		let translateY=$(($underlayH/2 - $titleH/2))
 		for renderIndex in `seq $renderStart $renderEnd`
 		do
-			sem -N0 --jobs 200%  oneTitleFrame $renderIndex $translateX $translateY titletext${pageIndex}.png
+			$SEM -N0 --jobs 200%  oneTitleFrame $renderIndex $translateX $translateY titletext${pageIndex}.png
 		done
 		((renderStart=$renderEnd))
 		((renderEnd+=$pagePartition))
@@ -464,7 +471,7 @@ mp42jpg()
 		echo No file
 		return
 	fi
-	ffmpeg -i $1 -b 2000 -qscale 1 -qcomp 0 -qblur 0 SAM_%06d.JPG
+	$FFMPEG -i $1 -b 2000 -qscale 1 -qcomp 0 -qblur 0 SAM_%06d.JPG
 }
 
 findSyncLight()
@@ -707,7 +714,7 @@ precrop()
 			if [[ ! -f $outfile ]]
 			then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
-				sem -N0 --jobs 200% convert ${dir}PHOTO/${filename} \
+				$SEM -N0 --jobs 200% convert ${dir}PHOTO/${filename} \
 						 -crop ${width}x${height}+${xOffset}+${yOffset} $outfile
 #				sem -N0 --jobs 200% onePrecrop $number $dir $width $height $xOffset $yOffset $outfile
 			fi
@@ -752,13 +759,13 @@ tonefuse()
 		if [[ ! -f $outfile ]]
 		then
 			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
-			sem -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
+			$SEM -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
 		fi
 
 		((outindex++))
 		((baseindex+=3))
 	done
-	sem --wait
+	$SEM --wait
 }
 
 oneCropFuse()
@@ -808,10 +815,10 @@ cropfuse()
 			then
 				return 0
 			fi
-			sem -N0 --jobs 200% oneCropFuse $dir $file1 $file2 $file3 $outfile
+			$SEM -N0 --jobs 200% oneCropFuse $dir $file1 $file2 $file3 $outfile
 		done
 	done
-	sem --wait
+	$SEM --wait
 }
 
 import()
@@ -874,5 +881,3 @@ esac
 #
 # precrop
 # tonefuse
-
-

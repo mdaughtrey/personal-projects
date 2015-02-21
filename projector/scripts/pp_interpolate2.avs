@@ -93,16 +93,17 @@ SetMemoryMax(800)  #set this to 1/3 of the available memory
 
 
 
-LoadPlugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\Deflicker.dll")
-Loadplugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\Depan.dll")
-LoadPlugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\DepanEstimate.dll")
-Loadplugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\removegrain.dll")
-LoadPlugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\removedirt.dll")
-LoadPlugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\MVTools.dll")
-LoadPlugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\MVTools2.dll")
-Loadplugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\warpsharp.dll")
-LoadPlugin("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\autolevels_06.dll")
-Import("Z:\\home\\mattd\\imageinput\\avx\\scripts\\plugins\\03_RemoveDirtMC.avs")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\Deflicker.dll")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\Depan.dll")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\DepanEstimate.dll")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\removegrain.dll")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\removedirt.dll")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\MVTools.dll")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\MVTools2.dll")
+#LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\warpsharp.dll")
+LoadPlugin("C:\\windows\\system\\warpsharp.dll")
+LoadPlugin("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\autolevels_06.dll")
+Import("Z:\\mnt\\imageinput\\software\\avx\\scripts\\plugins\\03_RemoveDirtMC.avs")
 
 
 
