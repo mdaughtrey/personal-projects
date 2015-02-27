@@ -881,3 +881,11 @@ esac
 #
 # precrop
 # tonefuse
+
+
+#!/bin/bash
+
+filename=SAM_007281.JPG
+let index=$(echo -n '10#'; echo $filename | cut -c5-10)
+
+(echo -n $index" "; convert SAM_007281.JPG -crop 200x200+200+100 - | tee out.jpg  |  identify -format '%[mean]' - ) > levels.txt
