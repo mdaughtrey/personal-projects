@@ -2,6 +2,7 @@
 
 ERRORFILE="./errorcheck.out"
 SEM="sem --will-cite -N0 --jobs 200%"
+#SEM=
 declare -A levels
 
 if [[ -f "$ERRORFILE" ]]
@@ -51,19 +52,27 @@ function levelsMismatch()
 	echo $(resync $base)
 }
 
-for ff in $@
+cat filelist.txt | while read ff
+#for ff in $@
 do
-	read index level <<< $($SEM getLevel $ff $ERRORFILE) 
-	if ((0 == $level))
-	then echo -n ! 
-	else echo -n .
-	fi
-	let levels[$index]=$level
+	filename=$(tempfile -d /tmp -p errck)
+	$SEM getLevel $ff $ERRORFILE > $filename
+	echo -n '.'
+done
+
+cat /tmp/errck* | sort -nk1 > levels.txt
+rm /tmp/errck*
+
+for line in `seq 1 $(cat levels.txt | wc -l)`
+do
+	read index level <<< $(cat levels.txt | sed -ne "${line}p;")
+	((index-=200))
+	if ((0 == $level)); then echo -n '!'; fi
+	((levels[$index] = $level))
 done
 
 let end=${#levels[@]}
-((end+=200))
-let ii=200
+let ii=0
 while (($ii < $end))
 do
 	if (($ii + 3 >= $end))
