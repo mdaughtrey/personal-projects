@@ -672,24 +672,21 @@ deleterange()
 	done
 }
 
-#onePrecrop()
-#{
-#	number=$1
-#	dir=$2
-#	width=$3
-#	height=$4
-#	xOffset=$5
-#	yOffset=$6
-#	outfile=$7
-#
-#	filename=SAM_$(printf '%04u' $((10#$number))).JPG
-#	convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} $outfile
-#}
-#export -f onePrecrop
+onePrecrop()
+{
+# index dir filename width height xOffset yOffset 
+	levelfile=$(tempfile -d /tmp -p lvlck)
+	let index=$(echo -n 10#$1)
+	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
+	(echo -n $1" "; convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} - | tee $outfile | identify -format '%[mean]' -)  > $levelfile
+}
+
+export -f onePrecrop
 
 precrop()
 {
 	scaler
+	rm /tmp/lvlck*
 	if ((clean == 1))
 	then
 		rm -rf cropped
@@ -709,18 +706,21 @@ precrop()
 		for number in $numbers
 		do
 			echo Frame $number
+			let index=$(echo -n 10#$to)
 			outfile="cropped/SAM_$(printf '%06u' $to).JPG"
+			#levelfile=$(tempfile -d /tmp -p lvlck)
 			#outfile="/tmp/SAM_$(printf '%06u' $to).JPG"
 			if [[ ! -f $outfile ]]
 			then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
-				$SEM -N0 --jobs 200% convert ${dir}PHOTO/${filename} \
-						 -crop ${width}x${height}+${xOffset}+${yOffset} $outfile
-#				sem -N0 --jobs 200% onePrecrop $number $dir $width $height $xOffset $yOffset $outfile
+				$SEM -N0 --jobs 200% onePrecrop $index $filename $dir $width $height $xOffset $yOffset 
+				#onePrecrop $index $dir $filename $width $height $xOffset $yOffset 
 			fi
 			((to++))
 		done
 	done
+	cat /tmp/lvlck* | sort -nk1 > levels.txt
+	rm /tmp/errck*
 }
 
 oneToneFuse()
@@ -884,8 +884,14 @@ esac
 
 
 #!/bin/bash
+#filename=SAM_007281.JPG
+#let index=$(echo -n '10#'; echo $filename | cut -c5-10)
+#
+#(echo -n $index" "; convert SAM_007281.JPG -crop 200x200+200+100 - | tee out.jpg  |  identify -format '%[mean]' - ) > levels.txt
+				#$SEM -N0 --jobs 200% convert ${dir}PHOTO/${filename} \
+				# -crop ${width}x${height}+${xOffset}+${yOffset} $outfile
+				#$SEM -N0 --jobs 200% (echo -n $index" "; convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} | tee $outfile | identify -format '%[mean]' -  > $levelfile)
+# index dir filename width height xOffset yOffset 
+#				$SEM -N0 --jobs 200% echo -n $index" "; convert ${dir}PHOTO/${filename} -crop ${width}x${height}+${xOffset}+${yOffset} | tee $outfile | identify -format '%[mean]' -  > $levelfile
+#				$SEM -N0 --jobs 200% onePrecrop $index $filename $dir $width $height $xOffset $yOffset $outfile
 
-filename=SAM_007281.JPG
-let index=$(echo -n '10#'; echo $filename | cut -c5-10)
-
-(echo -n $index" "; convert SAM_007281.JPG -crop 200x200+200+100 - | tee out.jpg  |  identify -format '%[mean]' - ) > levels.txt
