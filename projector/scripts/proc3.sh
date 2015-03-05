@@ -748,7 +748,7 @@ function resync()
 	echo $base
 }
 
-function levelsMismatch()
+function explevelsMismatch()
 {
 	let base=$1
 	echo -n "Levels Mismatch at $base $((base+1)) $((base+2)):" >> $LEVELS_ERROR
