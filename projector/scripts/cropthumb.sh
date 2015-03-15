@@ -8,31 +8,46 @@ then
 		mkdir $CTDIR
 fi
 
-echo "<html><head></head><body><table>" > $HTMLFILE
-
 files=`ls cropped/SAM_*.JPG`
-
-let count=0
-
 for file in $files
 do
-		if ((count % 12 == 0))
-		then
-				echo -n "<tr>" >> $HTMLFILE
-		fi
 		outfile=`basename $file`
 		echo $outfile
 		if [[ ! -f "$CTDIR/$outfile" ]]
 		then
 				convert -resize 100x $file $CTDIR/$outfile
 		fi
-		echo -n "<td><img src='"$CTDIR/$outfile"' alt='"$outfile"'></td>" >> $HTMLFILE
+done
 
-		if ((count % 12 == 11))
+let count=0
+while [[ 0 ]]
+do
+		outfile=$(printf "$CTDIR/montage%d.JPG" $count)
+		echo $outfile
+		if [[ -f "$outfile" ]]
 		then
-				echo "</tr>" >> $HTMLFILE
+			((count++))
+			continue
 		fi
+		filetemplate=$(printf "$CTDIR/SAM_%03u*.JPG" $count)
+		let numfiles=$(ls $filetemplate | wc -l)
+		if (( 0 == $numfiles ))
+		then
+			break
+		fi
+
+		montage $filetemplate -tile 18x $outfile
 		((count++))
 done
 
+echo "<html><head></head><body><table>" > $HTMLFILE
+
+files=`ls cropthumbs/montage*.JPG`
+
+let count=0
+
+for file in $files
+do
+		echo -n "<tr><td><img src='"$CTDIR/$outfile"' alt='"$outfile"'></td></tr>" >> $HTMLFILE
+done
 echo "</table></body>" >> $HTMLFILE
