@@ -8,6 +8,8 @@ then
 		mkdir $CTDIR
 fi
 
+doCrop()
+{
 files=`ls cropped/SAM_*.JPG`
 for file in $files
 do
@@ -18,7 +20,10 @@ do
 				convert -resize 100x $file $CTDIR/$outfile
 		fi
 done
+}
 
+doMontage()
+{
 let count=0
 while [[ 0 ]]
 do
@@ -36,18 +41,29 @@ do
 			break
 		fi
 
-		montage $filetemplate -tile 18x $outfile
+		montage $filetemplate -geometry +0+0 -tile 18x $outfile
 		((count++))
 done
+}
 
+doHtml()
+{
 echo "<html><head></head><body><table>" > $HTMLFILE
 
-files=`ls cropthumbs/montage*.JPG`
+files=`ls -lrt cropthumbs/montage*.JPG`
 
 let count=0
 
 for file in $files
 do
-		echo -n "<tr><td><img src='"$CTDIR/$outfile"' alt='"$outfile"'></td></tr>" >> $HTMLFILE
+		echo -n "<tr><td><img src='"$file"' alt='"$file"'></td></tr>" >> $HTMLFILE
 done
 echo "</table></body>" >> $HTMLFILE
+}
+
+
+
+case "$1" in
+	montage) doMontage ;;
+	html) doHtml ;;
+esac
