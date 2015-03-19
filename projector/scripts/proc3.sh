@@ -751,7 +751,7 @@ function resync()
 function explevelsMismatch()
 {
 	let base=$1
-	echo -n "Levels Mismatch at $base $((base+1)) $((base+2)):" >> $LEVELS_ERROR
+	echo -n "Levels Mismatch at $base $((base+1)) $((base+2)) " >> $LEVELS_ERROR
 	echo "${explevels[$base]} ${explevels[$((base+1))]} ${explevels[$((base+2))]}" >> $LEVELS_ERROR
 	echo $(resync $base)
 }
