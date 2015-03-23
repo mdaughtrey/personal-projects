@@ -22,16 +22,16 @@ makeThumb()
 
 makeMontage()
 {
+	let mcount=0
 	montageFile=$1
 	shift
     filelist=""
-	let count=0
 	for ii in $@
 	do
 		filelist=$(printf "$filelist ${CTDIR}/SAM_%06u.JPG" $ii)
 		((count++))
 	done
-	montage $filelist -tile 18x $montageFile
+	montage $filelist -geometry +1+1 -tile ${count}x $montageFile
 }
 
 #echo "<html><head></head><body><table>" > $HTMLFILE
@@ -73,21 +73,24 @@ makeMontage()
 #done
 #}
 
-echo "<html><head></head><body><table>" > $HTMLFILE
+echo "<html><head></head><body bgcolor='#a0a0ff'><table>" > $HTMLFILE
 
 #files=`ls -lrt cropthumbs/montage*.JPG`
 
 let count=0
-cat $LEVELFILE | grep 'Levels Mismatch' | awk -F' ' '{print $4,$6}' \
- | while read iOne iTwo
+#cat $LEVELFILE | grep 'Levels Mismatch' | awk -F' ' '{print $4,$6}' \
+# | while read iOne iTwo
+cat $LEVELFILE | grep 'Levels Mismatch' | while read line
 do
+	read iOne iTwo <<< $(echo $line | awk -F' ' '{print $4,$6}')
+
 	let first=$iOne
 	let last=$iTwo
 	filelist=""
-	((first--))
-	((last++))
+	((first-=10))
+    ((last+=10))
 	echo Montage $first $last $count
-	for ii in `seq $first $((last + 1))`
+	for ii in `seq $first $last`
     do
 		filelist="$filelist $ii"
 		makeThumb $ii
@@ -95,6 +98,7 @@ do
 
 	montageFile=$(printf "${CTDIR}/montage%d.JPG" $count)
 	makeMontage $montageFile $filelist
+	echo -n "<tr><td>${line}</td></tr>" >> $HTMLFILE
 	echo -n "<tr><td><img src='"$montageFile"' alt='"$filelist"'></td></tr>" >> $HTMLFILE
 	((count++))
 done
