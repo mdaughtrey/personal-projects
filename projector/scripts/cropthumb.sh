@@ -1,38 +1,67 @@
 #!/bin/bash
 
-CTDIR=cropthumbs
-HTMLFILE=./cropthumbs.html
+OUTPUTDIR=croppedthumbs
+export INPUTDIR=cropped
+export TMPDIR=/tmp/cropthumbs
+let MONTAGECOLS=18
+let MONTAGEROWS=20
+HTMLFILE=${OUTPUTDIR}/cropthumbs.html
 LEVELFILE=${1:-levelcheck.out}
+SEM="sem --will-cite -N0 --jobs 200%"
 
-if [[ ! -d "$CTDIR" ]]
-then
-		mkdir $CTDIR
-fi
+mkdir $OUTPUTDIR
+mkdir $TMPDIR
+rm $TMPDIR/*
 
 makeThumb()
 {
-	infile=$(printf "cropped/SAM_%06u.JPG" $1)
-	outfile=$(printf "${CTDIR}/SAM_%06u.JPG" $1)
+	infile=$(printf "${INPUTDIR}/SAM_%06u.JPG" $1)
+	outfile=$(printf "${TMPDIR}/SAM_%06u.JPG" $1)
 
 	if [[ ! -f "$outfile" ]]
 	then
 		convert -resize 100x $infile $outfile
 	fi
 }
+export -f makeThumb
 
 makeMontage()
 {
-	let mcount=0
-	montageFile=$1
-	shift
+	let base=$1
+	let counttil=$((MONTAGEROWS * MONTAGECOLS + 200))
+	montageFile=$2
     filelist=""
-	for ii in $@
+
+	let count=0
+	while (($count < $counttil))
 	do
-		filelist=$(printf "$filelist ${CTDIR}/SAM_%06u.JPG" $ii)
+		filelist=$(printf "$filelist ${TMPDIR}/SAM_%06u.JPG" $((base + MONTAGEROWS * MONTAGECOLS)))
 		((count++))
 	done
-	montage $filelist -geometry +1+1 -tile ${count}x $montageFile
+	montagefile=$(printf "${OUTPUTDIR}/montage_%06u_%06u.JPG" $base $((base + counttil)))
+#	makeMontage $((count + 200)) # ${OUTPUTDIR}/$(printf "montage_%06u.JPG" $montage)
+	montage $filelist -geometry +1+1 -tile ${MONTAGECOLS}x $montagefile
+	rm $filelist
 }
+
+let numfiles=$(ls ${INPUTDIR}/SAM_*.JPG | wc -l)
+let montage=0
+let count=0
+
+set -o xtrace
+
+while ((count < numfiles))
+do
+	let thcount=0
+	while (($thcount < $MONTAGEROWS * $MONTAGECOLS))
+	do
+		$SEM makeThumb $((200 + count + thcount)) # ${OUTPUTDIR}/$(printf "montage_%06u.JPG" $montage)
+		((thcount++))
+    done
+	makeMontage $((count + 200)) # ${OUTPUTDIR}/$(printf "montage_%06u.JPG" $montage)
+	((count += $MONTAGEROWS * $MONTAGECOLS))
+	((montage++))
+done
 
 #echo "<html><head></head><body><table>" > $HTMLFILE
 #doCrop()
@@ -73,36 +102,36 @@ makeMontage()
 #done
 #}
 
-echo "<html><head></head><body bgcolor='#a0a0ff'><table>" > $HTMLFILE
+#echo "<html><head></head><body bgcolor='#a0a0ff'><table>" > $HTMLFILE
 
 #files=`ls -lrt cropthumbs/montage*.JPG`
 
-let count=0
+#let count=0
 #cat $LEVELFILE | grep 'Levels Mismatch' | awk -F' ' '{print $4,$6}' \
 # | while read iOne iTwo
-cat $LEVELFILE | grep 'Levels Mismatch' | while read line
-do
-	read iOne iTwo <<< $(echo $line | awk -F' ' '{print $4,$6}')
-
-	let first=$iOne
-	let last=$iTwo
-	filelist=""
-	((first-=10))
-    ((last+=10))
-	echo Montage $first $last $count
-	for ii in `seq $first $last`
-    do
-		filelist="$filelist $ii"
-		makeThumb $ii
-	done
-
-	montageFile=$(printf "${CTDIR}/montage%d.JPG" $count)
-	makeMontage $montageFile $filelist
-	echo -n "<tr><td>${line}</td></tr>" >> $HTMLFILE
-	echo -n "<tr><td><img src='"$montageFile"' alt='"$filelist"'></td></tr>" >> $HTMLFILE
-	((count++))
-done
-echo "</table></body>" >> $HTMLFILE
+#do
+##	read iOne iTwo <<< $(echo $line | awk -F' ' '{print $4,$6}')
+#
+#	let first=$iOne
+#	let last=$iTwo
+#	filelist=""
+#	((first-=3))
+#    	((last+=3))
+##	echo Montage $first $last #$count
+#	for ii in `seq $first $last`
+#        do
+#		cp cropped/SAM_$(printf '%06u' $ii).JPG $CTDIR
+##		filelist="$filelist $ii"
+##		makeThumb $ii
+#	done
+#
+##	montageFile=$(printf "${CTDIR}/montage%d.JPG" $count)
+##	makeMontage $montageFile $filelist
+##	echo -n "<tr><td>${line}</td></tr>" >> $HTMLFILE
+##	echo -n "<tr><td><img src='"$montageFile"' alt='"$filelist"'></td></tr>" >> $HTMLFILE
+##	((count++))
+#done
+##echo "</table></body>" >> $HTMLFILE
 
 #let count=0
 #while [[ 0 ]]
