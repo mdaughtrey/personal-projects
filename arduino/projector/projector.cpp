@@ -33,11 +33,15 @@ int motorSpeed = 0;
 unsigned long brakeStartTime;
 int maxMotorSpeed = 0;
 
-const int SLOW_SPEED=64;
-const int SLOW_SPEED_INC=16;
+const int SLOW_SPEED=100;
+const int SLOW_SPEED_INC=20;
 
 const int FAST_SPEED=255;
 const int FAST_SPEED_INC=1;
+
+const int motorTable[] = { 20, 40, 60, 80, 100, 120, 140, 160 };
+const int MOTOR_TABLE_SIZE = sizeof(motorTable)/sizeof(motorTable[0]);
+int motorTableIndex = 0;
 
 void lampOn()
 {
@@ -71,10 +75,14 @@ void slowBack()
 
 void slowForward()
 {
-    if (motorSpeed && (motorSpeed < SLOW_SPEED))
-    {
-        motorSpeed += SLOW_SPEED_INC;
-    }
+	if (motorTableIndex < MOTOR_TABLE_SIZE)	
+	{
+		motorSpeed = motorTable[motorTableIndex++];
+	}
+//    if (motorSpeed && (motorSpeed < SLOW_SPEED))
+//    {
+//        motorSpeed += SLOW_SPEED_INC;
+//    }
     analogWrite(motorReverse, motorSpeed);
     analogWrite(motorFwd, 0);
 }
@@ -92,6 +100,7 @@ void fastForward()
 void motorStop()
 {
     motorSpeed = 0;
+    motorTableIndex = 0;
     analogWrite(motorFwd, 0);
     analogWrite(motorReverse, 0);
 }

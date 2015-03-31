@@ -333,7 +333,7 @@ postprocess()
 	echo $RESULT >> ${LOCALSCRIPT}
 	cat $TEMPLATE >> ${LOCALSCRIPT}
 	wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
-	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 4000K -y ${LOCALSCRIPT}.mpg 
+	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 6000K -y ${LOCALSCRIPT}.mpg 
     	dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
     	mv ${LOCALSCRIPT}.mpg /mnt/imageinput/dvd/${dvdfile}
 }

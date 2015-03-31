@@ -28,17 +28,22 @@ export -f makeThumb
 makeMontage()
 {
 	let base=$1
-	let counttil=$((MONTAGEROWS * MONTAGECOLS + 200))
+	let counttil=$((MONTAGEROWS * MONTAGECOLS + $base))
 	montageFile=$2
     filelist=""
+	montagefile=$(printf "${OUTPUTDIR}/montage_%06u_%06u.JPG" $base $counttil)
 
-	let count=0
-	while (($count < $counttil))
+	if [[ -f "$montagefile" ]]
+	then	
+	    return
+	fi
+
+	let mmcount=$base
+	while (($mmcount < $counttil))
 	do
-		filelist=$(printf "$filelist ${TMPDIR}/SAM_%06u.JPG" $((base + MONTAGEROWS * MONTAGECOLS)))
-		((count++))
+		filelist=$(printf "$filelist ${TMPDIR}/SAM_%06u.JPG" $mmcount)
+		((mmcount++))
 	done
-	montagefile=$(printf "${OUTPUTDIR}/montage_%06u_%06u.JPG" $base $((base + counttil)))
 #	makeMontage $((count + 200)) # ${OUTPUTDIR}/$(printf "montage_%06u.JPG" $montage)
 	montage $filelist -geometry +1+1 -tile ${MONTAGECOLS}x $montagefile
 	rm $filelist
