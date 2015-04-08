@@ -5,6 +5,10 @@ let simulate=0
 let clean=0
 let numTitleFrames=90
 let fps=30
+
+# logs command line invocations. Useful when you've forgotten what stage of the 
+# process you were in
+RUN_LOG=/home/mattd/documents/runlog.txt
 SCRIPT_DIR=~/git/personal-projects/projector/scripts/
 SCRIPT_INTERPOLATE1=${SCRIPT_DIR}/pp_interpolate1.avs
 SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
@@ -19,6 +23,7 @@ SEM="sem --will-cite"
 DIRBASE_SYMLINKS=~/symlinks
 DIRBASE_IMAGES=/mnt/imageinput
 AVS2YUV=Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe
+# where to put the temporary video files 
 YUVTMP=~/tmp/videotmp_`basename $PWD`
 FFMPEG=avconv
 LEVELS_TXT=levels.txt
@@ -34,6 +39,7 @@ fi
 symlinkSource=`pwd`
 symlinkTarget=$DIRBASE_SYMLINKS/${PWD//$DIRBASE_IMAGES/}
 touch mirror
+touch flip
 
 vOut()
 {
@@ -52,77 +58,77 @@ doCommand()
     fi
 }
 
-mklinks()
-{
-	let to=0
-	dir="title"
-	if [[ "$optionM" == "1" && ! -d markers ]]
-	then
-		mkdir markers
-	fi
+#mklinks()
+#{
+#	let to=0
+#	dir="title"
+#	if [[ "$optionM" == "1" && ! -d markers ]]
+#	then
+#		mkdir markers
+#	fi
+#
+#	if [[ ! -d $symlinkTarget ]]
+#	then
+#		mkdir -p $symlinkTarget
+#	fi
+#
+#	let to=${TITLE_STREAM_FRAMES}
+#	dir="fused"
+#
+#	numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
+#	for number in $numbers
+#	do
+#		if (($to % 500 == 0))
+#		then
+#			if [[ "$optionM" == "1" ]]
+#			then
+#				markerfile=markers/marker_$(printf '%06u' $((10#$number))).JPG
+#				if [[ ! -f $markerfile ]]
+#				then
+#					textToImage $markerfile ${dir}/$filename
+#				fi
+#				ln -s $markerfile $symlinkTarget/SAM_$(printf '%06u' $to).JPG
+#				((to++))
+#			fi
+#		fi
+#		filename=SAM_$(printf '%06u' $((10#$number))).JPG
+#		ln -s ${dir}/$filename $symlinkTarget/SAM_$(printf '%06u' $to).JPG
+#		((to++))
+#	done
+#}
+#
+#mkrlinks()
+#{
+#	let to=$(ls */*.JPG | wc -l)
+#
+#	for ff in *PHOTO/SAM_0*.JPG
+#    do
+#    	mv $ff $(echo $ff | sed 's/_0/_1/')
+#	done
+#	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
+#
+#	for dir in $dirs
+#	do
+#		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
+#
+#		for number in $numbers
+#		do
+#			filename=SAM_$(printf '%04u' $number).JPG
+#			ln -s ${dir}PHOTO/$filename SAM_$(printf '%04u' $to).JPG
+#			((to--))
+#		done
+#	done
+#}
 
-	if [[ ! -d $symlinkTarget ]]
-	then
-		mkdir -p $symlinkTarget
-	fi
-
-	let to=${TITLE_STREAM_FRAMES}
-	dir="fused"
-
-	numbers=$(ls ${dir}/SAM_*.JPG | xargs -I {} basename {} | cut -b5-10 | sort -n)
-	for number in $numbers
-	do
-		if (($to % 500 == 0))
-		then
-			if [[ "$optionM" == "1" ]]
-			then
-				markerfile=markers/marker_$(printf '%06u' $((10#$number))).JPG
-				if [[ ! -f $markerfile ]]
-				then
-					textToImage $markerfile ${dir}/$filename
-				fi
-				ln -s $markerfile $symlinkTarget/SAM_$(printf '%06u' $to).JPG
-				((to++))
-			fi
-		fi
-		filename=SAM_$(printf '%06u' $((10#$number))).JPG
-		ln -s ${dir}/$filename $symlinkTarget/SAM_$(printf '%06u' $to).JPG
-		((to++))
-	done
-}
-
-mkrlinks()
-{
-	let to=$(ls */*.JPG | wc -l)
-
-	for ff in *PHOTO/SAM_0*.JPG
-    do
-    	mv $ff $(echo $ff | sed 's/_0/_1/')
-	done
-	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
-
-	for dir in $dirs
-	do
-		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
-
-		for number in $numbers
-		do
-			filename=SAM_$(printf '%04u' $number).JPG
-			ln -s ${dir}PHOTO/$filename SAM_$(printf '%04u' $to).JPG
-			((to--))
-		done
-	done
-}
-
-renumber()
-{
-	let to=${1:-0}
-	for from in $(ls SAM_??????.JPG | cut -c5-10 | sort -n)
-	do
-		mv SAM_${from}.JPG SAM_`printf "%06u" ${to}`.JPG
-		((to++))
-	done
-}
+#renumber()
+#{
+#	let to=${1:-0}
+#	for from in $(ls SAM_??????.JPG | cut -c5-10 | sort -n)
+#	do
+#		mv SAM_${from}.JPG SAM_`printf "%06u" ${to}`.JPG
+#		((to++))
+#	done
+#}
 
 
 preview()
@@ -209,6 +215,10 @@ scaler()
     vOut Scaler width $width height $height scaleX $scaleX scaleY $scaleY bw $bw
 }
 
+# Converts the images in the title/ subdirectory into titlestream.yuv
+# Converts the images in the tonefuse/ subdir into contentstream.yuv
+# Concatenates those into stream_dvd.uv
+# Images are scaled to DVD resolution here, also flipping and mirroring as necessary
 genyuv()
 {
 	vOut === genyuv
@@ -269,6 +279,7 @@ genyuv()
 	vOut Concatenation Done
 }
 
+# Converts stream_dvd.yuv into rawframes.avi. Framerate conversion from 18 to 30fps happens here
 avi()
 {
     vOut === avi
@@ -279,6 +290,7 @@ avi()
     cat $YUVTMP/stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | $FFMPEG -loglevel quiet -i - -vcodec rawvideo -y $YUVTMP/rawframes.avi
 }
 
+# YUV files converted to mpeg, copied to final destination
 mpeg2()
 {
     if [[ ! -f $YUVTMP/stream_${1}.yuv ]]
@@ -332,7 +344,10 @@ postprocess()
 	echo $rawFrames > ${LOCALSCRIPT}
 	echo $RESULT >> ${LOCALSCRIPT}
 	cat $TEMPLATE >> ${LOCALSCRIPT}
-	wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
+	if [[ ! -f "$YUVTMP/out.yuv" ]]
+	then
+		wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
+	fi
 	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 6000K -y ${LOCALSCRIPT}.mpg 
     	dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
     	mv ${LOCALSCRIPT}.mpg /mnt/imageinput/dvd/${dvdfile}
@@ -650,10 +665,10 @@ gentagged()
 all()
 {
 	rm -f *.avi *.avs *.yuv *.JPG *.png 
-	rm -rf title precrop fused
+	rm -rf title cropped fused
 	precrop
+	optimize
 	tonefuse
-	mklinks
 	title
 	postprocess interpolate
 }
@@ -921,6 +936,8 @@ import()
 	done
 }
 
+(date | tr -d '\n'; echo -n " "; pwd | tr -d '\n'; echo -n " ";  echo $*) >> $RUN_LOG
+
 while getopts "msvC" OPT
 do
     case $OPT in
@@ -935,7 +952,7 @@ shift $((OPTIND-1))
 #echo $@
 case "$1" in 
 	title) gentitle $2 ;;
-	renumber) renumber $2 ;;
+	#renumber) renumber $2 ;;
     preview) preview ;;
 	previewtitle) previewTitle ;;
     #genyuv) genyuv web; genyuv dvd; genyuv hd ;;
@@ -944,8 +961,8 @@ case "$1" in
     #dvd) scaler dvd; gentitle dvd; mpeg2 dvd ;;
     dvd) scaler dvd; mpeg2 dvd ;;
     hd) mpeg2 hd ;;
-    mklinks) mklinks ;;
-    mkrlinks) mkrlinks ;;
+    #mklinks) mklinks ;;
+    #mkrlinks) mkrlinks ;;
     mpeg2) mpeg2 web; mpeg2 dvd; mpeg2 hd ;;
 	mp42jpg) mp42jpg $2 ;;
 	mktags) mktags $2;;
