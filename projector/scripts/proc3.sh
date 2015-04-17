@@ -1,9 +1,14 @@
 #!/bin/bash
 
+rm proc3_log.txt
+set -o xtrace
+date >> proc3_log.txt
+exec 2>> proc3_log.txt
+
 let verbose=0
 let simulate=0
 let clean=0
-let numTitleFrames=90
+#let numTitleFrames=90
 let fps=30
 
 # logs command line invocations. Useful when you've forgotten what stage of the 
@@ -25,11 +30,11 @@ DIRBASE_IMAGES=/mnt/imageinput
 AVS2YUV=Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe
 # where to put the temporary video files 
 YUVTMP=~/tmp/videotmp_`basename $PWD`
+FRAMETMP=/media/usb0/videotmp_`basename $PWD`
 FFMPEG=avconv
 LEVELS_TXT=levels.txt
 LEVELS_ERROR=levelcheck.out
 IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
-
 
 if [[ ! -d $YUVTMP ]]
 then
@@ -39,7 +44,6 @@ fi
 symlinkSource=`pwd`
 symlinkTarget=$DIRBASE_SYMLINKS/${PWD//$DIRBASE_IMAGES/}
 touch mirror
-touch flip
 
 vOut()
 {
@@ -133,14 +137,17 @@ doCommand()
 
 preview()
 {
-    previewfile=${PWD//\//_}preview.mpg
-	if [[ -f SAM_0000.JPG ]]
-	then
-    	doCommand $FFMPEG -i SAM_%04d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
-	else
-    	doCommand $FFMPEG -i SAM_%06d.JPG -b 4000k -vf scale=1024:-1 -vcodec mpeg2video $previewfile
-	fi
-    mv $previewfile $HOME/imageinput/previews 
+	rm -f *.JPG *.png 
+	rm -rf title cropped fused
+    rm -rf $YUVTMP
+	mkdir -p $YUVTMP
+	let TITLE_STREAM_FRAMES=36
+	precrop 720
+	optimize
+	tonefuse
+	gentitle 
+	postprocess icompare
+    rm -rf $YUVTMP
 }
 
 previewTitle()
@@ -223,8 +230,8 @@ genyuv()
 {
 	vOut === genyuv
 	scaler $1
-	rm $YUVTMP/stream.yuv
-	rm $YUVTMP/stream_${0}.yuv
+	rm $YUVTMP/title_stream.yuv
+	rm $YUVTMP/stream_${1}.yuv
 	rm -f titlelist.txt
 	rm -f contentlist.txt
 
@@ -329,7 +336,7 @@ postprocess()
 			LOCALSCRIPT="$YUVTMP/interpolate.avs"
 			;;
 		clean)
-			RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
+			RESULT=$(echo -n "result=\"source4\" # specify the wanted output here" )
 			TEMPLATE=${SCRIPT_CLEAN2}
 			LOCALSCRIPT="$YUVTMP/clean.avs"
 			;;
@@ -363,8 +370,12 @@ oneTitleFrame()
 	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
 	value=$(echo "${inc}*${sepia}" | bc -l)
 	index=$(printf '%06u' $sepia)
+	if [[ -f "flip" ]]
+	then
+		flipOption='-flip'
+	fi
 
-	eval "convert $firstfile -blur 2x2 -modulate 100,${value} underlay_${index}.png"
+	eval "convert $firstfile $flipOption -blur 2x2 -modulate 100,${value} underlay_${index}.png"
 	convert underlay_${index}.png -page +${translateX}+${translateY} \
 		 $titleFile -layers merge title/SAM_${index}.JPG
 #	ln -s title/SAM_${index}.JPG
@@ -664,13 +675,22 @@ gentagged()
 
 all()
 {
-	rm -f *.avi *.avs *.yuv *.JPG *.png 
+#    rm -rf $YUVTMP
+	rm -f *.JPG *.png 
 	rm -rf title cropped fused
+	echo precrop
 	precrop
+	echo optimize
 	optimize
+	echo tonefuse
 	tonefuse
-	title
+	echo gentitle
+	gentitle
+	echo interpolate
 	postprocess interpolate
+	rm $YUVTMP/*
+	echo clean
+	postprocess clean
 }
 
 deleterange()
@@ -693,18 +713,20 @@ deleterange()
 onePrecrop()
 {
 # index dir filename width height xOffset yOffset 
-	levelfile=$(tempfile -d /tmp -p lvlck)
+#.	levelfile=$(tempfile -d /tmp -p lvlck)
 	let index=$(echo -n 10#$1)
 	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
-	(echo -n $1" "; convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} - | tee $outfile | identify -format '%[mean]' -)  > $levelfile
+	#(echo -n $1" "; convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} - | tee $outfile | identify -format '%[mean]' -)  > $levelfile
+	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} $outfile
 }
 
 export -f onePrecrop
 
 precrop()
 {
+	let numFrames=${1:-999999}
 	scaler
-	rm /tmp/lvlck*
+#	rm /tmp/lvlck*
 	if ((clean == 1))
 	then
 		rm -rf cropped
@@ -714,6 +736,7 @@ precrop()
 		mkdir cropped
 	fi
 	let to=${TITLE_STREAM_FRAMES}
+	((numFrames+=2))
 
 	dirs=$(ls -d *PHOTO | sed 's/PHOTO//' | sort -n)
 
@@ -735,11 +758,16 @@ precrop()
 				#onePrecrop $index $dir $filename $width $height $xOffset $yOffset 
 			fi
 			((to++))
+			if ((to == numFrames))
+			then
+				$SEM --wait
+				return
+			fi
 		done
 	done
 	$SEM --wait
-	cat /tmp/lvlck* | sort -nk1 > levels.txt
-	rm /tmp/lvlck*
+#	cat /tmp/lvlck* | sort -nk1 > levels.txt
+#	rm /tmp/lvlck*
 }
 
 # optional for mac only it seems
@@ -838,7 +866,7 @@ export -f oneToneFuse
 tonefuse()
 {
 	scaler
-	let outindex=200
+	let outindex=$TITLE_STREAM_FRAMES
 
 	if ((clean == 1))
 	then 
@@ -848,7 +876,7 @@ tonefuse()
 	then
 		mkdir fused
 	fi
-	let baseindex=200
+	let baseindex=$TITLE_STREAM_FRAMES
 
 	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
 	do
@@ -921,19 +949,10 @@ cropfuse()
 
 import()
 {
-	let target=$(ls -d ???PHOTO | sed 's/[^0-9]//g' | tail -1)
-	let source=$(ls -d ../../???PHOTO | sed 's/[^0-9]//g' | head -1)
-	((target++))
-	while [[ 0 ]]
-	do
-		if [[ ! -d ../../${source}PHOTO ]]
-		then
-			break
-		fi
-		echo mv ../../${source}PHOTO ${target}PHOTO
-		((source++))
-		((target++))
-	done
+    mkdir -p $FRAMETMP
+	rsync -rav ???PHOTO $FRAMETMP/
+	cp crop.cfg $FRAMETMP
+	cp title*.txt $FRAMETMP
 }
 
 (date | tr -d '\n'; echo -n " "; pwd | tr -d '\n'; echo -n " ";  echo $*) >> $RUN_LOG
