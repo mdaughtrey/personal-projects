@@ -187,6 +187,11 @@ interpolated= denoised.MFlowFps(super, backward_vec, forward_vec, num=numerator,
 
 #RESULT1: AUTOLEVELS,AUTOWHITE
 #......................................................................................................................................................................
+resultclean= subtitle(source4,"original",size=28,align=2)
+
+#resultclean= converttoRGB24().autolevels(output_low= autolev_low, output_high= autolev_high)\
+#.converttoYV12().coloryuv(autowhite=true).addborders(bord_left, bord_top, bord_right, bord_bot)
+
 result1= interpolated.converttoRGB24().autolevels(output_low= autolev_low, output_high= autolev_high)\
 .converttoYV12().coloryuv(autowhite=true).addborders(bord_left, bord_top, bord_right, bord_bot)
 

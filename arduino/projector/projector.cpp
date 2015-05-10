@@ -6,7 +6,7 @@ enum
     FORWARD,
     REVERSE,
     NEXT,
-    PREVIOUS
+    PREVIOUS,
 };
 
 enum
@@ -22,42 +22,107 @@ int camera = 12;
 int motorFwd = 10;
 int motorReverse = 11;
 int lamp = 9;
-int tagLed = 8;
+int fan = 8;
 int sensor = 6;
 int direction = STOP;
 int advanceCount = 0;
 int irThreshold = 50;
-int irData = 0;
-bool tagMode = false;
-bool tagLedState = false;
+unsigned char irData = 0;
 int cycleState = CYCLE_IDLE;
+int motorSpeed = 0;
+unsigned long brakeStartTime;
+int maxMotorSpeed = 0;
+
+const int SLOW_SPEED=100;
+const int SLOW_SPEED_INC=20;
+
+const int FAST_SPEED=255;
+const int FAST_SPEED_INC=1;
+
+const int motorTable[] = { 20, 40, 60, 80, 100, 120, 140, 160 };
+const int MOTOR_TABLE_SIZE = sizeof(motorTable)/sizeof(motorTable[0]);
+int motorTableIndex = 0;
 
 void lampOn()
-{
-    digitalWrite(lamp, LOW);
-}
-
-void lampOff()
 {
     digitalWrite(lamp, HIGH);
 }
 
-void motorForward()
+void lampOff()
 {
-    digitalWrite(motorFwd, LOW);
-    digitalWrite(motorReverse, HIGH);
+    digitalWrite(lamp, LOW);
 }
 
-void motorBack()
+void fastBack()
 {
-    digitalWrite(motorFwd, HIGH);
-    digitalWrite(motorReverse, LOW);
+    if (motorSpeed && (motorSpeed < FAST_SPEED))
+    {
+        motorSpeed += FAST_SPEED_INC;
+    }
+    analogWrite(motorFwd, motorSpeed);
+    analogWrite(motorReverse, 0);
+}
+
+void slowBack()
+{
+    if (motorSpeed && (motorSpeed < SLOW_SPEED))
+    {
+        motorSpeed += SLOW_SPEED_INC;
+    }
+    analogWrite(motorFwd, motorSpeed);
+    analogWrite(motorReverse, 0);
+}
+
+void slowForward()
+{
+	if (motorTableIndex < MOTOR_TABLE_SIZE)	
+	{
+		motorSpeed = motorTable[motorTableIndex++];
+	}
+//    if (motorSpeed && (motorSpeed < SLOW_SPEED))
+//    {
+//        motorSpeed += SLOW_SPEED_INC;
+//    }
+    analogWrite(motorReverse, motorSpeed);
+    analogWrite(motorFwd, 0);
+}
+
+void fastForward()
+{
+    if (motorSpeed && (motorSpeed < FAST_SPEED))
+    {
+        motorSpeed += FAST_SPEED_INC;
+    }
+    analogWrite(motorReverse, motorSpeed);
+    analogWrite(motorFwd, 0);
 }
 
 void motorStop()
 {
-    digitalWrite(motorFwd, HIGH);
-    digitalWrite(motorReverse, HIGH);
+    motorSpeed = 0;
+    motorTableIndex = 0;
+    analogWrite(motorFwd, 0);
+    analogWrite(motorReverse, 0);
+}
+
+void ReverseBrake()
+{
+    analogWrite(motorFwd, 0);
+    analogWrite(motorReverse, motorSpeed);
+    if (millis() - brakeStartTime > 300)
+    {
+        motorStop();
+    }
+}
+
+void ForwardBrake()
+{
+    analogWrite(motorReverse, motorSpeed);
+    analogWrite(motorReverse, 0);
+    if (millis() - brakeStartTime > 300)
+    {
+        motorStop();
+    }
 }
 
 void shutter()
@@ -75,7 +140,7 @@ void setup ()
     pinMode(camera, OUTPUT);
     pinMode(motorFwd, OUTPUT);
     pinMode(motorReverse, OUTPUT);
-    pinMode(tagLed, OUTPUT);
+    pinMode(fan, OUTPUT);
 
     digitalWrite(sensor, HIGH);
     pinMode(sensor, INPUT);
@@ -84,7 +149,7 @@ void setup ()
     digitalWrite(camera, HIGH);
     digitalWrite(motorFwd, HIGH);
     digitalWrite(motorReverse, HIGH);
-    digitalWrite(tagLed, HIGH); 
+    digitalWrite(fan, HIGH); 
     motorStop();
 }
 
@@ -102,8 +167,8 @@ void help()
         Serial.println("p - previous 3 stops");
         Serial.println("r - reverse freerunning");
         Serial.println("s - motor stop");
-        Serial.println("t - tag mode on");
-        Serial.println("T - tag mode Off");
+        Serial.println("y - fan on");
+        Serial.println("Y - fan Off");
 }
 
 void loop ()
@@ -115,22 +180,39 @@ void loop ()
 
         case CYCLE_LAMPON:
             lampOn();
-            delay(200);
-            cycleState = CYCLE_SHUTTER;
-            break;
-
-        case CYCLE_SHUTTER:
-            shutter();
-            delay(500);
-            cycleState = CYCLE_LAMPOFF;
-            break;
-
-        case CYCLE_LAMPOFF:
+            //delay(10);
+            delay(20);
             lampOff();
+            delay(60);
+            digitalWrite(camera, HIGH);
+
+        //    delay(2000);
+        //    digitalWrite(camera, LOW);
+        //    delay(130);
+        //    lampOn();
+        //    delay(10);
+        //    lampOff();
+        //    delay(60);
+        //    digitalWrite(camera, HIGH);
+
+
             cycleState = CYCLE_NEXT;
             direction = NEXT;
             advanceCount = 3;
             break;
+
+        case CYCLE_SHUTTER:
+            digitalWrite(camera, LOW);
+            delay(130);
+            cycleState = CYCLE_LAMPON;
+            break;
+
+//        case CYCLE_LAMPOFF:
+//            lampOff();
+//            cycleState = CYCLE_NEXT;
+//            direction = NEXT;
+//            advanceCount = 3;
+//            break;
 
         case CYCLE_NEXT:
             break;
@@ -149,6 +231,29 @@ void loop ()
                 help();
                 break;
 
+            case '3': // triple
+                digitalWrite(camera, LOW);
+                delay(130);
+                lampOn();
+                delay(2);
+                lampOff();
+                delay(199);
+                delay(130);
+                lampOn();
+                delay(20);
+                lampOff();
+                delay(180);
+                delay(130);
+                lampOn();
+                delay(50);
+                lampOff();
+                delay(150);
+                digitalWrite(camera, HIGH);
+                direction = NEXT;
+                advanceCount = 3;
+                break;
+
+
             case 'l': // lamp on
                 lampOn();
                 break;
@@ -157,12 +262,23 @@ void loop ()
                 lampOff();
                 break;
 
+            case 'm': // lamp on
+                digitalWrite(camera, LOW);
+                delay(130);
+                lampOn();
+                delay(20);
+                lampOff();
+                delay(60);
+                digitalWrite(camera, HIGH);
+                break;
+
             case 'c': // camera 
                 shutter();
                 break;
 
             case 'C': // cycle 
-                cycleState = CYCLE_LAMPON;
+                //cycleState = CYCLE_LAMPON;
+                cycleState = CYCLE_SHUTTER;
                 break;
 
             case 'f': // forward
@@ -188,13 +304,12 @@ void loop ()
                 direction = REVERSE;
                 break;
 
-            case 't': // tag mode on
-                tagMode = true;
-                advanceCount = 3;
+            case 'y': // fan on
+                digitalWrite(fan, LOW); 
                 break;
 
-            case 'T': // tag mode off
-                tagMode = false;
+            case 'Y': // fan off
+                digitalWrite(fan, HIGH); 
                 break;
 
             case 'p': // previous
@@ -204,11 +319,11 @@ void loop ()
 
             case 's': // stop
                 direction = STOP;
-                digitalWrite(tagLed, HIGH);
+                motorStop();
                 break;
 
             case 'x': // all stop
-                digitalWrite(tagLed, HIGH);
+                digitalWrite(fan, HIGH); 
                 direction = STOP;
                 lampOff();
                 motorStop();
@@ -218,16 +333,66 @@ void loop ()
     }
     if (FORWARD == direction || NEXT == direction)
     {
-        motorForward();
+        if (0 == motorSpeed)
+        {
+            motorSpeed = 1;
+        }
+        if (FORWARD == direction)
+        {
+            fastForward();
+        }
+        else
+        {
+            slowForward();
+        }
     }
     else if (REVERSE == direction || PREVIOUS == direction)
     {
-        motorBack();
+        if (0 == motorSpeed)
+        {
+            motorSpeed = 1;
+        }
+        if (REVERSE == direction)
+        {
+            fastBack();
+        }
+        else
+        {
+            slowBack();
+        }
     }
     else
     {
         motorStop();
     }
+//    else if (FORWARD_BRAKE == direction)
+//    {
+//        ForwardBrake();
+//        if (0 == motorSpeed)
+//        {
+//            direction = STOP;
+//            if (CYCLE_NEXT == cycleState)
+//            {
+//                cycleState = CYCLE_IDLE;
+//            }
+//        }
+//    }
+//    else if (REVERSE_BRAKE == direction)
+//    {
+//        ReverseBrake();
+//        if (0 == motorSpeed)
+//        {
+//            direction = STOP;
+//            if (CYCLE_NEXT == cycleState)
+//            {
+//                cycleState = CYCLE_IDLE;
+//            }
+//        }
+//    }
+//    else
+//    {
+//        motorStop();
+//    }
 
     if (digitalRead(sensor))
     {
@@ -254,34 +419,49 @@ void loop ()
         irData |= 1;
     }
 
-    if (irData == 0x0f && tagMode == true && FORWARD == direction)
-    {
-        if (--advanceCount <= 0)
-        {
-            if (true == tagLedState)
-            {
-                digitalWrite(tagLed, LOW);
-            }
-            else
-            {
-                digitalWrite(tagLed, HIGH);
-            }
-            tagLedState = !tagLedState;
-            advanceCount = 3;
-        }
-        return;
-    } 
+    //if (irData == 0x0f && tagMode == true && FORWARD == direction)
+//    if (irData == 0xf0 && tagMode == true && FORWARD == direction)
+//    {
+//        if (--advanceCount <= 0)
+//        {
+//            if (true == tagLedState)
+//            {
+//                digitalWrite(tagLed, LOW);
+//            }
+//            else
+//            {
+//                digitalWrite(tagLed, HIGH);
+//            }
+//            tagLedState = !tagLedState;
+//            advanceCount = 3;
+//        }
+//        return;
+//    } 
+//    Serial.println(irData, HEX);
 
     if (irData == 0x0f && (NEXT == direction || PREVIOUS == direction))
+//    if (irData == 0xf0 && (NEXT == direction || PREVIOUS == direction))
     {
         if (--advanceCount <= 0)
         {
-            direction = STOP;
             motorStop();
-            if (CYCLE_NEXT == cycleState)
-            {
-                cycleState = CYCLE_IDLE;
-            }
+            direction = STOP;
+        if (CYCLE_NEXT == cycleState)
+        {
+            cycleState = CYCLE_IDLE;
+        }
+//            if (NEXT == direction)
+//            {
+//                direction = FORWARD_BRAKE;
+//                brakeStartTime = millis();
+//                motorSpeed = 128;
+//            }
+//            else if (PREVIOUS == direction)
+//            {
+//                direction = REVERSE_BRAKE;
+//                brakeStartTime = millis();
+//                motorSpeed = 128;
+//            }
         }
     }
 }
