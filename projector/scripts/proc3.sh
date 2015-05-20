@@ -29,7 +29,7 @@ DIRBASE_SYMLINKS=~/symlinks
 DIRBASE_IMAGES=/mnt/imageinput
 AVS2YUV=Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe
 # where to put the temporary video files 
-YUVTMP=~/tmp/videotmp_`basename $PWD`
+YUVTMP=~/tmp/`basename $PWD`
 FRAMETMP=/media/usb0/videotmp_`basename $PWD`
 FFMPEG=avconv
 LEVELS_TXT=levels.txt
@@ -43,7 +43,6 @@ fi
 
 symlinkSource=`pwd`
 symlinkTarget=$DIRBASE_SYMLINKS/${PWD//$DIRBASE_IMAGES/}
-touch mirror
 
 vOut()
 {
@@ -143,7 +142,7 @@ preview()
 	mkdir -p $YUVTMP
 	let TITLE_STREAM_FRAMES=36
 	precrop 720
-	optimize
+#	optimize
 	tonefuse
 	gentitle 
 	postprocess icompare
@@ -177,20 +176,21 @@ let origXOffset=0
 scaler()
 {
 	vOut === scaler
-    if [[ "$1" == "web" ]]
-    then
-        let scaleX=300
-    fi
-    if [[ "$1" == "dvd" ]]
-    then
-        let scaleX=720
-    fi
-    if [ "$1" == 'hd' ]
-    then
-        let bw=8000
-        let scaleX=2048
-    fi
-    crop=($(head -1 crop.cfg)) # left, top, right, bottom 
+	cropfile=${1:-crop.cfg}
+#    if [[ "$1" == "web" ]]
+#    then
+#        let scaleX=300
+#    fi
+#    if [[ "$1" == "dvd" ]]
+#    then
+#        let scaleX=720
+#    fi
+#    if [ "$1" == 'hd' ]
+#    then
+#        let bw=8000
+#        let scaleX=2048
+#    fi
+    crop=($(head -1 $cropfile)) # left, top, right, bottom 
 
 	let xOrigOffset=${crop[0]}
 	let yOrigOffset=${crop[1]}
@@ -229,7 +229,7 @@ scaler()
 genyuv()
 {
 	vOut === genyuv
-	scaler $1
+	scaler # $1
 	rm $YUVTMP/title_stream.yuv
 	rm $YUVTMP/stream_${1}.yuv
 	rm -f titlelist.txt
@@ -325,39 +325,40 @@ postprocess()
 	fi
 
 	case "$majorMode" in
-		icompare) 
-			RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
-			TEMPLATE=${SCRIPT_INTERPOLATE2}
-			LOCALSCRIPT="$YUVTMP/interpolate_compare.avs"
-			;;
-		interpolate|inter3)
-			RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
-			TEMPLATE=${SCRIPT_INTERPOLATE2}
-			LOCALSCRIPT="$YUVTMP/interpolate.avs"
-			;;
-		clean)
-			RESULT=$(echo -n "result=\"source4\" # specify the wanted output here" )
-			TEMPLATE=${SCRIPT_CLEAN2}
-			LOCALSCRIPT="$YUVTMP/clean.avs"
-			;;
-		ccompare)
-			RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
-			TEMPLATE=${SCRIPT_CLEAN2}
-			LOCALSCRIPT="$YUVTMP/clean_compare.avs"
-			;;
-    	esac
+	icompare) 
+	RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
+	TEMPLATE=${SCRIPT_INTERPOLATE2}
+	LOCALSCRIPT="$YUVTMP/interpolate_compare.avs"
+	;;
+	interpolate|inter3)
+	RESULT=$(echo -n "result=\"result1\" # specify the wanted output here" )
+	TEMPLATE=${SCRIPT_INTERPOLATE2}
+	LOCALSCRIPT="$YUVTMP/interpolate.avs"
+	;;
+	clean)
+	RESULT=$(echo -n "result=\"resultclean\" # specify the wanted output here" )
+	TEMPLATE=${SCRIPT_CLEAN2}
+	LOCALSCRIPT="$YUVTMP/clean.avs"
+	;;
+	ccompare)
+	RESULT=$(echo -n "result=\"resultS1\" # specify the wanted output here" )
+	TEMPLATE=${SCRIPT_CLEAN2}
+	LOCALSCRIPT="$YUVTMP/clean_compare.avs"
+	;;
+	esac
 
-	rawFrames=$(echo -n "film=\"Z:\\\\home\\\\mattd\\\\tmp\\\\videotmp_`basename $PWD`\\\\rawframes.avi\"")
-	echo $rawFrames > ${LOCALSCRIPT}
-	echo $RESULT >> ${LOCALSCRIPT}
-	cat $TEMPLATE >> ${LOCALSCRIPT}
 	if [[ ! -f "$YUVTMP/out.yuv" ]]
 	then
-		wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
+			rawFrames=$(echo -n "film=\"Z:\\\\home\\\\mattd\\\\tmp\\\\`basename $PWD`\\\\rawframes.avi\"")
+			echo $rawFrames > ${LOCALSCRIPT}
+			echo $RESULT >> ${LOCALSCRIPT}
+			cat $TEMPLATE >> ${LOCALSCRIPT}
+			wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
 	fi
-	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 6000K -y ${LOCALSCRIPT}.mpg 
-    	dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
-    	mv ${LOCALSCRIPT}.mpg /mnt/imageinput/dvd/${dvdfile}
+	#$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 4000K -y ${LOCALSCRIPT}.mpg 
+	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc`  -b:v 4M -maxrate 4M -minrate 4M -bufsize 4M  -y ${LOCALSCRIPT}.mpg 
+    dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
+    mv ${LOCALSCRIPT}.mpg /mnt/imageinput/dvd/${dvdfile}
 }
 
 oneTitleFrame()
@@ -402,7 +403,7 @@ gentitle()
 		exit 1
 	fi
 	type=${1:-"dvd"}
-	scaler $type
+	scaler #$type
 	firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 
 	if [[ ! -f $firstfile ]]
@@ -688,7 +689,7 @@ all()
 	gentitle
 	echo interpolate
 	postprocess interpolate
-	rm $YUVTMP/*
+	rm $YUVTMP/out.yuv
 	echo clean
 	postprocess clean
 }
@@ -724,6 +725,7 @@ export -f onePrecrop
 
 precrop()
 {
+	touch mirror
 	let numFrames=${1:-999999}
 	scaler
 #	rm /tmp/lvlck*
@@ -743,6 +745,12 @@ precrop()
 	for dir in $dirs
 	do
 		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
+		if [[ -f $dir/crop.cfg ]]
+		then
+			scaler $dir/crop.cfg
+#		else
+#			scaler ../crop.cfg
+		fi
 
 		for number in $numbers
 		do
@@ -976,10 +984,10 @@ case "$1" in
 	previewtitle) previewTitle ;;
     #genyuv) genyuv web; genyuv dvd; genyuv hd ;;
     genyuv) genyuv dvd;;
-    web) scaler web; gentitle web; mpeg2 web ;;
+    #web) scaler web; gentitle web; mpeg2 web ;;
     #dvd) scaler dvd; gentitle dvd; mpeg2 dvd ;;
-    dvd) scaler dvd; mpeg2 dvd ;;
-    hd) mpeg2 hd ;;
+    #dvd) scaler dvd; mpeg2 dvd ;;
+    #hd) mpeg2 hd ;;
     #mklinks) mklinks ;;
     #mkrlinks) mkrlinks ;;
     mpeg2) mpeg2 web; mpeg2 dvd; mpeg2 hd ;;

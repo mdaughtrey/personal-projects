@@ -187,7 +187,6 @@ interpolated= denoised.MFlowFps(super, backward_vec, forward_vec, num=numerator,
 
 #RESULT1: AUTOLEVELS,AUTOWHITE
 #......................................................................................................................................................................
-resultclean= subtitle(source4,"original",size=28,align=2)
 
 #resultclean= converttoRGB24().autolevels(output_low= autolev_low, output_high= autolev_high)\
 #.converttoYV12().coloryuv(autowhite=true).addborders(bord_left, bord_top, bord_right, bord_bot)
@@ -238,6 +237,7 @@ resultS3= stackhorizontal(subtitle(source4,"original",size=28,align=2),subtitle(
 resultS4= stackhorizontal(subtitle(source4,"original",size=28,align=2),subtitle(result4,"result4: manual colors and levels correction",size=28,align=2))
 resultS5= stackhorizontal(subtitle(result3,"result3: auto levels, manual color correction",size=28,align=2),subtitle(result4,"result4: manual colors and levels correction",size=28,align=2))
 resultS6= stackhorizontal(subtitle(result1,"result1: autolevels, autowhite",size=28,align=2),subtitle(result2,"result2: manual levels, autowhite",size=28,align=2))
+resultclean= subtitle(source4,"",size=28,align=2)
 
 #SPECIAL COMPARISON CLIP FOR TESTING THE STABILIZER
 #.........................................................................................................................................................................
