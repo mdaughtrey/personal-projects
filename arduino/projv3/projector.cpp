@@ -1,7 +1,6 @@
 #include <WProgram.h>
 //#include <ps2/ps2mouse.h>
 #include <avrlibtypes.h>
-#include <ImageSensor.h>
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -15,9 +14,11 @@
 #define PIN_LAMP 9 
 #define PIN_MOTOR 10
 #define MOTOR
+#define PIN_LASER 8
+#define PIN_LEDSENSOR 2
 
 
-//#ifdef SDEBUG
+//#ifde SDEBUG
 //void showByteLog(void);
 //void resetByteLog(void);
 //#endif // SDEBUG
@@ -62,11 +63,21 @@ void servoOff()
     digitalWrite(PIN_SERVO,LOW);
 }
 
+void laserOn()
+{
+		digitalWrite(PIN_LASER, HIGH);
+}
+
+void laserOff()
+{
+		digitalWrite(PIN_LASER, LOW);
+}
 
 void setup ()
 { 
     // todo init lamp
     pinMode(PIN_LAMP, OUTPUT);
+	pinMode(PIN_LASER, OUTPUT);
     //pinMode(PIN_MOTOR, OUTPUT);
     //digitalWrite(PIN_SERVO, LOW);
     pinMode(PIN_SERVO, OUTPUT);
@@ -79,15 +90,10 @@ void setup ()
     Serial.begin(57600);
     mouseTimer = millis();
     servoTimer = millis();
-//    Serial.print("IS Init...");
-//    ImageSensor::init();
-//    Serial.println("Ok.");
-//    Serial.println("Mouse0");
-//    mouse.initialize();
-//    Serial.println("Mouse1");
     Serial.println("Init OK");
 }
 
+unsigned short  ledValue = 0;
 void loop ()
 {
     if ((millis() - servoTimer) > 100)
@@ -96,6 +102,12 @@ void loop ()
         delayMicroseconds(servoPulse);
         servoOff();
         servoTimer = millis();
+		unsigned short newValue = analogRead(PIN_LEDSENSOR);
+		if (newValue != ledValue)
+		{
+		Serial.println(newValue, 10);
+		ledValue = newValue;
+		}
     }
     if (millis() - mouseTimer > 100)
     {
@@ -111,27 +123,16 @@ void loop ()
 
     switch (Serial.read())
     {
-        case 'r':
-            ImageSensor::readRegisters();
-            break;
 
         case '0':
             //xPos = 0;
             //yPos = 0;
             break;
              
-        case 'i':
-            Serial.print("IS Init...");
-            ImageSensor::init();
-            Serial.println("Ok.");
-//            Serial.println("Mouse0");
-//            mouse.initialize();
-//            Serial.println("Mouse1");
-            break;
-
         case 'x':
             servoPulse = 1500;
             lampOff();
+			laserOff();
             motorPulse = 255;
             analogWrite(PIN_MOTOR, motorPulse);
             break;
@@ -143,6 +144,14 @@ void loop ()
         case 'L':
             lampOff();
             break;
+
+		case 'e':
+			laserOn();
+			break;
+
+		case 'E':
+			laserOff();
+			break;
 
         case 's':
             if (servoPulse > 1000)

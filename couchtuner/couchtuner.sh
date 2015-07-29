@@ -8,6 +8,10 @@ if [[ "$showname" != "" && -f "$showname" ]]
 then
     cat "$showname" | while read -a params #surl season episode description
     do
+	if [[ '#' == ${params[0]} ]]
+	then
+	    continue
+	fi
         if (( ${#params[@]} > 4))
         then
             echo Bad parameter for $params[0]

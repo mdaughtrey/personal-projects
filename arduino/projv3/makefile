@@ -55,7 +55,7 @@ ARDUINO = ../core/
 SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
       $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c 
 #      $(ARDUINO)/ps2/ps2mouse.cpp
-CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp ImageSensor.cpp
+CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp 
 MCU = atmega168
 #MCU = atmega328
 F_CPU = 16000000
