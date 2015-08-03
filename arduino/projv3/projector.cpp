@@ -1,120 +1,152 @@
 #include <WProgram.h>
-//#include <ps2/ps2mouse.h>
 #include <avrlibtypes.h>
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-//extern volatile s16 xPos;
-//extern volatile s16 yPos;
-//extern u08 packet0;
-//extern u08 packet1;
-//extern u08 packet2;
-
-#define PIN_SERVO 11 
-#define PIN_LAMP 9 
-#define PIN_MOTOR 10
+#define PB_SERVO 3
+#define PB_LAMP 1
+#define PIN_MOTOR 10  // PB2
 #define MOTOR
-#define PIN_LASER 8
+#define PB_LASER 0
 #define PIN_LEDSENSOR 2
 
+#define MOTOR_PRETENSION_SLOW 180
+#define MOTOR_PRETENSION_FF 220
+#define MOTOR_REWIND 195 
 
-//#ifde SDEBUG
-//void showByteLog(void);
-//void resetByteLog(void);
-//#endif // SDEBUG
-//void debugReport(void);
-//
-//PS2Mouse mouse;
+#define LAMP_OFF PORTB |= _BV(PB_LAMP)
+#define LAMP_ON PORTB &= ~_BV(PB_LAMP)
+#define SERVO_ON PORTB |= _BV(PB_SERVO);
+#define SERVO_OFF PORTB &= ~_BV(PB_SERVO);
+#define LASER_ON PORTB |= _BV(PB_LASER);
+#define LASER_OFF PORTB &= ~_BV(PB_LASER);
 
-unsigned long mouseTimer; // = 0;
+
+typedef enum
+{ 
+        NONE = 0,
+        ENDNEXTFRAME,
+        STARTNEXTFRAME,
+        SHUTTERCLOSED,
+        EXPOSURESERIES,
+        SHUTTEROPEN,
+        TRIPLESTART = SHUTTEROPEN
+} WaitFor;
+
 u16 servoTimer = 0;
+u16 sensorTimer = 0;
 u16 servoPulse = 1500;
 u16 motorPulse = 255;
 
-void lampOn()
-{
-    digitalWrite(PIN_LAMP, LOW);
-}
-
-void lampOff()
-{
-    digitalWrite(PIN_LAMP, HIGH);
-}
-
-//void motorOn()
-//{
-//    digitalWrite(PIN_MOTOR, LOW);
-//}
-//
-//void motorOff()
-//{
-//    digitalWrite(PIN_MOTOR, HIGH);
-//}
-
-void servoOn()
-{
-    //analogWrite(PIN_SERVO, 90);
-    digitalWrite(PIN_SERVO,HIGH);
-}
-
-void servoOff()
-{
-    //analogWrite(PIN_SERVO, 0);
-    digitalWrite(PIN_SERVO,LOW);
-}
-
-void laserOn()
-{
-		digitalWrite(PIN_LASER, HIGH);
-}
-
-void laserOff()
-{
-		digitalWrite(PIN_LASER, LOW);
-}
-
 void setup ()
 { 
-    // todo init lamp
-    pinMode(PIN_LAMP, OUTPUT);
-	pinMode(PIN_LASER, OUTPUT);
-    //pinMode(PIN_MOTOR, OUTPUT);
-    //digitalWrite(PIN_SERVO, LOW);
-    pinMode(PIN_SERVO, OUTPUT);
-    //digitalWrite(PIN_MOTOR, HIGH);
-    digitalWrite(PIN_LAMP, HIGH);
+    DDRB |= _BV(PB_SERVO) | _BV(PB_LAMP) | _BV(PB_LASER);
+    LAMP_OFF;
+    SERVO_OFF;
 #ifdef MOTOR
     analogWrite(PIN_MOTOR, motorPulse);
 #endif //MOTOR
-    //digitalWrite(PIN_SERVO, LOW);
     Serial.begin(57600);
-    mouseTimer = millis();
     servoTimer = millis();
     Serial.println("Init OK");
 }
 
-unsigned short  ledValue = 0;
+u08 sensorValue = 0;
+u08 waitingFor(0);
+u08 showSensorValue = 0;
+u16 sensorRaw[4] = { 0 };
 void loop ()
 {
-    if ((millis() - servoTimer) > 100)
+    switch (waitingFor)
     {
-        servoOn();
-        delayMicroseconds(servoPulse);
-        servoOff();
-        servoTimer = millis();
-		unsigned short newValue = analogRead(PIN_LEDSENSOR);
-		if (newValue != ledValue)
-		{
-		Serial.println(newValue, 10);
-		ledValue = newValue;
-		}
-    }
-    if (millis() - mouseTimer > 100)
-    {
-//            debugReport();
-            mouseTimer = millis();
-    }
+        case NONE:
+            break;
 
+        case ENDNEXTFRAME:
+            if (0x01 == (sensorValue & 0x03))
+            {
+                LASER_OFF;
+                servoPulse = 1500;
+                waitingFor--;
+                sensorTimer = 0;
+            }
+            break;
+            
+        case STARTNEXTFRAME:
+            LASER_ON;
+            delay(10);
+            //sensorValue = 0;
+            sensorTimer = millis();
+            motorPulse = MOTOR_PRETENSION_SLOW;
+            servoPulse = 1200;
+            waitingFor--;
+            break;
+
+        case SHUTTERCLOSED:
+            // camera control
+            waitingFor--;
+            break;
+
+        case EXPOSURESERIES:
+            delay(130);
+            LAMP_ON;
+            delay(2);
+            LAMP_OFF;
+            delay(199);
+            delay(130);
+            LAMP_ON;
+            delay(20);
+            LAMP_OFF;
+            delay(180);
+            delay(130);
+            LAMP_ON;
+            delay(50);
+            LAMP_OFF;
+            delay(150);
+            waitingFor--;
+            break;
+
+        case SHUTTEROPEN:
+            waitingFor--;
+            break;
+
+        default:
+            break;
+    }
+    u16 mils = millis();
+
+    if ((mils - servoTimer) > 100)
+    {
+        SERVO_ON;
+        delayMicroseconds(servoPulse);
+        SERVO_OFF;
+        servoTimer = mils;
+        analogWrite(PIN_MOTOR, motorPulse);
+    }
+    if (sensorTimer && (mils - sensorTimer) > 10)
+    {
+        sensorRaw[3] = sensorRaw[2];
+        sensorRaw[2] = sensorRaw[1];
+        sensorRaw[1] = sensorRaw[0];
+        sensorRaw[0] = analogRead(PIN_LEDSENSOR);
+        u16 average = (sensorRaw[3] + sensorRaw[2] + sensorRaw[1] + sensorRaw[0]) / 4;
+
+        if (average)
+        {
+        Serial.print(average, 10);
+        Serial.print(" ");
+        }
+        if ((average > 700) && !(sensorValue & 0x0001))
+        {
+            sensorValue <<= 1; 
+            sensorValue |= 1;
+        }    
+        if ((average <= 700) && (sensorValue & 0x0001))
+        {
+            sensorValue <<= 1; 
+        }
+        sensorTimer = mils;
+    }
 
     if (!Serial.available())
     {
@@ -123,35 +155,32 @@ void loop ()
 
     switch (Serial.read())
     {
-
-        case '0':
-            //xPos = 0;
-            //yPos = 0;
+        case 'v':
+            showSensorValue = !showSensorValue;
             break;
-             
+
         case 'x':
             servoPulse = 1500;
-            lampOff();
-			laserOff();
+            LAMP_OFF;
+            LASER_OFF;
             motorPulse = 255;
-            analogWrite(PIN_MOTOR, motorPulse);
             break;
 
         case 'l':
-            lampOn();
+            LAMP_ON;
             break;
 
         case 'L':
-            lampOff();
+            LAMP_OFF;
             break;
 
-		case 'e':
-			laserOn();
-			break;
+        case 'e':
+            LASER_ON;
+            break;
 
-		case 'E':
-			laserOff();
-			break;
+        case 'E':
+            LASER_OFF;
+            break;
 
         case 's':
             if (servoPulse > 1000)
@@ -179,7 +208,6 @@ void loop ()
 #ifdef MOTOR
             Serial.print("Motor ");
             Serial.println(motorPulse, 10);
-            analogWrite(PIN_MOTOR, motorPulse);
 #endif
             break;
 
@@ -191,46 +219,31 @@ void loop ()
 #ifdef MOTOR
             Serial.print("Motor ");
             Serial.println(motorPulse,10);
-            analogWrite(PIN_MOTOR, motorPulse);
 #endif
             break;
+
+        case 't': // pretension
+            motorPulse = MOTOR_PRETENSION_SLOW;
+            break;
+
+        case 'f': // forward
+            motorPulse = MOTOR_PRETENSION_FF;
+            servoPulse = 1000;
+            break;
+
+        case 'r': // rewind
+            motorPulse = MOTOR_REWIND;
+            servoPulse = 2000;
+            break;
+
+        case 'n': // next frame
+            waitingFor = STARTNEXTFRAME;
+            break;
+
+        case '3':
+            waitingFor = TRIPLESTART;
+            break;
+
     }
     return;
-
-
-
-//    if (millis() - timer > 1000)
-//    {
-//            debugReport();
-//            timer = millis();
-//    }
-//    if (Serial.available())
-//    {
-//        switch (Serial.read())
-//        {
-//         case '0':
-//             xPos = 0;
-//             yPos = 0;
-//#ifdef SDEBUG
-//            resetByteLog();
-//#endif // SDEBUG
-//             break;
-//
-//         case 'x': // reset
-//             Serial.print("Init");
-//             mouse.initialize();
-//             Serial.println('.');
-//             break;
-//
-//         case 's':
-//#ifdef SDEBUG
-//             showByteLog();
-//#endif // SDEBUG
-//             break;
-//
-//         case 'r': // raw report
-//            debugReport();
-//            break;
-//        }
-//    }
 }
