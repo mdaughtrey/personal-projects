@@ -36,10 +36,10 @@ then
             echo $outputfile exists, skipping
             continue
         fi
-        rm xx_${seasonNum}${episodeNum}
-        echo ./couchtuner.py -d . -u $url -o xx_${seasonNum}${episodeNum}
+        rm xx_$$_${seasonNum}${episodeNum}
+        ./couchtuner.py -d . -u $url -o xx_${seasonNum}${episodeNum} >> commands.sh
         command="mv xx_${seasonNum}${episodeNum} '$outputfile'"
-        #echo $command
+        echo $command
         echo $command | sh
     done
 fi

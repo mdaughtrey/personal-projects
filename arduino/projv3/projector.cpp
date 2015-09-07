@@ -8,7 +8,8 @@
 #define PIN_MOTOR 10  // PB2
 #define MOTOR
 #define PB_LASER 0
-#define PIN_LEDSENSOR 2
+#define PIN_LEDSENSOR 2 // PC2
+#define PC_LEDSENSOR 2 // PC2
 
 #define MOTOR_PRETENSION_SLOW 180
 #define MOTOR_PRETENSION_FF 220
@@ -41,6 +42,7 @@ u16 motorPulse = 255;
 void setup ()
 { 
     DDRB |= _BV(PB_SERVO) | _BV(PB_LAMP) | _BV(PB_LASER);
+//    PORTC |= _BV(PC_LEDSENSOR); // tie LED sensor line high 
     LAMP_OFF;
     SERVO_OFF;
 #ifdef MOTOR
@@ -52,27 +54,85 @@ void setup ()
 }
 
 u08 sensorValue = 0;
-u08 waitingFor(0);
+u08 waitingFor(NONE);
 u08 showSensorValue = 0;
 u16 sensorRaw[4] = { 0 };
 void loop ()
 {
+    u16 mils = millis();
+
+    if ((mils - servoTimer) > 100)
+    {
+        SERVO_ON;
+        delayMicroseconds(servoPulse);
+        SERVO_OFF;
+        servoTimer = mils;
+//        analogWrite(PIN_MOTOR, motorPulse);
+    }
+    if (sensorTimer && (mils - sensorTimer) > 10)
+    {
+        if (sensorValue & 0x01)
+        {
+            if (!(PINC & _BV(PC_LEDSENSOR)))
+            {
+                sensorValue <<= 1;
+                Serial.print(sensorValue, 2);
+                Serial.print(" ");
+            }
+        }
+        else
+        {
+            if (PINC & _BV(PC_LEDSENSOR))
+            {
+                sensorValue <<= 1;
+                sensorValue |= 1;
+                Serial.print(sensorValue, 2);
+                Serial.print(" ");
+            }
+        }
+//        sensorRaw[3] = sensorRaw[2];
+//        sensorRaw[2] = sensorRaw[1];
+//        sensorRaw[1] = sensorRaw[0];
+//        sensorRaw[0] = analogRead(PIN_LEDSENSOR);
+//        u16 average = (sensorRaw[3] + sensorRaw[2] + sensorRaw[1] + sensorRaw[0]) / 4;
+//
+//        if (average)
+//        {
+//        Serial.print(average, 10);
+//        Serial.print(" ");
+//        }
+//        if ((average > 700) && !(sensorValue & 0x0001))
+//        {
+//            sensorValue <<= 1; 
+//            sensorValue |= 1;
+//        }    
+//        if ((average <= 700) && (sensorValue & 0x0001))
+//        {
+//            sensorValue <<= 1; 
+//        }
+        sensorTimer = mils;
+    }
     switch (waitingFor)
     {
         case NONE:
+//            Serial.print("N");
             break;
 
         case ENDNEXTFRAME:
-            if (0x01 == (sensorValue & 0x03))
+            Serial.print("E");
+            Serial.print(sensorValue, 2);
+            if (0x02 == (sensorValue & 0x03))
             {
                 LASER_OFF;
                 servoPulse = 1500;
                 waitingFor--;
                 sensorTimer = 0;
+                sensorValue = 0;
             }
             break;
             
         case STARTNEXTFRAME:
+            Serial.print("S");
             LASER_ON;
             delay(10);
             //sensorValue = 0;
@@ -83,11 +143,13 @@ void loop ()
             break;
 
         case SHUTTERCLOSED:
+            Serial.print("C");
             // camera control
             waitingFor--;
             break;
 
         case EXPOSURESERIES:
+            Serial.print("X");
             delay(130);
             LAMP_ON;
             delay(2);
@@ -107,45 +169,12 @@ void loop ()
             break;
 
         case SHUTTEROPEN:
+            Serial.print("O");
             waitingFor--;
             break;
 
         default:
             break;
-    }
-    u16 mils = millis();
-
-    if ((mils - servoTimer) > 100)
-    {
-        SERVO_ON;
-        delayMicroseconds(servoPulse);
-        SERVO_OFF;
-        servoTimer = mils;
-        analogWrite(PIN_MOTOR, motorPulse);
-    }
-    if (sensorTimer && (mils - sensorTimer) > 10)
-    {
-        sensorRaw[3] = sensorRaw[2];
-        sensorRaw[2] = sensorRaw[1];
-        sensorRaw[1] = sensorRaw[0];
-        sensorRaw[0] = analogRead(PIN_LEDSENSOR);
-        u16 average = (sensorRaw[3] + sensorRaw[2] + sensorRaw[1] + sensorRaw[0]) / 4;
-
-        if (average)
-        {
-        Serial.print(average, 10);
-        Serial.print(" ");
-        }
-        if ((average > 700) && !(sensorValue & 0x0001))
-        {
-            sensorValue <<= 1; 
-            sensorValue |= 1;
-        }    
-        if ((average <= 700) && (sensorValue & 0x0001))
-        {
-            sensorValue <<= 1; 
-        }
-        sensorTimer = mils;
     }
 
     if (!Serial.available())
@@ -164,6 +193,7 @@ void loop ()
             LAMP_OFF;
             LASER_OFF;
             motorPulse = 255;
+            analogWrite(PIN_MOTOR, motorPulse);
             break;
 
         case 'l':
@@ -205,6 +235,7 @@ void loop ()
             {
                 motorPulse += 5;
             }
+            analogWrite(PIN_MOTOR, motorPulse);
 #ifdef MOTOR
             Serial.print("Motor ");
             Serial.println(motorPulse, 10);
@@ -216,6 +247,7 @@ void loop ()
             {
                 motorPulse -= 5;
             }
+            analogWrite(PIN_MOTOR, motorPulse);
 #ifdef MOTOR
             Serial.print("Motor ");
             Serial.println(motorPulse,10);
@@ -224,11 +256,13 @@ void loop ()
 
         case 't': // pretension
             motorPulse = MOTOR_PRETENSION_SLOW;
+            analogWrite(PIN_MOTOR, motorPulse);
             break;
 
         case 'f': // forward
             motorPulse = MOTOR_PRETENSION_FF;
             servoPulse = 1000;
+            analogWrite(PIN_MOTOR, motorPulse);
             break;
 
         case 'r': // rewind
