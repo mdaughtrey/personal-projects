@@ -1,5 +1,6 @@
 #include <WProgram.h>
 #include <avrlibtypes.h>
+//#include <avr/interrupt.h>
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -10,6 +11,7 @@
 #define PB_LASER 0
 #define PIN_LEDSENSOR 2 // PC2
 #define PC_LEDSENSOR 2 // PC2
+#define PB_SHUTTER 4
 
 #define MOTOR_PRETENSION_SLOW 180
 #define MOTOR_PRETENSION_FF 220
@@ -21,7 +23,8 @@
 #define SERVO_OFF PORTB &= ~_BV(PB_SERVO);
 #define LASER_ON PORTB |= _BV(PB_LASER);
 #define LASER_OFF PORTB &= ~_BV(PB_LASER);
-
+#define SHUTTER_OPEN PORTB &= ~_BV(PB_SHUTTER)
+#define SHUTTER_CLOSE PORTB |= _BV(PB_SHUTTER)
 
 typedef enum
 { 
@@ -41,8 +44,8 @@ u16 motorPulse = 255;
 
 void setup ()
 { 
-    DDRB |= _BV(PB_SERVO) | _BV(PB_LAMP) | _BV(PB_LASER);
-//    PORTC |= _BV(PC_LEDSENSOR); // tie LED sensor line high 
+    PORTB |= _BV(PB_SHUTTER);
+    DDRB |= _BV(PB_SERVO) | _BV(PB_LAMP) | _BV(PB_LASER) | _BV(PB_SHUTTER);
     LAMP_OFF;
     SERVO_OFF;
 #ifdef MOTOR
@@ -55,8 +58,7 @@ void setup ()
 
 u08 sensorValue = 0;
 u08 waitingFor(NONE);
-u08 showSensorValue = 0;
-u16 sensorRaw[4] = { 0 };
+
 void loop ()
 {
     u16 mils = millis();
@@ -71,13 +73,15 @@ void loop ()
     }
     if (sensorTimer && (mils - sensorTimer) > 10)
     {
+        sensorValue |= (PINC & _BV(PC_LEDSENSOR));
+        sensorValue <<= 1;
+
+#if 0
         if (sensorValue & 0x01)
         {
             if (!(PINC & _BV(PC_LEDSENSOR)))
             {
                 sensorValue <<= 1;
-                Serial.print(sensorValue, 2);
-                Serial.print(" ");
             }
         }
         else
@@ -86,30 +90,9 @@ void loop ()
             {
                 sensorValue <<= 1;
                 sensorValue |= 1;
-                Serial.print(sensorValue, 2);
-                Serial.print(" ");
             }
         }
-//        sensorRaw[3] = sensorRaw[2];
-//        sensorRaw[2] = sensorRaw[1];
-//        sensorRaw[1] = sensorRaw[0];
-//        sensorRaw[0] = analogRead(PIN_LEDSENSOR);
-//        u16 average = (sensorRaw[3] + sensorRaw[2] + sensorRaw[1] + sensorRaw[0]) / 4;
-//
-//        if (average)
-//        {
-//        Serial.print(average, 10);
-//        Serial.print(" ");
-//        }
-//        if ((average > 700) && !(sensorValue & 0x0001))
-//        {
-//            sensorValue <<= 1; 
-//            sensorValue |= 1;
-//        }    
-//        if ((average <= 700) && (sensorValue & 0x0001))
-//        {
-//            sensorValue <<= 1; 
-//        }
+#endif // 0
         sensorTimer = mils;
     }
     switch (waitingFor)
@@ -119,9 +102,10 @@ void loop ()
             break;
 
         case ENDNEXTFRAME:
-            Serial.print("E");
-            Serial.print(sensorValue, 2);
-            if (0x02 == (sensorValue & 0x03))
+//            Serial.print(sensorValue, 2);
+//            Serial.print(" ");
+            //if (0x03 == (sensorValue & 0x07))
+            if (0xf0 == sensorValue)
             {
                 LASER_OFF;
                 servoPulse = 1500;
@@ -132,7 +116,7 @@ void loop ()
             break;
             
         case STARTNEXTFRAME:
-            Serial.print("S");
+//            Serial.print("S");
             LASER_ON;
             delay(10);
             //sensorValue = 0;
@@ -143,14 +127,15 @@ void loop ()
             break;
 
         case SHUTTERCLOSED:
-            Serial.print("C");
+//            Serial.print("C");
             // camera control
+            SHUTTER_CLOSE;
             waitingFor--;
             break;
 
         case EXPOSURESERIES:
-            Serial.print("X");
-            delay(130);
+    //        Serial.print("X");
+            delay(131);
             LAMP_ON;
             delay(2);
             LAMP_OFF;
@@ -169,7 +154,7 @@ void loop ()
             break;
 
         case SHUTTEROPEN:
-            Serial.print("O");
+            SHUTTER_OPEN;
             waitingFor--;
             break;
 
@@ -184,14 +169,17 @@ void loop ()
 
     switch (Serial.read())
     {
-        case 'v':
-            showSensorValue = !showSensorValue;
+        case 'c':
+            SHUTTER_OPEN;
+            delay(50);
+            SHUTTER_CLOSE;
             break;
 
         case 'x':
             servoPulse = 1500;
             LAMP_OFF;
             LASER_OFF;
+            SHUTTER_CLOSE;
             motorPulse = 255;
             analogWrite(PIN_MOTOR, motorPulse);
             break;
