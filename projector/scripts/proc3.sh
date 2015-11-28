@@ -36,6 +36,8 @@ LEVELS_TXT=levels.txt
 LEVELS_ERROR=levelcheck.out
 IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
 
+if [[ `hostname`
+
 if [[ ! -d $YUVTMP ]]
 then
 	mkdir -p $YUVTMP
