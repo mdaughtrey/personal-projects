@@ -73,8 +73,8 @@ DEBUG = stabs
 OPT = s
 
 # Place -D or -U options here
-CDEFS = -DF_CPU=$(F_CPU) # -DSDEBUG
-CXXDEFS = -DF_CPU=$(F_CPU) # -DSDEBUG
+CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP # -DSDEBUG
+CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP # -DSDEBUG
 
 # Place -I options here
 CINCS = -I$(ARDUINO)
