@@ -6,33 +6,26 @@
 typedef unsigned char u08;
 typedef unsigned int u16;
 
-u08 shifter;
+u08 ovfTickTock;
+u08 ocmTickTock;
 u08 ocr2a;
 
 ISR(TIMER2_OVF_vect)
 {
-    if (shifter & 0x01)
-    {
+//    if (1 == ovfTickTock)
+//    {
         PORTB |= _BV(3);
-    }
-    shifter >>= 1;
-    if (0 == shifter)
-    {
-        shifter = SHIFTER_INIT;
-    }
+//    }
+//    ovfTickTock = !ovfTickTock;
 }
 
 ISR(TIMER2_COMPA_vect)
 {
-    if (shifter & 0x01)
-    {
+//    if (1 == ocmTickTock)
+//    {
         PORTB &= ~_BV(3);
-    }
-    shifter >>= 1;
-    if (0 == shifter)
-    {
-        shifter = SHIFTER_INIT;
-    }
+//    }
+//    ocmTickTock = !ocmTickTock;
 }
 
 int main()
@@ -51,7 +44,8 @@ int main()
     OCR2A = ocr2a;
     TCNT2 = 0x00;
     DDRB |= _BV(3) | _BV(5);
-    shifter = SHIFTER_INIT;
+    ovfTickTock = 0;
+    ocmTickTock = 0;
     sei();
 
     while (1)
@@ -66,7 +60,7 @@ int main()
             case 'j': ocr2a--; break;
             case 'k': ocr2a++; break;
         }
-        Serial.print(ocr2a, 10);
+        Serial.print(OCR2A, 10);
         Serial.print(" ");
         cli(); OCR2A = ocr2a; sei(); 
     }

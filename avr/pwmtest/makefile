@@ -46,7 +46,6 @@ TARGET=pwmtest
 #
 # $Id$
 
-#/dev/tty.usbserial-A501RN1O
 #PORT = /dev/tty.usbserial-A501RN1O
 #PORT=/dev/tty.usbserial-A601KW2O
 PORT=/dev/tty.usbserial-A601KVL0
