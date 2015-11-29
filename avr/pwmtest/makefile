@@ -1,4 +1,4 @@
-TARGET=projector
+TARGET=pwmtest
 # Arduino makefile
 #
 # This makefile allows you to build sketches from the command line
@@ -46,18 +46,20 @@ TARGET=projector
 #
 # $Id$
 
-#/dev/tty.usbserial-A501RN1O
 #PORT = /dev/tty.usbserial-A501RN1O
-PORT=/dev/tty.usbserial-A601KW2O
+#PORT=/dev/tty.usbserial-A601KW2O
+PORT=/dev/tty.usbserial-A601KVL0
 #PORT = /dev/ttyUSB0
 
-ARDUINO = ../core/
-SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
-      $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c 
+ARDUINO = ../../arduino/core/
+SRC = $(ARDUINO)/uart.c $(ARDUINO)/buffer.c $(ARDUINO)/Serial.c
+#SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
+#      $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c 
 #      $(ARDUINO)/ps2/ps2mouse.cpp
-CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp 
-MCU = atmega168
-#MCU = atmega328
+CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp
+# $(ARDUINO)/WRandom.cpp 
+#MCU = atmega168
+MCU = atmega328
 F_CPU = 16000000
 FORMAT = ihex
 UPLOAD_RATE = 57600
