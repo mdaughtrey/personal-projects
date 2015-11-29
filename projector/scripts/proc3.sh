@@ -29,7 +29,8 @@ DIRBASE_SYMLINKS=~/symlinks
 DIRBASE_IMAGES=/mnt/imageinput
 AVS2YUV=Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe
 # where to put the temporary video files 
-YUVTMP=~/tmp/`basename $PWD`
+#YUVTMP=~/tmp/`basename $PWD`
+YUVTMP=$PWD
 FRAMETMP=/media/usb0/videotmp_`basename $PWD`
 FFMPEG=avconv
 LEVELS_TXT=levels.txt
@@ -141,6 +142,7 @@ preview()
     rm -rf $YUVTMP
 	mkdir -p $YUVTMP
 	let TITLE_STREAM_FRAMES=36
+	import
 	precrop 720
 #	optimize
 	tonefuse
@@ -349,16 +351,20 @@ postprocess()
 
 	if [[ ! -f "$YUVTMP/out.yuv" ]]
 	then
-			rawFrames=$(echo -n "film=\"Z:\\\\home\\\\mattd\\\\tmp\\\\`basename $PWD`\\\\rawframes.avi\"")
+			rawFrames=$(echo -n "film=\"Y:\\\\`basename $PWD`\\\\rawframes.avi\"")
+			#rawFrames=$(echo -n "film=\"Z:\\\\home\\\\mattd\\\\`basename $PWD`\\\\rawframes.avi\"")
 			echo $rawFrames > ${LOCALSCRIPT}
 			echo $RESULT >> ${LOCALSCRIPT}
 			cat $TEMPLATE >> ${LOCALSCRIPT}
 			wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
 	fi
 	#$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 4000K -y ${LOCALSCRIPT}.mpg 
-	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc`  -b:v 4M -maxrate 4M -minrate 4M -bufsize 4M  -y ${LOCALSCRIPT}.mpg 
-    dvdfile=${PWD//\//_}_${majorMode}_dvd.mpg
-    mv ${LOCALSCRIPT}.mpg /mnt/imageinput/dvd/${dvdfile}
+#	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc`  -b:v 4M -maxrate 4M -minrate 4M -bufsize 4M  -y ${LOCALSCRIPT}.mpg 
+
+avconv -loglevel verbose -y -i $YUVTMP/out.yuv -threads `nproc` -f mp4 -vcodec libx264 -preset slow -b:v 4000k  -flags +loop -cmp chroma -b:v 1250k -maxrate 4500k -bufsize 4M -bt 256k -refs 1 -bf 3 -coder 1 -me_method umh -me_range 16 -subq 7 -partitions +parti4x4+parti8x8+partp8x8+partb8x8 -g 250 -keyint_min 25 -level 30 -qmin 10 -qmax 51 -qcomp 0.6 -trellis 2 -sc_threshold 40 -i_qfactor 0.71 -acodec aac -strict experimental -b:a 112k -ar 48000 -ac 2 ${LOCALSCRIPT}.mp4
+
+    dvdfile=${PWD//\//_}_${majorMode}_dvd.mp4
+    mv ${LOCALSCRIPT}.mp4 /mnt/imageinput/dvd/${dvdfile}
 }
 
 oneTitleFrame()
@@ -958,7 +964,7 @@ cropfuse()
 import()
 {
     mkdir -p $FRAMETMP
-	rsync -rav ???PHOTO $FRAMETMP/
+	rsync -urav ???PHOTO $FRAMETMP/
 	cp crop.cfg $FRAMETMP
 	cp title*.txt $FRAMETMP
 }
