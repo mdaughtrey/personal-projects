@@ -8,6 +8,10 @@ if [[ "$showname" != "" && -f "$showname" ]]
 then
     cat "$showname" | while read -a params #surl season episode description
     do
+	if [[ '#' == ${params[0]} ]]
+	then
+	    continue
+	fi
         if (( ${#params[@]} > 4))
         then
             echo Bad parameter for $params[0]
@@ -32,8 +36,8 @@ then
             echo $outputfile exists, skipping
             continue
         fi
-        rm xx_${seasonNum}${episodeNum}
-        ./couchtuner.py -d . -u $url -o xx_${seasonNum}${episodeNum}
+        rm xx_$$_${seasonNum}${episodeNum}
+        ./couchtuner.py -d . -u $url -o xx_${seasonNum}${episodeNum} >> commands.sh
         command="mv xx_${seasonNum}${episodeNum} '$outputfile'"
         echo $command
         echo $command | sh

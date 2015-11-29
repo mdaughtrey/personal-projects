@@ -11,6 +11,10 @@ import subprocess
 from HTMLParser import HTMLParser
 from optparse import OptionParser
 
+class CTOpener(urllib.FancyURLopener):
+    version = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+urllib._urlopener = CTOpener()
+
 outputfile=''
 
 parser = OptionParser()
@@ -131,7 +135,6 @@ def processPage(url):
     page = urllib.urlretrieve(url)
     print "Retrieved %s to %s" % (url, page[0])
     htmlFile = open(page[0])
-#    pdb.set_trace()
     htmlData = repairHtml(''.join(htmlFile.readlines()))
     parser = TheParser()
 
@@ -168,6 +171,7 @@ def startTagAllMyVideos(url):
     parser.feed(fixedData)
 
 def main():
+#    pdb.set_trace();
     global outputfile
     outputfile = "%s/%s" % (options.directory, options.output)
 #    outputfile = "%s/%s/%s-%s.mp4" % (options.directory,

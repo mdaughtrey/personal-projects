@@ -94,9 +94,11 @@ void digitalWrite(int pin, int val)
 			cbi(TCCR1A, COM1B1);
 			
 #if defined(__AVR_ATmega168__) || defined(__AVR_ATmega169)
+#ifndef DISABLE_TIMER2A_SETUP
 		if (analogOutPinToTimer(pin) == TIMER2A)
 			cbi(TCCR2A, COM2A1);
 			
+#endif // DISABLE_TIMER2A_SETUP
 		if (analogOutPinToTimer(pin) == TIMER2B)
 			cbi(TCCR2A, COM2B1);
 #else
@@ -126,9 +128,11 @@ int digitalRead(int pin)
 			cbi(TCCR1A, COM1B1);
 			
 #if defined(__AVR_ATmega168__)
+#ifndef DISABLE_TIMER2A_SETUP
 		if (analogOutPinToTimer(pin) == TIMER2A)
 			cbi(TCCR2A, COM2A1);
 			
+#endif // DISABLE_TIMER2A_SETUP
 		if (analogOutPinToTimer(pin) == TIMER2B)
 			cbi(TCCR2A, COM2B1);
 #else
@@ -195,11 +199,14 @@ void analogWrite(int pin, int val)
 		OCR1B = val;
 #if defined(__AVR_ATmega168__)
 	} else if (analogOutPinToTimer(pin) == TIMER2A) {
+#ifndef DISABLE_TIMER2A_SETUP
 		// connect pwm to pin on timer 2, channel A
 		sbi(TCCR2A, COM2A1);
 		// set pwm duty
 		OCR2A = val;	
-	} else if (analogOutPinToTimer(pin) == TIMER2B) {
+#endif // DISABLE_TIMER2A_SETUP
+	}
+    else if (analogOutPinToTimer(pin) == TIMER2B) {
 		// connect pwm to pin on timer 2, channel B
 		sbi(TCCR2A, COM2B1);
 		// set pwm duty
@@ -465,6 +472,7 @@ int main(void)
 	// put timer 1 in 8-bit phase correct pwm mode
 	sbi(TCCR1A, WGM10);
 
+#ifndef DISABLE_TIMER2A_SETUP
 	// set timer 2 prescale factor to 64
 #if defined(__AVR_ATmega168__)
 	sbi(TCCR2B, CS22);
@@ -477,6 +485,7 @@ int main(void)
 #else
 	sbi(TCCR2, WGM20);
 #endif
+#endif // DISABLE_TIMER2A_SETUP
 
 	// set a2d reference to AVCC (5 volts)
 	cbi(ADMUX, REFS1);
