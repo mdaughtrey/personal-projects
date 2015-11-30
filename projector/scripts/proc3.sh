@@ -37,8 +37,6 @@ LEVELS_TXT=levels.txt
 LEVELS_ERROR=levelcheck.out
 IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
 
-if [[ `hostname`
-
 if [[ ! -d $YUVTMP ]]
 then
 	mkdir -p $YUVTMP
@@ -244,12 +242,14 @@ genyuv()
 		echo title/SAM_$(printf "%06u" $ii).JPG >> titlelist.txt
 	done
 
-	let end=$(($(ls fused/SAM_*.JPG | wc -l)-1))
+	let end=$(($(ls autocropped/SAM_*.JPG | wc -l)-1))
+#	let end=$(($(ls fused/SAM_*.JPG | wc -l)-1))
 	((end+=$TITLE_STREAM_FRAMES))
 	#for ii in `seq ${TITLE_STREAM_FRAMES} $(($(ls fused/SAM_*.JPG | wc -l)-1))`
 	for ii in `seq ${TITLE_STREAM_FRAMES} $end`
 	do
-		echo fused/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
+		#echo fused/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
+		echo autocropped/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
 	done
 
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
@@ -375,7 +375,8 @@ oneTitleFrame()
 	translateX=$2
 	translateY=$3
 	titleFile=$4
-	firstfile="fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
+	#firstfile="fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
+	firstfile="autocropped/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
 	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
 	value=$(echo "${inc}*${sepia}" | bc -l)
 	index=$(printf '%06u' $sepia)
@@ -412,7 +413,8 @@ gentitle()
 	fi
 	type=${1:-"dvd"}
 	scaler #$type
-	firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
+	#firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
+	firstfile=${2:-"autocropped/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 
 	if [[ ! -f $firstfile ]]
 	then
@@ -686,7 +688,7 @@ all()
 {
 #    rm -rf $YUVTMP
 	rm -f *.JPG *.png 
-	rm -rf title cropped fused
+	rm -rf title cropped autocropped fused
 	echo precrop
 	precrop
 	echo optimize
@@ -717,6 +719,24 @@ deleterange()
 			doCommand "rm $template"
 		fi
 	done
+}
+
+oneAutocrop()
+{
+    autocrop.py -v -f $1 -o autocropped
+}
+
+export -f oneAutocrop
+
+autocrop()
+{
+    rm -rf autocropped
+    mkdir autocropped
+
+    for ff in fused/*.JPG
+    do
+	    $SEM -N0 --jobs 200% oneAutocrop $ff
+    done
 }
 
 onePrecrop()
@@ -1007,6 +1027,7 @@ case "$1" in
 	drange) deleterange $2 $3 ;;
 	all) all ;;
 	precrop) precrop ;;
+    autocrop) autocrop ;;
 	optimize) optimize ;;
 	tonecheck) toneCheck ;;
 	tonefuse) tonefuse ;;
