@@ -7,39 +7,38 @@ import os
 from glob import glob, iglob
 
 debugdir='/mnt/imageinput/v3test/test8/autocropped'
+greyed_dir='greyed'
+bw_dir='bw'
 
 
 options = {}
 
 def process8mm(filename, outputpath):
-    im = Image.open(filename)
+    fullColor = Image.open(filename)
     if options.verbose:
         print '%s' % filename
-    (imX, imY) = im.size
-    xfile = im.copy().convert('L')
-    xfile.save('/mnt/imageinput/v3test/grayed.JPG')
-    xfile = xfile.point(lambda ii: ii > 80 and 255)
-    xfile.save('/mnt/imageinput/v3test/bw.JPG')
-    lineX = imX / 5 * 4
-    lineY = imY / 2 
+    (fcWidth, fcHeight) = fullColor.size
 
-#    id = ImageDraw.Draw(xfile)
-#    id.line((lineX, 0, lineX, imY), fill = 255)
-#    del id
-#    xfile.save('/mnt/imageinput/v3test/line.JPG')
+    bw = fullColor.copy().convert('L')
+    if os.path.isdir(greyed_dir): 
+        bw.save('%s/%s' % (greyed_dir, os.path.basename(filename)))
+    bw = bw.point(lambda ii: ii > 80 and 255)
+    lineX = fcWidth / 20 * 19
+    lineY = fcHeight / 2 
+
 
     # find the bounding box of the upper sprocket hole
-    upperCrop = xfile.copy()
-    upperCrop = upperCrop.crop((lineX, 0, imX, lineY))
-    upperCrop.save('%s/upper.jpg' % debugdir)
+    upperCrop = bw.copy()
+    upperCrop = upperCrop.crop((lineX, 0, fcWidth, lineY))
+    #upperCrop.save('%s/upper.jpg' % debugdir)
     upperBox = list(upperCrop.getbbox())
     upperBox[0] += lineX
     upperBox[2] += lineX
 
     # find the bounding box of the lower sprocket hole
-    lowerCrop = xfile.copy()
-    lowerCrop = lowerCrop.crop((lineX, lineY, imX, imY))
-    lowerCrop.save('%s/lower.jpg' % debugdir)
+    lowerCrop = bw.copy()
+    lowerCrop = lowerCrop.crop((lineX, lineY, fcWidth, fcHeight))
+    #lowerCrop.save('%s/lower.jpg' % debugdir)
     lowerBox = list(lowerCrop.getbbox())
     lowerBox[0] += lineX
     lowerBox[1] += lineY
@@ -59,9 +58,17 @@ def process8mm(filename, outputpath):
 #        print 'pxPerMm %f centerFrameV %u' % (pxPerMm, centerFrameV)
 #        print 'frameOriginX %u frameOriginY %u' % (frameOriginX, frameOriginY)
 
+    if os.path.isdir(bw_dir): 
+        bwd = ImageDraw.Draw(bw)
+        bwd.line((int(frameOriginX), int(frameOriginY),
+             int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)),
+            fill = 255)
+        bwd.line((lineX, 0, lineX, fcHeight), fill = 255)
+        bwd.line((lineX + 1, 0, lineX + 1, fcHeight), fill = 0)
+        bw.save('%s/%s' % (bw_dir, os.path.basename(filename)))
     # crop and save
-    theFrame = im.crop((int(frameOriginX), int(frameOriginY), int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)))
-    theFrame.save('%s/%s' % (outputpath, os.path.basename(filename)))
+    fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY), int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)))
+    fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
 
 def main():
     global options
