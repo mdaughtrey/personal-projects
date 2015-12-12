@@ -26,12 +26,12 @@ def process8mm(filename, outputpath):
     lineX = fcWidth / 20 * 19
     lineY = fcHeight / 2 
 
-
     # find the bounding box of the upper sprocket hole
     upperCrop = bw.copy()
     upperCrop = upperCrop.crop((lineX, 0, fcWidth, lineY))
     #upperCrop.save('%s/upper.jpg' % debugdir)
     upperBox = list(upperCrop.getbbox())
+
     upperBox[0] += lineX
     upperBox[2] += lineX
 
@@ -40,6 +40,7 @@ def process8mm(filename, outputpath):
     lowerCrop = lowerCrop.crop((lineX, lineY, fcWidth, fcHeight))
     #lowerCrop.save('%s/lower.jpg' % debugdir)
     lowerBox = list(lowerCrop.getbbox())
+
     lowerBox[0] += lineX
     lowerBox[1] += lineY
     lowerBox[2] += lineX
@@ -51,27 +52,34 @@ def process8mm(filename, outputpath):
 
     # calculate the size and offset of the cropped image
     pxPerMm = (upperBox[3] - upperBox[1]) / 1.23
+
+#	if options.verbose:
+#	    print 'pxPerMm %u' % pxPerMm
     centerFrameV = ((lowerBox[1] - upperBox[3]) / 2) + upperBox[3]
-    frameOriginX = upperBox[2] - ((1.8 + 4.5 + .1) * pxPerMm)
+    frameOriginX = upperBox[2] - ((1.5 + 4.5 + .1) * pxPerMm)
     frameOriginY = centerFrameV - (1.65 * pxPerMm)
 #    if options.verbose:
 #        print 'pxPerMm %f centerFrameV %u' % (pxPerMm, centerFrameV)
 #        print 'frameOriginX %u frameOriginY %u' % (frameOriginX, frameOriginY)
 
+    frameWidth = (4.5 + 0.3)  * pxPerMm
+    frameHeight = 3.3 * pxPerMm
     if os.path.isdir(bw_dir): 
         bwd = ImageDraw.Draw(bw)
-        bwd.line((int(frameOriginX), int(frameOriginY),
-             int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)),
-            fill = 255)
+#        bwd.line((int(frameOriginX), int(frameOriginY),
+#             int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)),
+#            fill = 255)
         bwd.line((lineX, 0, lineX, fcHeight), fill = 255)
         bwd.rectangle((frameOriginX, frameOriginY,
-				frameOriginX + (4.5 * pxPerMm),
-				frameOriginY + (1.65 * pxPerMm)),
+				frameOriginX + frameWidth,
+				frameOriginY + frameHeight),
 				 fill = 140)
 #        bwd.line((lineX + 1, 0, lineX + 1, fcHeight), fill = 0)
         bw.save('%s/%s' % (bw_dir, os.path.basename(filename)))
     # crop and save
-    fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY), int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)))
+    fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY),
+         int(frameOriginX + frameWidth),
+         int(frameOriginY + frameHeight)))
     fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
 
 def main():
