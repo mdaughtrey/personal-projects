@@ -64,7 +64,11 @@ def process8mm(filename, outputpath):
              int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)),
             fill = 255)
         bwd.line((lineX, 0, lineX, fcHeight), fill = 255)
-        bwd.line((lineX + 1, 0, lineX + 1, fcHeight), fill = 0)
+        bwd.rectangle((frameOriginX, frameOriginY,
+				frameOriginX + (4.5 * pxPerMm),
+				frameOriginY + (1.65 * pxPerMm)),
+				 fill = 140)
+#        bwd.line((lineX + 1, 0, lineX + 1, fcHeight), fill = 0)
         bw.save('%s/%s' % (bw_dir, os.path.basename(filename)))
     # crop and save
     fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY), int(frameOriginX + 4.5 * pxPerMm), int(frameOriginY + 3.3 * pxPerMm)))
