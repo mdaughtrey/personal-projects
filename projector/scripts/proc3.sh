@@ -741,12 +741,10 @@ autocrop()
 
 onePrecrop()
 {
-# index dir filename width height xOffset yOffset 
-#.	levelfile=$(tempfile -d /tmp -p lvlck)
 	let index=$(echo -n 10#$1)
 	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
-	#(echo -n $1" "; convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} - | tee $outfile | identify -format '%[mean]' -)  > $levelfile
-	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} $outfile
+	#convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} $outfile
+	cp ${2}PHOTO/${3}  $outfile
 }
 
 export -f onePrecrop
@@ -895,7 +893,7 @@ oneToneFuse()
 	file3=SAM_$(printf "%06u" $((baseindex+2)))
 
 	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
-	enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
+	TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
 }
 export -f oneToneFuse
 
@@ -917,7 +915,7 @@ tonefuse()
 	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
 	do
 		vOut Tonefusing $outindex
-		outfile="$fused/SAM_$(printf "%06u" $((baseindex+3)))"
+		outfile="fused/SAM_$(printf "%06u" $((baseindex+3)))"
 		if [[ ! -f $outfile ]]
 		then
 			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
