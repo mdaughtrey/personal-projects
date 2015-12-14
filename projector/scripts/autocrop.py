@@ -92,9 +92,9 @@ def process8mm(filename, outputpath):
     (boxTop, boxBottom) = findExtents(sprockets)
     pxPerMm = (boxBottom - boxTop) / 2.58
     frameOriginX = int(fcWidth - spRight -  ((1.8 + 4.5 + .6) * pxPerMm))
-    frameOriginY = int(boxTop - (.5 * pxPerMm))
-    frameWidth = int((4.5 + 0.2)  * pxPerMm)
-    frameHeight = int(3.6 * pxPerMm)
+    frameOriginY = int(boxTop - (.4 * pxPerMm))
+    frameWidth = int((4.5)  * pxPerMm)
+    frameHeight = int(3.4 * pxPerMm)
 
     if bw_dir is not None: 
         bwd = ImageDraw.Draw(bw)

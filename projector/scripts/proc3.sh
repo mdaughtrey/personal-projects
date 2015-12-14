@@ -175,54 +175,54 @@ declare -ix yOffset=0
 let origYOffset=0
 let origXOffset=0
 
-scaler()
-{
-	vOut === scaler
-	cropfile=${1:-crop.cfg}
-#    if [[ "$1" == "web" ]]
-#    then
-#        let scaleX=300
-#    fi
-#    if [[ "$1" == "dvd" ]]
-#    then
-#        let scaleX=720
-#    fi
-#    if [ "$1" == 'hd' ]
-#    then
-#        let bw=8000
-#        let scaleX=2048
-#    fi
-    crop=($(head -1 $cropfile)) # left, top, right, bottom 
-
-	let xOrigOffset=${crop[0]}
-	let yOrigOffset=${crop[1]}
-	let xOffset=${crop[0]}
-	let yOffset=${crop[1]}
-    let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
-    let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
-
-#	if [[ -f "flip" ]]
+#scaler()
+#{
+#	vOut === scaler
+#	cropfile=${1:-crop.cfg}
+##    if [[ "$1" == "web" ]]
+##    then
+##        let scaleX=300
+##    fi
+##    if [[ "$1" == "dvd" ]]
+##    then
+##        let scaleX=720
+##    fi
+##    if [ "$1" == 'hd' ]
+##    then
+##        let bw=8000
+##        let scaleX=2048
+##    fi
+#    crop=($(head -1 $cropfile)) # left, top, right, bottom 
+#
+#	let xOrigOffset=${crop[0]}
+#	let yOrigOffset=${crop[1]}
+#	let xOffset=${crop[0]}
+#	let yOffset=${crop[1]}
+#    let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
+#    let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
+#
+##	if [[ -f "flip" ]]
+##	then
+##		vOut flip option set
+##		options="${options},flip"
+##	fi
+#    vOut XXXBefore Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
+#	if [[ -f "mirror" ]]
 #	then
-#		vOut flip option set
-#		options="${options},flip"
+#		let distanceLeft=${crop[0]}
+#		let distanceRight=$(($NATIVE_WIDTH-${crop[2]}))
+#		let crop[0]=$distanceRight
+#		let crop[2]=$((${crop[0]}+${width}))
+#		vOut mirror option set
 #	fi
-    vOut XXXBefore Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
-	if [[ -f "mirror" ]]
-	then
-		let distanceLeft=${crop[0]}
-		let distanceRight=$(($NATIVE_WIDTH-${crop[2]}))
-		let crop[0]=$distanceRight
-		let crop[2]=$((${crop[0]}+${width}))
-		vOut mirror option set
-	fi
-#    vOut XXXAfter Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
-#	exit
-
-    scaler=$(echo "scale=2;${width}/${height}" | bc) 
-    let scaleY=$(echo "$scaleX/$scaler" | bc)
-
-    vOut Scaler width $width height $height scaleX $scaleX scaleY $scaleY bw $bw
-}
+##    vOut XXXAfter Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
+##	exit
+#
+#    scaler=$(echo "scale=2;${width}/${height}" | bc) 
+#    let scaleY=$(echo "$scaleX/$scaler" | bc)
+#
+#    vOut Scaler width $width height $height scaleX $scaleX scaleY $scaleY bw $bw
+#}
 
 # Converts the images in the title/ subdirectory into titlestream.yuv
 # Converts the images in the tonefuse/ subdir into contentstream.yuv
@@ -231,7 +231,7 @@ scaler()
 genyuv()
 {
 	vOut === genyuv
-	scaler # $1
+	#scaler # $1
 	rm $YUVTMP/title_stream.yuv
 	rm $YUVTMP/stream_${1}.yuv
 	rm -f titlelist.txt
@@ -412,7 +412,7 @@ gentitle()
 		exit 1
 	fi
 	type=${1:-"dvd"}
-	scaler #$type
+	#scaler #$type
 	#firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 	firstfile=${2:-"autocropped/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 
@@ -745,6 +745,8 @@ onePrecrop()
 	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
 	#convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} $outfile
 	cp ${2}PHOTO/${3}  $outfile
+
+    autocrop.py -v -f ${2}PHOTO/${3} 
 }
 
 export -f onePrecrop
@@ -753,8 +755,7 @@ precrop()
 {
 	touch mirror
 	let numFrames=${1:-999999}
-	scaler
-#	rm /tmp/lvlck*
+	#scaler
 	if ((clean == 1))
 	then
 		rm -rf cropped
@@ -771,25 +772,20 @@ precrop()
 	for dir in $dirs
 	do
 		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
-		if [[ -f $dir/crop.cfg ]]
-		then
-			scaler $dir/crop.cfg
-#		else
-#			scaler ../crop.cfg
-		fi
+#		if [[ -f $dir/crop.cfg ]]
+#		then
+#			scaler $dir/crop.cfg
+#		fi
 
 		for number in $numbers
 		do
 			echo Frame $number
 			let index=$(echo -n 10#$to)
 			outfile="cropped/SAM_$(printf '%06u' $to).JPG"
-			#levelfile=$(tempfile -d /tmp -p lvlck)
-			#outfile="/tmp/SAM_$(printf '%06u' $to).JPG"
 			if [[ ! -f $outfile ]]
 			then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
 				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset 
-				#onePrecrop $index $dir $filename $width $height $xOffset $yOffset 
 			fi
 			((to++))
 			if ((to == numFrames))
@@ -800,8 +796,6 @@ precrop()
 		done
 	done
 	$SEM --wait
-#	cat /tmp/lvlck* | sort -nk1 > levels.txt
-#	rm /tmp/lvlck*
 }
 
 # optional for mac only it seems
@@ -899,7 +893,7 @@ export -f oneToneFuse
 
 tonefuse()
 {
-	scaler
+	#scaler
 	let outindex=$TITLE_STREAM_FRAMES
 
 	if ((clean == 1))
@@ -935,17 +929,17 @@ oneCropFuse()
 	file2=$3
 	file3=$4
 	outfile=$5
-	convert ${dir}PHOTO/${file1} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file1
-	convert ${dir}PHOTO/${file2} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file2
-	convert ${dir}PHOTO/${file3} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file3
-	enfuse --output $outfile /tmp/$file1 /tmp/$file2 /tmp/$file3 
-	rm /tmp/$file1 /tmp/$file2 /tmp/$file3
+#	convert ${dir}PHOTO/${file1} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file1
+#	convert ${dir}PHOTO/${file2} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file2
+#	convert ${dir}PHOTO/${file3} -crop ${width}x${height}+${xOffset}+${yOffset} /tmp/$file3
+    TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}PHOTO/${file1} ${dir}PHOTO/${file2} ${dir}PHOTO/${file3}
+#	rm /tmp/$file1 /tmp/$file2 /tmp/$file3
 }
 export -f oneCropFuse
 
 cropfuse()
 {
-	scaler
+#	scaler
 	if ((clean == 1))
 	then 
 		rm -rf fused
@@ -976,6 +970,7 @@ cropfuse()
 				return 0
 			fi
 			$SEM -N0 --jobs 200% oneCropFuse $dir $file1 $file2 $file3 $outfile
+			#oneCropFuse $dir $file1 $file2 $file3 $outfile
 		done
 	done
 	$SEM --wait
