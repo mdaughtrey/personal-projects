@@ -283,7 +283,7 @@ genyuv()
 
 	vOut cropoptions $cropoptions
 	options="${cropoptions} ${options}:file=$YUVTMP/contentstream.yuv"
-    doCommand mplayer -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
+    doCommand mplayer -msglevel all=6 -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
 
 	vOut Concatenating YUV Streams
 	(cat $YUVTMP/titlestream.yuv; cat $YUVTMP/contentstream.yuv | (read junk; cat)) > $YUVTMP/stream_${1}.yuv
@@ -298,7 +298,7 @@ avi()
     then
         genyuv $1 $2
     fi
-    cat $YUVTMP/stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | $FFMPEG -loglevel quiet -i - -vcodec rawvideo -y $YUVTMP/rawframes.avi
+    cat $YUVTMP/stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | $FFMPEG -loglevel info -i - -vcodec rawvideo -y $YUVTMP/rawframes.avi
 }
 
 # YUV files converted to mpeg, copied to final destination
@@ -320,7 +320,7 @@ postprocess()
 	majorMode=$1
 	if ((clean == 1))
 	then
-		rm $YUVTMP/*.yuv $YUVTMP/*.av? *.av? *.mpg
+		rm $YUVTMP/out.yuv
 	fi
 
 	if [[ ! -f $YUVTMP/rawframes.avi ]]
@@ -349,19 +349,26 @@ postprocess()
 	TEMPLATE=${SCRIPT_CLEAN2}
 	LOCALSCRIPT="$YUVTMP/clean_compare.avs"
 	;;
+    cresultS?)
+	RESULT=$(echo -n "result=\"${majorMode:1}\"")
+	TEMPLATE=${SCRIPT_CLEAN2}
+	LOCALSCRIPT="$YUVTMP/pptest_${majorMode}.avs"
+	;;
+    iresultS?)
+	RESULT=$(echo -n "result=\"${majorMode:1}\"")
+	TEMPLATE=${SCRIPT_INTERPOLATE2}
+	LOCALSCRIPT="$YUVTMP/pptest_${majorMode}.avs"
+	;;
 	esac
 
 	if [[ ! -f "$YUVTMP/out.yuv" ]]
 	then
 			rawFrames=$(echo -n "film=\"Y:\\\\`basename $PWD`\\\\rawframes.avi\"")
-			#rawFrames=$(echo -n "film=\"Z:\\\\home\\\\mattd\\\\`basename $PWD`\\\\rawframes.avi\"")
-			echo $rawFrames > ${LOCALSCRIPT}
-			echo $RESULT >> ${LOCALSCRIPT}
-			cat $TEMPLATE >> ${LOCALSCRIPT}
-			wine $AVS2YUV ${LOCALSCRIPT} - > $YUVTMP/out.yuv
+			echo $rawFrames > "${LOCALSCRIPT}"
+			echo $RESULT >> "${LOCALSCRIPT}"
+			cat $TEMPLATE >> "${LOCALSCRIPT}"
+			wine $AVS2YUV "${LOCALSCRIPT}" - > $YUVTMP/out.yuv
 	fi
-	#$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc` -b 4000K -y ${LOCALSCRIPT}.mpg 
-#	$FFMPEG -loglevel verbose -i $YUVTMP/out.yuv -threads `nproc`  -b:v 4M -maxrate 4M -minrate 4M -bufsize 4M  -y ${LOCALSCRIPT}.mpg 
 
 avconv -loglevel verbose -y -i $YUVTMP/out.yuv -threads `nproc` -f mp4 -vcodec libx264 -preset slow -b:v 4000k  -flags +loop -cmp chroma -b:v 1250k -maxrate 4500k -bufsize 4M -bt 256k -refs 1 -bf 3 -coder 1 -me_method umh -me_range 16 -subq 7 -partitions +parti4x4+parti8x8+partp8x8+partb8x8 -g 250 -keyint_min 25 -level 30 -qmin 10 -qmax 51 -qcomp 0.6 -trellis 2 -sc_threshold 40 -i_qfactor 0.71 -acodec aac -strict experimental -b:a 112k -ar 48000 -ac 2 ${LOCALSCRIPT}.mp4
 
@@ -689,12 +696,14 @@ all()
 #    rm -rf $YUVTMP
 	rm -f *.JPG *.png 
 	rm -rf title cropped autocropped fused
-	echo precrop
-	precrop
+#	echo precrop
+#	precrop
 	echo optimize
 	optimize
 	echo tonefuse
 	tonefuse
+    echo autocrop
+    autocrop
 	echo gentitle
 	gentitle
 	echo interpolate
@@ -801,7 +810,7 @@ precrop()
 # optional for mac only it seems
 optimize ()
 {
-	for ff in cropped/*.JPG
+	for ff in *PHOTO/*.JPG
 	do
 		$SEM -N0 --jobs 200% $IMAGE_OPTIM $ff
 	done
@@ -984,6 +993,15 @@ import()
 	cp title*.txt $FRAMETMP
 }
 
+pptests()
+{
+    let clean=1
+    for mode in cresultS{1,2,3,4,5,6} iresultS{1,2,3,4,5,6}
+    do
+        postprocess $mode
+    done
+}
+
 (date | tr -d '\n'; echo -n " "; pwd | tr -d '\n'; echo -n " ";  echo $*) >> $RUN_LOG
 
 while getopts "msvC" OPT
@@ -1022,10 +1040,11 @@ case "$1" in
 	precrop) precrop ;;
     autocrop) autocrop ;;
 	optimize) optimize ;;
-	tonecheck) toneCheck ;;
+	#tonecheck) toneCheck ;;
 	tonefuse) tonefuse ;;
 	cropfuse) cropfuse ;;
 	import) import ;;
+    pptests) pptests ;;
 	*) echo What? ;;
 esac
 
