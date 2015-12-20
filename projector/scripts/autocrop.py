@@ -98,7 +98,7 @@ def findSprocketLeft(sprockets, filename):
         print "findSprocketLeft returns %u from row %u" % (minVal, maxRow)
     return minVal + offset
 
-def process8mm2(filename, outputpath):
+def process8mmLeft(filename, outputpath):
     fullColor = Image.open(filename)
     if options.verbose:
         print '%s' % filename
@@ -119,9 +119,9 @@ def process8mm2(filename, outputpath):
 
     (boxTop, boxBottom) = findExtents(sprockets)
     pxPerMm = (boxBottom - boxTop) / 2.58
-    frameOriginX = int(spLeft + ((1.8 + .6) * pxPerMm))
+    frameOriginX = int(spLeft + ((1.8 + .3) * pxPerMm))
     frameOriginY = int(boxTop - (.4 * pxPerMm))
-    frameWidth = int(4.5  * pxPerMm)
+    frameWidth = int(4.8  * pxPerMm)
     frameHeight = int(3.4 * pxPerMm)
 
     if frameWidth % 2 == 1:
@@ -199,6 +199,7 @@ def main():
     parser.add_option('-i', '--input-dir', dest='inputdir')
     parser.add_option('-o', '--output-dir', dest='outputdir')
     parser.add_option('-f','--filename', dest='filename')
+    parser.add_option('-s','--sprocket', dest='sprocket', default='left')
     (options, args) = parser.parse_args()
 
 #    if options.inputdir is None or options.outputdir is None:
@@ -210,8 +211,16 @@ def main():
 #        parser.print_help()
 #        sys.exit(1)
 
+    if options.sprocket not in ('left', 'right'):
+        print "Invalid sprocket option %s" % options.sprocket
+        sys.exit(1)
+
     if options.filename is not None:
-        process8mm(options.filename, options.outputdir)
+        if 'left' == options.sprocket:
+            process8mmLeft(options.filename, options.outputdir)
+        else:
+            process8mmRight(options.filename, options.outputdir)
+
     else:
         for ff in iglob('%s/*.JPG' % options.inputdir):
             process8mm(ff, options.outputdir)
