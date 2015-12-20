@@ -25,7 +25,7 @@ let NATIVE_WIDTH=5472
 let NATIVE_HEIGHT=3648
 FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
 SEM="sem --will-cite"
-DIRBASE_SYMLINKS=~/symlinks
+#DIRBASE_SYMLINKS=~/symlinks
 DIRBASE_IMAGES=/mnt/imageinput
 AVS2YUV=Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe
 # where to put the temporary video files 
@@ -42,8 +42,8 @@ then
 	mkdir -p $YUVTMP
 fi
 
-symlinkSource=`pwd`
-symlinkTarget=$DIRBASE_SYMLINKS/${PWD//$DIRBASE_IMAGES/}
+#symlinkSource=`pwd`
+#symlinkTarget=$DIRBASE_SYMLINKS/${PWD//$DIRBASE_IMAGES/}
 
 vOut()
 {
@@ -135,21 +135,21 @@ doCommand()
 #}
 
 
-preview()
-{
-	rm -f *.JPG *.png 
-	rm -rf title cropped fused
-    rm -rf $YUVTMP
-	mkdir -p $YUVTMP
-	let TITLE_STREAM_FRAMES=36
-	import
-	precrop 720
-#	optimize
-	tonefuse
-	gentitle 
-	postprocess icompare
-    rm -rf $YUVTMP
-}
+#preview()
+#{
+#	rm -f *.JPG *.png 
+#	rm -rf title cropped fused
+#    rm -rf $YUVTMP
+#	mkdir -p $YUVTMP
+#	let TITLE_STREAM_FRAMES=36
+#	import
+#	precrop 720
+##	optimize
+#	#tonefuse
+#	gentitle 
+#	postprocess icompare
+#    rm -rf $YUVTMP
+#}
 
 previewTitle()
 {
@@ -255,7 +255,7 @@ genyuv()
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
 #	if [[ "$2" == "inter3" ]]
 #	then
-		cropoptions="-vf scale=$scaleX:$scaleY"
+#		cropoptions="-vf scale=$scaleX:$scaleY"
 	#	cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
     	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
 #	else
@@ -283,7 +283,7 @@ genyuv()
 
 	vOut cropoptions $cropoptions
 	options="${cropoptions} ${options}:file=$YUVTMP/contentstream.yuv"
-    doCommand mplayer -msglevel all=6 -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
+#    doCommand mplayer -msglevel all=6 -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
 
 	vOut Concatenating YUV Streams
 	(cat $YUVTMP/titlestream.yuv; cat $YUVTMP/contentstream.yuv | (read junk; cat)) > $YUVTMP/stream_${1}.yuv
@@ -693,15 +693,14 @@ gentagged()
 
 all()
 {
-#    rm -rf $YUVTMP
 	rm -f *.JPG *.png 
 	rm -rf title cropped autocropped fused
 #	echo precrop
 #	precrop
 	echo optimize
 	optimize
-	echo tonefuse
-	tonefuse
+	#echo cropfuse
+	#tonefuse
     echo autocrop
     autocrop
 	echo gentitle
@@ -886,50 +885,50 @@ toneCheck()
 }
 
 
-oneToneFuse()
-{
-	dir=$1
-	baseindex=$2
-	outindex=$3
-	file1=SAM_$(printf "%06u" $baseindex)
-	file2=SAM_$(printf "%06u" $((baseindex+1)))
-	file3=SAM_$(printf "%06u" $((baseindex+2)))
-
-	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
-	TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
-}
-export -f oneToneFuse
-
-tonefuse()
-{
-	#scaler
-	let outindex=$TITLE_STREAM_FRAMES
-
-	if ((clean == 1))
-	then 
-		rm -rf fused
-	fi
-	if [[ ! -d fused ]]
-	then
-		mkdir fused
-	fi
-	let baseindex=$TITLE_STREAM_FRAMES
-
-	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
-	do
-		vOut Tonefusing $outindex
-		outfile="fused/SAM_$(printf "%06u" $((baseindex+3)))"
-		if [[ ! -f $outfile ]]
-		then
-			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
-			$SEM -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
-		fi
-
-		((outindex++))
-		((baseindex+=3))
-	done
-	$SEM --wait
-}
+#oneToneFuse()
+#{
+#	dir=$1
+#	baseindex=$2
+#	outindex=$3
+#	file1=SAM_$(printf "%06u" $baseindex)
+#	file2=SAM_$(printf "%06u" $((baseindex+1)))
+#	file3=SAM_$(printf "%06u" $((baseindex+2)))
+#
+#	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
+#	TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
+#}
+#export -f oneToneFuse
+#
+#tonefuse()
+#{
+#	#scaler
+#	let outindex=$TITLE_STREAM_FRAMES
+#
+#	if ((clean == 1))
+#	then 
+#		rm -rf fused
+#	fi
+#	if [[ ! -d fused ]]
+#	then
+#		mkdir fused
+#	fi
+#	let baseindex=$TITLE_STREAM_FRAMES
+#
+#	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
+#	do
+#		vOut Tonefusing $outindex
+#		outfile="fused/SAM_$(printf "%06u" $((baseindex+3)))"
+#		if [[ ! -f $outfile ]]
+#		then
+#			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
+#			$SEM -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
+#		fi
+#
+#		((outindex++))
+#		((baseindex+=3))
+#	done
+#	$SEM --wait
+#}
 
 oneCropFuse()
 {
@@ -996,7 +995,8 @@ import()
 pptests()
 {
     let clean=1
-    for mode in cresultS{1,2,3,4,5,6} iresultS{1,2,3,4,5,6}
+    #for mode in cresultS{1,2,3,4,5,6} iresultS{1,2,3,4,5,6}
+    for mode in cresultS7 iresultS7
     do
         postprocess $mode
     done
@@ -1041,7 +1041,7 @@ case "$1" in
     autocrop) autocrop ;;
 	optimize) optimize ;;
 	#tonecheck) toneCheck ;;
-	tonefuse) tonefuse ;;
+	#tonefuse) tonefuse ;;
 	cropfuse) cropfuse ;;
 	import) import ;;
     pptests) pptests ;;
