@@ -175,54 +175,54 @@ declare -ix yOffset=0
 let origYOffset=0
 let origXOffset=0
 
-#scaler()
-#{
-#	vOut === scaler
-#	cropfile=${1:-crop.cfg}
-##    if [[ "$1" == "web" ]]
-##    then
-##        let scaleX=300
-##    fi
-##    if [[ "$1" == "dvd" ]]
-##    then
-##        let scaleX=720
-##    fi
-##    if [ "$1" == 'hd' ]
-##    then
-##        let bw=8000
-##        let scaleX=2048
-##    fi
-#    crop=($(head -1 $cropfile)) # left, top, right, bottom 
-#
-#	let xOrigOffset=${crop[0]}
-#	let yOrigOffset=${crop[1]}
-#	let xOffset=${crop[0]}
-#	let yOffset=${crop[1]}
-#    let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
-#    let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
-#
-##	if [[ -f "flip" ]]
-##	then
-##		vOut flip option set
-##		options="${options},flip"
-##	fi
-#    vOut XXXBefore Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
-#	if [[ -f "mirror" ]]
+scaler()
+{
+	vOut === scaler
+	cropfile=${1:-crop.cfg}
+#    if [[ "$1" == "web" ]]
+#    then
+#        let scaleX=300
+#    fi
+#    if [[ "$1" == "dvd" ]]
+#    then
+#        let scaleX=720
+#    fi
+#    if [ "$1" == 'hd' ]
+#    then
+#        let bw=8000
+#        let scaleX=2048
+#    fi
+    crop=($(head -1 $cropfile)) # left, top, right, bottom 
+
+	let xOrigOffset=${crop[0]}
+	let yOrigOffset=${crop[1]}
+	let xOffset=${crop[0]}
+	let yOffset=${crop[1]}
+    let width=$((${crop[2]} - ${crop[0]})) # (right - left)/2 + left
+    let height=$((${crop[3]} - ${crop[1]})) # (right - left)/2 + left
+
+#	if [[ -f "flip" ]]
 #	then
-#		let distanceLeft=${crop[0]}
-#		let distanceRight=$(($NATIVE_WIDTH-${crop[2]}))
-#		let crop[0]=$distanceRight
-#		let crop[2]=$((${crop[0]}+${width}))
-#		vOut mirror option set
+#		vOut flip option set
+#		options="${options},flip"
 #	fi
-##    vOut XXXAfter Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
-##	exit
-#
-#    scaler=$(echo "scale=2;${width}/${height}" | bc) 
-#    let scaleY=$(echo "$scaleX/$scaler" | bc)
-#
-#    vOut Scaler width $width height $height scaleX $scaleX scaleY $scaleY bw $bw
-#}
+    vOut XXXBefore Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
+	if [[ -f "mirror" ]]
+	then
+		let distanceLeft=${crop[0]}
+		let distanceRight=$(($NATIVE_WIDTH-${crop[2]}))
+		let crop[0]=$distanceRight
+		let crop[2]=$((${crop[0]}+${width}))
+		vOut mirror option set
+	fi
+#    vOut XXXAfter Scaler L: ${crop[0]} T: ${crop[1]} R: ${crop[2]} B: ${crop[3]}
+#	exit
+
+    scaler=$(echo "scale=2;${width}/${height}" | bc) 
+    let scaleY=$(echo "$scaleX/$scaler" | bc)
+
+    vOut Scaler width $width height $height scaleX $scaleX scaleY $scaleY bw $bw
+}
 
 # Converts the images in the title/ subdirectory into titlestream.yuv
 # Converts the images in the tonefuse/ subdir into contentstream.yuv
@@ -253,27 +253,39 @@ genyuv()
 	done
 
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
-#	if [[ "$2" == "inter3" ]]
-#	then
-#		cropoptions="-vf scale=$scaleX:$scaleY"
-	#	cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-    	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
-#	else
-##		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-##    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
-##	fi
-
 	if [[ -f "flip" ]]
 	then
 		vOut flip option set
 		cropoptions="${cropoptions},flip"
 	fi
 
-	if [[ -f "mirror" ]]
-	then
-		vOut mirror option set
-		cropoptions="${cropoptions},mirror"
-	fi
+#	if [[ -f "mirror" ]]
+#	then
+#		vOut mirror option set
+#		cropoptions="${cropoptions},mirror"
+#	fi
+#	if [[ "$2" == "inter3" ]]
+#	then
+#		cropoptions="-vf scale=$scaleX:$scaleY"
+		#cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
+		cropoptions="-vf scale=800:600,mirror"
+    	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
+#	else
+##		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
+##    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
+##	fi
+
+#	if [[ -f "flip" ]]
+#	then
+#		vOut flip option set
+#		cropoptions="${cropoptions},flip"
+#	fi
+#
+#	if [[ -f "mirror" ]]
+#	then
+#		vOut mirror option set
+#		cropoptions="${cropoptions},mirror"
+#	fi
 
 #	cropoptions=${cropoptions/ ,/ }
 #	if [[ "-vf " == "$cropoptions" ]]
@@ -283,7 +295,7 @@ genyuv()
 
 	vOut cropoptions $cropoptions
 	options="${cropoptions} ${options}:file=$YUVTMP/contentstream.yuv"
-#    doCommand mplayer -msglevel all=6 -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
+    doCommand mplayer -msglevel all=6 -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
 
 	vOut Concatenating YUV Streams
 	(cat $YUVTMP/titlestream.yuv; cat $YUVTMP/contentstream.yuv | (read junk; cat)) > $YUVTMP/stream_${1}.yuv

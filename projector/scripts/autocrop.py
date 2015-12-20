@@ -42,9 +42,10 @@ def findExtents(image):
 
     return (top / 10, bottom / 10)
 
-def findSprocketRight2(sprockets, filename):
+def findSprocketRight(sprockets, filename):
+    offset = 100
     (fcWidth, fcHeight) = sprockets.size
-    sprockets = sprockets.crop((fcWidth / 4 * 3, 0, fcWidth, fcHeight / 4 ))
+    sprockets = sprockets.crop(((fcWidth / 4 * 3) - offset, 0, fcWidth - offset, fcHeight / 4 ))
     (spWidth, spHeight) = sprockets.size
     spData = list(sprockets.getdata())
     spData.reverse()
@@ -67,7 +68,7 @@ def findSprocketRight2(sprockets, filename):
 
     if options.verbose:
         print "findSprocketRight returns %u from row %u" % (minVal, maxRow)
-    return minVal
+    return minVal + offset
 
 def findSprocketLeft(sprockets, filename):
     offset = 100
@@ -97,7 +98,7 @@ def findSprocketLeft(sprockets, filename):
         print "findSprocketLeft returns %u from row %u" % (minVal, maxRow)
     return minVal + offset
 
-def process8mm(filename, outputpath):
+def process8mm2(filename, outputpath):
     fullColor = Image.open(filename)
     if options.verbose:
         print '%s' % filename
@@ -123,6 +124,9 @@ def process8mm(filename, outputpath):
     frameWidth = int(4.5  * pxPerMm)
     frameHeight = int(3.4 * pxPerMm)
 
+    if frameWidth % 2 == 1:
+        frameWidth += 1
+
     #frameOriginX = int(fcWidth - spRight -  ((1.8 + 4.5 + .6) * pxPerMm))
     #frameOriginY = int(boxTop - (.4 * pxPerMm))
     #frameWidth = int((4.5)  * pxPerMm)
@@ -143,11 +147,11 @@ def process8mm(filename, outputpath):
          int(frameOriginY + frameHeight)))
     fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
     
-def process8mm2(filename, outputpath):
+def process8mm(filename, outputpath):
     fullColor = Image.open(filename)
     if options.verbose:
         print '%s' % filename
-    fullColor = fullColor.transpose(Image.FLIP_TOP_BOTTOM)
+#    fullColor = fullColor.transpose(Image.FLIP_TOP_BOTTOM)
     (fcWidth, fcHeight) = fullColor.size
 
     bw = fullColor.copy().convert('L')
@@ -170,6 +174,8 @@ def process8mm2(filename, outputpath):
     frameOriginY = int(boxTop - (.4 * pxPerMm))
     frameWidth = int((4.5)  * pxPerMm)
     frameHeight = int(3.4 * pxPerMm)
+    if frameWidth % 2 == 1:
+        frameWidth += 1
 
     if bw_dir is not None: 
         bwd = ImageDraw.Draw(bw)
