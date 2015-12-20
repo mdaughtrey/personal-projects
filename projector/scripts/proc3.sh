@@ -35,7 +35,8 @@ FRAMETMP=/media/usb0/videotmp_`basename $PWD`
 FFMPEG=avconv
 LEVELS_TXT=levels.txt
 LEVELS_ERROR=levelcheck.out
-IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
+#IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
+IMAGE_OPTIM="jpegoptim -o"
 
 if [[ ! -d $YUVTMP ]]
 then
@@ -268,7 +269,10 @@ genyuv()
 #	then
 #		cropoptions="-vf scale=$scaleX:$scaleY"
 		#cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-		cropoptions="-vf scale=800:600,mirror"
+		#cropoptions="-vf scale=800:600,mirror"
+
+		cropoptions="-vf scale=800:600"
+
     	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
 #	else
 ##		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
