@@ -308,7 +308,7 @@ void loop ()
             laserOff();
             sensorTimer = 0;
             sensorValue = SENSOR_VALUE_INIT;
-            DELAYEDSTATE(2000, FRAMESTOP);
+            DELAYEDSTATE(200, FRAMESTOP);
 #ifndef NO_PRETENSION
             setMotor(MOTOR_PRETENSION_SLOW);
 #endif //  NO_PRETENSION
@@ -326,11 +326,12 @@ void loop ()
                 waitingFor = LOOKFORGAPEND;
 #ifdef STOPONGAP
                 laserOff();
-                setServo(SERVO_STOP);
+                DELAYEDSTATE(100, FRAMESTOP);
+                //setServo(SERVO_STOP);
                 sensorTimer = 0;
                 sensorValue = SENSOR_VALUE_INIT;
                 //Serial.println(ledCount, 10);
-                delay(200);
+//                delay(200);
 #else // STOPONGAP
                 sensorValue = SENSOR_VALUE_MAX - 20;
 #endif // STOPONGAP
@@ -386,7 +387,7 @@ void loop ()
 
         case EXPOSURESERIES2:
             lampOn();
-            DELAYEDSTATE(20, EXPOSURESERIES3);
+            DELAYEDSTATE(40, EXPOSURESERIES3);
             break;
 
         case EXPOSURESERIES1:
@@ -397,7 +398,7 @@ void loop ()
             break;
 
         case EXPOSURESERIES:
-            DELAYEDSTATE(400, EXPOSURESERIES1);
+            DELAYEDSTATE(200, EXPOSURESERIES1);
             break;
 
         case SHUTTEROPEN:
