@@ -147,7 +147,7 @@ def process8mmLeft(filename, outputpath):
          int(frameOriginY + frameHeight)))
     fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
     
-def process8mm(filename, outputpath):
+def process8mmRight(filename, outputpath):
     fullColor = Image.open(filename)
     if options.verbose:
         print '%s' % filename
@@ -172,7 +172,7 @@ def process8mm(filename, outputpath):
     pxPerMm = (boxBottom - boxTop) / 2.58
     frameOriginX = int(fcWidth - spRight -  ((1.8 + 4.5 + .6) * pxPerMm))
     frameOriginY = int(boxTop - (.4 * pxPerMm))
-    frameWidth = int((4.5)  * pxPerMm)
+    frameWidth = int((4.8)  * pxPerMm)
     frameHeight = int(3.4 * pxPerMm)
     if frameWidth % 2 == 1:
         frameWidth += 1

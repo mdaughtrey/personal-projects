@@ -747,7 +747,7 @@ deleterange()
 
 oneAutocrop()
 {
-    autocrop.py -v -f $1 -o autocropped
+    autocrop.py -s right -v -f $1 -o autocropped
 }
 
 export -f oneAutocrop
