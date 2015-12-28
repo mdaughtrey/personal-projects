@@ -102,7 +102,7 @@ def process8mmLeft(filename, outputpath):
     fullColor = Image.open(filename)
     if options.verbose:
         print '%s' % filename
-    fullColor = fullColor.transpose(Image.FLIP_TOP_BOTTOM)
+#    fullColor = fullColor.transpose(Image.FLIP_TOP_BOTTOM)
     (fcWidth, fcHeight) = fullColor.size
 
     bw = fullColor.copy().convert('L')
