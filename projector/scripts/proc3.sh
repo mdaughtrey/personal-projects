@@ -35,8 +35,8 @@ FRAMETMP=/media/usb0/videotmp_`basename $PWD`
 FFMPEG=avconv
 LEVELS_TXT=levels.txt
 LEVELS_ERROR=levelcheck.out
-#IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
-IMAGE_OPTIM="jpegoptim -o"
+IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
+#IMAGE_OPTIM="jpegoptim -o"
 
 if [[ ! -d $YUVTMP ]]
 then
@@ -711,12 +711,12 @@ all()
 {
 	rm -f *.JPG *.png 
 	rm -rf title cropped autocropped fused
-#	echo precrop
-#	precrop
-	echo optimize
-	optimize
-	#echo cropfuse
-	#tonefuse
+	echo precrop
+	precrop
+#	echo optimize
+#	optimize
+	echo tonefuse
+	tonefuse
     echo autocrop
     autocrop
 	echo gentitle
@@ -747,7 +747,8 @@ deleterange()
 
 oneAutocrop()
 {
-    autocrop.py -s right -v -f $1 -o autocropped
+    autocrop.py -s left -v -f $1 -o autocropped
+    #autocrop.py -v -f $1 -o autocropped
 }
 
 export -f oneAutocrop
@@ -767,10 +768,10 @@ onePrecrop()
 {
 	let index=$(echo -n 10#$1)
 	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
-	#convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} $outfile
-	cp ${2}PHOTO/${3}  $outfile
+	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} ${8} $outfile
+	#cp ${2}PHOTO/${3}  $outfile
 
-    autocrop.py -v -f ${2}PHOTO/${3} 
+    #autocrop.py -v -f ${2}PHOTO/${3} 
 }
 
 export -f onePrecrop
@@ -779,7 +780,7 @@ precrop()
 {
 	touch mirror
 	let numFrames=${1:-999999}
-	#scaler
+	scaler
 	if ((clean == 1))
 	then
 		rm -rf cropped
@@ -796,10 +797,10 @@ precrop()
 	for dir in $dirs
 	do
 		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
-#		if [[ -f $dir/crop.cfg ]]
-#		then
-#			scaler $dir/crop.cfg
-#		fi
+		if [[ -f $dir/crop.cfg ]]
+		then
+			scaler $dir/crop.cfg
+		fi
 
 		for number in $numbers
 		do
@@ -809,7 +810,7 @@ precrop()
 			if [[ ! -f $outfile ]]
 			then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
-				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset 
+				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset -flop
 			fi
 			((to++))
 			if ((to == numFrames))
@@ -901,50 +902,50 @@ toneCheck()
 }
 
 
-#oneToneFuse()
-#{
-#	dir=$1
-#	baseindex=$2
-#	outindex=$3
-#	file1=SAM_$(printf "%06u" $baseindex)
-#	file2=SAM_$(printf "%06u" $((baseindex+1)))
-#	file3=SAM_$(printf "%06u" $((baseindex+2)))
-#
-#	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
-#	TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
-#}
-#export -f oneToneFuse
-#
-#tonefuse()
-#{
-#	#scaler
-#	let outindex=$TITLE_STREAM_FRAMES
-#
-#	if ((clean == 1))
-#	then 
-#		rm -rf fused
-#	fi
-#	if [[ ! -d fused ]]
-#	then
-#		mkdir fused
-#	fi
-#	let baseindex=$TITLE_STREAM_FRAMES
-#
-#	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
-#	do
-#		vOut Tonefusing $outindex
-#		outfile="fused/SAM_$(printf "%06u" $((baseindex+3)))"
-#		if [[ ! -f $outfile ]]
-#		then
-#			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
-#			$SEM -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
-#		fi
-#
-#		((outindex++))
-#		((baseindex+=3))
-#	done
-#	$SEM --wait
-#}
+oneToneFuse()
+{
+	dir=$1
+	baseindex=$2
+	outindex=$3
+	file1=SAM_$(printf "%06u" $baseindex)
+	file2=SAM_$(printf "%06u" $((baseindex+1)))
+	file3=SAM_$(printf "%06u" $((baseindex+2)))
+
+	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
+	TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
+}
+export -f oneToneFuse
+
+tonefuse()
+{
+	#scaler
+	let outindex=$TITLE_STREAM_FRAMES
+
+	if ((clean == 1))
+	then 
+		rm -rf fused
+	fi
+	if [[ ! -d fused ]]
+	then
+		mkdir fused
+	fi
+	let baseindex=$TITLE_STREAM_FRAMES
+
+	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
+	do
+		vOut Tonefusing $outindex
+		outfile="fused/SAM_$(printf "%06u" $((baseindex+3)))"
+		if [[ ! -f $outfile ]]
+		then
+			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
+			$SEM -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
+		fi
+
+		((outindex++))
+		((baseindex+=3))
+	done
+	$SEM --wait
+}
 
 oneCropFuse()
 {
@@ -1057,7 +1058,7 @@ case "$1" in
     autocrop) autocrop ;;
 	optimize) optimize ;;
 	#tonecheck) toneCheck ;;
-	#tonefuse) tonefuse ;;
+	tonefuse) tonefuse ;;
 	cropfuse) cropfuse ;;
 	import) import ;;
     pptests) pptests ;;
