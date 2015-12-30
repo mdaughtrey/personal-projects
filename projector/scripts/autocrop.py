@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 from optparse import OptionParser
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 import sys
 import os
 from glob import glob, iglob
@@ -13,6 +13,10 @@ bw_dir = {True:'bw', False: None}[os.path.isdir('bw')]
 corner_dir = {True:'corner', False: None}[os.path.isdir('corner')]
 
 options = {}
+
+FrameHeightMm = 3.3
+FrameWidthMm = 4.5
+PixelsPerMm = 578
 
 def findExtents(image):
     (top, bottom) = (0, 0)
@@ -106,9 +110,10 @@ def process8mmLeft(filename, outputpath):
     (fcWidth, fcHeight) = fullColor.size
 
     bw = fullColor.copy().convert('L')
+    bw = bw.filter(ImageFilter.MedianFilter)
     if greyed_dir is not None: 
         bw.save('%s/%s' % (greyed_dir, os.path.basename(filename)))
-    bw = bw.point(lambda ii: ii > 150 and 255)
+    bw = bw.point(lambda ii: ii > 110 and 255)
 
     sprockets = bw.copy()
     spLeft = findSprocketLeft(sprockets, filename)
@@ -118,11 +123,21 @@ def process8mmLeft(filename, outputpath):
     (sfWidth, sfHeight) = sprockets.size
 
     (boxTop, boxBottom) = findExtents(sprockets)
-    pxPerMm = (boxBottom - boxTop) / 2.58
+    #pxPerMm = (boxBottom - boxTop) / 2.58
+    pxPerMm = PixelsPerMm
+    if pxPerMm < 100: # something's wrong
+        print "pxPerMmm %u < 400" % pxPerMm
+        sys.exit(1)
+
     frameOriginX = int(spLeft + ((1.8 + .3) * pxPerMm))
-    frameOriginY = int(boxTop - (.4 * pxPerMm))
-    frameWidth = int(4.8  * pxPerMm)
-    frameHeight = int(3.4 * pxPerMm)
+
+#    boxMid = ((boxBottom - boxTop) / 2) + boxTop
+    boxMid = int((boxBottom + boxTop) / 2)
+    frameOriginY = int(boxMid - ((FrameHeightMm /2 ) * pxPerMm))
+#    frameOriginY = int(boxTop - (.4 * pxPerMm))
+
+    frameWidth = int(4.5 * pxPerMm)
+    frameHeight = int(3.3 * pxPerMm)
 
     if frameWidth % 2 == 1:
         frameWidth += 1
@@ -142,10 +157,19 @@ def process8mmLeft(filename, outputpath):
         bw.save('%s/%s' % (bw_dir, os.path.basename(filename)))
 
     # crop and save
-    fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY),
-         int(frameOriginX + frameWidth),
-         int(frameOriginY + frameHeight)))
-    fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
+    if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
+        print "Crop tile out of bounds %u x %u > %u > %u" % (frameOriginX + frameWidth, fcWidth,
+        frameOriginY + frameHeight, fcHeight)
+            
+        sys.exit(1)
+    try:
+        fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY),
+             int(frameOriginX + frameWidth),
+             int(frameOriginY + frameHeight)))
+        fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
+
+    except:
+        print "Did not save %s/%s" % (outputpath, os.path.basename(filename) )
     
 def process8mmRight(filename, outputpath):
     fullColor = Image.open(filename)
