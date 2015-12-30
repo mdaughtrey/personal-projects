@@ -755,12 +755,18 @@ export -f oneAutocrop
 
 autocrop()
 {
-    rm -rf autocropped
+	if ((clean == 1))
+	then 
+        rm -rf autocropped
+	fi
     mkdir autocropped
 
     for ff in fused/*.JPG
     do
-	    $SEM -N0 --jobs 200% oneAutocrop $ff
+        if [[ ! -f autocropped/${ff} ]]
+        then
+	        $SEM -N0 --jobs 200% oneAutocrop $ff
+        fi
     done
 }
 
@@ -768,9 +774,11 @@ onePrecrop()
 {
 	let index=$(echo -n 10#$1)
 	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
-	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} ${8} $outfile
+    if [[ ! -f "$outfile" ]]
+    then
+    	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} ${8} $outfile
+    fi
 	#cp ${2}PHOTO/${3}  $outfile
-
     #autocrop.py -v -f ${2}PHOTO/${3} 
 }
 
@@ -807,11 +815,11 @@ precrop()
 			echo Frame $number
 			let index=$(echo -n 10#$to)
 			outfile="cropped/SAM_$(printf '%06u' $to).JPG"
-			if [[ ! -f $outfile ]]
-			then
+			#if [[ ! -f $outfile ]]
+			#then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
 				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset -flop
-			fi
+			#fi
 			((to++))
 			if ((to == numFrames))
 			then
@@ -1004,7 +1012,7 @@ cropfuse()
 import()
 {
     mkdir -p $FRAMETMP
-	rsync -urav ???PHOTO $FRAMETMP/
+	rsync -urav --ignore-existing ???PHOTO $FRAMETMP/
 	cp crop.cfg $FRAMETMP
 	cp title*.txt $FRAMETMP
 }
