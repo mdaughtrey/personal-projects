@@ -3,8 +3,7 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-//#define NO_PRETENSION
-#define STOPONGAP
+//#define STOPONGAP
 
 #define PB_SERVO 3
 #define PB_LAMP 1
@@ -14,10 +13,13 @@
 #define PC_LEDSENSOR 2 // PC2
 #define PB_SHUTTER 4
 
-#define MOTOR_PRETENSION_SLOW 200
-#define MOTOR_PRETENSION_INTRAFRAME 180
+#define MOTOR_PRETENSION_NEXT 200
+#define MOTOR_PRETENSION_NEXT 120 // testing
+//#define MOTOR_PRETENSION_NEXT 180 // 0 3000
+//#define MOTOR_PRETENSION_NEXT 200
 #define MOTOR_PRETENSION_FF 220
-#define MOTOR_REWIND 180 
+#define MOTOR_REWIND 160 
+#define MOTOR_OFF 255
 #define SERVO_MIN 14
 #define SERVO_STOP 22
 #define SERVO_MAX 30
@@ -25,9 +27,9 @@
 #define SERVO_NEXTFRAME_SLOW 18 
 #define SERVO_NEXTFRAME_REVERSE 25
 #define SENSOR_VALUE_INIT 128
-#define SENSOR_VALUE_MAX 192
-#define SENSOR_VALUE_MIN 64
-#define LASER_TIMEOUT_MS 4000
+#define SENSOR_VALUE_MAX SENSOR_VALUE_INIT + 32
+#define SENSOR_VALUE_MIN SENSOR_VALUE_INIT - 32
+#define LASER_TIMEOUT_MS 10000
 #define LAMP_TIMEOUT_MS 3000
 #define NEXT_FRAME_TIMEOUT_MS 8000
 
@@ -45,7 +47,7 @@
 typedef enum
 { 
         NONE = 0,
-        FRAMESTOP,
+        //FRAMESTOP,
         LOOKFORGAPEND,
         LOOKFORGAPSTART,
         LOOKFORFRAMEEND,
@@ -65,7 +67,7 @@ u16 sensorTimer = 0;
 u16 parameter = 0;
 u08 servoPulse = SERVO_STOP;
 u08 motorPulse = 255;
-//u08 motorPretensionSlow = MOTOR_PRETENSION_SLOW;
+u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
 u32 laserTimeout = 0;
 u32 lampTimeout = 0;
 u32 nextFrameTimeout = 0;
@@ -92,12 +94,20 @@ void reset();
 
 ISR(TIMER2_OVF_vect)
 {
-        SERVO_ON;
+    SERVO_ON;
 }
 
 ISR(TIMER2_COMPA_vect)
 {
     SERVO_OFF;
+}
+
+ISR(PCINT1_vect)
+{
+    if (PINC & _BV(PC_LEDSENSOR))
+    {
+        sensorValue = SENSOR_VALUE_MAX;
+    }
 }
 
 void incMotor()
@@ -215,7 +225,7 @@ void reset()
     lampOff();
     laserOff();
     SHUTTER_CLOSE;
-    setMotor(255);
+    setMotor(MOTOR_OFF);
     parameter = 0;
     waitingFor = NONE;
     sensorTimer = 0;
@@ -233,6 +243,8 @@ void setup ()
     TIFR2 &= ~_BV(TOV2); // clear overflow interrupt flag
     TIFR2 &= ~_BV(OCF2A); // clear compare A interrupt flag
     TIMSK2 |= _BV(OCIE2A) | _BV(TOIE2); // enable counter2 overflow interrupt
+//    PCICR |= _BV(PCIE1);            // enable led sensor input interrupt
+//    PCMSK1 |= _BV(PCINT10);         // enable led sensor input interrupt
     OCR2A = SERVO_STOP;
     servoPulse = SERVO_STOP;
 //    setServo(SERVO_STOP);
@@ -286,10 +298,10 @@ void loop ()
 //            sensorValue = SENSOR_VALUE_INIT;
 //            break;
 
-        case FRAMESTOP:
-            setServo(SERVO_STOP);
-            waitingFor = NONE;
-            break;
+//        case FRAMESTOP:
+//            setServo(SERVO_STOP);
+//            waitingFor = NONE;
+//            break;
 
         case LOOKFORGAPEND:
 #ifndef STOPONGAP
@@ -301,17 +313,18 @@ void loop ()
             {
                 break;
             }
-            if (ledCount < 0)
-            {
-                break;
-            }
+//            if (ledCount < 1000)
+//            {
+//                break;
+//            }
             laserOff();
+            Serial.println(ledCount, 10);
             sensorTimer = 0;
             sensorValue = SENSOR_VALUE_INIT;
-            DELAYEDSTATE(200, FRAMESTOP);
-#ifndef NO_PRETENSION
-            setMotor(MOTOR_PRETENSION_SLOW);
-#endif //  NO_PRETENSION
+            //DELAYEDSTATE(200, FRAMESTOP);
+            setMotor(motorPretensionNext);
+            setServo(SERVO_STOP);
+            waitingFor = NONE;
 #endif // STOPONGAP
             break;
 
@@ -321,17 +334,20 @@ void loop ()
                 break;
             }
             setServo(SERVO_NEXTFRAME_SLOW);
+//            if (ledCount < 1000)
+//            {
+//                break;
+//            }
             if (SENSOR_VALUE_MIN == sensorValue)
             {
                 waitingFor = LOOKFORGAPEND;
 #ifdef STOPONGAP
                 laserOff();
-                DELAYEDSTATE(100, FRAMESTOP);
-                //setServo(SERVO_STOP);
+                setServo(SERVO_STOP);
+                waitingFor = NONE;
+                Serial.println(ledCount, 10);
                 sensorTimer = 0;
                 sensorValue = SENSOR_VALUE_INIT;
-                //Serial.println(ledCount, 10);
-//                delay(200);
 #else // STOPONGAP
                 sensorValue = SENSOR_VALUE_MAX - 20;
 #endif // STOPONGAP
@@ -345,9 +361,8 @@ void loop ()
             }
             laserOn();
             sensorTimer = 1;
-#ifndef NO_PRETENSION
-            setMotor(MOTOR_PRETENSION_INTRAFRAME);
-#endif //  NO_PRETENSION
+            ledCount = 0;
+            setMotor(motorPretensionNext);
             setServo(SERVO_NEXTFRAME_FAST);
             if (SENSOR_VALUE_MAX == sensorValue)
             {
@@ -358,7 +373,7 @@ void loop ()
 
         case SHUTTERCLOSED:
             SHUTTER_CLOSE;
-            DELAYEDSTATE(200, LOOKFORFRAMEEND);
+            DELAYEDSTATE(400, LOOKFORFRAMEEND);
             break;
 
         case DELAYLOOP:
@@ -387,7 +402,7 @@ void loop ()
 
         case EXPOSURESERIES2:
             lampOn();
-            DELAYEDSTATE(40, EXPOSURESERIES3);
+            DELAYEDSTATE(20, EXPOSURESERIES3);
             break;
 
         case EXPOSURESERIES1:
@@ -467,13 +482,13 @@ void loop ()
             setServo(SERVO_STOP);
 //            if (parameter > 0)
 //            {
-                setMotor(MOTOR_PRETENSION_SLOW);
+                setMotor(motorPretensionNext);
 //            }
             break;
 
         case 'u': // untension
             setServo(SERVO_STOP);
-            setMotor(255);
+            setMotor(MOTOR_OFF);
             break;
 
         case 'f': // forward
@@ -500,13 +515,13 @@ void loop ()
             Serial.print(servoPulse, 10);
             Serial.print(" Motor ");
             Serial.print(motorPulse, 10);
-//            Serial.print(" motorPTS ");
-//            Serial.println(motorPretensionSlow, 10);
+//            Serial.print(" sensorTimer ");
+//            Serial.println(sensorTimer, 10);
             break;
 
-//        case '[':
-//            motorPretensionSlow = parameter;
-//            break;
+        case '[':
+            motorPretensionNext = parameter;
+            break;
 
         case '-':
             parameter = 0;
