@@ -123,8 +123,8 @@ def process8mmLeft(filename, outputpath):
     (sfWidth, sfHeight) = sprockets.size
 
     (boxTop, boxBottom) = findExtents(sprockets)
-    #pxPerMm = (boxBottom - boxTop) / 2.58
-    pxPerMm = PixelsPerMm
+    pxPerMm = (boxBottom - boxTop) / 2.58
+    #pxPerMm = PixelsPerMm
     if pxPerMm < 100: # something's wrong
         print "pxPerMmm %u < 400" % pxPerMm
         sys.exit(1)
