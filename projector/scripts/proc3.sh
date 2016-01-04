@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm proc3_log.txt
+#rm proc3_log.txt
 set -o xtrace
 date >> proc3_log.txt
 exec 2>> proc3_log.txt
@@ -125,15 +125,15 @@ doCommand()
 #	done
 #}
 
-#renumber()
-#{
-#	let to=${1:-0}
-#	for from in $(ls SAM_??????.JPG | cut -c5-10 | sort -n)
-#	do
-#		mv SAM_${from}.JPG SAM_`printf "%06u" ${to}`.JPG
-#		((to++))
-#	done
-#}
+renumber()
+{
+	let to=${1:-0}
+	for from in $(ls SAM_??????.JPG | cut -c5-10 | sort -n)
+	do
+		echo mv -u SAM_${from}.JPG SAM_`printf "%06u" ${to}`.JPG
+		((to++))
+	done
+}
 
 
 #preview()
@@ -747,7 +747,7 @@ deleterange()
 
 oneAutocrop()
 {
-    autocrop.py -s left -v -f $1 -o autocropped
+    autocrop.py -s left -v -f $1 -o autocropped 2>&1
     #autocrop.py -v -f $1 -o autocropped
 }
 
@@ -765,7 +765,7 @@ autocrop()
     do
         if [[ ! -f autocropped/${ff} ]]
         then
-	        $SEM -N0 --jobs 200% oneAutocrop $ff
+	        $SEM -N0 --jobs 200% oneAutocrop $ff 
         fi
     done
 }
@@ -1043,7 +1043,7 @@ shift $((OPTIND-1))
 #echo $@
 case "$1" in 
 	title) gentitle $2 ;;
-	#renumber) renumber $2 ;;
+	renumber) renumber $2 ;;
     preview) preview ;;
 	previewtitle) previewTitle ;;
     #genyuv) genyuv web; genyuv dvd; genyuv hd ;;
