@@ -126,7 +126,7 @@ def process8mmLeft(filename, outputpath):
     pxPerMm = (boxBottom - boxTop) / 2.58
     #pxPerMm = PixelsPerMm
     if pxPerMm < 100: # something's wrong
-        print "pxPerMmm %u < 400" % pxPerMm
+        print "pxPerMmm %u < 100" % pxPerMm
         sys.exit(1)
 
     frameOriginX = int(spLeft + ((1.8 + .3) * pxPerMm))
