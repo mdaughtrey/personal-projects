@@ -244,13 +244,16 @@ genyuv()
 	done
 
 	let end=$(($(ls autocropped/SAM_*.JPG | wc -l)-1))
-#	let end=$(($(ls fused/SAM_*.JPG | wc -l)-1))
 	((end+=$TITLE_STREAM_FRAMES))
-	#for ii in `seq ${TITLE_STREAM_FRAMES} $(($(ls fused/SAM_*.JPG | wc -l)-1))`
+    sourceDir=autocropped
+    if [[ "$2" == 'bw' ]]
+    then
+        sourceDir=bw
+    fi
 	for ii in `seq ${TITLE_STREAM_FRAMES} $end`
 	do
 		#echo fused/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
-		echo autocropped/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
+		echo ${sourceDir}/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
 	done
 
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
@@ -260,42 +263,9 @@ genyuv()
 		cropoptions="${cropoptions},flip"
 	fi
 
-#	if [[ -f "mirror" ]]
-#	then
-#		vOut mirror option set
-#		cropoptions="${cropoptions},mirror"
-#	fi
-#	if [[ "$2" == "inter3" ]]
-#	then
-#		cropoptions="-vf scale=$scaleX:$scaleY"
-		#cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-		#cropoptions="-vf scale=800:600,mirror"
+    cropoptions="-vf scale=800:600"
 
-		cropoptions="-vf scale=800:600"
-
-    	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
-#	else
-##		cropoptions="-vf crop=$width:$height:${crop[0]}:${crop[1]},scale=$scaleX:$scaleY"
-##    	doCommand mplayer mf://@titlelist.txt ${cropoptions} ${options}:file=titlestream.yuv
-##	fi
-
-#	if [[ -f "flip" ]]
-#	then
-#		vOut flip option set
-#		cropoptions="${cropoptions},flip"
-#	fi
-#
-#	if [[ -f "mirror" ]]
-#	then
-#		vOut mirror option set
-#		cropoptions="${cropoptions},mirror"
-#	fi
-
-#	cropoptions=${cropoptions/ ,/ }
-#	if [[ "-vf " == "$cropoptions" ]]
-#	then
-#		cropoptions=""
-#	fi
+   	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
 
 	vOut cropoptions $cropoptions
 	options="${cropoptions} ${options}:file=$YUVTMP/contentstream.yuv"
@@ -355,7 +325,7 @@ postprocess()
 	TEMPLATE=${SCRIPT_INTERPOLATE2}
 	LOCALSCRIPT="$YUVTMP/interpolate.avs"
 	;;
-	clean)
+	clean|bw)
 	RESULT=$(echo -n "result=\"resultclean\" # specify the wanted output here" )
 	TEMPLATE=${SCRIPT_CLEAN2}
 	LOCALSCRIPT="$YUVTMP/clean.avs"
@@ -747,7 +717,7 @@ deleterange()
 
 oneAutocrop()
 {
-    autocrop.py -s left -v -f $1 -o autocropped 2>&1
+    autocrop.py -m super8 -s left -v -f $1 -o autocropped 2>&1
     #autocrop.py -v -f $1 -o autocropped
 }
 
@@ -1059,7 +1029,7 @@ case "$1" in
 	mktags) mktags $2;;
 	gentagged) gentagged $2 ;;
 	avi) avi dvd ;;
-	inter3|interpolate|[ic]compare|clean) postprocess $1 ;;
+	inter3|interpolate|[ic]compare|clean|bw) postprocess $1 ;;
 	drange) deleterange $2 $3 ;;
 	all) all ;;
 	precrop) precrop ;;
