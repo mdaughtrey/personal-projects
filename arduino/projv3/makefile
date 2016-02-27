@@ -53,9 +53,10 @@ PORT=/dev/tty.usbserial-A601KW2O
 
 ARDUINO = ../core/
 SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
-      $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c 
+      $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c \
+      ./twowire.c
 #      $(ARDUINO)/ps2/ps2mouse.cpp
-CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp 
+CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp
 MCU = atmega168
 #MCU = atmega328
 F_CPU = 16000000
@@ -77,8 +78,8 @@ CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP # -DSDEBUG
 CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP # -DSDEBUG
 
 # Place -I options here
-CINCS = -I$(ARDUINO)
-CXXINCS = -I$(ARDUINO)
+CINCS = -I$(ARDUINO)  -I.
+CXXINCS = -I$(ARDUINO)  -I.
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
