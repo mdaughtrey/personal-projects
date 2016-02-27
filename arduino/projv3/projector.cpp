@@ -1,5 +1,6 @@
 #include <WProgram.h>
 #include <avrlibtypes.h>
+#include <twowire.h>
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -82,6 +83,20 @@ typedef enum
         TRIPLESTART = SHUTTEROPEN
 } WaitFor;
 
+void incMotor();
+void decMotor();
+void setMotor(u08 set);
+void incServo();
+void decServo();
+void setServo(u08 set);
+void lampOn();
+void lampOff();
+void lampCheck();
+u08 checkNextFrameTimeout();
+void laserOn();
+void laserOff();
+void laserCheck();
+void reset();
 //u08 sensorActive = 0;
 u16 parameter = 0;
 u08 verbose = 0;
@@ -102,20 +117,6 @@ u16 valHistory[256];
 u16 valIndex;
 #endif // VALUEHISTORY
 
-void incMotor();
-void decMotor();
-void setMotor(u08 set);
-void incServo();
-void decServo();
-void setServo(u08 set);
-void lampOn();
-void lampOff();
-void lampCheck();
-u08 checkNextFrameTimeout();
-void laserOn();
-void laserOff();
-void laserCheck();
-void reset();
 
 //u08 highCount;
 u16 servoCount = 0;
@@ -318,6 +319,7 @@ void setup ()
     servoPulse = SERVO_STOP;
     TCNT2 = 0x00;
     DDRB |= _BV(PB_SERVO);
+    twi_init();
     sei();
     analogWrite(PIN_MOTOR, motorPulse);
     Serial.println("Init OK");
@@ -469,7 +471,7 @@ void loop ()
 #else
             waitingFor = LOOKFORGAPEND;
             //waitingFor = FRAMESTOP;
-#endif SENSORHOP
+#endif // SENSORHOP
             break;
 
         case SENSORENABLE:
