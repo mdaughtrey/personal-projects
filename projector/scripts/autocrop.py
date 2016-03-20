@@ -297,7 +297,7 @@ def processSuper8Left(filename, outputpath):
         print 'pxPerMm %u top %u mid %u bottom %u' % (pxPerMm, boxTop, boxMid, boxBottom)
     frameOriginY = int(boxMid - ((4.01 / 2) * pxPerMm))
 # FUDGE FACTOR for misaligned images
-    frameOriginY -= 130
+#    frameOriginY -= 130
 #    frameOriginY = int(boxTop - (.4 * pxPerMm))
 
     frameWidth = int(5.46 * pxPerMm)
