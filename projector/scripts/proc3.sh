@@ -38,6 +38,9 @@ LEVELS_ERROR=levelcheck.out
 IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --no-svgo"
 #IMAGE_OPTIM="jpegoptim -o"
 
+touch mirror
+touch flip
+
 if [[ ! -d $YUVTMP ]]
 then
 	mkdir -p $YUVTMP
@@ -746,7 +749,7 @@ onePrecrop()
 	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
     if [[ ! -f "$outfile" ]]
     then
-    	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} ${8} $outfile
+    	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} -flop -flip $outfile
     fi
 	#cp ${2}PHOTO/${3}  $outfile
     #autocrop.py -v -f ${2}PHOTO/${3} 
@@ -756,7 +759,6 @@ export -f onePrecrop
 
 precrop()
 {
-	touch mirror
 	let numFrames=${1:-999999}
 	scaler
 	if ((clean == 1))
@@ -788,7 +790,8 @@ precrop()
 			#if [[ ! -f $outfile ]]
 			#then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
-				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset -flop
+				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset
+				#$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset -flop
 			#fi
 			((to++))
 			if ((to == numFrames))
