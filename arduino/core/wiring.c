@@ -155,7 +155,7 @@ int analogRead(int pin)
 	ADMUX = (ADMUX & (unsigned int) 0xf0) | (ch & (unsigned int) 0x0f);
 
 	// without a delay, we seem to read from the wrong channel
-	delay(1);
+	//delay(1);
 
 	// start the conversion
 	sbi(ADCSRA, ADSC);
@@ -468,7 +468,8 @@ int main(void)
 
 	// set timer 1 prescale factor to 64
 	sbi(TCCR1B, CS11);
-	sbi(TCCR1B, CS10);
+    // /8 prescaling
+	//sbi(TCCR1B, CS10);
 	// put timer 1 in 8-bit phase correct pwm mode
 	sbi(TCCR1A, WGM10);
 
