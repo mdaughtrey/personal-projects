@@ -52,13 +52,24 @@ PORT=/dev/tty.usbserial-A601KW2O
 #PORT = /dev/ttyUSB0
 
 ARDUINO = ../core/
+FRAM = $(ARDUINO)/Adafruit_FRAM_I2C-master/
+
 SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
       $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c \
-      ./twowire.c
-#      $(ARDUINO)/ps2/ps2mouse.cpp
-CXXSRC = $(TARGET).cpp $(ARDUINO)/HardwareSerial.cpp $(ARDUINO)/WRandom.cpp
-MCU = atmega168
-#MCU = atmega328
+      $(ARDUINO)/twi.c 
+
+#$(ARDUINO)/Print.cpp 
+#$(ARDUINO)/Stream.cpp 
+
+CXXSRC = $(TARGET).cpp \
+    $(ARDUINO)/WString.cpp \
+    $(ARDUINO)/HardwareSerial.cpp \
+    $(ARDUINO)/WRandom.cpp \
+    $(ARDUINO)/TwoWire.cpp \
+    $(FRAM)/Adafruit_FRAM_I2C.cpp 
+
+#MCU = atmega168
+MCU = atmega328p
 F_CPU = 16000000
 FORMAT = ihex
 UPLOAD_RATE = 57600
@@ -78,7 +89,7 @@ CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP # -DSDEBUG
 CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP # -DSDEBUG
 
 # Place -I options here
-CINCS = -I$(ARDUINO)  -I.
+CINCS = -I$(ARDUINO)  -I. -I/usr/local/CrossPack-AVR/avr/include
 CXXINCS = -I$(ARDUINO)  -I.
 
 # Compiler flag to set the C Standard level.
@@ -180,7 +191,6 @@ extcoff: $(TARGET).elf
 	$(NM) -n $< > $@
 
 
-
 # Link: create ELF output file from object files.
 $(TARGET).elf: $(OBJ)
 	$(CC) $(ALL_CFLAGS) $(OBJ) --output $@ $(LDFLAGS)
@@ -209,8 +219,8 @@ $(TARGET).elf: $(OBJ)
 # Target: clean project.
 clean:
 	$(REMOVE) $(TARGET).hex $(TARGET).eep $(TARGET).cof $(TARGET).elf \
-	$(TARGET).map $(TARGET).sym $(TARGET).lss 
-#	$(OBJ) $(LST) $(SRC:.c=.s) $(SRC:.c=.d) $(CXXSRC:.cpp=.s) $(CXXSRC:.cpp=.d)
+	$(TARGET).map $(TARGET).sym $(TARGET).lss \
+	$(OBJ) $(LST) $(SRC:.c=.s) $(SRC:.c=.d) $(CXXSRC:.cpp=.s) $(CXXSRC:.cpp=.d)
 
 depend:
 	if grep '^# DO NOT DELETE' $(MAKEFILE) >/dev/null; \
