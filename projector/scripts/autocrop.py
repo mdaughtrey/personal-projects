@@ -31,12 +31,14 @@ def findSuper8Extents(image):
         compTo.append(0)
 
     for top in xrange(midway, 0 , -sfWidth):
-        if compTo == sfSequence[top:top + sfWidth]:
+        if sfSequence[top:top + sfWidth].count(0) > sfWidth / 2:
             break
+#        if compTo == sfSequence[top:top + sfWidth]:
 
     for bottom in xrange(midway, sfHeight * sfWidth, sfWidth):
-        if compTo == sfSequence[bottom:bottom + sfWidth]:
+        if sfSequence[bottom:bottom + sfWidth].count(0) > sfWidth / 2:
             break;
+#        if compTo == sfSequence[bottom:bottom + sfWidth]:
 
     return (top / sfWidth, bottom / sfWidth)
 
@@ -297,8 +299,8 @@ def processSuper8Left(filename, outputpath):
         print 'pxPerMm %u top %u mid %u bottom %u' % (pxPerMm, boxTop, boxMid, boxBottom)
     frameOriginY = int(boxMid - ((4.01 / 2) * pxPerMm))
 # FUDGE FACTOR for misaligned images
-#    frameOriginY -= 130
-#    frameOriginY = int(boxTop - (.4 * pxPerMm))
+    #frameOriginY = int(boxTop - (.4 * pxPerMm))
+    frameOriginY -= 122
 
     frameWidth = int(5.46 * pxPerMm)
     frameHeight = int(4.01 * pxPerMm)
