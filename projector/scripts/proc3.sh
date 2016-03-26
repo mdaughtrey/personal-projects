@@ -376,10 +376,10 @@ oneTitleFrame()
 	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
 	value=$(echo "${inc}*${sepia}" | bc -l)
 	index=$(printf '%06u' $sepia)
-	if [[ -f "flip" ]]
-	then
-		flipOption='-flip'
-	fi
+#	if [[ -f "flip" ]]
+#	then
+#		flipOption='-flip'
+#	fi
 
 	eval "convert $firstfile $flipOption -blur 2x2 -modulate 100,${value} underlay_${index}.png"
 	convert underlay_${index}.png -page +${translateX}+${translateY} \
@@ -736,7 +736,7 @@ autocrop()
 
     for ff in fused/*.JPG
     do
-        if [[ ! -f autocropped/${ff} ]]
+        if [[ ! -f autocropped/$(basename $ff) ]]
         then
 	        $SEM -N0 --jobs 200% oneAutocrop $ff 
         fi
