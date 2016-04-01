@@ -5,7 +5,7 @@ set -o xtrace
 date >> proc3_log.txt
 exec 2>> proc3_log.txt
 
-let verbose=0
+let verbose=1
 let simulate=0
 let clean=0
 #let numTitleFrames=90
@@ -248,7 +248,7 @@ genyuv()
 
 	let end=$(($(ls autocropped/SAM_*.JPG | wc -l)-1))
 	((end+=$TITLE_STREAM_FRAMES))
-    sourceDir=autocropped
+    sourceDir=fused
     if [[ "$2" == 'bw' ]]
     then
         sourceDir=bw
@@ -486,6 +486,7 @@ gentitle()
 		let translateY=$(($underlayH/2 - $titleH/2))
 		for renderIndex in `seq $renderStart $renderEnd`
 		do
+            vOut Title $renderIndex
 			$SEM -N0 --jobs 200%  oneTitleFrame $renderIndex $translateX $translateY titletext${pageIndex}.png
 		done
 		((renderStart=$renderEnd))
@@ -510,186 +511,17 @@ mp42jpg()
 	$FFMPEG -i $1 -b 2000 -qscale 1 -qcomp 0 -qblur 0 SAM_%06d.JPG
 }
 
-findSyncLight()
-{
-let step=40
-geometry=($(identify -ping $1  | cut -d' ' -f3 | sed 's/x/ /g'))
-let imageW=${geometry[0]}
-let imageH=${geometry[1]} 
-
-tempImage=tmp.jpg
-convert $1 -channel B -separate ${tempImage}
-
-let rectW=20
-let rectH=(imageH/3)
-let rectX=(imageW-rectW)
-let rectY=0
-
-#
-# Shift the rectangle from right to left until we hit the light
-#
-tag=`convert ${tempImage} -crop ${rectW}x${rectH}+${rectX}+${rectY} -resize 1x1 txt: | tail -1`
-result=`echo $tag | sed 's/[\(\),]/ /g;' | awk -F' ' '{print $3,$4,$5}'`
-IFS=" "
-rgb=(`echo $result`) # R, G, B
-
-while [[ "${rgb[0]}" -lt "5" && "${rgb[1]}" -lt "5" && "${rgb[2]}" -lt "5" ]]
-do
-	((rectX-=step))
-	tag=`convert ${tempImage} -crop ${rectW}x${rectH}+${rectX}+${rectY} -resize 1x1 txt: | tail -1`
-	result=`echo $tag | sed 's/[\(\),]/ /g;' | awk -F' ' '{print $3,$4,$5}'`
-	IFS=" "
-	rgb=(`echo $result`) # R, G, B
-done
-
-#
-# Binary search to reduce the rectangle to um... highlight the synch light
-#
-while ((rectH > step))
-do
-	((rectH/=2))
-	text1=`convert ${tempImage} -crop ${rectW}x${rectH}+${rectX}+${rectY} -resize 1x1 txt: | tail -1`
-	result1=`echo $text1 | sed 's/[\(\),]/ /g;' | awk -F' ' '{print $3,$4,$5}'`
-	IFS=" "
-	rgb1=(`echo $result1`) # R, G, B
-
-	((rectY+=rectH))
-	text2=`convert ${tempImage} -crop ${rectW}x${rectH}+${rectX}+${rectY} -resize 1x1 txt: | tail -1`
-	result2=`echo $text2 | sed 's/[\(\),]/ /g;' | awk -F' ' '{print $3,$4,$5}'`
-	IFS=" "
-	rgb2=(`echo $result2`) # R, G, B
-
-	test1=(${rgb1[0]}+${rgb1[1]}+${rgb1[2]})
-	test2=(${rgb2[0]}+${rgb2[1]}+${rgb2[2]})
-
-	if ((test1>test2))
-	then
-		((rectY-=rectH))
-	fi
-done
-
-#
-# Slide the rectangle left to get the brightest reading
-#
-let offset=0
-let ii=0
-let maxreading=0
-let reading=0
-
-while ((ii<step))
-do
-	let xx=(rectX-ii)
-	text=`convert ${tempImage} -crop ${rectW}x${rectH}+${xx}+${rectY} -resize 1x1 txt: | tail -1`
-	result=`echo $text | sed 's/[\(\),]/ /g;' | awk -F' ' '{print $3,$4,$5}'`
-	IFS=" "
-	rgb=(`echo $result`) # R, G, B
-	let reading=(${rgb[0]}+${rgb[1]}+${rgb[2]})
-	((ii++))
-	if ((reading>maxreading))
-	then
-	#	echo reading $reading maxreading $maxreading ii $ii offset $offset
-		let maxreading=reading
-		let offset=ii
-	fi
-done
-((rectX-=offset))
-
-#
-# Slide the rectangle down to get the brightest reading
-#
-let offset=0
-let ii=0
-let maxreading=0
-let reading=0
-
-while ((ii<step))
-do
-	let yy=(rectY+ii)
-	text=`convert ${tempImage} -crop ${rectW}x${rectH}+${rectX}+${yy} -resize 1x1 txt: | tail -1`
-	result=`echo $text | sed 's/[\(\),]/ /g;' | awk -F' ' '{print $3,$4,$5}'`
-	IFS=" "
-	rgb=(`echo $result`) # R, G, B
-	let reading=(${rgb[0]}+${rgb[1]}+${rgb[2]})
-	((ii++))
-	if ((reading>maxreading))
-	then
-		let maxreading=reading
-		let offset=ii
-	fi
-done
-((rectY+=offset))
-
-convert ${tempImage} -fill none -stroke red -strokewidth 1 -draw "rectangle $rectX $rectY $((rectX+rectW)) $((rectY+rectH))" $tempImage
-
-echo $rectX $rectY $((rectX+rectW)) $((rectY+rectH))
-}
-
-mktags()
-{
-#	findSyncLight $1
-	if [[ ! -f tag.cfg ]]
-	then
-		(findSyncLight $1) | tee tag.cfg
-	fi
-    tagBox=($(head -1 tag.cfg)) # left, top, right, bottom 
-
-	let x=${tagBox[0]}
-	let y=${tagBox[1]}
-    let width=$((${tagBox[2]} - ${tagBox[0]})) # (right - left)/2 + left
-    let height=$((${tagBox[3]} - ${tagBox[1]})) # (right - left)/2 + left
-
-	want="black"
-
-	if [[ -f tagged.txt ]]
-	then
-		rm tagged.txt
-	fi
-
-	for ff in *.JPG
-	do
-		tag=`convert $ff -crop ${width}x${height}+${x}+${y} -resize 1x1 txt: | tail -1`
-		echo $tag >> tagraw.txt
-		result=`echo $tag | sed 's/[\(\),]/ /g;' | awk -F' ' '{print $3,$4,$5}'`
-		IFS=" "
-		coords=(`echo $result`)
-
-		if [[ "green" == "$want" ]]
-		then
-			if [[ "${coords[0]}" -gt "100" && "${coords[1]}" -gt "100" && "${coords[2]}" -gt "100" ]]
-			then
-				echo $ff >> tagged.txt
-				want="black"
-			fi
-		else
-			if [[ "${coords[0]}" -lt "10" && "${coords[1]}" -lt "10" && "${coords[2]}" -lt "10" ]]
-			then
-				echo $ff >> tagged.txt
-				want="green"
-			fi
-		fi
-	done
-}
-
-gentagged()
-{
-	let offset=$1
-	cat ../images/tagged.txt | while read ff
-	do
-		let gg=`echo $ff | cut -c5-10 | sed 's/^0*//g'`
- 		ln -s ../images/SAM_`printf "%06d" $((gg+offset))`.JPG
-	done
-}
 
 all()
 {
 	rm -f *.JPG *.png 
 	rm -rf title cropped autocropped fused
-	echo precrop
+    rm *.av? *.yuv 
+    mkdir bw
 	precrop
-#	echo optimize
-#	optimize
+    pcsample
 	echo tonefuse
-	tonefuse
+	tonefuse2
     echo autocrop
     autocrop
 	echo gentitle
@@ -718,13 +550,13 @@ deleterange()
 	done
 }
 
-oneAutocrop()
-{
-    autocrop.py -m super8 -s left -v -f $1 -o autocropped 2>&1
-    #autocrop.py -v -f $1 -o autocropped
-}
-
-export -f oneAutocrop
+#oneAutocrop()
+#{
+#    autocrop.py -m super8 -s left -v -f $1 -o autocropped 2>&1
+#    #autocrop.py -v -f $1 -o autocropped
+#}
+#
+#export -f oneAutocrop
 
 autocrop()
 {
@@ -733,15 +565,29 @@ autocrop()
         rm -rf autocropped
 	fi
     mkdir autocropped
+    mkdir bw
 
-    for ff in fused/*.JPG
+    read -a infiles <<< $(ls cropped/*.JPG)
+    let numfiles=${#infiles[@]}
+
+    for ((ii = 0; ii < numfiles - 3; ii += 3))
     do
-        if [[ ! -f autocropped/$(basename $ff) ]]
+        ifile1=${infiles[((ii + 0))]}
+        ifile2=${infiles[((ii + 1))]}
+        ifile3=${infiles[((ii + 2))]}
+
+        if [[ -f autocropped/$(basename $ifile1) && \
+              -f autocropped/$(basename $ifile2) && \
+              -f autocropped/$(basename $ifile3) ]]
         then
-	        $SEM -N0 --jobs 200% oneAutocrop $ff 
+            continue
         fi
-    done
+	    $SEM -N0 --jobs 200% autocrop.py -m super8 -s left \
+        -v -f $ifile1,$ifile2,$ifile3 -o autocropped   
+     done
+     echo $SEM --wait
 }
+
 
 onePrecrop()
 {
@@ -784,15 +630,15 @@ precrop()
 
 		for number in $numbers
 		do
-			echo Frame $number
+			echo Precrop $to
 			let index=$(echo -n 10#$to)
 			outfile="cropped/SAM_$(printf '%06u' $to).JPG"
-			#if [[ ! -f $outfile ]]
-			#then
+			if [[ ! -f $outfile ]]
+			then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
 				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset
 				#$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset -flop
-			#fi
+			fi
 			((to++))
 			if ((to == numFrames))
 			then
@@ -803,6 +649,32 @@ precrop()
 	done
 	$SEM --wait
 }
+
+pcsample()
+{
+    mkdir pcsample
+    let base=0
+    for ((base = 0; ; base+=1000))
+    do
+        for ((offset = 200; offset < 210; offset++))
+        do
+            let number=$((base + offset))
+            fromfile=cropped/SAM_$(printf '%06u' $((10#$number))).JPG
+            tofile=pcsample/SAM_$(printf '%06u' $((10#$number))).JPG
+            if [[ ! -f $fromfile ]]
+            then
+                return
+            fi
+            if [[ ! -f $tofile ]]
+            then
+                vOut pcsample $fromfile
+                cp $fromfile $tofile
+            fi
+        done
+
+    done
+}
+
 
 # optional for mac only it seems
 optimize ()
@@ -818,70 +690,105 @@ optimize ()
 # - these routines check the levels.txt file generated by precrop to make sure that the cropped
 # files are properly organized as exposure triples (ie, darkest, middle, brightest).
 #
-declare -A explevels
+#declare -A explevels
+#
+#function resync()
+#{
+#	let base=$1
+#	while ((${explevels[$base]} >= ${explevels[$((base+1))]}    
+#		|| ${explevels[$((base+1))]} >= ${explevels[$((base+2))]}
+#		|| 0 == ${explevels[$base]}
+#		|| 0 == ${explevels[$((base+1))]}
+#		|| 0 == ${explevels[$((base+2))]}))
+#	do
+#		((base++))
+#	done
+#	echo "Resynced at $base" >> $LEVELS_ERROR
+#	echo $base
+#}
+#
+#function explevelsMismatch()
+#{
+#	let base=$1
+#	echo -n "Levels Mismatch at $base $((base+1)) $((base+2)) " >> $LEVELS_ERROR
+#	echo "${explevels[$base]} ${explevels[$((base+1))]} ${explevels[$((base+2))]}" >> $LEVELS_ERROR
+#	echo $(resync $base)
+#}
+#
+#toneCheck()
+#{
+#	if [[ ! -f "$LEVELS_TXT" ]]
+#	then
+#		echo No $LEVELS_TXT file
+#		exit 1
+#	fi
+#
+#	rm $LEVELS_ERROR 2>/dev/null
+#
+#	for line in `seq 1 $(cat $LEVELS_TXT | wc -l)`
+#	do
+#		read index leveltxt <<< $(cat $LEVELS_TXT | sed -ne "${line}p;")
+#		((index-=200))
+#		let level=${leveltxt%%.*}
+##		if ((0 == $level)); then echo -n '!'; fi
+#		((explevels[$index] = $level))
+#    done
+#
+#	let end=${#explevels[@]}
+#	let ii=0
+#	while (($ii < $end))
+#	do
+#		if (($ii + 3 >= $end))
+#		then
+#			echo "Not enough triples, terminating at $ii" >> $LEVELS_ERROR
+#			exit 1
+#		fi
+#		let next=$((ii + 1))
+#		let after=$((ii + 2))
+#		if ((${explevels[$ii]} < ${explevels[$next]} && ${explevels[$next]} < ${explevels[$after]}))
+#		then
+#			((ii += 3))
+#			continue
+#		fi
+#		let ii=$(explevelsMismatch $ii)
+#	done
+#}
 
-function resync()
-{
-	let base=$1
-	while ((${explevels[$base]} >= ${explevels[$((base+1))]}    
-		|| ${explevels[$((base+1))]} >= ${explevels[$((base+2))]}
-		|| 0 == ${explevels[$base]}
-		|| 0 == ${explevels[$((base+1))]}
-		|| 0 == ${explevels[$((base+2))]}))
-	do
-		((base++))
-	done
-	echo "Resynced at $base" >> $LEVELS_ERROR
-	echo $base
-}
 
-function explevelsMismatch()
+tonefuse2()
 {
-	let base=$1
-	echo -n "Levels Mismatch at $base $((base+1)) $((base+2)) " >> $LEVELS_ERROR
-	echo "${explevels[$base]} ${explevels[$((base+1))]} ${explevels[$((base+2))]}" >> $LEVELS_ERROR
-	echo $(resync $base)
-}
+	let outindex=$TITLE_STREAM_FRAMES
 
-toneCheck()
-{
-	if [[ ! -f "$LEVELS_TXT" ]]
-	then
-		echo No $LEVELS_TXT file
-		exit 1
+	if ((clean == 1))
+	then 
+		rm -rf fused
 	fi
+	if [[ ! -d fused ]]
+	then
+		mkdir fused
+	fi
+	let baseindex=$TITLE_STREAM_FRAMES
 
-	rm $LEVELS_ERROR 2>/dev/null
+    read -a infiles <<< $(ls autocropped/*.JPG)
+    let numfiles=${#infiles[@]}
 
-	for line in `seq 1 $(cat $LEVELS_TXT | wc -l)`
-	do
-		read index leveltxt <<< $(cat $LEVELS_TXT | sed -ne "${line}p;")
-		((index-=200))
-		let level=${leveltxt%%.*}
-#		if ((0 == $level)); then echo -n '!'; fi
-		((explevels[$index] = $level))
-    done
+    for ((ii = 0; ii < numfiles - 3; ii += 3))
+    do
+		outfile="fused/SAM_$(printf "%06u" $((baseindex+3))).JPG"
+        ((baseindex++))
+        ifile1=${infiles[((ii + 0))]}
+        ifile2=${infiles[((ii + 1))]}
+        ifile3=${infiles[((ii + 2))]}
 
-	let end=${#explevels[@]}
-	let ii=0
-	while (($ii < $end))
-	do
-		if (($ii + 3 >= $end))
+		if [[ ! -f $outfile ]]
 		then
-			echo "Not enough triples, terminating at $ii" >> $LEVELS_ERROR
-			exit 1
+            echo tonefuse2: $ifile1,$ifile2,$ifile3 -> $outfile
+			$SEM -N0 --jobs 200% TMPDIR=/home/mattd/tmp \
+            enfuse --output $outfile $ifile1 $ifile2 $ifile3
 		fi
-		let next=$((ii + 1))
-		let after=$((ii + 2))
-		if ((${explevels[$ii]} < ${explevels[$next]} && ${explevels[$next]} < ${explevels[$after]}))
-		then
-			((ii += 3))
-			continue
-		fi
-		let ii=$(explevelsMismatch $ii)
-	done
+     done
+	$SEM --wait
 }
-
 
 oneToneFuse()
 {
@@ -912,9 +819,9 @@ tonefuse()
 	fi
 	let baseindex=$TITLE_STREAM_FRAMES
 
-	while [[ -f "cropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
+	while [[ -f "autocropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
 	do
-		vOut Tonefusing $outindex
+		vOut Tonefuse $outindex
 		outfile="fused/SAM_$(printf "%06u" $((baseindex+3)))"
 		if [[ ! -f $outfile ]]
 		then
@@ -1029,16 +936,16 @@ case "$1" in
     #mkrlinks) mkrlinks ;;
     mpeg2) mpeg2 web; mpeg2 dvd; mpeg2 hd ;;
 	mp42jpg) mp42jpg $2 ;;
-	mktags) mktags $2;;
-	gentagged) gentagged $2 ;;
 	avi) avi dvd ;;
 	inter3|interpolate|[ic]compare|clean|bw) postprocess $1 ;;
 	drange) deleterange $2 $3 ;;
 	all) all ;;
 	precrop) precrop ;;
+    pcsample) pcsample ;; 
     autocrop) autocrop ;;
 	optimize) optimize ;;
 	#tonecheck) toneCheck ;;
+    tonefuse2) tonefuse2 ;;
 	tonefuse) tonefuse ;;
 	cropfuse) cropfuse ;;
 	import) import ;;
