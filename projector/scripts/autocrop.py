@@ -4,6 +4,7 @@ from optparse import OptionParser
 from PIL import Image, ImageDraw, ImageFilter
 import sys
 import os
+import pdb
 from glob import glob, iglob
 
 debugdir='/mnt/imageinput/v3test/test8/autocropped'
@@ -26,21 +27,35 @@ def findSuper8Extents(image):
     midway = sfWidth * sfHeight / 2 
     sfSequence = list(image.getdata())
 
-    compTo = []
-    for jj in range(0, sfWidth):
-        compTo.append(0)
+    gaplist = []
 
-    for top in xrange(midway, 0 , -sfWidth):
-        if sfSequence[top:top + sfWidth].count(0) > sfWidth / 2:
-            break
-#        if compTo == sfSequence[top:top + sfWidth]:
+    # Scan from top to bottom looking for the black/white
+    # transitions
+    for row in xrange(0, (sfWidth * sfHeight) - sfWidth, sfWidth):
+        if sfSequence[row:row + sfWidth].count(0) > sfWidth / 2:
+            if 0 == len(gaplist) or gaplist[-1][1] != 0:
+                gaplist.append([row / sfWidth, 0])
 
-    for bottom in xrange(midway, sfHeight * sfWidth, sfWidth):
-        if sfSequence[bottom:bottom + sfWidth].count(0) > sfWidth / 2:
-            break;
-#        if compTo == sfSequence[bottom:bottom + sfWidth]:
+        if sfSequence[row:row + sfWidth].count(255) > sfWidth / 2:
+            if 0 == len(gaplist) or gaplist[-1][1] != 1:
+                gaplist.append([row / sfWidth, 1])
 
-    return (top / sfWidth, bottom / sfWidth)
+    gaplist.append([sfHeight, 0])
+    top = 0
+    bottom = 0
+
+    # Now we have a list of rows with white/black transitions.
+    # Return the white block that's closest to the middle.
+    closest = sfHeight
+    for index in xrange(0, len(gaplist)):
+        if 1 == gaplist[index][1] and (index + 1) < len(gaplist):
+            distance = abs((sfHeight / 2) - ((gaplist[index][0] + gaplist[index +1][0]) / 2))
+            if distance < closest:
+                closest = distance
+                top = gaplist[index][0]
+                bottom = gaplist[index + 1][0]
+
+    return (top, bottom)
 
 def find8mmExtents(image):
     (top, bottom) = (0, 0)
@@ -261,14 +276,22 @@ def process8mmRight(filename, outputpath):
          int(frameOriginY + frameHeight)))
     fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
 
-def processSuper8Left(filename, outputpath):
-    fullColor = Image.open(filename)
+def processSuper8Left(filenames, outputpath):
+    files = filenames.split(',')
+    # Select the midrange image for figuring out the cropping
+    filename = files[1]
+    if 3 != len(files):
+        print "Need three filenames"
+        sys.exit(1)
+
+    fullColor = Image.open(filename) 
     if options.verbose:
         print '%s' % filename
-#    fullColor = fullColor.transpose(Image.FLIP_TOP_BOTTOM)
+
     (fcWidth, fcHeight) = fullColor.size
 
     bw = fullColor.copy().convert('L')
+    del fullColor
     bw = bw.filter(ImageFilter.MedianFilter)
     if greyed_dir is not None: 
         bw.save('%s/%s' % (greyed_dir, os.path.basename(filename)))
@@ -291,7 +314,7 @@ def processSuper8Left(filename, outputpath):
 #        print "pxPerMmm %u < 100" % pxPerMm
 #        sys.exit(1)
 
-    frameOriginX = int(spLeft + ((.91 + .2 ) * pxPerMm))
+    frameOriginX = int(spLeft + ((.91 + .1 ) * pxPerMm))
 
 #    boxMid = ((boxBottom - boxTop) / 2) + boxTop
     boxMid = int((boxBottom + boxTop) / 2)
@@ -331,14 +354,20 @@ def processSuper8Left(filename, outputpath):
         frameOriginY + frameHeight, fcHeight)
             
         sys.exit(1)
-    try:
-        fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY),
-             int(frameOriginX + frameWidth),
-             int(frameOriginY + frameHeight)))
-        fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
-
-    except:
-        print "Did not save %s/%s" % (outputpath, os.path.basename(filename) )
+#        fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY),
+#             int(frameOriginX + frameWidth),
+#             int(frameOriginY + frameHeight)))
+#        fullColor.save('%s/%s' % (outputpath, os.path.basename(filename)))
+    print "%s -> %s" % [filenames, outputpath]
+    for file in files:
+        try:
+            frame = Image.open(file) 
+            frame = frame.crop((int(frameOriginX), int(frameOriginY),
+                int(frameOriginX + frameWidth),
+                int(frameOriginY + frameHeight)))
+            frame.save('%s/%s' % (outputpath, os.path.basename(file)))
+        except:
+            print "Did not save %s/%s" % (outputpath, os.path.basename(file))
     
 
 def main():
@@ -347,7 +376,7 @@ def main():
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
     parser.add_option('-i', '--input-dir', dest='inputdir')
     parser.add_option('-o', '--output-dir', dest='outputdir')
-    parser.add_option('-f','--filename', dest='filename')
+    parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, comma separated')
     parser.add_option('-s','--sprocket', dest='sprocket', default='left')
     parser.add_option('-m','--mode', dest='mode', default='8mm')
     (options, args) = parser.parse_args()
@@ -369,18 +398,18 @@ def main():
         print "Invalid sprocket option %s" % options.sprocket
         sys.exit(1)
 
-    if options.filename is not None:
-        if '8mm' == options.mode:
-            if 'left' == options.sprocket:
-                process8mmLeft(options.filename, options.outputdir)
-            else:
-                process8mmRight(options.filename, options.outputdir)
-        else:
-            processSuper8Left(options.filename, options.outputdir)
-
-    else:
-        for ff in iglob('%s/*.JPG' % options.inputdir):
-            process8mm(ff, options.outputdir)
+#    if options.filenames is not None:
+#        if '8mm' == options.mode:
+#            if 'left' == options.sprocket:
+#                process8mmLeft(options.filenames, options.outputdir)
+#            else:
+#                process8mmRight(options.filenames, options.outputdir)
+#        else:
+    processSuper8Left(options.filenames, options.outputdir)
+#
+#    else:
+#        for ff in iglob('%s/*.JPG' % options.inputdir):
+#            process8mm(ff, options.outputdir)
 
 main()
 
