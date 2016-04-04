@@ -4,20 +4,42 @@ import serial
 import time
 import sys
 import pdb
+import logging
+from optparse import OptionParser
+options = {}
+args = ()
 
-#ptStartValue = 179
-#ptStartValue = 120
-#ptEndValue = 244
-#ptArray = range(ptStartValue, ptEndValue)
-#chunkSize = int(len(ptArray)/10)
+logging.
+
+def getOptions():
+    global options
+    global args
+    parser = OptionParser('cycle.py [-v] -i inputdir -o outputdir')
+    parser.add_option('-s', '--startframe', dest='startframe')
+    parser.add_option('-e', '--endframe', dest='endframe')
+    parser.add_option('-c', '--cameradir', dest='cameradir')
+    parser.add_option('-t', '--targetdir', dest='targetdir')
+    parser.add_option('-p', '--pretension', dest='pretension')
+    parser.add_option('-r', '--servo', dest='servo')
+    parser.add_option('-m', '--mode', dest='mode', help='super8|8mm')
+    parser.add_option('-d', '--serdevice', dest='serialdevice', help='Serial device',
+        default='/dev/tty.usbserial-A601KW2O')
+
+    (options, args) = parser.parse_args()
+
+def main():
+    getOptions()
 
 if len(sys.argv) != 4:
     print "Usage: cycle.py framestart frameend pretension"
     sys.exit(1)
 
-USBDEV='/dev/tty.usbserial-A601KW2O'
-
 serdev = serial.Serial(USBDEV, 57600, timeout=1.0)
+
+
+
+
+
 time.sleep(2)
 (frameStart, frameEnd) = [int(xx) for xx in sys.argv[1:3]]
 frameCount = frameStart
