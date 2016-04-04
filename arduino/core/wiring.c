@@ -93,18 +93,18 @@ void digitalWrite(int pin, int val)
 		if (analogOutPinToTimer(pin) == TIMER1B)
 			cbi(TCCR1A, COM1B1);
 			
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega169)
-#ifndef DISABLE_TIMER2A_SETUP
-		if (analogOutPinToTimer(pin) == TIMER2A)
-			cbi(TCCR2A, COM2A1);
-			
-#endif // DISABLE_TIMER2A_SETUP
+//#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega169)
+//#ifndef DISABLE_TIMER2A_SETUP
+//		if (analogOutPinToTimer(pin) == TIMER2A)
+//			cbi(TCCR2A, COM2A1);
+//			
+//#endif // DISABLE_TIMER2A_SETUP
 		if (analogOutPinToTimer(pin) == TIMER2B)
 			cbi(TCCR2A, COM2B1);
-#else
-		if (analogOutPinToTimer(pin) == TIMER2)
-			cbi(TCCR2, COM21);
-#endif
+//#else
+//		if (analogOutPinToTimer(pin) == TIMER2)
+//			cbi(TCCR2A, COM21);
+//#endif
 
 		if (val == LOW)
 			cbi(_SFR_IO8(port_to_output[digitalPinToPort(pin)]),
@@ -127,18 +127,18 @@ int digitalRead(int pin)
 		if (analogOutPinToTimer(pin) == TIMER1B)
 			cbi(TCCR1A, COM1B1);
 			
-#if defined(__AVR_ATmega168__)
-#ifndef DISABLE_TIMER2A_SETUP
-		if (analogOutPinToTimer(pin) == TIMER2A)
-			cbi(TCCR2A, COM2A1);
-			
-#endif // DISABLE_TIMER2A_SETUP
+//#if defined(__AVR_ATmega168__)
+//#ifndef DISABLE_TIMER2A_SETUP
+//		if (analogOutPinToTimer(pin) == TIMER2A)
+//			cbi(TCCR2A, COM2A1);
+//			
+//#endif // DISABLE_TIMER2A_SETUP
 		if (analogOutPinToTimer(pin) == TIMER2B)
 			cbi(TCCR2A, COM2B1);
-#else
-		if (analogOutPinToTimer(pin) == TIMER2)
-			cbi(TCCR2, COM21);
-#endif
+//#else
+//		if (analogOutPinToTimer(pin) == TIMER2)
+//			cbi(TCCR2A, COM2A1);
+//#endif
 
 		return (_SFR_IO8(port_to_input[digitalPinToPort(pin)]) >>
 			digitalPinToBit(pin)) & 0x01;
@@ -197,27 +197,27 @@ void analogWrite(int pin, int val)
 		sbi(TCCR1A, COM1B1);
 		// set pwm duty
 		OCR1B = val;
-#if defined(__AVR_ATmega168__)
-	} else if (analogOutPinToTimer(pin) == TIMER2A) {
-#ifndef DISABLE_TIMER2A_SETUP
-		// connect pwm to pin on timer 2, channel A
-		sbi(TCCR2A, COM2A1);
-		// set pwm duty
-		OCR2A = val;	
-#endif // DISABLE_TIMER2A_SETUP
-	}
-    else if (analogOutPinToTimer(pin) == TIMER2B) {
+//#if defined(__AVR_ATmega168__)
+//	} else if (analogOutPinToTimer(pin) == TIMER2A) {
+//#ifndef DISABLE_TIMER2A_SETUP
+//		// connect pwm to pin on timer 2, channel A
+//		sbi(TCCR2A, COM2A1);
+//		// set pwm duty
+//		OCR2A = val;	
+//#endif // DISABLE_TIMER2A_SETUP
+//	}
+//    else if (analogOutPinToTimer(pin) == TIMER2B) {
+//		// connect pwm to pin on timer 2, channel B
+//		sbi(TCCR2A, COM2B1);
+//		// set pwm duty
+//		OCR2B = val;
+//#else
+	} else if (analogOutPinToTimer(pin) == TIMER2B) {
 		// connect pwm to pin on timer 2, channel B
-		sbi(TCCR2A, COM2B1);
+		sbi(TCCR2B, COM2B1);
 		// set pwm duty
 		OCR2B = val;
-#else
-	} else if (analogOutPinToTimer(pin) == TIMER2) {
-		// connect pwm to pin on timer 2, channel B
-		sbi(TCCR2, COM21);
-		// set pwm duty
-		OCR2 = val;
-#endif
+//#endif
 	} else if (val < 128)
 		digitalWrite(pin, LOW);
 	else
@@ -449,17 +449,17 @@ int main(void)
 	// timer 0 is used for millis() and delay()
 	timer0_overflow_count = 0;
 	// set timer 0 prescale factor to 8
-#if defined(__AVR_ATmega168__)
+//#if defined(__AVR_ATmega168__)
 	sbi(TCCR0B, CS01);
-#else
-	sbi(TCCR0, CS01);
-#endif
+//#else
+//	sbi(TCCR0, CS01);
+//#endif
 	// enable timer 0 overflow interrupt
-#if defined(__AVR_ATmega168__)
+//#if defined(__AVR_ATmega168__)
 	sbi(TIMSK0, TOIE0);
-#else
-	sbi(TIMSK, TOIE0);
-#endif
+//#else
+//	sbi(TIMSK, TOIE0);
+//#endif
 
 	// timers 1 and 2 are used for phase-correct hardware pwm
 	// this is better for motors as it ensures an even waveform
@@ -475,17 +475,17 @@ int main(void)
 
 #ifndef DISABLE_TIMER2A_SETUP
 	// set timer 2 prescale factor to 64
-#if defined(__AVR_ATmega168__)
+//#if defined(__AVR_ATmega168__)
 	sbi(TCCR2B, CS22);
-#else
-	sbi(TCCR2, CS22);
-#endif
+//#else
+//	sbi(TCCR2, CS22);
+//#endif
 	// configure timer 2 for phase correct pwm (8-bit)
-#if defined(__AVR_ATmega168__)
+//#if defined(__AVR_ATmega168__)
 	sbi(TCCR2A, WGM20);
-#else
-	sbi(TCCR2, WGM20);
-#endif
+//#else
+//	sbi(TCCR2, WGM20);
+//#endif
 #endif // DISABLE_TIMER2A_SETUP
 
 	// set a2d reference to AVCC (5 volts)
