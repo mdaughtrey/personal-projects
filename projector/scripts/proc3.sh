@@ -520,10 +520,10 @@ all()
     mkdir bw
 	precrop
     pcsample
-	echo tonefuse
-	tonefuse2
     echo autocrop
     autocrop
+	echo tonefuse
+	tonefuse2
 	echo gentitle
 	gentitle
 	echo interpolate
@@ -565,6 +565,7 @@ autocrop()
         rm -rf autocropped
 	fi
     mkdir autocropped
+    mkdir sprockets
     mkdir bw
 
     read -a infiles <<< $(ls cropped/*.JPG)
@@ -583,7 +584,7 @@ autocrop()
             continue
         fi
 	    $SEM -N0 --jobs 200% autocrop.py -m super8 -s left \
-        -v -f $ifile1,$ifile2,$ifile3 -o autocropped   
+        -v -f $ifile1,$ifile2,$ifile3 -o autocropped --debug
      done
      echo $SEM --wait
 }
