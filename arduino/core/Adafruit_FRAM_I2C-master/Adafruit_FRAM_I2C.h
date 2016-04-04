@@ -42,7 +42,7 @@
  #include <WProgram.h>
 #endif
 
-#include <Wire.h>
+#include <TwoWire.h>
 
 #define MB85RC_DEFAULT_ADDRESS        (0x50) /* 1010 + A2 + A1 + A0 = 0x50 default */
 #define MB85RC_SLAVE_ID       (0xF8)

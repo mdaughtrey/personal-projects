@@ -17,8 +17,8 @@
 /**************************************************************************/
 //#include <avr/pgmspace.h>
 //#include <util/delay.h>
-#include <stdlib.h>
-#include <math.h>
+//#include <stdlib.h>
+//#include <math.h>
 
 #include "Adafruit_FRAM_I2C.h"
 
@@ -49,11 +49,17 @@ Adafruit_FRAM_I2C::Adafruit_FRAM_I2C(void)
 boolean Adafruit_FRAM_I2C::begin(uint8_t addr) 
 {
   i2c_addr = addr;
+  Serial.print("Wire.begin()");
   Wire.begin();
   
   /* Make sure we're actually connected */
   uint16_t manufID, prodID;
   getDeviceID(&manufID, &prodID);
+  Serial.print("manuID ");
+  Serial.print(manufID, HEX);
+  Serial.print(" prodID ");
+  Serial.println(prodID, HEX);
+
   if (manufID != 0x00A)
   {
     //Serial.print("Unexpected Manufacturer ID: 0x");
