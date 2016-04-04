@@ -9,7 +9,6 @@
 //#define SENSORINT
 #define ANALOGSENSOR
 #define VALUEHISTORY
-//#define SENSORHOP
 
 #define PB_SERVO 3
 #define PB_LAMP 1
@@ -22,7 +21,7 @@
 #define MOTOR_PRETENSION_NEXT 40 
 #define MOTOR_PRETENSION_FF 20
 #define MOTOR_REWIND_SLOW 10 
-#define MOTOR_REWIND_FAST 70 
+#define MOTOR_REWIND_FAST 250 
 #define MOTOR_OFF 0 
 #define SERVO_MIN 64
 #define SERVO_STOP 94
@@ -43,7 +42,7 @@
 #define LAMP_TIMEOUT_MS 3000
 #define NEXT_FRAME_TIMEOUT_MS 8000
 #define SERVO_TIMEOUT_MS 2000
-#define SENSORTHRESHOLD 300
+#define SENSORTHRESHOLD 200
 
 #define LAMP_OFF PORTB &= ~_BV(PB_LAMP)
 #define LAMP_ON PORTB |= _BV(PB_LAMP)
@@ -106,6 +105,7 @@ u08 verbose = 0;
 u08 servoPulse = SERVO_STOP;
 u08 motorPulse = 255;
 u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
+u08 servoSpeed = SERVO_NEXTFRAME_SLOW;
 u08 motorRewind = MOTOR_OFF;
 u32 laserTimeout = 0;
 u32 lampTimeout = 0;
@@ -342,8 +342,7 @@ void loop ()
     lampCheck();
     if ('D' == lastCommand)
     {
-        Serial.print(analogRead(PIN_LEDSENSOR), 10);
-        Serial.print(' ');
+        Serial.println(analogRead(PIN_LEDSENSOR), 10);
     }
 
 #ifdef ANALOGSENSOR
@@ -435,11 +434,6 @@ void loop ()
             {
                 break;
             }
-#ifdef SENSORHOP
-            laserOn();
-            setServo(SERVO_NEXTFRAME_SLOW);
-#endif // SENSORHOP
-//            DELAYEDSTATE(500, LOOKFORFRAMEEND);
             waitingFor = FRAMESTOP;
             break;
 
@@ -448,14 +442,11 @@ void loop ()
             {
                 break;
             }
-#ifdef SENSORHOP
-            setServo(SERVO_STOP);
-            laserOff();
-            DELAYEDSTATE(500, LOOKFORGAPEND);
-#else
+            {
+                u08 newSpeed = servoSpeed + ((SERVO_STOP - servoSpeed) >> 1);
+                setServo(newSpeed);
+            }
             waitingFor = LOOKFORGAPEND;
-            //waitingFor = FRAMESTOP;
-#endif // SENSORHOP
             break;
 
         case SENSORENABLE:
@@ -468,7 +459,7 @@ void loop ()
             }
             delay(400);
             laserOn();
-            setServo(SERVO_NEXTFRAME_SLOW);
+            setServo(servoSpeed);
             DELAYEDSTATE(200, LOOKFORFRAMEEND);
             //waitingFor = LOOKFORFRAMEEND;
         //    waitingFor = LOOKFORGAPEND;
@@ -496,6 +487,10 @@ void loop ()
             }
             else
             {
+                if (verbose)
+                {
+                    Serial.print("Frames Done");
+                }
                 waitingFor = NONE;
             }
             break;
@@ -620,17 +615,20 @@ void loop ()
             if (parameter > 0)
             {
                 frameCount = parameter;
+                parameter = 0;
             }
             break;
 
         case 's':
             setServo(parameter);
+            parameter = 0;
             break;
 
         case 'm':
             if (parameter > 0)
             {
                 setMotor(parameter);
+                parameter = 0;
             }
             break;
 
@@ -649,7 +647,7 @@ void loop ()
 
         case 'f': // forward
             setMotor(MOTOR_PRETENSION_FF);
-            setServo(SERVO_NEXTFRAME_SLOW);
+            setServo(servoSpeed);
             break;
 
         case 'F': // backward
@@ -665,6 +663,10 @@ void loop ()
             else
             {
                 motorRewind = MOTOR_REWIND_SLOW;
+            }
+            if (verbose)
+            {
+                Serial.println(motorRewind, 10);
             }
             setMotor(motorRewind);
             setServo(SERVO_STOP);
@@ -688,6 +690,12 @@ void loop ()
 
         case '[':
             motorPretensionNext = parameter;
+            parameter = 0;
+            break;
+
+        case ']':
+            servoSpeed = parameter;
+            parameter = 0;
             break;
 
         case '-':
