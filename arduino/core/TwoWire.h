@@ -23,14 +23,14 @@
 #define TwoWire_h
 
 #include <inttypes.h>
-#include "Stream.h"
+//#include "Stream.h"
 
 #define BUFFER_LENGTH 32
 
 // WIRE_HAS_END means Wire has end()
 #define WIRE_HAS_END 1
 
-class TwoWire : public Stream
+class TwoWire  //: public Stream
 {
   private:
     static uint8_t rxBuffer[];
@@ -65,8 +65,8 @@ class TwoWire : public Stream
     uint8_t requestFrom(int, int, int);
     virtual size_t write(uint8_t);
     virtual size_t write(const uint8_t *, size_t);
-    virtual int available(void);
     virtual int read(void);
+#if 0
     virtual int peek(void);
     virtual void flush(void);
     void onReceive( void (*)(int) );
@@ -76,7 +76,8 @@ class TwoWire : public Stream
     inline size_t write(long n) { return write((uint8_t)n); }
     inline size_t write(unsigned int n) { return write((uint8_t)n); }
     inline size_t write(int n) { return write((uint8_t)n); }
-    using Print::write;
+#endif
+    //using Print::write;
 };
 
 extern TwoWire Wire;

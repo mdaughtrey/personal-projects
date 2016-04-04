@@ -23,10 +23,10 @@ extern "C" {
   #include <stdlib.h>
   #include <string.h>
   #include <inttypes.h>
-  #include "twowire.h"
+  #include <twi.h>
 }
 
-#include "Wire.h"
+#include "TwoWire.h"
 
 // Initialize Class Variables //////////////////////////////////////////////////
 
@@ -50,7 +50,6 @@ TwoWire::TwoWire()
 }
 
 // Public Methods //////////////////////////////////////////////////////////////
-
 void TwoWire::begin(void)
 {
   rxBufferIndex = 0;
@@ -65,8 +64,8 @@ void TwoWire::begin(void)
 void TwoWire::begin(uint8_t address)
 {
   twi_setAddress(address);
-  twi_attachSlaveTxEvent(onRequestService);
-  twi_attachSlaveRxEvent(onReceiveService);
+//  twi_attachSlaveTxEvent(onRequestService);
+//  twi_attachSlaveRxEvent(onReceiveService);
   begin();
 }
 
@@ -75,6 +74,7 @@ void TwoWire::begin(int address)
   begin((uint8_t)address);
 }
 
+#if 0
 void TwoWire::end(void)
 {
   twi_disable();
@@ -84,6 +84,7 @@ void TwoWire::setClock(uint32_t frequency)
 {
   TWBR = ((F_CPU / frequency) - 16) / 2;
 }
+#endif // 0
 
 uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint32_t iaddress, uint8_t isize, uint8_t sendStop)
 {
@@ -195,7 +196,8 @@ size_t TwoWire::write(uint8_t data)
   // in master transmitter mode
     // don't bother if buffer is full
     if(txBufferLength >= BUFFER_LENGTH){
-      setWriteError();
+        // MATTD
+//      setWriteError();
       return 0;
     }
     // put byte in tx buffer
@@ -229,6 +231,8 @@ size_t TwoWire::write(const uint8_t *data, size_t quantity)
   return quantity;
 }
 
+#if 0
+
 // must be called in:
 // slave rx event callback
 // or after requestFrom(address, numBytes)
@@ -240,6 +244,7 @@ int TwoWire::available(void)
 // must be called in:
 // slave rx event callback
 // or after requestFrom(address, numBytes)
+#endif // 0
 int TwoWire::read(void)
 {
   int value = -1;
@@ -252,6 +257,7 @@ int TwoWire::read(void)
 
   return value;
 }
+#if 0
 
 // must be called in:
 // slave rx event callback
@@ -325,6 +331,6 @@ void TwoWire::onRequest( void (*function)(void) )
 }
 
 // Preinstantiate Objects //////////////////////////////////////////////////////
-
+#endif 
 TwoWire Wire = TwoWire();
 
