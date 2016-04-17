@@ -1,14 +1,17 @@
 #include <WProgram.h>
 #include <avrlibtypes.h>
 //#include <twowire.h>
+//#define VALUEHISTORY
+#ifdef VALUEHISTORY
 #include <Adafruit_FRAM_I2C-master/Adafruit_FRAM_I2C.h>
+#endif // VALUHISTORY
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 //#define STOPONGAP
 //#define SENSORINT
-#define ANALOGSENSOR
-#define VALUEHISTORY
+#define OPTOINT
+
 
 #define PB_SERVO 3
 #define PB_LAMP 1
@@ -17,18 +20,21 @@
 #define PIN_LEDSENSOR 2 // PC2
 #define PC_LEDSENSOR 2 // PC2
 #define PB_SHUTTER 4
+#ifdef OPTOINT
+#define PC_OPTOINT 5 // PC5
+#endif // OPTOINT
 
 #define MOTOR_PRETENSION_NEXT 40 
 #define MOTOR_PRETENSION_FF 20
+#define MOTOR_REWIND_FAST 100 
 #define MOTOR_REWIND_SLOW 10 
-#define MOTOR_REWIND_FAST 250 
 #define MOTOR_OFF 0 
 #define SERVO_MIN 64
 #define SERVO_STOP 94
 #define SERVO_MAX 128
 #define SERVO_NEXTFRAME_FAST 140 
 //#define SERVO_NEXTFRAME_SLOW 70 
-#define SERVO_NEXTFRAME_SLOW 80 
+#define SERVO_NEXTFRAME_SLOW 74 
 #define SERVO_REVERSE 110 
 
 #define SENSOR_STEP 10 
@@ -65,15 +71,16 @@
 typedef enum
 { 
         NONE = 0,
-        LASERBLINKON,
-        LASERBLINKOFF,
+//        LASERBLINKON,
+//        LASERBLINKOFF,
         FRAMESTOP,
         LOOKFORGAPEND,
         LOOKFORGAPSTART,
         LOOKFORFRAMEEND,
         DELAYLOOP,
-        SENSORENABLE,
         SENSORSTART,
+        OPTOINT_CHANGED,
+        STOPONFRAMEZERO,
         SHUTTERCLOSED,
         EXPOSURESERIES5,
         EXPOSURESERIES4,
@@ -82,6 +89,8 @@ typedef enum
         EXPOSURESERIES1,
         EXPOSURESERIES,
         SHUTTEROPEN,
+        FORWARD_LOOKFORGAPEND,
+        FORWARD_LOOKFORFRAMEEND,
         TRIPLESTART = SHUTTEROPEN
 } WaitFor;
 
@@ -106,11 +115,12 @@ u08 servoPulse = SERVO_STOP;
 u08 motorPulse = 255;
 u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
 u08 servoSpeed = SERVO_NEXTFRAME_SLOW;
-u08 motorRewind = MOTOR_OFF;
+//u08 motorRewind = MOTOR_OFF;
 u32 laserTimeout = 0;
 u32 lampTimeout = 0;
 //u32 tsServoStart = 0;
 u08 sensorValue(0);
+u08 lastSensorValue(0);
 u08 waitingFor(NONE);
 u08 stateLoop;
 u08 stateSaved;
@@ -126,7 +136,9 @@ u16 lastValue;
 u16 servoCount = 0;
 u16 servoThreshold = 0;
 
+#ifdef VALUEHISTORY
 Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
+#endif // VALUEHISTORY
 
 ISR(TIMER2_OVF_vect)
 {
@@ -261,18 +273,23 @@ void lampCheck()
 
 void laserOn()
 {
+#ifndef OPTOINT
     LASER_ON;
     laserTimeout = millis();
+#endif // OPTOINT
 }
 
 void laserOff()
 {
+#ifndef OPTOINT
     LASER_OFF;
     laserTimeout = 0;
+#endif // OPTOINT
 }
 
 void laserCheck()
 {
+#ifndef OPTOINT
     if (0 == laserTimeout)
     {
         return;
@@ -281,6 +298,42 @@ void laserCheck()
     {
         laserOff();
     }
+#endif // OPTOINT
+}
+
+// 1 = made the transition to zero
+u08 decFrameCount()
+{
+    if (0 == frameCount)
+    {
+        return 0;
+    }
+    frameCount--;
+    if (frameCount == 0)
+    {
+        setServo(SERVO_STOP);
+        sensorValue = 0;
+        waitingFor = FRAMESTOP;
+        return 1;
+    }
+    return 0;
+}
+
+u08 isOptoTransition()
+{
+    if ((PINC & _BV(PC_OPTOINT)) &&
+            0 == (sensorValue & _BV(7)))
+    {
+        sensorValue |= _BV(7);
+        return 0;
+    }
+    else if ((0 == (PINC & _BV(PC_OPTOINT))) &&
+            (sensorValue & _BV(7)))
+    {
+        sensorValue &= ~_BV(7);
+        return 1;
+    }
+    return 0;
 }
 
 void reset()
@@ -292,7 +345,7 @@ void reset()
     laserOff();
     SHUTTER_CLOSE;
     setMotor(MOTOR_OFF);
-    motorRewind = MOTOR_OFF;
+    //motorRewind = MOTOR_OFF;
     parameter = 0;
     waitingFor = NONE;
     verbose = 0;
@@ -305,7 +358,11 @@ void setup ()
     Serial.begin(57600);
     Serial.println("Init Start");
     analogWrite(PIN_MOTOR, MOTOR_OFF);
+#ifdef OPTOINT
+    PORTC |= (_BV(PC_LEDSENSOR) | _BV(PC_OPTOINT)) ; // tie led sensor line high
+#else // OPTOINT
     PORTC |= _BV(PC_LEDSENSOR); // tie led sensor line high
+#endif // OPTOINT
     PORTB |= _BV(PB_SHUTTER);
     DDRB |= _BV(PB_LAMP) | _BV(PB_LASER) | _BV(PB_SHUTTER);
     lampOff();
@@ -318,13 +375,16 @@ void setup ()
     TCNT2 = 0x00;
     DDRB |= _BV(PB_SERVO);
     sei();
+#ifdef VALUEHISTORY
     if (fram.begin())
     {
         Serial.println("FRAM ok");
     }
+#endif // VALUEHISTORY
     Serial.println("Init OK");
 }
 
+#ifdef VALUEHISTORY
 void framSave(u16 value)
 {
     if (valIndex >= 32767)
@@ -335,6 +395,7 @@ void framSave(u16 value)
     fram.write8(valIndex++, value >> 8);
     fram.write8(valIndex++, value & 0xff);
 }
+#endif // VALUEHISTORY
 
 void loop ()
 {
@@ -345,17 +406,32 @@ void loop ()
         Serial.println(analogRead(PIN_LEDSENSOR), 10);
     }
 
-#ifdef ANALOGSENSOR
-    if (sensorValue) //  && (millis() - lastSample) > 2)
+#ifdef OPTOINT
+#else // OPTOINT
+    if (sensorValue) 
     {
         u16 value = analogRead(PIN_LEDSENSOR);
-        if ((value >= SENSORTHRESHOLD) && sensorValue < SENSOR_VALUE_MAX)
+        if ('<' == lastCommand)
         {
-            sensorValue += SENSOR_STEP;
+            if (sensorValue >= SENSORTHRESHOLD && lastSensorValue < SENSORTHRESHOLD)
+            {
+                decFrameCount();
+            }
+            if (sensorValue < SENSORTHRESHOLD && lastSensorValue >= SENSORTHRESHOLD)
+            {
+                lastSensorValue = sensorValue;
+            }
         }
-        else if ((value < SENSORTHRESHOLD) && sensorValue > SENSOR_VALUE_MIN)
+        else
         {
-            sensorValue -= SENSOR_STEP;
+            if ((value >= SENSORTHRESHOLD) && sensorValue < SENSOR_VALUE_MAX)
+            {
+                sensorValue += SENSOR_STEP;
+            }
+            else if ((value < SENSORTHRESHOLD) && sensorValue > SENSOR_VALUE_MIN)
+            {
+                sensorValue -= SENSOR_STEP;
+            }
         }
 
 #ifdef VALUEHISTORY
@@ -373,43 +449,44 @@ void loop ()
 //            Serial.println(sensorValue, 10);
 //        }
     }
-#else // ANALOGSENSOR
-    if (sensorValue) //  && (millis() - lastSample) > 2)
-    {
-        laserOn();
-        u08 value = PINC & _BV(PC_LEDSENSOR);
-        laserOff();
-        if (value && sensorValue < SENSOR_VALUE_MAX)
-        {
-            sensorValue += SENSOR_STEP;
-        }
-        else if (!value && sensorValue > SENSOR_VALUE_MIN)
-        {
-            sensorValue -= SENSOR_STEP;
-        }
-//        if (verbose)
+#endif // OPTOINT
+//#else // ANALOGSENSOR
+//    if (sensorValue) 
+//    {
+//        laserOn();
+//        u08 value = PINC & _BV(PC_LEDSENSOR);
+//        laserOff();
+//        if (value && sensorValue < SENSOR_VALUE_MAX)
 //        {
-//            Serial.println(sensorValue, 10);
+//            sensorValue += SENSOR_STEP;
 //        }
-    }
-#endif // ANALOGSENSOR
+//        else if (!value && sensorValue > SENSOR_VALUE_MIN)
+//        {
+//            sensorValue -= SENSOR_STEP;
+//        }
+////        if (verbose)
+////        {
+////            Serial.println(sensorValue, 10);
+////        }
+//    }
+//#endif // ANALOGSENSOR
 
     switch (waitingFor)
     {
         case NONE:
             break;
 
-        case LASERBLINKON:
-            laserOn();
-            lampOn();
-            DELAYEDSTATE(10, LASERBLINKOFF);
-            break;
+//        case LASERBLINKON:
+//            laserOn();
+//            lampOn();
+//            DELAYEDSTATE(10, LASERBLINKOFF);
+//            break;
 
-        case LASERBLINKOFF:
-            laserOff();
-            lampOff();
-            DELAYEDSTATE(100, LASERBLINKON);
-            break;
+//        case LASERBLINKOFF:
+//            laserOff();
+//            lampOff();
+//            DELAYEDSTATE(100, LASERBLINKON);
+//            break;
 
         case FRAMESTOP:
             setServo(SERVO_STOP);
@@ -449,7 +526,11 @@ void loop ()
             waitingFor = LOOKFORGAPEND;
             break;
 
-        case SENSORENABLE:
+        case OPTOINT_CHANGED:
+            if (isOptoTransition())
+            {
+                waitingFor = FRAMESTOP;
+            }
             break;
 
         case SENSORSTART:
@@ -460,11 +541,22 @@ void loop ()
             delay(400);
             laserOn();
             setServo(servoSpeed);
+#ifdef OPTOINT
+            if (PINC & _BV(PC_OPTOINT))
+            {
+                sensorValue |= _BV(7);
+            }
+            else
+            {
+                sensorValue &= ~_BV(7);
+            }
+
+            DELAYEDSTATE(200, OPTOINT_CHANGED);
+#else // OPTOINT
             DELAYEDSTATE(200, LOOKFORFRAMEEND);
-            //waitingFor = LOOKFORFRAMEEND;
-        //    waitingFor = LOOKFORGAPEND;
             sensorValue = SENSOR_VALUE_INIT_MAX;
             SENSORINT_ON;
+#endif // OPTOINT
 #ifdef VALUEHISTORY
             valIndex = 0;
             lastValue = 0;
@@ -489,7 +581,7 @@ void loop ()
             {
                 if (verbose)
                 {
-                    Serial.print("Frames Done");
+                    Serial.println("Frames Done");
                 }
                 waitingFor = NONE;
             }
@@ -532,13 +624,57 @@ void loop ()
             break;
 
         case EXPOSURESERIES:
-            DELAYEDSTATE(200, EXPOSURESERIES1);
+            DELAYEDSTATE(100, EXPOSURESERIES1);
+//            DELAYEDSTATE(200, EXPOSURESERIES1);
             break;
 
         case SHUTTEROPEN:
             SHUTTER_OPEN;
             waitingFor = EXPOSURESERIES;
             break;
+
+        case FORWARD_LOOKFORGAPEND:
+            if (SENSOR_VALUE_MIN < sensorValue)
+            {
+                break;
+            }
+            if (frameCount)
+            {
+                frameCount--;
+                if (verbose)
+                {
+                    Serial.print("Frame ");
+                    Serial.println(frameCount, 10);
+                }
+            }
+            if (decFrameCount())
+            {
+                waitingFor = NONE;
+            }
+            else
+            {
+                waitingFor = FORWARD_LOOKFORFRAMEEND;
+            }
+            break;
+
+        case FORWARD_LOOKFORFRAMEEND:
+            if (SENSOR_VALUE_MAX > sensorValue)
+            {
+                break;
+            }
+            waitingFor = FORWARD_LOOKFORGAPEND;
+            break;
+
+       case STOPONFRAMEZERO:
+            if (isOptoTransition())
+            {
+                if (decFrameCount())
+                {
+                    setMotor(MOTOR_OFF);
+                    waitingFor = NONE;
+                }
+            }
+        break;
 
         default:
             break;
@@ -552,10 +688,10 @@ void loop ()
     lastCommand = Serial.read();
     switch (lastCommand)
     {
-        case 'b':
-            waitingFor = LASERBLINKON;
-            sensorValue = SENSOR_VALUE_INIT;
-            break;
+//        case 'b':
+//            waitingFor = LASERBLINKON;
+//            sensorValue = SENSOR_VALUE_INIT;
+//            break;
 
         case 'c':
             SHUTTER_OPEN;
@@ -646,8 +782,19 @@ void loop ()
             break;
 
         case 'f': // forward
+            if (frameCount)
+            {
+                sensorValue = SENSOR_VALUE_INIT;
+            }
             setMotor(MOTOR_PRETENSION_FF);
-            setServo(servoSpeed);
+            setServo(SERVO_MIN);
+            waitingFor = STOPONFRAMEZERO;
+//            if (frameCount > 0)
+//            {
+//                laserOn();
+//                sensorValue = SENSOR_VALUE_INIT;
+//                waitingFor = FORWARD_LOOKFORFRAMEEND;
+//            }
             break;
 
         case 'F': // backward
@@ -655,22 +802,30 @@ void loop ()
             setServo(SERVO_REVERSE);
             break;
 
-        case ',': // rewind '<'
-            if (motorRewind < MOTOR_REWIND_FAST && motorRewind >= MOTOR_REWIND_SLOW)
-            {
-                motorRewind += 10;
-            }
-            else
-            {
-                motorRewind = MOTOR_REWIND_SLOW;
-            }
-            if (verbose)
-            {
-                Serial.println(motorRewind, 10);
-            }
-            setMotor(motorRewind);
-            setServo(SERVO_STOP);
+        case 'r':
+            sensorValue = SENSOR_VALUE_INIT;
+            setMotor(MOTOR_REWIND_FAST);
+            waitingFor = STOPONFRAMEZERO;
             break;
+
+//        case ',': // rewind '<'
+//            sensorValue = SENSOR_VALUE_INIT;
+//            setMotor(MOTOR_REWIND_FAST);
+//            if (motorRewind < MOTOR_REWIND_FAST && motorRewind >= MOTOR_REWIND_SLOW)
+//            {
+//                motorRewind += 10;
+//            }
+//            else
+//            {
+//                motorRewind = MOTOR_REWIND_SLOW;
+//            }
+//            if (verbose)
+//            {
+//                Serial.println(motorRewind, 10);
+//            }
+//            setMotor(motorRewind);
+//            setServo(SERVO_STOP);
+//            break;
 
         case 'n': // next frame
             waitingFor = SENSORSTART;
