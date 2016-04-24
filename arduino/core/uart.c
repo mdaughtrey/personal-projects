@@ -50,7 +50,7 @@ void uartInit(void)
 	UartRxFunc = 0;
 
 	// enable RxD/TxD and interrupts
-	outb(UCR, BV(RXCIE)|BV(TXCIE)|BV(RXEN)|BV(TXEN));
+	outb(UCSR0B, BV(RXCIE0)|BV(TXCIE0)|BV(RXEN0)|BV(TXEN0));
 
 	// set default baud rate
 	uartSetBaudRate(UART_DEFAULT_BAUD_RATE);  
@@ -91,9 +91,9 @@ void uartSetBaudRate(u32 baudrate)
 {
 	// calculate division factor for requested baud rate, and set it
 	u16 bauddiv = ((F_CPU+(baudrate*8L))/(baudrate*16L)-1);
-	outb(UBRRL, bauddiv);
-	#ifdef UBRRH
-	outb(UBRRH, bauddiv>>8);
+	outb(UBRR0L, bauddiv);
+	#ifdef UBRR0H
+	outb(UBRR0H, bauddiv>>8);
 	#endif
 }
 
@@ -117,7 +117,7 @@ void uartSendByte(u08 txData)
 	// wait for the transmitter to be ready
 	while(!uartReadyTx);
 	// send byte
-	outb(UDR, txData);
+	outb(UDR0, txData);
 	// set ready state to FALSE
 	uartReadyTx = FALSE;
 }
@@ -228,7 +228,8 @@ u08 uartSendBuffer(char *buffer, u16 nBytes)
 }
 */
 //! UART Transmit Complete Interrupt Handler
-UART_INTERRUPT_HANDLER(SIG_UART_TRANS)
+//UART_INTERRUPT_HANDLER(SIG_UART_TRANS)
+UART_INTERRUPT_HANDLER(USART_TX_vect)
 {
 	// check if buffered tx is enabled
 	if(uartBufferedTx)
@@ -237,7 +238,7 @@ UART_INTERRUPT_HANDLER(SIG_UART_TRANS)
 		if(uartTxBuffer.datalength)
 		{
 			// send byte from top of buffer
-			outb(UDR, bufferGetFromFront(&uartTxBuffer));
+			outb(UDR0, bufferGetFromFront(&uartTxBuffer));
 		}
 		else
 		{
@@ -256,12 +257,13 @@ UART_INTERRUPT_HANDLER(SIG_UART_TRANS)
 }
 
 //! UART Receive Complete Interrupt Handler
-UART_INTERRUPT_HANDLER(SIG_UART_RECV)
+//UART_INTERRUPT_HANDLER(SIG_UART_RECV)
+UART_INTERRUPT_HANDLER(USART_RX_vect)
 {
 	u08 c;
 	
 	// get received char
-	c = inb(UDR);
+	c = inb(UDR0);
 
 	// if there's a user function to handle this receive event
 	if(UartRxFunc)
