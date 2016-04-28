@@ -39,7 +39,7 @@ IMAGE_OPTIM="image_optim --no-pngout --no-advpng --no-optipng --no-pngquant  --n
 #IMAGE_OPTIM="jpegoptim -o"
 
 touch mirror
-touch flip
+#touch flip
 
 if [[ ! -d $YUVTMP ]]
 then
@@ -514,16 +514,20 @@ mp42jpg()
 
 all()
 {
-	rm -f *.JPG *.png 
-	rm -rf title cropped autocropped fused
-    rm *.av? *.yuv 
+    if ((clean == 1))
+    then
+        rm -f *.JPG *.png 
+        rm -rf title cropped autocropped fused sprockets
+        rm *.av? *.yuv 
+    fi
     mkdir bw
+    mkdir sprockets
 	precrop
     pcsample
     echo autocrop
     autocrop
 	echo tonefuse
-	tonefuse2
+	tonefuse
 	echo gentitle
 	gentitle
 	echo interpolate
@@ -567,6 +571,56 @@ autocrop()
     mkdir autocropped
     mkdir sprockets
     mkdir bw
+    rm /tmp/autocrop_in_*.txt
+    read -a croppedfiles <<< $(ls ./cropped | sort)
+    let numfiles=${#croppedfiles[@]}
+    if (((numfiles / 3) * 3 != ${#croppedfiles[@]}))
+    then
+        echo "Cropped file list must be a multiple of 3: $numfiles no good"
+        return
+    fi
+    let numsections=$(nproc)
+    let filespersection=$(((numfiles / 3) / numsections * 3))
+
+    for ((section = 0; section < numsections; section++))
+    do
+        echo Section $section
+
+        let startat=$((section * filespersection))
+        let endat=$((startat + filespersection - 3))
+        if ((numfiles - endat < filespersection))
+        then
+            let endat=$numfiles
+        fi
+        echo Section $section: $startat to $endat
+
+        filename="/tmp/autocrop_in_${section}.txt"
+        rm $filename
+        for ((ii = startat; ii <= endat; ii += 3))
+        do
+            echo -n "./cropped/"${croppedfiles[$((ii + 0))]}"," >> $filename
+            echo -n "./cropped/"${croppedfiles[$((ii + 1))]}",">> $filename
+            echo "./cropped/"${croppedfiles[$((ii + 2))]} >> $filename
+        done
+    done
+
+    for inputfile in /tmp/autocrop_in_*.txt
+    do
+        $SEM -N0 --jobs 200% autocrop.py -m super8  -v -l $inputfile -o autocropped 
+    done
+
+    $SEM --wait
+}
+
+autocropOld()
+{
+	if ((clean == 1))
+	then 
+        rm -rf autocropped
+	fi
+    mkdir autocropped
+    mkdir sprockets
+    mkdir bw
 
     read -a infiles <<< $(ls cropped/*.JPG)
     let numfiles=${#infiles[@]}
@@ -583,6 +637,7 @@ autocrop()
         then
             continue
         fi
+        echo Autocropping ${file},${file2},${file3}
 	    $SEM -N0 --jobs 200% autocrop.py -m super8 -s left \
         -v -f $ifile1,$ifile2,$ifile3 -o autocropped --debug
      done
@@ -607,7 +662,10 @@ export -f onePrecrop
 precrop()
 {
 	let numFrames=${1:-999999}
-	scaler
+    if [[ -f crop.cfg ]]
+    then
+	    scaler
+    fi
 	if ((clean == 1))
 	then
 		rm -rf cropped
@@ -624,20 +682,20 @@ precrop()
 	for dir in $dirs
 	do
 		numbers=$(ls ${dir}PHOTO/SAM_*.JPG | xargs -I {} basename {} | cut -b5-8 | sort -n)
-		if [[ -f $dir/crop.cfg ]]
+		if [[ -f ${dir}PHOTO/crop.cfg ]]
 		then
-			scaler $dir/crop.cfg
+			scaler ${dir}PHOTO/crop.cfg
 		fi
 
 		for number in $numbers
 		do
-			echo Precrop $to
 			let index=$(echo -n 10#$to)
 			outfile="cropped/SAM_$(printf '%06u' $to).JPG"
 			if [[ ! -f $outfile ]]
 			then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
 				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset
+    	        echo Precrop ${dir}PHOTO/${filename} to $outfile +${xOffset}+${yOffset} ${width}x${height}
 				#$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset -flop
 			fi
 			((to++))
@@ -666,11 +724,8 @@ pcsample()
             then
                 return
             fi
-            if [[ ! -f $tofile ]]
-            then
-                vOut pcsample $fromfile
-                cp $fromfile $tofile
-            fi
+            vOut pcsample $fromfile
+            cp -u $fromfile $tofile
         done
 
     done
@@ -756,7 +811,7 @@ optimize ()
 #}
 
 
-tonefuse2()
+tonefuse()
 {
 	let outindex=$TITLE_STREAM_FRAMES
 
@@ -791,7 +846,7 @@ tonefuse2()
 	$SEM --wait
 }
 
-oneToneFuse()
+oneToneFuseOld()
 {
 	dir=$1
 	baseindex=$2
@@ -805,7 +860,7 @@ oneToneFuse()
 }
 export -f oneToneFuse
 
-tonefuse()
+tonefuseOld()
 {
 	#scaler
 	let outindex=$TITLE_STREAM_FRAMES
@@ -823,11 +878,11 @@ tonefuse()
 	while [[ -f "autocropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
 	do
 		vOut Tonefuse $outindex
-		outfile="fused/SAM_$(printf "%06u" $((baseindex+3)))"
+		outfile="fused/SAM_$(printf "%06u" $((baseindex+3))).JPG"
 		if [[ ! -f $outfile ]]
 		then
 			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
-			$SEM -N0 --jobs 200% oneToneFuse cropped $baseindex $outindex
+			$SEM -N0 --jobs 200% oneToneFuse autocropped $baseindex $outindex
 		fi
 
 		((outindex++))
@@ -916,7 +971,6 @@ do
         v) let verbose=1 ;;
         s) let simulate=1 ;;
 		C) let clean=1 ;;
-		m) let optionM=1 ;;
         *) echo What?; exit 1 ;;
     esac
 done
