@@ -10,8 +10,8 @@
 
 //#define STOPONGAP
 //#define SENSORINT
+//#define SUPER8
 #define OPTOINT
-
 
 #define PB_SERVO 3
 #define PB_LAMP 1
@@ -22,6 +22,7 @@
 #define PB_SHUTTER 4
 #ifdef OPTOINT
 #define PC_OPTOINT 5 // PC5
+#define OPTOINT_TIMEOUT 4000
 #endif // OPTOINT
 
 #define MOTOR_PRETENSION_NEXT 40 
@@ -118,6 +119,7 @@ u08 servoSpeed = SERVO_NEXTFRAME_SLOW;
 //u08 motorRewind = MOTOR_OFF;
 u32 laserTimeout = 0;
 u32 lampTimeout = 0;
+u32 optoIntTimeout = 0;
 //u32 tsServoStart = 0;
 u08 sensorValue(0);
 u08 lastSensorValue(0);
@@ -321,6 +323,20 @@ u08 decFrameCount()
 
 u08 isOptoTransition()
 {
+    if (0 == optoIntTimeout)
+    {
+        optoIntTimeout = millis();
+    }
+    if ((millis() - optoIntTimeout) > OPTOINT_TIMEOUT)
+    {
+        if (verbose)
+        {
+            Serial.println("Opto int timeout");
+        }
+        reset();
+        return 0;
+    }
+#ifdef SUPER8
     if ((PINC & _BV(PC_OPTOINT)) &&
             0 == (sensorValue & _BV(7)))
     {
@@ -331,9 +347,26 @@ u08 isOptoTransition()
             (sensorValue & _BV(7)))
     {
         sensorValue &= ~_BV(7);
+        optoIntTimeout = 0;
         return 1;
     }
     return 0;
+#else // SUPER8
+    if ((PINC & _BV(PC_OPTOINT)) &&
+            0 == (sensorValue & _BV(7)))
+    {
+        sensorValue |= _BV(7);
+        optoIntTimeout = 0;
+        return 1;
+    }
+    else if ((0 == (PINC & _BV(PC_OPTOINT))) &&
+            (sensorValue & _BV(7)))
+    {
+        sensorValue &= ~_BV(7);
+        return 0;
+    }
+    return 0;
+#endif // SUPER8
 }
 
 void reset()
@@ -350,6 +383,7 @@ void reset()
     waitingFor = NONE;
     verbose = 0;
     frameCount = 0;
+    optoIntTimeout = 0;
     SENSORINT_OFF;
 }
 
@@ -550,7 +584,6 @@ void loop ()
             {
                 sensorValue &= ~_BV(7);
             }
-
             DELAYEDSTATE(200, OPTOINT_CHANGED);
 #else // OPTOINT
             DELAYEDSTATE(200, LOOKFORFRAMEEND);
@@ -788,7 +821,10 @@ void loop ()
             }
             setMotor(MOTOR_PRETENSION_FF);
             setServo(SERVO_MIN);
-            waitingFor = STOPONFRAMEZERO;
+            if (frameCount)
+            {
+                waitingFor = STOPONFRAMEZERO;
+            }
 //            if (frameCount > 0)
 //            {
 //                laserOn();
@@ -805,7 +841,10 @@ void loop ()
         case 'r':
             sensorValue = SENSOR_VALUE_INIT;
             setMotor(MOTOR_REWIND_FAST);
-            waitingFor = STOPONFRAMEZERO;
+            if (frameCount)
+            {
+                waitingFor = STOPONFRAMEZERO;
+            }
             break;
 
 //        case ',': // rewind '<'
