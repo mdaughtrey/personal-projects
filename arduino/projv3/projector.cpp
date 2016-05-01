@@ -196,18 +196,21 @@ u08 decFrameCount()
 
 u08 isOptoTransition()
 {
+    u32 now = millis();
     if (0 == optoIntTimeout)
     {
-        optoIntTimeout = millis();
+        optoIntTimeout = now;
         Serial.print("opto ");
         Serial.println(optoIntTimeout);
     }
-    if ((millis() - optoIntTimeout) > OPTOINT_TIMEOUT)
+    if ((now - optoIntTimeout) > OPTOINT_TIMEOUT)
     {
         if (verbose)
         {
-            Serial.print("Opto int timeout @");
-            Serial.print(millis());
+            Serial.print("Opto int timeout ");
+            Serial.print(optoIntTimeout);
+            Serial.print(" vs ");
+            Serial.println(now);
         }
         reset();
         return 0;
@@ -222,7 +225,7 @@ u08 isOptoTransition()
     {
         sensorValue = 0;
         Serial.print("Opto int reset @");
-        Serial.print(millis());
+        Serial.print(now);
         optoIntTimeout = 0;
         return 1;
     }
@@ -232,7 +235,7 @@ u08 isOptoTransition()
     {
         sensorValue = 1;
         Serial.print("Opto int reset @");
-        Serial.print(millis());
+        Serial.print(now);
         optoIntTimeout = 0;
         return 1;
     }
