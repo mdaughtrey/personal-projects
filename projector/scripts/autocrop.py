@@ -16,6 +16,8 @@ from itertools import groupby
 from glob import glob, iglob
 import logging
 from logging.handlers import RotatingFileHandler
+import cv2
+from cv2 import matchTemplate as cv2m
 
 greyed_dir = {True:'greyed', False: None}[os.path.isdir('greyed')]
 bw_dir = {True:'bw', False: None}[os.path.isdir('bw')]
@@ -24,9 +26,12 @@ sprockets_dir = {True:'sprockets', False: None}[os.path.isdir('sprockets')]
 eroded_dir = {True:'eroded', False: None}[os.path.isdir('eroded')]
 
 options = {}
+arrToFind = None
 
 FrameHeightMm = 3.3
 FrameWidthMm = 4.5
+SprocketSuper8 = (1.14, .91) # H, W
+Sprocket8mm = (1.27, 1.83) # H, W
 #PxPerMm8mm = 380
 #PxPerMmSuper8 = 393
 
@@ -35,6 +40,29 @@ logger = logging.getLogger('autocrop')
 fileHandler = RotatingFileHandler(filename='/tmp/autocrop_%u.log' % os.getpid(), maxBytes=10e6, backupCount=2)
 fileHandler.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
+
+def findSuper8Sprocket3(image, filename):
+    matches = cv2m(image, arrToFind, cv2.TM_SQDIFF)
+    (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches) 
+    return minLoc
+
+def findSuper8Sprocket2(image, filename):
+    (label, numFeatures) = scipy.ndimage.measurements.label(image)   
+    found = ndimage.find_objects(label)
+    (imX, imY) = image.size
+
+    closest = imY
+    (nomX, nomY) = (None, None)
+    for elem in found:
+        (yY, xX) = elem
+        if xX.stop - xX.start < 200 or yY.stop - yY.start < 300:
+            continue
+        distance = abs((imY / 2) - ((yY.stop + yY.start) / 2))
+        if distance < closest:
+            closest = distance
+            (nomX, nomY) = (xX, yY)
+
+    return (nomX.start, (nomY.stop + nomY.start) / 2)
 
 def findSuper8Sprocket(image, filename):
     (imX, imY) = image.size
@@ -79,8 +107,7 @@ def findSuper8Sprocket(image, filename):
         group = map(itemgetter(1), gg)
         candidateRanges.append((group[0], group[-1]))
 
-    if options.debug:
-        logger.debug("%u candidate ranges" % len(candidateRanges))
+    logger.debug("%u candidate ranges" % len(candidateRanges))
 
     # candidateRanges is a list of candidate row ranges
     # look for the one that's closest to the middle
@@ -88,15 +115,13 @@ def findSuper8Sprocket(image, filename):
     closest = imY
     for range in candidateRanges:
         distance = abs((imY / 2) - (sum(range) / 2))
-        if options.debug:
-            logger.debug("(%u,%u) distance %u closest %u" % (range[0], range[1], distance, closest))
+        logger.debug("(%u,%u) distance %u closest %u" % (range[0], range[1], distance, closest))
         if distance < closest:
             closest = distance
             nominatedRange = range
 
     if 0 == len(nominatedRange):
-        if options.debug:
-            logger.error("No nominated range found!")
+        logger.error("No nominated range found!")
         return (0, 0)
 
     # return center of sprocket
@@ -112,7 +137,6 @@ def processSuper8(filenames, outputpath):
         logger.error("Need three filenames")
         sys.exit(1)
 
-    
     ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
     if [True, True, True] == ofiles:
         logger.debug("Output files aready exist for %s" % filenames)
@@ -123,7 +147,7 @@ def processSuper8(filenames, outputpath):
     #(fcWidth, fcHeight) = im.shape
     (fcHeight, fcWidth) = im.shape
     #im = im[:,:400]
-    im = im[:,:300]
+    im = im[:,:600]
     im1 = ndimage.grey_erosion(im, size=(25, 25))
 
     im1[im1 < 100] = 0
@@ -131,15 +155,17 @@ def processSuper8(filenames, outputpath):
     if options.debug and eroded_dir is not None:
         scipy.misc.imsave('eroded/%s' % os.path.basename(filename), im1)
 
+    pxPerMm = 369
     im1Image = scipy.misc.toimage(im1)
-    (spLeftX, spCenterY) = findSuper8Sprocket(im1Image, filename)
-    if options.debug:
-        logger.debug( "%s leftX %u centerY %u" % (filename, spLeftX, spCenterY))
+    #(spLeftX, spCenterY) = findSuper8Sprocket3(im1Image, filename)
+    (spLeftX, spCenterY) = findSuper8Sprocket3(im1, filename)
+    #pdb.set_trace()
+    spCenterY += (SprocketSuper8[0] * pxPerMm / 2 )
+    logger.debug( "%s leftX %u centerY %u" % (filename, spLeftX, spCenterY))
     if (0, 0) == (spLeftX, spCenterY):
         logger.error("Cannot process %s" % filename)
         return
 
-    pxPerMm = 393
     frameOriginX = int(spLeftX + ((.8 + .1) * pxPerMm))
     frameOriginY = int(spCenterY - (2.015 * pxPerMm))
 
@@ -147,7 +173,7 @@ def processSuper8(filenames, outputpath):
     #frameOriginY -= (122  + (.455 * pxPerMm))
     frameOriginY -= ((.465 * pxPerMm))
 
-    frameWidth = int(5.8 * pxPerMm)
+    frameWidth = int(5.7 * pxPerMm)
     frameHeight = int(4.11 * pxPerMm)
 
     if frameWidth % 2 == 1:
@@ -257,7 +283,6 @@ def find8mmSprocket(image, filename):
 
     logger.debug("blackRanges %u whiteRanges %u" % (len(blackRanges), len(whiteRanges)))
 
-#    pdb.set_trace()
     nominatedRange = ()
     closest = imY
     for range in blackRanges:
@@ -268,15 +293,13 @@ def find8mmSprocket(image, filename):
             nominatedRange = range
 
     if 0 == len(nominatedRange):
-        if options.debug:
-            logger.error("No nominated range found!")
+        logger.error("No nominated range found!")
         return (0, 0)
 
     # return center of sprocket
     avgY = sum(nominatedRange) / 2
     return (150, avgY)
     #return (fromLeft[avgY] + (leftExtent[avgY]/2), avgY)
-#    pdb.set_trace()
 #    return (0, 0)
 '''    numCandidates = len(candidateRanges)
     if numCandidates < 2:
@@ -396,6 +419,7 @@ def process8mm(filenames, outputpath):
 
 def main():
     global options
+    global arrToFind
     parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
     parser.add_option('-s', '--debug', dest='debug', help='Save intermediary images', action='store_true')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
@@ -409,6 +433,11 @@ def main():
     if options.mode not in ('8mm', 'super8'):
         logger.error("Invalid sprocket option %s" % options.sprocket)
         sys.exit(1)
+
+    imgToFind = PILImage.open('/mnt/imageinput/tofind.jpg').convert('L')
+    arrToFind = scipy.misc.fromimage(imgToFind, flatten = True).astype(numpy.uint8)
+    #arrFindIn[arrFindIn < 100] = 0
+    #arrFindIn[arrFindIn >= 100] = 255
 
     processor = {'super8': processSuper8, '8mm': process8mm }[options.mode]
 

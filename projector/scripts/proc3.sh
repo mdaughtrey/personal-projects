@@ -564,6 +564,7 @@ deleterange()
 
 autocrop()
 {
+    echo Run autocrop
 	if ((clean == 1))
 	then 
         rm -rf autocropped
@@ -572,7 +573,20 @@ autocrop()
     mkdir sprockets
     mkdir bw
     rm /tmp/autocrop_in_*.txt
-    read -a croppedfiles <<< $(ls ./cropped | sort)
+    mode=""
+    if [[ -f "8mm" ]]
+    then
+        mode="8mm"
+    elif [[ -f "super8" ]]
+    then
+        mode="super8"
+    fi
+    if [[ "" == "$mode" ]]
+    then
+        echo "No autocrop mode set"
+        return
+    fi
+    read -a croppedfiles <<< $(ls ./cropped/*.JPG | sort)
     let numfiles=${#croppedfiles[@]}
     if (((numfiles / 3) * 3 != ${#croppedfiles[@]}))
     then
@@ -598,15 +612,15 @@ autocrop()
         rm $filename
         for ((ii = startat; ii <= endat; ii += 3))
         do
-            echo -n "./cropped/"${croppedfiles[$((ii + 0))]}"," >> $filename
-            echo -n "./cropped/"${croppedfiles[$((ii + 1))]}",">> $filename
-            echo "./cropped/"${croppedfiles[$((ii + 2))]} >> $filename
+            echo -n ${croppedfiles[$((ii + 0))]}"," >> $filename
+            echo -n ${croppedfiles[$((ii + 1))]}",">> $filename
+            echo ${croppedfiles[$((ii + 2))]} >> $filename
         done
     done
 
     for inputfile in /tmp/autocrop_in_*.txt
     do
-        $SEM -N0 --jobs 200% autocrop.py -m super8  -v -l $inputfile -o autocropped 
+        $SEM -N0 --jobs 200% autocrop.py --debug -m $mode  -v -l $inputfile -o autocropped 
     done
 
     $SEM --wait
@@ -951,6 +965,8 @@ import()
 	rsync -urav --ignore-existing ???PHOTO $FRAMETMP/
 	cp crop.cfg $FRAMETMP
 	cp title*.txt $FRAMETMP
+    cp super8 $FRAMETMP
+    cp 8mm $FRAMETMP
 }
 
 pptests()
@@ -962,6 +978,12 @@ pptests()
         postprocess $mode
     done
 }
+
+if [[ ! -f "super8" && ! -f "8mm" ]]
+then
+    echo No film type specified
+    exit 1
+fi
 
 (date | tr -d '\n'; echo -n " "; pwd | tr -d '\n'; echo -n " ";  echo $*) >> $RUN_LOG
 
