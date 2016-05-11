@@ -2,17 +2,12 @@
 #include <avrlibtypes.h>
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-//#define SUPER8
-#define OPTOINT
-
 #define PB_SHUTTER 4
 #define PB_SERVO 3
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
-#ifdef OPTOINT
 #define PC_OPTOINT 5 // PC5
 #define OPTOINT_TIMEOUT 5000
-#endif // OPTOINT
 
 #define MOTOR_PRETENSION_NEXT 40 
 #define MOTOR_PRETENSION_FF 20
@@ -60,6 +55,13 @@ typedef enum
         TRIPLESTART = SHUTTEROPEN
 } WaitFor;
 
+typedef enum
+{
+    FILM_NONE = 0,
+    FILM_8MM,
+    FILM_SUPER8
+} FilmMode;
+
 void incMotor();
 void decMotor();
 void setMotor(u08 set);
@@ -73,7 +75,7 @@ u08 checkNextFrameTimeout();
 void reset();
 
 u16 parameter = 0;
-u08 verbose = 0;
+u08 verbose = 1;
 u08 servoPulse = SERVO_STOP;
 u08 motorPulse = 255;
 u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
@@ -87,6 +89,7 @@ u08 stateLoop;
 u08 stateSaved;
 u08 lastCommand;
 u16 frameCount;
+u08 filmMode = FILM_NONE;
 
 //u08 highCount;
 u16 servoCount = 0;
@@ -215,37 +218,39 @@ u08 isOptoTransition()
         reset();
         return 0;
     }
-#ifdef SUPER8
-    if ((PINC & _BV(PC_OPTOINT)) &&  0 == sensorValue)
+    if (FILM_SUPER8 == filmMode)
     {
-        sensorValue = 1;
-        return 0;
+        if ((PINC & _BV(PC_OPTOINT)) &&  0 == sensorValue)
+        {
+            sensorValue = 1;
+            return 0;
+        }
+        else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
+        {
+            sensorValue = 0;
+            Serial.print("Opto int reset @");
+            Serial.print(now);
+            optoIntTimeout = 0;
+            return 1;
+        }
     }
-    else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
+    else if (FILM_8MM == filmMode)
     {
-        sensorValue = 0;
-        Serial.print("Opto int reset @");
-        Serial.print(now);
-        optoIntTimeout = 0;
-        return 1;
+        if ((PINC & _BV(PC_OPTOINT)) && 0 == sensorValue)
+        {
+            sensorValue = 1;
+            Serial.print("Opto int reset @");
+            Serial.print(now);
+            optoIntTimeout = 0;
+            return 1;
+        }
+        else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
+        {
+            sensorValue = 0;
+            return 0;
+        }
     }
     return 0;
-#else // SUPER8
-    if ((PINC & _BV(PC_OPTOINT)) && 0 == sensorValue)
-    {
-        sensorValue = 1;
-        Serial.print("Opto int reset @");
-        Serial.print(now);
-        optoIntTimeout = 0;
-        return 1;
-    }
-    else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
-    {
-        sensorValue = 0;
-        return 0;
-    }
-    return 0;
-#endif // SUPER8
 }
 
 void reset()
@@ -330,7 +335,6 @@ void loop ()
             break;
 
         case SHUTTERCLOSED:
-            SHUTTER_CLOSE;
             //DELAYEDSTATE(400, SENSORSTART);
             //tsServoStart = millis();
             if (frameCount > 0)
@@ -364,17 +368,19 @@ void loop ()
 
         case EXPOSURESERIES5:
             lampOff();
+            delay(10);
             waitingFor = SHUTTERCLOSED;
             break;
 
         case EXPOSURESERIES4:
             lampOn();
+            SHUTTER_CLOSE;
             DELAYEDSTATE(80, EXPOSURESERIES5);
             break;
 
         case EXPOSURESERIES3:
             lampOff();
-            DELAYEDSTATE(260, EXPOSURESERIES4);
+            DELAYEDSTATE(220, EXPOSURESERIES4);
             break;
 
         case EXPOSURESERIES2:
@@ -382,21 +388,26 @@ void loop ()
             DELAYEDSTATE(20, EXPOSURESERIES3);
             break;
 
-        case EXPOSURESERIES1:
+//        case EXPOSURESERIES1:
+//            lampOn();
+//            delay(4);
+//            lampOff();
+//            DELAYEDSTATE(350, EXPOSURESERIES2);
+//            break;
+
+//        case EXPOSURESERIES:
+//            DELAYEDSTATE(100, EXPOSURESERIES1);
+//            DELAYEDSTATE(200, EXPOSURESERIES1);
+//            break;
+
+        case SHUTTEROPEN:
+            SHUTTER_OPEN;
+            delay(100);
             lampOn();
             delay(4);
             lampOff();
             DELAYEDSTATE(350, EXPOSURESERIES2);
-            break;
-
-        case EXPOSURESERIES:
-            DELAYEDSTATE(100, EXPOSURESERIES1);
-//            DELAYEDSTATE(200, EXPOSURESERIES1);
-            break;
-
-        case SHUTTEROPEN:
-            SHUTTER_OPEN;
-            waitingFor = EXPOSURESERIES;
+//            waitingFor = EXPOSURESERIES;
             break;
 
 
@@ -423,16 +434,37 @@ void loop ()
     lastCommand = Serial.read();
     switch (lastCommand)
     {
+        case 'd':
+            filmMode = FILM_8MM;
+            if (verbose)
+            {
+                Serial.println("8mm");
+            }
+            break;
 
-        case 'c':
+        case 'D':
+            filmMode = FILM_SUPER8;
+            if (verbose)
+            {
+                Serial.println("Super 8");
+            }
+            break;
+
+        case 'C':
             SHUTTER_OPEN;
-            delay(20);
+            delay(2);
             SHUTTER_CLOSE;
             break;
 
-        case 'C': // triple shutter
-            //waitingFor = TRIPLESTART;
-            waitingFor = SENSORSTART;
+        case 'c': // triple shutter
+            if (FILM_NONE == filmMode)
+            {
+                Serial.println("Mode?");
+            }
+            else
+            {
+                waitingFor = SENSORSTART;
+            }
             break;
 
         case ' ':
