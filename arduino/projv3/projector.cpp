@@ -1,12 +1,15 @@
 #include <WProgram.h>
 #include <avrlibtypes.h>
+#ifdef USEFRAM
+#include <Adafruit_FRAM_I2C-master/Adafruit_FRAM_I2C.h>
+#endif // USEFRAM
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
-#define PB_SHUTTER 4
+#define PC_SHUTTER 2
 #define PB_SERVO 3
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
-#define PC_OPTOINT 5 // PC5
+#define PC_OPTOINT 1 // PC1
 #define OPTOINT_TIMEOUT 5000
 
 #define MOTOR_PRETENSION_NEXT 40 
@@ -31,8 +34,9 @@
 #define LAMP_ON PORTB |= _BV(PB_LAMP)
 #define SERVO_ON PORTB |= _BV(PB_SERVO)
 #define SERVO_OFF PORTB &= ~_BV(PB_SERVO)
-#define SHUTTER_OPEN PORTB &= ~_BV(PB_SHUTTER)
-#define SHUTTER_CLOSE PORTB |= _BV(PB_SHUTTER)
+#define SHUTTER_OPEN PORTC &= ~_BV(PC_SHUTTER)
+#define SHUTTER_CLOSE PORTC |= _BV(PC_SHUTTER)
+#define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
 
 #define DELAYEDSTATE(dd, ss) { stateLoop = dd/10; stateSaved = ss; waitingFor = DELAYLOOP; }
 
@@ -71,7 +75,6 @@ void setServo(u08 set);
 void lampOn();
 void lampOff();
 void lampCheck();
-u08 checkNextFrameTimeout();
 void reset();
 
 u16 parameter = 0;
@@ -81,8 +84,8 @@ u08 motorPulse = 255;
 u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
 u08 servoSpeed = SERVO_NEXTFRAME_SLOW;
 u32 lampTimeout = 0;
-volatile u32 optoIntTimeout = 0;
-u08 sensorValue(0);
+volatile u32 optoIntTimeout;
+u08 sensorValue;
 u08 lastSensorValue(0);
 u08 waitingFor(NONE);
 u08 stateLoop;
@@ -94,6 +97,43 @@ u08 filmMode = FILM_NONE;
 //u08 highCount;
 u16 servoCount = 0;
 u16 servoThreshold = 0;
+
+#ifdef USEFRAM
+Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
+u16 framIndex;
+
+void framWrite8(u08 value)
+{
+    if (framIndex >= 32767)
+    {
+        framIndex = 32767;
+        return;
+    }
+    fram.write8(framIndex++, value);
+}
+
+void framWrite32(u32 value)
+{
+    if (framIndex >= 32767)
+    {
+        framIndex = 32767;
+        return;
+    }
+    fram.write8(framIndex++, value >> 24);
+    fram.write8(framIndex++, value >> 16);
+    fram.write8(framIndex++, value >> 8);
+    fram.write8(framIndex++, value & 0xff);
+}
+
+u32 framRead32(u16 address)
+{
+    return (u32)((fram.read8(address) << 24) |
+        (fram.read8(address + 1) << 16) |
+        (fram.read8(address + 2) << 8) |
+        fram.read8(address + 3));
+}
+//-                    u16 fValue((fram.read8(ii) << 8) | fram.read8(ii+1));
+#endif // USEFRAM
 
 ISR(TIMER2_OVF_vect)
 {
@@ -108,6 +148,9 @@ ISR(TIMER2_OVF_vect)
     }
     servoCount &= 0x03ff;
 }
+
+
+
 
 void setMotor(u08 set)
 {
@@ -190,7 +233,6 @@ u08 decFrameCount()
     if (frameCount == 0)
     {
         setServo(SERVO_STOP);
-        sensorValue = 0;
         waitingFor = FRAMESTOP;
         return 1;
     }
@@ -200,12 +242,6 @@ u08 decFrameCount()
 u08 isOptoTransition()
 {
     u32 now = millis();
-    if (0 == optoIntTimeout)
-    {
-        optoIntTimeout = now;
-        Serial.print("opto ");
-        Serial.println(optoIntTimeout);
-    }
     if ((now - optoIntTimeout) > OPTOINT_TIMEOUT)
     {
         if (verbose)
@@ -220,7 +256,7 @@ u08 isOptoTransition()
     }
     if (FILM_SUPER8 == filmMode)
     {
-        if ((PINC & _BV(PC_OPTOINT)) &&  0 == sensorValue)
+        if ((PINC & _BV(PC_OPTOINT)) && 0 == sensorValue)
         {
             sensorValue = 1;
             return 0;
@@ -228,9 +264,6 @@ u08 isOptoTransition()
         else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
         {
             sensorValue = 0;
-            Serial.print("Opto int reset @");
-            Serial.print(now);
-            optoIntTimeout = 0;
             return 1;
         }
     }
@@ -238,14 +271,17 @@ u08 isOptoTransition()
     {
         if ((PINC & _BV(PC_OPTOINT)) && 0 == sensorValue)
         {
+#ifdef USEFRAM
+            framWrite8('1');
+#endif // USEFRAM
             sensorValue = 1;
-            Serial.print("Opto int reset @");
-            Serial.print(now);
-            optoIntTimeout = 0;
             return 1;
         }
         else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
         {
+#ifdef USEFRAM
+            framWrite8('0');
+#endif // USEFRAM
             sensorValue = 0;
             return 0;
         }
@@ -256,7 +292,6 @@ u08 isOptoTransition()
 void reset()
 {
     Serial.println("Reset");
-    sensorValue = 0;
     setServo(SERVO_STOP);
     lampOff();
     SHUTTER_CLOSE;
@@ -266,17 +301,20 @@ void reset()
     waitingFor = NONE;
     verbose = 0;
     frameCount = 0;
-    optoIntTimeout = 0;
+    //optoIntTimeout = 0;
 }
 
 void setup ()
 { 
     Serial.begin(57600);
     Serial.println("Init Start");
+    PORTC |= _BV(PC_OPTOINT); // tie opt int sensor line hight
+
     analogWrite(PIN_MOTOR, MOTOR_OFF);
-    PORTC |=  _BV(PC_OPTOINT); // tie led sensor line high
-    PORTB |= _BV(PB_SHUTTER);
-    DDRB |= _BV(PB_LAMP) | _BV(PB_SHUTTER);
+    //PORTB |= _BV(PC_OPTOINT); // tie led sensor line high
+    PORTC |= _BV(PC_SHUTTER);
+    DDRB |= _BV(PB_LAMP);
+    DDRC |= _BV(PC_SHUTTER);
     lampOff();
     cli();
     TCCR2B |= _BV(CS20); // no prescaler   
@@ -287,11 +325,26 @@ void setup ()
     TCNT2 = 0x00;
     DDRB |= _BV(PB_SERVO);
     sei();
+#ifdef USEFRAM
+    if (fram.begin())
+    {
+        Serial.println("FRAM ok");
+    }
+    framIndex = 0;
+#endif // USEFRAM
     Serial.println("Init OK");
 }
 
 void loop ()
 {
+//    if (PINC & _BV(PC_OPTOINT))
+//    {
+//        Serial.println("H");
+//    }
+//    else
+//    {
+//        Serial.println("L");
+//    }
     lampCheck();
 
     switch (waitingFor)
@@ -305,7 +358,6 @@ void loop ()
             {
                 setMotor(MOTOR_OFF);
             }
-            sensorValue = 0;
             if ('n' == lastCommand)
             {
                 waitingFor = NONE;
@@ -328,15 +380,21 @@ void loop ()
             {
                 setMotor(motorPretensionNext);
             }
-            delay(400);
             setServo(servoSpeed);
-            sensorValue = PINC & _BV(PC_OPTOINT);
-            DELAYEDSTATE(200, OPTOINT_CHANGED);
+            SENSORVALUEINIT;
+            optoIntTimeout = millis();
+//#ifdef USEFRAM
+//            framWrite32(optoIntTimeout);
+//#endif // USEFRAM
+        //    if (verbose)
+        //    {
+        //        Serial.print("Timeout = ");
+        //        Serial.println(optoIntTimeout);
+        //    }
+            waitingFor = OPTOINT_CHANGED;
             break;
 
         case SHUTTERCLOSED:
-            //DELAYEDSTATE(400, SENSORSTART);
-            //tsServoStart = millis();
             if (frameCount > 0)
             {
                 --frameCount;
@@ -388,18 +446,6 @@ void loop ()
             DELAYEDSTATE(20, EXPOSURESERIES3);
             break;
 
-//        case EXPOSURESERIES1:
-//            lampOn();
-//            delay(4);
-//            lampOff();
-//            DELAYEDSTATE(350, EXPOSURESERIES2);
-//            break;
-
-//        case EXPOSURESERIES:
-//            DELAYEDSTATE(100, EXPOSURESERIES1);
-//            DELAYEDSTATE(200, EXPOSURESERIES1);
-//            break;
-
         case SHUTTEROPEN:
             SHUTTER_OPEN;
             delay(100);
@@ -407,9 +453,7 @@ void loop ()
             delay(4);
             lampOff();
             DELAYEDSTATE(350, EXPOSURESERIES2);
-//            waitingFor = EXPOSURESERIES;
             break;
-
 
        case STOPONFRAMEZERO:
             if (isOptoTransition())
@@ -434,6 +478,24 @@ void loop ()
     lastCommand = Serial.read();
     switch (lastCommand)
     {
+#ifdef USEFRAM
+        case 'q':
+            Serial.println((int)framIndex);
+            for (u16 ii = 0; ii < framIndex; ii++)
+            {
+                Serial.print(fram.read8(ii));
+//                Serial.print(fram.read8(ii), 16);
+//                Serial.print(fram.read8(ii + 1), 16);
+//                Serial.print(fram.read8(ii + 2), 16);
+//                Serial.println(fram.read8(ii + 3), 16);
+            }
+            break;
+
+        case 'Q':
+            framIndex = 0;
+            break;
+#endif // USEFRAM
+
         case 'd':
             filmMode = FILM_8MM;
             if (verbose)
@@ -518,7 +580,7 @@ void loop ()
         case 'f': // forward
             if (frameCount)
             {
-                sensorValue = 1;
+                SENSORVALUEINIT;
             }
             setMotor(MOTOR_PRETENSION_FF);
             setServo(SERVO_MIN);
@@ -534,7 +596,7 @@ void loop ()
             break;
 
         case 'r':
-            sensorValue = 1;
+            SENSORVALUEINIT;
             setMotor(MOTOR_REWIND_FAST);
             if (frameCount)
             {
