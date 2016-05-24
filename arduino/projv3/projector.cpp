@@ -20,9 +20,9 @@
 #define SERVO_MIN 64
 #define SERVO_STOP 94
 #define SERVO_MAX 128
-#define SERVO_NEXTFRAME_FAST 140 
+#define SERVO_NEXTFRAME_FAST 74 
 //#define SERVO_NEXTFRAME_SLOW 70 
-#define SERVO_NEXTFRAME_SLOW 74 
+#define SERVO_NEXTFRAME_SLOW 84 
 #define SERVO_REVERSE 110 
 
 #define LAMP_TIMEOUT_MS 3000
@@ -82,7 +82,7 @@ u08 verbose = 1;
 u08 servoPulse = SERVO_STOP;
 u08 motorPulse = 255;
 u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
-u08 servoSpeed = SERVO_NEXTFRAME_SLOW;
+//u08 servoSpeed = SERVO_NEXTFRAME_FAST;
 u32 lampTimeout = 0;
 volatile u32 optoIntTimeout;
 u08 sensorValue;
@@ -101,36 +101,50 @@ u16 servoThreshold = 0;
 #ifdef USEFRAM
 Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
 u16 framIndex;
+volatile u32 tmrNoOptoChange;
 
 void framWrite8(u08 value)
 {
     if (framIndex >= 32767)
     {
-        framIndex = 32767;
-        return;
+        framIndex = 0;
     }
     fram.write8(framIndex++, value);
 }
 
 void framWrite32(u32 value)
 {
+    union
+    {
+        u32 asU32;
+        char asChar[4];
+    }result;
+    result.asU32 = value;
+
     if (framIndex >= 32767)
     {
-        framIndex = 32767;
-        return;
+        framIndex = 0;
     }
-    fram.write8(framIndex++, value >> 24);
-    fram.write8(framIndex++, value >> 16);
-    fram.write8(framIndex++, value >> 8);
-    fram.write8(framIndex++, value & 0xff);
+    fram.write8(framIndex++, result.asChar[0]);
+    fram.write8(framIndex++, result.asChar[1]);
+    fram.write8(framIndex++, result.asChar[2]);
+    fram.write8(framIndex++, result.asChar[3]);
 }
 
 u32 framRead32(u16 address)
 {
-    return (u32)((fram.read8(address) << 24) |
-        (fram.read8(address + 1) << 16) |
-        (fram.read8(address + 2) << 8) |
-        fram.read8(address + 3));
+    union
+    {
+        u32 asU32;
+        char asChar[4];
+    }result;
+
+    result.asChar[0] = fram.read8(address + 0);
+    result.asChar[1] = fram.read8(address + 1);
+    result.asChar[2] = fram.read8(address + 2);
+    result.asChar[3] = fram.read8(address + 3);
+
+    return result.asU32;
 }
 //-                    u16 fValue((fram.read8(ii) << 8) | fram.read8(ii+1));
 #endif // USEFRAM
@@ -239,9 +253,20 @@ u08 decFrameCount()
     return 0;
 }
 
+//
+// 0 = no transition
+// 1 = full frame
+// 2 = half frame
+//
 u08 isOptoTransition()
 {
+//    Serial.print("IOT ");
+//    Serial.println(millis());
     u32 now = millis();
+    if (0 == optoIntTimeout)
+    {
+        optoIntTimeout = now;
+    }
     if ((now - optoIntTimeout) > OPTOINT_TIMEOUT)
     {
         if (verbose)
@@ -273,20 +298,25 @@ u08 isOptoTransition()
         {
 #ifdef USEFRAM
             framWrite8('1');
+            framWrite32(millis());
 #endif // USEFRAM
             sensorValue = 1;
-            return 1;
+            optoIntTimeout = 0;
+            return 1; // full frame transition
         }
         else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
         {
 #ifdef USEFRAM
             framWrite8('0');
+            framWrite32(millis());
 #endif // USEFRAM
             sensorValue = 0;
-            return 0;
+            optoIntTimeout = millis();
+            return 2; // half frame transition
         }
+        //tmrNoOptoChange = millis();
     }
-    return 0;
+    return 0; // no transition
 }
 
 void reset()
@@ -369,10 +399,13 @@ void loop ()
             break;
 
         case OPTOINT_CHANGED:
-            if (isOptoTransition())
+            switch (isOptoTransition())
             {
-                waitingFor = FRAMESTOP;
+                case 1: waitingFor = FRAMESTOP; break;
+                case 2: setServo(SERVO_NEXTFRAME_SLOW); break;
             }
+//            Serial.print("OIC ");
+//            Serial.println(millis());
             break;
 
         case SENSORSTART:
@@ -380,9 +413,9 @@ void loop ()
             {
                 setMotor(motorPretensionNext);
             }
-            setServo(servoSpeed);
+            setServo(SERVO_NEXTFRAME_FAST);
             SENSORVALUEINIT;
-            optoIntTimeout = millis();
+            optoIntTimeout = 0;
 //#ifdef USEFRAM
 //            framWrite32(optoIntTimeout);
 //#endif // USEFRAM
@@ -464,6 +497,8 @@ void loop ()
                     waitingFor = NONE;
                 }
             }
+//            Serial.print("SOFZ ");
+//            Serial.println(millis());
         break;
 
         default:
@@ -481,13 +516,11 @@ void loop ()
 #ifdef USEFRAM
         case 'q':
             Serial.println((int)framIndex);
-            for (u16 ii = 0; ii < framIndex; ii++)
+            Serial.println((int)tmrNoOptoChange);
+            for (u16 ii = 0; ii < framIndex; ii += 5)
             {
                 Serial.print(fram.read8(ii));
-//                Serial.print(fram.read8(ii), 16);
-//                Serial.print(fram.read8(ii + 1), 16);
-//                Serial.print(fram.read8(ii + 2), 16);
-//                Serial.println(fram.read8(ii + 3), 16);
+                Serial.println(framRead32(ii+1));
             }
             break;
 
@@ -617,11 +650,11 @@ void loop ()
             parameter = 0;
             break;
 
-        case ']':
-            servoSpeed = parameter;
-            parameter = 0;
-            break;
-
+//        case ']':
+//            servoSpeed = parameter;
+//            parameter = 0;
+//            break;
+//
         case '-':
             parameter = 0;
             break;
