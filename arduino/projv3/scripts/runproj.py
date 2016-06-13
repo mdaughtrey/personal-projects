@@ -9,6 +9,7 @@ import time
 import sys
 import pdb
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import shutil
 import subprocess
@@ -20,14 +21,17 @@ import re
 options = {}
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(levelname)s %(lineno)s %(message)s')
+fileHandler = RotatingFileHandler(filename = './runproj_log.txt', maxBytes = 10e6, backupCount = 5)
+fileHandler.setLevel(logging.DEBUG)
+fileHandler.setFormatter(logging.Formatter(fmt='%(asctime)s %(message)s'))
 logger = logging.getLogger('runproj')
-
+logger.addHandler(fileHandler)
 
 class FlashAir():
     AIRPORT='en0'
     SSID='CamSD'
     KEY='12345678'
-    IP='192.168.0.222'
+    IP='192.168.1.222'
     SETAIRPORTPOWER='networksetup -setairportpower '
     GETAIRPORTPOWER='networksetup -getairportpower '
     SETAIRPORTNETWORK='networksetup -setairportnetwork '
@@ -37,8 +41,15 @@ class FlashAir():
     def connect(self):
         if False == self._isAirportOn():
             self._turnAirportOn()
+        retryCount = 0
         while False == self.connectToCard():
+            retryCount += 1
+            if retryCount > 5:
+                logger.error('Gave up after 5 tries')
+                return False
             time.sleep(5)
+
+        return True
             
     def disconnect(self):
         self._turnAirportOff()
@@ -75,11 +86,16 @@ class FlashAir():
 
     def getOldestFiles(self):
         logger.info("Requesting /command.cgi?op=100&DIR=/DCIM")
+        retryCount = 0
         while True:
             try:
                 self.conn.request("GET", "/command.cgi?op=100&DIR=/DCIM")
                 break
             except:
+                retryCount += 1
+                if retryCount > 5:
+                    logger.error('Giving up')
+                    return False
                 logger.debug("Retrying")
 
         response = self.conn.getresponse()
@@ -156,8 +172,12 @@ class SerialProtocol(LineOnlyReceiver):
     def connectionMade(self):
         logger.info('Connected to serial port')
         self.accumulated = ''
-# initialize projector
-        self._waiton = {'trigger': 'Init OK' , 'action': self._startProjector}
+
+        self._waiton = dict()
+        self._waiton = {'Init OK': self._startSequence}
+        reactor.callLater(2, self._softReset)
+        self._session = False
+        self._ssgIter = None
 
     def connectionLost(self):
         logger.info('Disconnected from serial port')
@@ -165,27 +185,99 @@ class SerialProtocol(LineOnlyReceiver):
     def lineReceived(self, line):
         logger.debug('lineReceived %s' % line)
         self.accumulated += line
-        if None is not self._waiton:
-            logger.debug("Waiting on %s", self._waiton['trigger'])
-            if -1 != self.accumulated.find(self._waiton['trigger']):
-                logger.debug("Triggered")
+        for kk, vv in self._waiton.iteritems():
+            if -1 != self.accumulated.find(kk):
+                logger.debug("Triggered on %s", kk)
                 self.accumulated = ''
-                reactor.callLater(0, self._waiton['action'])
+                reactor.callLater(0, vv)
 
-    def _startProjector(self):
-        logger.info("Start Projector")
-        self._waiton = {'trigger': 'Frames Done', 'action': self._processFrames}
-        self.transport.write('45[3oCv') # pretension 45, 10 frames, go, verbose
+    def _softReset(self):
+        logger.debug("_softReset")
+        if True == self._session:
+            return
+        self.transport.write(' ')
+        self._waiton['Reset'] = self._startSequence
+
+    def _startSeqGenerator(self):
+        logger.debug("_startSeqGenerator")
+        def setWaiton(self):
+            self._waiton = dict()
+            self._waiton['Frames Done'] = self._processFrames
+            self._waiton['Opto int timeout'] = self._stopProjector
+
+        if options.nocamera:
+            sequence = [
+                lambda: self.transport.write('vc'),
+                lambda: reactor.callLater(4, self._processFrames())
+                ]
+        else:
+            sequence = [
+                lambda: self.transport.write('vc'),
+                lambda: self.transport.write("%s[" % options.pretension),
+                lambda: self.transport.write({'8mm': 'd', 'super8': 'D'}[options.mode]),
+                lambda: self.transport.write("%so" % options.numframes),
+                lambda: self.transport.write('S'),
+                lambda: setWaiton(self)
+                ]
+
+        for ll in sequence:
+            ll()
+            yield
+
+    def _generator(self, sequence):
+        for ll in sequence:
+            ll()
+            yield
+
+    def _startSequence(self):
+        logger.debug("_startSequence")
+        self._session = True
+        if self._ssgIter is None:
+            self._ssgIter = self._startSeqGenerator()
+
+        try:
+            next(self._ssgIter)
+            reactor.callLater(1, self._startSequence)
+            return
+
+        except StopIteration:
+            self._ssgIter = None
+            pass
+
+    def _slowSequence(self, generator):
+        logger.debug("_startSequence")
+        if self._ssIter is None:
+            self._ssIter = generator()
+
+        try:
+            next(self._ssIter)
+            reactor.callLater(1, self._slowSequence)
+            return
+
+        except StopIteration:
+            self._ssIter = None
+
+    def _stopProjector(self):
+        logger.debug("Projector stopped")
+        TODO start camera
+        self._processFrames()
+        sys.exit(0)
 
     def _processFrames(self):
-#        pdb.set_trace()
+        logger.debug("_processFrames")
         sdCard = FlashAir()
-        sdCard.connect()
+        if False == sdCard.connect():
+            logger.error("Aborting")
+            sys.exit(1)
+
         urls = sdCard.getOldestFiles()
+        if False == urls:
+            logger.error("getOldestFiles failed, aborting")
+            return False
+
         if urls is None:
             logger.info("No ready files yet")
-            self._startProjector()
-            return
+            return False
 
         logger.info('Scanning target dir %s' % options.targetdir)
         targetdirs = glob('%s/???PHOTO' % options.targetdir)
@@ -216,56 +308,20 @@ class SerialProtocol(LineOnlyReceiver):
             responseText = sdCard.deleteFile(url)
             logger.debug("%s moved to %s %s" % (url, targetdir + filename, responseText))
 
-#        responseText = sdCard.deleteDir("%03uPHOTO" % lowestTarget)
-#        logger.debug(responseText)
+        if options.nocamera:
+            return True
 
-        self._startProjector()
-
-#        sdCard.mount()
-#        mounted = sdCard.mounted() + "/DCIM"
-#        logger.info("processFrames")
-#        logger.info('Scanning camera dir %s' % mounted)
-#        photoDirs = glob('%s/???PHOTO' % mounted)
-#        logger.info('Scan done')
-#        photoNums = [int(os.path.basename(ff).replace('PHOTO','')) for ff in photoDirs]
-#        photoNums.sort()
-#        if 0 == len(photoNums):
-#            logger.error("No photos found in %s" % mounted)
-#        else:
-#            logger.info("Found %s photos in %s" % (len(photoNums), mounted))
-#
-#        logger.info('Scanning target dir %s' % options.targetdir)
-#        targetDirs = glob('%s/???PHOTO' % options.targetdir)
-#        logger.info('Scan done')
-#        targetNums = [int(os.path.basename(ff).replace('PHOTO', '')) for ff in targetDirs]
-#        targetNums.sort()
-#
-#        if [] == targetDirs:
-#            lowestTarget = 100
-#        else:
-#            lowestTarget = targetNums[-1] + 1
-#
-#        for srcnum in photoNums:
-#            srcdir = '%s/%03uPHOTO/' % (mounted, srcnum)
-#            targetdir = '%s/%03uPHOTO/' % (options.targetdir, lowestTarget)
-#            try:
-#                logger.info("Copying %s to %s" % (srcdir, targetdir))
-#                shutil.copytree(srcdir, targetdir)
-#                logger.info("Removing %s" % srcdir)
-#                shutil.rmtree(srcdir)
-#                logger.info("Processing complete")
-#            except (IOError, os.error) as why:
-#                logging.error(str(why))
-#                return
-#            lowestTarget += 1
-#
-##        sdCard.unmount()
-#        sdCard.off()
+        logger.debug("Camera off")
+        self.transport.write('C') # camera off
+        self.transport.write(' ') # reset
+        reactor.callLater(5, self._startSequence)
 
 def getOptions():
     global options
     args = ()
     parser = OptionParser()
+    parser.add_option('-n', '--nocamera', dest='nocamera', action='store_true')
+    parser.add_option('-f', '--numframes', dest='numframes')
     parser.add_option('-s', '--startframe', dest='startframe')
     parser.add_option('-e', '--endframe', dest='endframe')
     parser.add_option('-t', '--targetdir', dest='targetdir')
@@ -278,18 +334,18 @@ def getOptions():
 
     (options, args) = parser.parse_args()
 
-    for testopt in ['startframe', 'endframe', 'targetdir', 'mode', 'filmlength']:
-        if testopt not in options.__dict__:
-            logger.error('Missing option [%s]' % testopt)
-            parser.print_help()
-            return None
+#    for testopt in ['startframe', 'endframe', 'targetdir', 'mode', 'filmlength']:
+#        if testopt not in options.__dict__:
+#            logger.error('Missing option [%s]' % testopt)
+#            parser.print_help()
+#            return None
 
-    return options
+#    return options
 
 
 def main():
     logger.info('Init')
-    options = getOptions()
+    getOptions()
     if options is None:
         logger.error('Bad command line options')
         sys.exit(1)
@@ -302,66 +358,3 @@ def main():
     reactor.run()
 
 main()
-
-#
-#
-#time.sleep(2)
-#(frameStart, frameEnd) = [int(xx) for xx in sys.argv[1:3]]
-#frameCount = frameStart
-#
-#def swrite(data):
-##    print "Serial: %s" % data
-#    serdev.write(data)
-#
-##command = '%u[-' % ptArray[chunkSize * int(frameStart / 1000)]
-#
-##time.sleep(1)
-#print 'Sleep 5'
-#time.sleep(5)
-#print 'Set pretension %s' % sys.argv[3]
-#command = '%s[-' % sys.argv[3]
-#swrite(command)
-#swrite('t')
-#time.sleep(1)
-#
-#def fPrint(ii): print ii
-#def fSwrite(ii): swrite('C')
-#def fNext(ii): swrite('n')
-#def fSleep1(ii):
-#    print 'Sleep 1'
-#    time.sleep(1)
-##def fUntension(ii): 
-##    if ((ii % 100) == 0):
-##        swrite('u')
-##        time.sleep(1)
-#
-##funcTable = [ fPrint, fSwrite, fSleep1, fSleep1 ]
-#funcTable = [ fPrint, fSwrite, fSleep1, fSleep1, fSleep1, fSleep1, fSleep1 ]
-##funcTable = [ fPrint, fNext, fSleep1, fSleep1, fSleep1, fSleep1, fUntension ]
-#    
-#for ii in range(frameCount, frameEnd):
-##    print "%s <- %s -> %s" % (frameCount, ii, frameEnd)
-#    for ff in funcTable:
-#        ff(ii)
-#            #sys.stdout.write("=> %s" % serdev.read(100))
-#
-#swrite('x')
-#serdev.close()
-#
-##while ((count > 0))
-##do
-##    echo $count frames remaining
-##    if [[ "$TRIPLE" == "" ]]
-##    then
-##        echo C | tr -d '\r\n'  > $USBDEV
-##        sleep 2
-##    else
-##        echo 3 | tr -d '\r\n'  > $USBDEV
-##        sleep 4
-##    fi
-##    ((count--))
-##done
-##echo x | tr -d '\r\n'  > $USBDEV
-##
-##serdev.close()
-#
