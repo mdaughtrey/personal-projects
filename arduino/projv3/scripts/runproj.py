@@ -19,6 +19,11 @@ import httplib
 import re
 
 options = {}
+EX_OK = 0
+EX_TIMEOUT = 1
+EX_ERROR = 2
+
+exitCode = 0
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(levelname)s %(lineno)s %(message)s')
 fileHandler = RotatingFileHandler(filename = './runproj_log.txt', maxBytes = 10e6, backupCount = 5)
@@ -175,15 +180,16 @@ class SerialProtocol(LineOnlyReceiver):
 
         self._waiton = dict()
         self._waiton = {'Init OK': self._startSequence}
-        reactor.callLater(2, self._softReset)
+#        reactor.callLater(5, self._softReset)
         self._session = False
         self._ssgIter = None
 
-    def connectionLost(self):
-        logger.info('Disconnected from serial port')
+    def connectionLost(self, reason):
+        logger.info('Disconnected from serial port %s', reason)
+        reactor.callFromThread(reactor.stop)
 
     def lineReceived(self, line):
-        logger.debug('lineReceived %s' % line)
+        logger.debug('lineReceived %s, %d waiton entries' % (line, len(self._waiton)))
         self.accumulated += line
         for kk, vv in self._waiton.iteritems():
             if -1 != self.accumulated.find(kk):
@@ -193,10 +199,9 @@ class SerialProtocol(LineOnlyReceiver):
 
     def _softReset(self):
         logger.debug("_softReset")
-        if True == self._session:
-            return
         self.transport.write(' ')
-        self._waiton['Reset'] = self._startSequence
+        self.transport.loseConnection()
+#        self._waiton['Reset'] = self._startSequence
 
     def _startSeqGenerator(self):
         logger.debug("_startSeqGenerator")
@@ -259,25 +264,29 @@ class SerialProtocol(LineOnlyReceiver):
 
     def _stopProjector(self):
         logger.debug("Projector stopped")
-        TODO start camera
-        self._processFrames()
-        sys.exit(0)
+        #self.transport.loseConnection()
+        self.transport.write('c')
+        reactor.callLater(2, self._processFrames(EX_TIMEOUT))
 
-    def _processFrames(self):
+    def _processFrames(self, exCode):
         logger.debug("_processFrames")
+        global exitCode
         sdCard = FlashAir()
         if False == sdCard.connect():
             logger.error("Aborting")
-            sys.exit(1)
+            exitCode = EX_ERROR
+            self.transport.loseConnection()
 
         urls = sdCard.getOldestFiles()
         if False == urls:
             logger.error("getOldestFiles failed, aborting")
-            return False
+            exitCode = EX_ERROR
+            self.transport.loseConnection()
 
         if urls is None:
             logger.info("No ready files yet")
-            return False
+            exitCode = EX_ERROR
+            self.transport.loseConnection()
 
         logger.info('Scanning target dir %s' % options.targetdir)
         targetdirs = glob('%s/???PHOTO' % options.targetdir)
@@ -308,13 +317,14 @@ class SerialProtocol(LineOnlyReceiver):
             responseText = sdCard.deleteFile(url)
             logger.debug("%s moved to %s %s" % (url, targetdir + filename, responseText))
 
-        if options.nocamera:
-            return True
+        exitCode = exCode
 
-        logger.debug("Camera off")
-        self.transport.write('C') # camera off
-        self.transport.write(' ') # reset
-        reactor.callLater(5, self._startSequence)
+        if False == options.nocamera:
+            logger.debug("Camera off")
+            self.transport.write('C') # camera off
+            self.transport.write(' ') # reset
+
+        self.transport.loseConnection()
 
 def getOptions():
     global options
@@ -356,5 +366,7 @@ def main():
 
     serdev = SerialPort(SerialProtocol(), options.serdev, reactor, 57600)
     reactor.run()
+    return exitCode
 
-main()
+
+sys.exit(main())
