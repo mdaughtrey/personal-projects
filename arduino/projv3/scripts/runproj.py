@@ -22,6 +22,7 @@ options = {}
 EX_OK = 0
 EX_TIMEOUT = 1
 EX_ERROR = 2
+EX_NOFILES = 3
 
 exitCode = 0
 
@@ -182,7 +183,6 @@ class SerialProtocol(LineOnlyReceiver):
         self._waiton = {'Init OK': self._startSequence}
 #        reactor.callLater(5, self._softReset)
         self._session = False
-        self._ssgIter = None
 
     def connectionLost(self, reason):
         logger.info('Disconnected from serial port %s', reason)
@@ -197,81 +197,93 @@ class SerialProtocol(LineOnlyReceiver):
                 self.accumulated = ''
                 reactor.callLater(0, vv)
 
-    def _softReset(self):
-        logger.debug("_softReset")
-        self.transport.write(' ')
-        self.transport.loseConnection()
-#        self._waiton['Reset'] = self._startSequence
+#    def _softReset(self):
+#        logger.debug("_softReset")
+#        self.transport.write(' ')
+#        self.transport.loseConnection()
+##        self._waiton['Reset'] = self._startSequence
 
-    def _startSeqGenerator(self):
-        logger.debug("_startSeqGenerator")
+#    def _startSeqGenerator(self):
+#        logger.debug("_startSeqGenerator")
+#        def setWaiton(self):
+#            self._waiton = dict()
+#            self._waiton['Frames Done'] = self._processFrames
+#            self._waiton['Opto int timeout'] = self._stopProjector
+#
+#        if options.nocamera:
+#            sequence = [
+#                lambda: self.transport.write('vc'),
+#                lambda: reactor.callLater(4, self._processFrames())
+#                ]
+#        else:
+#            sequence = [
+#                lambda: self.transport.write('vc'),
+#                lambda: self.transport.write("%s[" % options.pretension),
+#                lambda: self.transport.write({'8mm': 'd', 'super8': 'D'}[options.mode]),
+#                lambda: self.transport.write("%so" % options.numframes),
+#                lambda: self.transport.write('S'),
+#                lambda: setWaiton(self)
+#                ]
+#
+#        for ll in sequence:
+#            ll()
+#            yield
+
+    def _generator(self, sequence):
+        ii = 0;
+        for ll in sequence:
+            logger.debug("Generator %d" % ii)
+            ii += 1
+            ll()
+            yield
+
+    def _startSequence(self):
+        del self._waiton['Init OK']
+        logger.debug("_startSequence")
+        self._session = True
+
         def setWaiton(self):
             self._waiton = dict()
             self._waiton['Frames Done'] = self._processFrames
             self._waiton['Opto int timeout'] = self._stopProjector
 
-        if options.nocamera:
-            sequence = [
-                lambda: self.transport.write('vc'),
-                lambda: reactor.callLater(4, self._processFrames())
-                ]
-        else:
-            sequence = [
-                lambda: self.transport.write('vc'),
-                lambda: self.transport.write("%s[" % options.pretension),
-                lambda: self.transport.write({'8mm': 'd', 'super8': 'D'}[options.mode]),
-                lambda: self.transport.write("%so" % options.numframes),
-                lambda: self.transport.write('S'),
-                lambda: setWaiton(self)
-                ]
+        sequence = [
+            lambda: self.transport.write('vc'),
+            lambda: self.transport.write("%s[" % options.pretension),
+            lambda: self.transport.write({'8mm': 'd', 'super8': 'D'}[options.mode]),
+            lambda: self.transport.write("%so" % options.numframes),
+            lambda: setWaiton(self),
+            lambda: self.transport.write('S')
+            ]
+        self._slowSequence(sequence)
 
-        for ll in sequence:
-            ll()
-            yield
-
-    def _generator(self, sequence):
-        for ll in sequence:
-            ll()
-            yield
-
-    def _startSequence(self):
-        logger.debug("_startSequence")
-        self._session = True
-        if self._ssgIter is None:
-            self._ssgIter = self._startSeqGenerator()
-
-        try:
-            next(self._ssgIter)
-            reactor.callLater(1, self._startSequence)
-            return
-
-        except StopIteration:
-            self._ssgIter = None
-            pass
-
-    def _slowSequence(self, generator):
-        logger.debug("_startSequence")
-        if self._ssIter is None:
-            self._ssIter = generator()
+    def _slowSequence(self, sequence = None):
+        logger.debug("_slowSequence")
+        if False == hasattr(self, '_ssIter'):
+            self._ssIter = self._generator(sequence)
 
         try:
             next(self._ssIter)
             reactor.callLater(1, self._slowSequence)
-            return
 
         except StopIteration:
-            self._ssIter = None
+            del self._ssIter
 
     def _stopProjector(self):
+        self._waiton = dict()
         logger.debug("Projector stopped")
-        #self.transport.loseConnection()
-        self.transport.write('c')
-        reactor.callLater(2, self._processFrames(EX_TIMEOUT))
+        sequence = [
+            lambda: self.transport.write('c'),
+            lambda: self.transport.write('s'),
+            lambda: reactor.callLater(0, lambda: self._processFrames(EX_TIMEOUT))
+            ]
+        self._slowSequence(sequence)
 
-    def _processFrames(self, exCode):
+    def _processFrames(self, exCode = EX_OK):
         logger.debug("_processFrames")
-        global exitCode
+        pdb.set_trace()
         sdCard = FlashAir()
+        global exitCode
         if False == sdCard.connect():
             logger.error("Aborting")
             exitCode = EX_ERROR
@@ -285,7 +297,7 @@ class SerialProtocol(LineOnlyReceiver):
 
         if urls is None:
             logger.info("No ready files yet")
-            exitCode = EX_ERROR
+            exitCode = EX_NOFILES
             self.transport.loseConnection()
 
         logger.info('Scanning target dir %s' % options.targetdir)
@@ -317,13 +329,12 @@ class SerialProtocol(LineOnlyReceiver):
             responseText = sdCard.deleteFile(url)
             logger.debug("%s moved to %s %s" % (url, targetdir + filename, responseText))
 
-        exitCode = exCode
-
         if False == options.nocamera:
             logger.debug("Camera off")
             self.transport.write('C') # camera off
             self.transport.write(' ') # reset
 
+        exitCode = exCode
         self.transport.loseConnection()
 
 def getOptions():
