@@ -33,6 +33,10 @@ fileHandler.setFormatter(logging.Formatter(fmt='%(asctime)s %(lineno)s %(message
 logger = logging.getLogger('runproj')
 logger.addHandler(fileHandler)
 
+def Sleep(sleepFor):
+    logger.debug("Sleeping for %u seconds" % sleepFor)
+    time.sleep(sleepFor)
+
 class FlashAir():
     AIRPORT='en0'
     SSID='CamSD'
@@ -46,16 +50,15 @@ class FlashAir():
 
     def connect(self):
         self._turnAirportOff()
-        time.sleep(5)
+        Sleep(5)
         self._turnAirportOn()
-        time.sleep(5)
         retryCount = 0
         while False == self.connectToCard():
             retryCount += 1
             if retryCount > 5:
                 logger.error('Gave up after 5 tries')
                 return False
-            time.sleep(5)
+            Sleep(10)
 
         return True
             
@@ -79,6 +82,7 @@ class FlashAir():
         rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s on" % FlashAir.AIRPORT).split(' '))
 
     def _turnAirportOff(self):
+        pdb.set_trace()
         logger.debug("_turnAirportOff")
         rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s off" % FlashAir.AIRPORT).split(' '))
 
@@ -94,11 +98,12 @@ class FlashAir():
         return True
 
     def getFiles(self):
-        logger.info("getFiles: Requesting /command.cgi?op=100&DIR=/DCIM")
+        command="/command.cgi?op=100&DIR=/DCIM"
+        logger.info("getFiles: Requesting %s" % command)
         retryCount = 0
         while True:
             try:
-                self.conn.request("GET", "/command.cgi?op=100&DIR=/DCIM")
+                self.conn.request("GET", command)
                 break
             except:
                 retryCount += 1
@@ -109,11 +114,13 @@ class FlashAir():
 
         response = self.conn.getresponse()
         lines = response.read().split('\r\n')[1:-1]
-        logger.info("Requested /command.cgi?op=100&DIR=/DCIM")
+        logger.info("Requested %s" % command)
+        logger.info("%u dirs on card" % len(lines))
         dirNums = {} 
         for line in lines:
             (root, dir, size, attr, fDate, fTime) = line.split(',')
 #            elems = line.split(',')
+            logger.info(line)
             matched = re.search('(\d\d\d)PHOTO', dir)
             if matched is None:
                 continue
@@ -143,10 +150,12 @@ class FlashAir():
         return urlList
 
     def getFile(self, url):
-        logger.debug("GET %s" % url)
         try:
+            logger.debug("GET %s" % url)
             self.conn.request("GET", url)
+            logger.debug("response")
             response = self.conn.getresponse()
+            logger.debug("return")
             return response.read()
         except:
             return None
@@ -154,21 +163,24 @@ class FlashAir():
     def deleteFile(self, url):
         self.conn.request("GET", "/upload.cgi?DEL=%s" % url)
         response = self.conn.getresponse()
+        logger.debug("deleteFile %s" % response.read())
         return response.read()
 
     def deleteDir(self, dirname):
         self.conn.request("GET", '/upload.cgi?DEL=%s' % dirname)
         response = self.conn.getresponse()
+        logger.debug("deleteDir %s" % response.read())
         return response.read()
 
 class SerialProtocol(LineOnlyReceiver):
     def connectionMade(self):
         logger.info('Connected to serial port')
         self.accumulated = ''
-
+        pdb.set_trace()
         self._waiton = dict()
         self._waiton = {'Init OK': self._initProjector}
-#        reactor.callLater(5, self._softReset)
+        self.sdCard = FlashAir()
+        self.sdCard.disconnect()
         self._session = False
 
     def connectionLost(self, reason):
@@ -183,6 +195,10 @@ class SerialProtocol(LineOnlyReceiver):
                 logger.debug("Triggered on %s", kk)
                 self.accumulated = ''
                 reactor.callLater(0, vv)
+
+    def send(self, data):
+        logger.debug("Sending: %s" % data)
+        self.transport.write(data)
 
     def _generator(self, sequence):
         ii = 0;
@@ -203,12 +219,13 @@ class SerialProtocol(LineOnlyReceiver):
             self._waiton['Opto int timeout'] = self._stopProjector
 
         sequence = [
-            lambda: self.transport.write('vc'),
-            lambda: self.transport.write("%s[" % options.pretension),
-            lambda: self.transport.write({'8mm': 'd', 'super8': 'D'}[options.mode]),
-            lambda: self.transport.write("%so" % options.numframes),
+            lambda: self.send(' '),
+            lambda: self.send('vc'),
+            lambda: self.send("%s[" % options.pretension),
+            lambda: self.send({'8mm': 'd', 'super8': 'D'}[options.mode]),
+            lambda: self.send("%so" % options.numframes),
             lambda: setWaiton(self),
-            lambda: self.transport.write('S')
+            lambda: self.send('S')
             ]
         self._slowSequence(sequence)
 
@@ -228,8 +245,8 @@ class SerialProtocol(LineOnlyReceiver):
         self._waiton = dict()
         logger.debug("Projector stopped")
         sequence = [
-            lambda: self.transport.write('c'),
-            lambda: self.transport.write('s'),
+            lambda: self.send('c'),
+            lambda: self.send('s'),
             lambda: reactor.callLater(0, lambda: self._getFileInfo())
             ]
         global exitCode
@@ -237,7 +254,6 @@ class SerialProtocol(LineOnlyReceiver):
         self._slowSequence(sequence)
 
     def _sdConnect(self):
-        self.sdCard = FlashAir()
         if False == self.sdCard.connect():
             logger.error("Aborting")
             raise RuntimeError("SD Card Connect")
@@ -254,20 +270,17 @@ class SerialProtocol(LineOnlyReceiver):
 
     def _getFileInfo(self):
         logger.debug("_getFileInfo")
-        sdCard = None
 
-        sequence = [
-            lambda: self.transport.write('C'),
-            lambda: self.transport.write('c'),
-            self._sdConnect,
-            self._getSDFiles,
-            self._processSDFiles
-            ]
         try:
-            for ii in sequence:
-                ii()
-                time.sleep(4)
-#            self._slowSequence(sequence)
+            logger.debug("Camera Off")
+            self.send('C')
+            Sleep(5)
+            logger.debug("Camera On")
+            self.send('c')
+
+            self._sdConnect()
+            self._getSDFiles()
+            self._processSDFiles()
 
         except RuntimeError as ee:
             global exitCode
@@ -278,7 +291,6 @@ class SerialProtocol(LineOnlyReceiver):
     def _processSDFiles(self):
         logger.info('Scanning target dir %s' % options.targetdir)
         targetdirs = glob('%s/???PHOTO' % options.targetdir)
-#        pdb.set_trace()
         logger.info('Scan done')
         targetNums = [int(os.path.basename(ff).replace('PHOTO', '')) for ff in targetdirs]
         targetNums.sort()
@@ -291,6 +303,7 @@ class SerialProtocol(LineOnlyReceiver):
         logger.debug("Found %u files" % len(self.urls))
         for url in self.urls:
             jpg = self.sdCard.getFile(url)
+            logger.debug("Got a jpg")
             if jpg is None:
                 logger.debug('Skipping %s' % url)
                 continue
@@ -311,8 +324,8 @@ class SerialProtocol(LineOnlyReceiver):
         self.sdCard.disconnect()
         if False == options.nocamera:
             logger.debug("Camera off")
-            self.transport.write('C') # camera off
-            self.transport.write(' ') # reset
+            self.send('C') # camera off
+            self.send(' ') # reset
 
         if options.once:
             self.transport.loseConnection()
@@ -366,5 +379,4 @@ def main():
     return exitCode
 
 
-#pdb.set_trace()
 sys.exit(main())
