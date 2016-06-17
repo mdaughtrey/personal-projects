@@ -45,8 +45,10 @@ class FlashAir():
 #    MOUNTED="/Volumes/camsd"
 
     def connect(self):
-        if False == self._isAirportOn():
-            self._turnAirportOn()
+        self._turnAirportOff()
+        time.sleep(5)
+        self._turnAirportOn()
+        time.sleep(5)
         retryCount = 0
         while False == self.connectToCard():
             retryCount += 1
@@ -255,6 +257,8 @@ class SerialProtocol(LineOnlyReceiver):
         sdCard = None
 
         sequence = [
+            lambda: self.transport.write('C'),
+            lambda: self.transport.write('c'),
             self._sdConnect,
             self._getSDFiles,
             self._processSDFiles
@@ -274,7 +278,7 @@ class SerialProtocol(LineOnlyReceiver):
     def _processSDFiles(self):
         logger.info('Scanning target dir %s' % options.targetdir)
         targetdirs = glob('%s/???PHOTO' % options.targetdir)
-        pdb.set_trace()
+#        pdb.set_trace()
         logger.info('Scan done')
         targetNums = [int(os.path.basename(ff).replace('PHOTO', '')) for ff in targetdirs]
         targetNums.sort()
@@ -310,6 +314,8 @@ class SerialProtocol(LineOnlyReceiver):
             self.transport.write('C') # camera off
             self.transport.write(' ') # reset
 
+        if options.once:
+            self.transport.loseConnection()
         if EX_TIMEOUT != exitCode:
             reactor.callLater(5, self._initProjector)
         else:
@@ -320,6 +326,7 @@ def getOptions():
     global options
     args = ()
     parser = OptionParser()
+    parser.add_option('-o', '--once', dest='once', action='store_true')
     parser.add_option('-n', '--nocamera', dest='nocamera', action='store_true')
     parser.add_option('-f', '--numframes', dest='numframes')
     parser.add_option('-s', '--startframe', dest='startframe')
@@ -359,5 +366,5 @@ def main():
     return exitCode
 
 
-pdb.set_trace()
+#pdb.set_trace()
 sys.exit(main())

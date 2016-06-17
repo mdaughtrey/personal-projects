@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NUMFRAMES=1
+NUMFRAMES=100
 
 ./runproj.py --targetdir ./tmp --numframes $NUMFRAMES --pretension 20 --mode 8mm 
 rc=$?
