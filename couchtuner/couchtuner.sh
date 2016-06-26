@@ -3,6 +3,7 @@
 BASEDIR=~/Video
 
 showname="$@"
+vendor='allmyvideos.net'
 
 if [[ "$showname" != "" && -f "$showname" ]]
 then
@@ -12,6 +13,12 @@ then
 	then
 	    continue
 	fi
+    if [[ '-' == ${params[0]} ]]
+    then
+        vendor=${params[1]}
+        continue
+    fi
+
         if (( ${#params[@]} > 4))
         then
             echo Bad parameter for $params[0]
@@ -37,7 +44,7 @@ then
             continue
         fi
         rm xx_$$_${seasonNum}${episodeNum}
-        ./couchtuner.py -d . -u $url -o xx_${seasonNum}${episodeNum} >> commands.sh
+        ./couchtuner.py -d . -v $vendor -u $url -o xx_${seasonNum}${episodeNum} >> commands.sh
         command="mv xx_${seasonNum}${episodeNum} '$outputfile'"
         echo $command
         echo $command | sh

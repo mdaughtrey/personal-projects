@@ -22,7 +22,7 @@ parser.add_option('-u', '--url', dest='url')
 parser.add_option('-o', '--output', dest='output')
 #parser.add_option('-s', '--showname', dest='showname')
 parser.add_option('-d', '--directory', dest='directory')
-#parser.add_option('-v', '--vendor', dest='vendor', default='allmyvideos')
+parser.add_option('-v', '--vendor', dest='vendor', default='allmyvideos')
 (options, args) = parser.parse_args()
 
 class TheParser(HTMLParser):
@@ -138,10 +138,16 @@ def processPage(url):
     htmlData = repairHtml(''.join(htmlFile.readlines()))
     parser = TheParser()
 
-    if -1 != htmlData.find('allmyvideos.net'):
-        parser.callBackOnStartTag('allmyvideos.net', lambda url: startTagAllMyVideos(url))
-    elif -1 != htmlData.find('ishared.eu'):
-        parser.callBackOnStartTag('ishared.eu', lambda url: startTagIShared(url))
+    if -1 != htmlData.find(options.vendor):
+        parser.callBackOnStartTag(options.vendor, lambda url: startTagAllMyVideos(url))
+#
+#
+#    if -1 != htmlData.find('allmyvideos.net'):
+#        parser.callBackOnStartTag('allmyvideos.net', lambda url: startTagAllMyVideos(url))
+#    elif -1 != htmlData.find('ishared.eu'):
+#        parser.callBackOnStartTag('ishared.eu', lambda url: startTagIShared(url))
+#    elif -1 != htmlData.find('vidspot.net'):
+#        parser.callBackOnStartTag('vidspot.net', lambda url: startTagIShared(url))
     parser.feed(htmlData)
 
 def mp4Data(data):
