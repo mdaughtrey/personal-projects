@@ -6,6 +6,7 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 #define PC_SHUTTER 2
+#define PB_CAMERAPOWER 0
 #define PB_SERVO 3
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
@@ -37,6 +38,8 @@
 #define SHUTTER_OPEN PORTC &= ~_BV(PC_SHUTTER)
 #define SHUTTER_CLOSE PORTC |= _BV(PC_SHUTTER)
 #define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
+#define CAMERA_ON PORTB |= _BV(PB_CAMERAPOWER);
+#define CAMERA_OFF PORTB &= ~_BV(PB_CAMERAPOWER);
 
 #define DELAYEDSTATE(dd, ss) { stateLoop = dd/10; stateSaved = ss; waitingFor = DELAYLOOP; }
 
@@ -253,6 +256,27 @@ u08 decFrameCount()
     return 0;
 }
 
+u08 halfFrameTransition()
+{
+    sensorValue = !sensorValue;
+    optoIntTimeout = millis();
+#ifdef USEFRAM
+    framWrite8('3');
+    framWrite32(optoIntTimeout);
+#endif // USEFRAM
+    return 2; // half frame transition
+}
+
+u08 fullFrameTransition()
+{
+#ifdef USEFRAM
+    framWrite8('2'); // full frame transition, reset timeout
+    framWrite32(millis());
+#endif // USEFRAM
+    sensorValue = !sensorValue;
+    optoIntTimeout = 0;
+    return 1; // full frame transition
+}
 //
 // 0 = no transition
 // 1 = full frame
@@ -260,12 +284,14 @@ u08 decFrameCount()
 //
 u08 isOptoTransition()
 {
-//    Serial.print("IOT ");
-//    Serial.println(millis());
     u32 now = millis();
     if (0 == optoIntTimeout)
     {
         optoIntTimeout = now;
+#ifdef USEFRAM
+        framWrite8('0'); // set new timeout
+        framWrite32(optoIntTimeout);
+#endif // USEFRAM
     }
     if ((now - optoIntTimeout) > OPTOINT_TIMEOUT)
     {
@@ -276,6 +302,11 @@ u08 isOptoTransition()
             Serial.print(" vs ");
             Serial.println(now);
         }
+#ifdef USEFRAM
+        framWrite8('1'); // timed out
+        framWrite32(optoIntTimeout);
+        framWrite32(now);
+#endif // USEFRAM
         reset();
         return 0;
     }
@@ -283,39 +314,29 @@ u08 isOptoTransition()
     {
         if ((PINC & _BV(PC_OPTOINT)) && 0 == sensorValue)
         {
-            sensorValue = 1;
-            return 0;
+            return halfFrameTransition();
         }
         else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
         {
-            sensorValue = 0;
-            return 1;
+            return fullFrameTransition();
         }
     }
     else if (FILM_8MM == filmMode)
     {
         if ((PINC & _BV(PC_OPTOINT)) && 0 == sensorValue)
         {
-#ifdef USEFRAM
-            framWrite8('1');
-            framWrite32(millis());
-#endif // USEFRAM
-            sensorValue = 1;
-            optoIntTimeout = 0;
-            return 1; // full frame transition
+            return fullFrameTransition();
         }
         else if ((0 == (PINC & _BV(PC_OPTOINT))) && 0 != sensorValue)
         {
-#ifdef USEFRAM
-            framWrite8('0');
-            framWrite32(millis());
-#endif // USEFRAM
-            sensorValue = 0;
-            optoIntTimeout = millis();
-            return 2; // half frame transition
+            return halfFrameTransition();
         }
         //tmrNoOptoChange = millis();
     }
+#ifdef USEFRAM
+            framWrite8('4');
+            framWrite32(millis());
+#endif // USEFRAM
     return 0; // no transition
 }
 
@@ -324,6 +345,7 @@ void reset()
     Serial.println("Reset");
     setServo(SERVO_STOP);
     lampOff();
+    CAMERA_OFF;
     SHUTTER_CLOSE;
     setMotor(MOTOR_OFF);
     //motorRewind = MOTOR_OFF;
@@ -342,9 +364,11 @@ void setup ()
 
     analogWrite(PIN_MOTOR, MOTOR_OFF);
     //PORTB |= _BV(PC_OPTOINT); // tie led sensor line high
+    //PORTB |= _BV(PB_CAMERAPOWER);
     PORTC |= _BV(PC_SHUTTER);
-    DDRB |= _BV(PB_LAMP);
+    DDRB |= _BV(PB_LAMP) | _BV(PB_CAMERAPOWER);
     DDRC |= _BV(PC_SHUTTER);
+    CAMERA_OFF;
     lampOff();
     cli();
     TCCR2B |= _BV(CS20); // no prescaler   
@@ -367,6 +391,7 @@ void setup ()
 
 void loop ()
 {
+
 //    if (PINC & _BV(PC_OPTOINT))
 //    {
 //        Serial.println("H");
@@ -471,7 +496,7 @@ void loop ()
 
         case EXPOSURESERIES3:
             lampOff();
-            DELAYEDSTATE(220, EXPOSURESERIES4);
+            DELAYEDSTATE(60, EXPOSURESERIES4);
             break;
 
         case EXPOSURESERIES2:
@@ -545,13 +570,29 @@ void loop ()
             }
             break;
 
+        case 'c':
+            CAMERA_ON;
+            if (verbose)
+            {
+                Serial.println("Camera on");
+            }
+            break;
+
         case 'C':
+            CAMERA_OFF;
+            if (verbose)
+            {
+                Serial.println("Camera off");
+            }
+            break;
+
+        case 's':
             SHUTTER_OPEN;
             delay(2);
             SHUTTER_CLOSE;
             break;
 
-        case 'c': // triple shutter
+        case 'S': // triple shutter
             if (FILM_NONE == filmMode)
             {
                 Serial.println("Mode?");
@@ -560,6 +601,31 @@ void loop ()
             {
                 waitingFor = SENSORSTART;
             }
+            break;
+
+        case 'x':
+            Serial.print("optoIntTimeout ");
+            Serial.print((int)optoIntTimeout);
+            Serial.print("\r\nsensorValue ");
+            Serial.print((int)sensorValue);
+            Serial.print("\r\nlastSensorValue ");
+            Serial.print((int)lastSensorValue);
+            Serial.print("\r\nwaitingFor ");
+            Serial.print((int)waitingFor);
+            Serial.print("\r\nstateLoop ");
+            Serial.print((int)stateLoop);
+            Serial.print("\r\nstateSaved ");
+            Serial.print((int)stateSaved);
+            Serial.print("\r\nlastCommand ");
+            Serial.print(lastCommand);
+            Serial.print("\r\nframeCount ");
+            Serial.print((int)frameCount);
+            Serial.print("\r\nfilmMode ");
+            Serial.print((int)filmMode);
+            Serial.print("\r\nparameter ");
+            Serial.print((int)motorPretensionNext);
+            Serial.print("\r\nmotorPretensionNext ");
+            Serial.print((int)parameter);
             break;
 
         case ' ':
@@ -584,10 +650,10 @@ void loop ()
             }
             break;
 
-        case 's':
-            setServo(parameter);
-            parameter = 0;
-            break;
+//        case 's':
+//            setServo(parameter);
+//            parameter = 0;
+//            break;
 
         case 'm':
             if (parameter > 0)
