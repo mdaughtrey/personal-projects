@@ -56,7 +56,7 @@ class FlashAir():
         while self.waitingForAP(FlashAir.SSID):
             Sleep(2)
         if False == self.connectToCard():
-            pdb.set_trace()
+#            pdb.set_trace()
             raise RuntimeError("FlashAir.connect")
             
     def disconnect(self):
@@ -105,28 +105,27 @@ class FlashAir():
 
     def getFiles(self):
         command="/command.cgi?op=100&DIR=/DCIM"
-        self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
         logger.info("getFiles: Requesting %s" % command)
         retryCount = 0
-        while True:
+        while retryCount < 5:
             try:
+                retryCount += 1
+                self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
                 self.conn.request("GET", command)
                 break
 
             except httplib.HTTPException as ee:
-                retryCount += 1
-                if retryCount > 5:
-                    logger.error('Giving up')
-                    return False
-                logger.debug("%s, retrying" % ee.message )
+                logger.warning("%s, retrying" % ee.message )
 
-            except socket.error:
-                logger.error('Socket error')
-                return False;
+            except socket.error as ee:
+                logger.warning("%s, retrying" % ee.message )
 
-            except socket.timeout:
-                logger.error('Socket timeout')
-                return False;
+            except socket.timeout as ee:
+                logger.warning("%s, retrying" % ee.message )
+
+        if 5 == retryCount:
+            logger.error("getFiles failed, abandoning")
+            return False
 
         response = self.conn.getresponse()
         lines = response.read().split('\r\n')[1:-1]
@@ -429,13 +428,14 @@ def getOptions():
 
 def getSDFiles():
     sdCard = FlashAir()
-    if True == sdCard.connect():
-        try:
-            sdCard.processFiles()
-            sdCard.disconnect()
+#    pdb.set_trace()
+    try:
+        sdCard.connect()
+        sdCard.processFiles()
+        sdCard.disconnect()
 
-        except RuntimeError as ee:
-            logger.error(ee.message)
+    except RuntimeError as ee:
+        logger.error(ee.message)
 
 
 def main():
