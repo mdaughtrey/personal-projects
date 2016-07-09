@@ -10,6 +10,7 @@ let simulate=0
 let clean=0
 #let numTitleFrames=90
 let fps=30
+let frameLimit=0
 
 # logs command line invocations. Useful when you've forgotten what stage of the 
 # process you were in
@@ -246,7 +247,11 @@ genyuv()
 		echo title/SAM_$(printf "%06u" $ii).JPG >> titlelist.txt
 	done
 
-	let end=$(($(ls autocropped/SAM_*.JPG | wc -l)-1))
+	let end=$(($(ls fused/SAM_*.JPG | wc -l)-1))
+    if ((frameLimit != 0))
+    then
+        let end=$frameLimit
+    fi
 	((end+=$TITLE_STREAM_FRAMES))
     sourceDir=fused
     if [[ "$2" == 'bw' ]]
@@ -372,7 +377,7 @@ oneTitleFrame()
 	translateY=$3
 	titleFile=$4
 	#firstfile="fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
-	firstfile="autocropped/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
+	firstfile="fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"
 	inc=$(echo "scale=1;100/${TITLE_STREAM_FRAMES}" | bc -l)
 	value=$(echo "${inc}*${sepia}" | bc -l)
 	index=$(printf '%06u' $sepia)
@@ -410,7 +415,7 @@ gentitle()
 	type=${1:-"dvd"}
 	#scaler #$type
 	#firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
-	firstfile=${2:-"autocropped/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
+	firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 
 	if [[ ! -f $firstfile ]]
 	then
@@ -511,6 +516,35 @@ mp42jpg()
 	$FFMPEG -i $1 -b 2000 -qscale 1 -qcomp 0 -qblur 0 SAM_%06d.JPG
 }
 
+numbercheck()
+{
+    let good=1
+    for dir in `ls -d ???PHOTO`
+    do
+        numfiles=$(ls $dir/*.JPG | wc -l)
+        if ((($numfiles / 3) * 3 != $numfiles))
+        then
+            echo "$dir frame count is not a multiple of 3: $numfiles no good"
+            let good=0
+        else
+            echo $dir has $numfiles frames
+        fi 
+    done
+    return $good
+}
+
+split()
+{
+    let numdirs=$(ls *.JPG | wc -l)
+    let numdirs=$((numdirs/1000))
+
+    for ((ii = 0; ii <= $numdirs; ii++))
+    do
+        thisdir=$(printf '%03u' $ii)
+        mkdir $thisdir
+        mv $(printf 'SAM_%03u*.JPG' $ii) $thisdir
+    done
+}
 
 all()
 {
@@ -522,8 +556,12 @@ all()
     fi
     mkdir bw
     mkdir sprockets
+    if ((0 != numbercheck))
+    then
+        exit 1
+    fi
 	precrop
-    pcsample
+#    sample
     echo autocrop
     autocrop
 	echo tonefuse
@@ -565,6 +603,11 @@ deleterange()
 autocrop()
 {
     echo Run autocrop
+    if [[ ! -f "super8" && ! -f "8mm" ]]
+    then
+        echo No film type specified
+        exit 1
+    fi
 	if ((clean == 1))
 	then 
         rm -rf autocropped
@@ -588,7 +631,8 @@ autocrop()
     fi
     read -a croppedfiles <<< $(ls ./cropped/*.JPG | sort)
     let numfiles=${#croppedfiles[@]}
-    if (((numfiles / 3) * 3 != ${#croppedfiles[@]}))
+
+    if ((($numfiles / 3) * 3 != ${#croppedfiles[@]}))
     then
         echo "Cropped file list must be a multiple of 3: $numfiles no good"
         return
@@ -723,22 +767,24 @@ precrop()
 	$SEM --wait
 }
 
-pcsample()
+sample()
 {
-    mkdir pcsample
+    sourcedir=$1
+    targetdir=$2
+    mkdir ${targetdir}
     let base=0
     for ((base = 0; ; base+=1000))
     do
         for ((offset = 200; offset < 210; offset++))
         do
             let number=$((base + offset))
-            fromfile=cropped/SAM_$(printf '%06u' $((10#$number))).JPG
-            tofile=pcsample/SAM_$(printf '%06u' $((10#$number))).JPG
+            fromfile=${sourcedir}/SAM_$(printf '%06u' $((10#$number))).JPG
+            tofile=${targetdir}/SAM_$(printf '%06u' $((10#$number))).JPG
             if [[ ! -f $fromfile ]]
             then
                 return
             fi
-            vOut pcsample $fromfile
+            vOut sample $fromfile
             cp -u $fromfile $tofile
         done
 
@@ -858,52 +904,55 @@ tonefuse()
 		fi
      done
 	$SEM --wait
+    cd fused
+    renumber 200 | sh
+    cd ..
 }
 
-oneToneFuseOld()
-{
-	dir=$1
-	baseindex=$2
-	outindex=$3
-	file1=SAM_$(printf "%06u" $baseindex)
-	file2=SAM_$(printf "%06u" $((baseindex+1)))
-	file3=SAM_$(printf "%06u" $((baseindex+2)))
-
-	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
-	TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
-}
-export -f oneToneFuse
-
-tonefuseOld()
-{
-	#scaler
-	let outindex=$TITLE_STREAM_FRAMES
-
-	if ((clean == 1))
-	then 
-		rm -rf fused
-	fi
-	if [[ ! -d fused ]]
-	then
-		mkdir fused
-	fi
-	let baseindex=$TITLE_STREAM_FRAMES
-
-	while [[ -f "autocropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
-	do
-		vOut Tonefuse $outindex
-		outfile="fused/SAM_$(printf "%06u" $((baseindex+3))).JPG"
-		if [[ ! -f $outfile ]]
-		then
-			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
-			$SEM -N0 --jobs 200% oneToneFuse autocropped $baseindex $outindex
-		fi
-
-		((outindex++))
-		((baseindex+=3))
-	done
-	$SEM --wait
-}
+#oneToneFuseOld()
+#{
+#	dir=$1
+#	baseindex=$2
+#	outindex=$3
+#	file1=SAM_$(printf "%06u" $baseindex)
+#	file2=SAM_$(printf "%06u" $((baseindex+1)))
+#	file3=SAM_$(printf "%06u" $((baseindex+2)))
+#
+#	outfile=fused/SAM_$(printf "%06u" $outindex).JPG
+#	TMPDIR=/home/mattd/tmp enfuse --output $outfile ${dir}/${file1}.JPG ${dir}/${file2}.JPG ${dir}/${file3}.JPG
+#}
+#export -f oneToneFuse
+#
+#tonefuseOld()
+#{
+#	#scaler
+#	let outindex=$TITLE_STREAM_FRAMES
+#
+#	if ((clean == 1))
+#	then 
+#		rm -rf fused
+#	fi
+#	if [[ ! -d fused ]]
+#	then
+#		mkdir fused
+#	fi
+#	let baseindex=$TITLE_STREAM_FRAMES
+#
+#	while [[ -f "autocropped/SAM_$(printf "%06u" $baseindex).JPG" ]]
+#	do
+#		vOut Tonefuse $outindex
+#		outfile="fused/SAM_$(printf "%06u" $((baseindex+3))).JPG"
+#		if [[ ! -f $outfile ]]
+#		then
+#			#sem -N0 --jobs 200% oneToneFuse $dir $baseindex $outindex
+#			$SEM -N0 --jobs 200% oneToneFuse autocropped $baseindex $outindex
+#		fi
+#
+#		((outindex++))
+#		((baseindex+=3))
+#	done
+#	$SEM --wait
+#}
 
 oneCropFuse()
 {
@@ -979,20 +1028,16 @@ pptests()
     done
 }
 
-if [[ ! -f "super8" && ! -f "8mm" ]]
-then
-    echo No film type specified
-    exit 1
-fi
 
 (date | tr -d '\n'; echo -n " "; pwd | tr -d '\n'; echo -n " ";  echo $*) >> $RUN_LOG
 
-while getopts "msvC" OPT
+while getopts "f:msvC" OPT
 do
     case $OPT in
         v) let verbose=1 ;;
         s) let simulate=1 ;;
 		C) let clean=1 ;;
+        f) let frameLimit=$OPTARG ;;
         *) echo What?; exit 1 ;;
     esac
 done
@@ -1018,7 +1063,8 @@ case "$1" in
 	drange) deleterange $2 $3 ;;
 	all) all ;;
 	precrop) precrop ;;
-    pcsample) pcsample ;; 
+    pcsample) sample cropped pcsample;; 
+    tfsample) sample fused tfsample;; 
     autocrop) autocrop ;;
 	optimize) optimize ;;
 	#tonecheck) toneCheck ;;
@@ -1027,6 +1073,8 @@ case "$1" in
 	cropfuse) cropfuse ;;
 	import) import ;;
     pptests) pptests ;;
+    numcheck) numbercheck ;;
+    split) split ;;
 	*) echo What? ;;
 esac
 
