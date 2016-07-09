@@ -9,45 +9,72 @@ import time
 import sys
 import pdb
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import shutil
 import subprocess
 from glob import glob
 from optparse import OptionParser
+import socket
 import httplib
 import re
 
 options = {}
+EX_OK = 0
+EX_TIMEOUT = 1
+EX_ERROR = 2
+EX_NOFILES = 3
+
+exitCode = 0
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(levelname)s %(lineno)s %(message)s')
+fileHandler = RotatingFileHandler(filename = './runproj_log.txt', maxBytes = 10e6, backupCount = 5)
+fileHandler.setLevel(logging.DEBUG)
+fileHandler.setFormatter(logging.Formatter(fmt='%(asctime)s %(lineno)s %(message)s'))
 logger = logging.getLogger('runproj')
+logger.addHandler(fileHandler)
 
+def Sleep(sleepFor):
+    logger.debug("Sleeping for %u seconds" % sleepFor)
+    time.sleep(sleepFor)
 
 class FlashAir():
     AIRPORT='en0'
     SSID='CamSD'
     KEY='12345678'
-    IP='192.168.0.222'
+    IP='192.168.1.222'
     SETAIRPORTPOWER='networksetup -setairportpower '
     GETAIRPORTPOWER='networksetup -getairportpower '
     SETAIRPORTNETWORK='networksetup -setairportnetwork '
-#    MOUNTWEBDAV="mount_webdav -s -S "
-#    MOUNTED="/Volumes/camsd"
+    LISTAPS='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s'
 
     def connect(self):
-        if False == self._isAirportOn():
-            self._turnAirportOn()
-        while False == self.connectToCard():
-            time.sleep(5)
+        self._turnAirportOff()
+        Sleep(5)
+        self._turnAirportOn()
+        Sleep(10)
+        while self.waitingForAP(FlashAir.SSID):
+            Sleep(2)
+        if False == self.connectToCard():
+#            pdb.set_trace()
+            raise RuntimeError("FlashAir.connect")
             
     def disconnect(self):
         self._turnAirportOff()
+
+    def waitingForAP(self, ap):
+        result = subprocess.check_output((FlashAir.LISTAPS).split(' '))
+        for line in result.split('\n'):
+            if ap in line.split():
+                return False
+
+        return True
 
     def _isAirportOn(self):
         try:
             result = subprocess.check_output((FlashAir.GETAIRPORTPOWER + "%s" % FlashAir.AIRPORT).split(' '))
             result = result.split(':')[-1].strip()
-            if "On" == result:
+            if "On" != result:
                 return True
             else:
                 return False
@@ -58,70 +85,94 @@ class FlashAir():
     def _turnAirportOn(self):
         logger.debug("_turnAirportOn")
         rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s on" % FlashAir.AIRPORT).split(' '))
+        logging.debug('_turnAirportOn %u' % rc)
 
     def _turnAirportOff(self):
         logger.debug("_turnAirportOff")
         rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s off" % FlashAir.AIRPORT).split(' '))
+        logging.debug('_turnAirportOff %u' % rc)
 
     def connectToCard(self):
+        logger.info("connectToCard")
         result = subprocess.check_output((FlashAir.SETAIRPORTNETWORK + "%s %s %s" % (FlashAir.AIRPORT, FlashAir.SSID, FlashAir.KEY)).split(' '))
         if '' != result:
-            logger.error("Connect to %s failed" % FlashAir.SSID)
+            logger.error("Connect to %s failed: %s" % (FlashAir.SSID, result))
             return False
 
         logger.info("WIFI Connected to %s" % FlashAir.SSID)
-        self.conn = httplib.HTTPConnection(FlashAir.IP)
+        #self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
         return True
 
-    def getOldestFiles(self):
-        logger.info("Requesting /command.cgi?op=100&DIR=/DCIM")
-        while True:
+    def getFiles(self):
+        command="/command.cgi?op=100&DIR=/DCIM"
+        logger.info("getFiles: Requesting %s" % command)
+        retryCount = 0
+        while retryCount < 5:
             try:
-                self.conn.request("GET", "/command.cgi?op=100&DIR=/DCIM")
+                retryCount += 1
+                self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
+                self.conn.request("GET", command)
                 break
-            except:
-                logger.debug("Retrying")
+
+            except httplib.HTTPException as ee:
+                logger.warning("%s, retrying" % ee.message )
+
+            except socket.error as ee:
+                logger.warning("%s, retrying" % ee.message )
+
+            except socket.timeout as ee:
+                logger.warning("%s, retrying" % ee.message )
+
+        if 5 == retryCount:
+            logger.error("getFiles failed, abandoning")
+            return False
 
         response = self.conn.getresponse()
         lines = response.read().split('\r\n')[1:-1]
-        logger.info("Requested /command.cgi?op=100&DIR=/DCIM")
-        dirNums = {} 
+        logger.info("Requested %s" % command)
+        logger.info("%u dirs on card" % len(lines))
+        self.dirNums = [] 
         for line in lines:
             (root, dir, size, attr, fDate, fTime) = line.split(',')
 #            elems = line.split(',')
+            logger.info(line)
             matched = re.search('(\d\d\d)PHOTO', dir)
             if matched is None:
                 continue
-            dirNums[(int(fDate) * 86400) + int(fTime)] = matched.groups()[0]
+            self.dirNums.append(matched.groups()[0])
+#            self.dirNums[(int(fDate) * 86400) + int(fTime)] = matched.groups()[0]
 #            dirNums.append(int(matched.groups()[0]))
-#        if (1 == len(dirNums.keys())):
-            # we don't want to retrieve files until the camera is done with it
-#            return None
-
-        dirNum = int(dirNums[min(dirNums.keys())])
-        logger.debug("Requesting /command.cgi?op=100&DIR=/DCIM/%03uPHOTO" % dirNum)
-        self.conn.request("GET", "/command.cgi?op=100&DIR=/DCIM/%03uPHOTO" % dirNum)
-        logger.debug("Requested /command.cgi?op=100&DIR=/DCIM/%03uPHOTO" % dirNum)
-
-        response = self.conn.getresponse()
-        lines = response.read().split('\r\n')[1:-1]
-        if [] == lines:
+        if 0 == len(self.dirNums):
             return None
+
         urlList = []
-        for line in lines:
-            elems = line.split(',')
-            matched = re.search('SAM_\d+.JPG', elems[1])
-            if matched is None:
+        for dirNum in sorted(self.dirNums):
+#            dirNum = self.dirNums[ii]
+            logger.debug("Requesting /command.cgi?op=100&DIR=/DCIM/%sPHOTO" % dirNum)
+            self.conn.request("GET", "/command.cgi?op=100&DIR=/DCIM/%sPHOTO" % dirNum)
+            logger.debug("Requested /command.cgi?op=100&DIR=/DCIM/%sPHOTO" % dirNum)
+
+            response = self.conn.getresponse()
+            lines = response.read().split('\r\n')[1:-1]
+            if [] == lines:
                 continue
-            urlList.append("/DCIM/%sPHOTO/%s" % (dirNum, elems[1]))
+            for line in lines:
+                elems = line.split(',')
+                matched = re.search('SAM_\d+.JPG', elems[1])
+                if matched is None:
+                    continue
+                urlList.append("/DCIM/%sPHOTO/%s" % (dirNum, elems[1]))
 
         return urlList
 
     def getFile(self, url):
-        logger.debug("GET %s" % url)
         try:
+            self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
+            logger.debug("GET %s" % url)
             self.conn.request("GET", url)
+            #logger.debug("response")
             response = self.conn.getresponse()
+            #logger.debug("return")
             return response.read()
         except:
             return None
@@ -129,62 +180,33 @@ class FlashAir():
     def deleteFile(self, url):
         self.conn.request("GET", "/upload.cgi?DEL=%s" % url)
         response = self.conn.getresponse()
+        logger.debug("deleteFile %s" % response.read())
         return response.read()
+
+    def clearCard(self):
+        self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
+        for dirNum in self.dirNums:
+#            dirNum = self.dirNums[ii]
+            self.deleteDir("%sPHOTO" % dirNum)
 
     def deleteDir(self, dirname):
-        self.conn.request("GET", '/upload.cgi?DEL=%s' % dirname)
-        response = self.conn.getresponse()
-        return response.read()
+        retrycount = 0
+        for retry in range(0, 3):
+            self.conn.request("GET", '/upload.cgi?DEL=/DCIM/%s' % dirname)
+            response = self.conn.getresponse()
+            status = response.read()
+            logger.debug("deleteDir %s: %s" % (dirname, status))
+            if 'SUCCESS' == status:
+                return status
 
-#    def unmount(self):
-#        rc = subprocess.call((FlashAir.MOUNTWEBDAV + "http://%s %s" % (FlashAir.IP, FlashAir.MOUNTED)).split(' '))
-#        logger.debug("mount_webdav rc %d" % rc)
-#
-#    def mount(self):
-#        if False == os.path.isdir(FlashAir.MOUNTED):
-#            os.mkdir(FlashAir.MOUNTED)
-#
-#        while False == os.path.isdir(FlashAir.MOUNTED + '/DCIM'):
-#            result = subprocess.check_output((FlashAir.MOUNTWEBDAV + "http://%s %s" % (FlashAir.IP, FlashAir.MOUNTED)).split(' '))
-#        logger.info("Mounted %s" % FlashAir.MOUNTED)
-#
-#    def mounted(self):
-#        return FlashAir.MOUNTED
+    def processFiles(self):
+        self.urls = self.getFiles()
+        if False == self.urls:
+            logger.error("getFiles failed, aborting")
+            raise RuntimeError("getFiles")
 
-
-class SerialProtocol(LineOnlyReceiver):
-    def connectionMade(self):
-        logger.info('Connected to serial port')
-        self.accumulated = ''
-# initialize projector
-        self._waiton = {'trigger': 'Init OK' , 'action': self._startProjector}
-
-    def connectionLost(self):
-        logger.info('Disconnected from serial port')
-
-    def lineReceived(self, line):
-        logger.debug('lineReceived %s' % line)
-        self.accumulated += line
-        if None is not self._waiton:
-            logger.debug("Waiting on %s", self._waiton['trigger'])
-            if -1 != self.accumulated.find(self._waiton['trigger']):
-                logger.debug("Triggered")
-                self.accumulated = ''
-                reactor.callLater(0, self._waiton['action'])
-
-    def _startProjector(self):
-        logger.info("Start Projector")
-        self._waiton = {'trigger': 'Frames Done', 'action': self._processFrames}
-        self.transport.write('45[3oCv') # pretension 45, 10 frames, go, verbose
-
-    def _processFrames(self):
-#        pdb.set_trace()
-        sdCard = FlashAir()
-        sdCard.connect()
-        urls = sdCard.getOldestFiles()
-        if urls is None:
+        if self.urls is None:
             logger.info("No ready files yet")
-            self._startProjector()
             return
 
         logger.info('Scanning target dir %s' % options.targetdir)
@@ -198,10 +220,13 @@ class SerialProtocol(LineOnlyReceiver):
         else:
             lowestTarget = targetNums[-1] + 1
 
-        for url in urls:
-            jpg = sdCard.getFile(url)
+        logger.debug("Found %u files" % len(self.urls))
+        for url in self.urls:
+            #pdb.set_trace()
+            jpg = self.getFile(url)
+            #logger.debug("Got a jpg")
             if jpg is None:
-                logger.debug('Skipping %s' % url)
+                logger.debug('Null file, skipping %s' % url)
                 continue
             targetdir = '%s/%03uPHOTO/' % (options.targetdir, lowestTarget)
 
@@ -213,59 +238,174 @@ class SerialProtocol(LineOnlyReceiver):
             except:
                 logger.error("Error reading %s" % url)
 
-            responseText = sdCard.deleteFile(url)
+            responseText = self.deleteFile(url)
             logger.debug("%s moved to %s %s" % (url, targetdir + filename, responseText))
 
-#        responseText = sdCard.deleteDir("%03uPHOTO" % lowestTarget)
-#        logger.debug(responseText)
+class SerialProtocol(LineOnlyReceiver):
+    def connectionMade(self):
+        logger.info('Connected to serial port')
+        self.accumulated = ''
+        self.transport.setDTR(False)
+        Sleep(1)
+        self.transport.setDTR(True)
+        self._waiton = dict()
+        self._waiton = {'Init OK': self._initProjector}
+        self.sdCard = FlashAir()
+        self.sdCard.disconnect()
 
-        self._startProjector()
+    def connectionLost(self, reason):
+        logger.info('Disconnected from serial port %s', reason)
+        reactor.callFromThread(reactor.stop)
 
-#        sdCard.mount()
-#        mounted = sdCard.mounted() + "/DCIM"
-#        logger.info("processFrames")
-#        logger.info('Scanning camera dir %s' % mounted)
-#        photoDirs = glob('%s/???PHOTO' % mounted)
-#        logger.info('Scan done')
-#        photoNums = [int(os.path.basename(ff).replace('PHOTO','')) for ff in photoDirs]
-#        photoNums.sort()
-#        if 0 == len(photoNums):
-#            logger.error("No photos found in %s" % mounted)
+    def lineReceived(self, line):
+        logger.debug('lineReceived %s, %d waiton entries' % (line, len(self._waiton)))
+        self.accumulated += line
+        for kk, vv in self._waiton.iteritems():
+            if -1 != self.accumulated.find(kk):
+                logger.debug("Triggered on %s", kk)
+                self.accumulated = ''
+                reactor.callLater(0, vv)
+
+    def send(self, data):
+        logger.debug("Sending: %s" % data)
+        self.transport.write(data)
+
+    def _generator(self, sequence):
+        ii = 0;
+        if sequence is None:
+            pdb.set_trace()
+        try:
+            for ll in sequence:
+                ii += 1
+                if None != ll.__doc__:
+                    logger.debug('Generator executing %u:%s' % (ii, ll.__doc__))
+                else:
+                    logger.debug('Generator executing %u:%s' % (ii, ll.__name__))
+                ll()
+                yield
+
+        except TypeError as tt:
+            logger.error(tt.message)
+
+        except RuntimeError as ee:
+            logger.error("%s at generator step %u" % (ee.message, ii))
+            return
+
+    def _initProjector(self):
+        self._waiton.pop('Init OK', None)
+        logger.debug("_initProjector")
+
+        def setWaiton(self):
+            self._waiton = dict()
+            self._waiton['Frames Done'] = lambda: self._getFileInfo(last = False)
+            self._waiton['Opto int timeout'] = self._stopProjector
+
+        sequence = [
+            lambda: self.send(' '),
+            lambda: self.send('vc'),
+            lambda: self.send("%s[" % options.pretension),
+            lambda: self.send({'8mm': 'd', 'super8': 'D'}[options.mode]),
+            lambda: self.send("%so" % options.numframes),
+            lambda: setWaiton(self),
+            lambda: self.send('S')
+            ]
+        self._slowSequence(sequence)
+
+    def _slowSequence(self, sequence = None):
+        logger.debug("_slowSequence")
+        if sequence is not None:
+            self._ssIter = self._generator(sequence)
+
+        if False == hasattr(self, '_ssIter') or self._ssIter is None:
+            return
+
+        try:
+            next(self._ssIter)
+            reactor.callLater(2, self._slowSequence)
+
+        except StopIteration:
+            del self._ssIter
+
+        except RuntimeError as ee:
+            del self._ssIter
+
+    def _stopProjector(self):
+        reactor.callLater(0, lambda: self._getFileInfo(last = True))
+#        self._waiton = dict()
+#        logger.debug("Projector stopped")
+#        sequence = [
+#            lambda: self.send('c'),
+#            lambda: self.send('s'),
+#            lambda: reactor.callLater(0, lambda: self._getFileInfo(last = True))
+#            ]
+#        global exitCode
+#        exitCode = EX_TIMEOUT
+#        self._slowSequence(sequence)
+
+#    def _findSDFiles(self):
+#        self.urls = self.sdCard.getFiles()
+#        if False == self.urls:
+#            logger.error("getFiles failed, aborting")
+#            raise RuntimeError("getFiles")
+#
+#        if self.urls is None:
+#            logger.info("No ready files yet")
+#            raise RuntimeError("No ready files")
+
+    def _getFileInfo(self, last = False):
+        logger.debug("_getFileInfo")
+
+        def testLast(self, last):
+            if False == last:
+                reactor.callLater(1, self._initProjector)
+            else:
+                global exitCode
+                exitCode = EX_TIMEOUT
+                self.transport.loseConnection()
+
+        try:
+            self._slowSequence([
+                lambda: self.send('C'),
+                lambda: self.send('c'),
+                self.sdCard.connect,
+                self.sdCard.processFiles,
+                self.sdCard.clearCard,
+                self.sdCard.disconnect,
+                lambda: testLast(self, last)
+                ])
+
+        except RuntimeError as ee:
+            logger.error("Something crapped out badly %s" % ee.message)
+            retryCount += 1
+            if retryCount > 3:
+                global exitCode
+                exitCode = EX_ERROR
+                logging.error("Giving up")
+                self.transport.loseConnection()
+
+#    def _processSDFiles(self):
+#        self.sdCard.processFiles()
+#        logger.debug("Disconnecting from SD Card")
+#        self.sdCard.disconnect()
+#        logger.debug("Camera off")
+#        self.send('C') # camera off
+#        self.send(' ') # reset
+#
+#        if options.once:
+#            self.transport.loseConnection()
+#        if EX_TIMEOUT != exitCode:
+#            reactor.callLater(5, self._initProjector)
 #        else:
-#            logger.info("Found %s photos in %s" % (len(photoNums), mounted))
-#
-#        logger.info('Scanning target dir %s' % options.targetdir)
-#        targetDirs = glob('%s/???PHOTO' % options.targetdir)
-#        logger.info('Scan done')
-#        targetNums = [int(os.path.basename(ff).replace('PHOTO', '')) for ff in targetDirs]
-#        targetNums.sort()
-#
-#        if [] == targetDirs:
-#            lowestTarget = 100
-#        else:
-#            lowestTarget = targetNums[-1] + 1
-#
-#        for srcnum in photoNums:
-#            srcdir = '%s/%03uPHOTO/' % (mounted, srcnum)
-#            targetdir = '%s/%03uPHOTO/' % (options.targetdir, lowestTarget)
-#            try:
-#                logger.info("Copying %s to %s" % (srcdir, targetdir))
-#                shutil.copytree(srcdir, targetdir)
-#                logger.info("Removing %s" % srcdir)
-#                shutil.rmtree(srcdir)
-#                logger.info("Processing complete")
-#            except (IOError, os.error) as why:
-#                logging.error(str(why))
-#                return
-#            lowestTarget += 1
-#
-##        sdCard.unmount()
-#        sdCard.off()
+#            logger.info("Projector timed out, exiting")
+#            self.transport.loseConnection()
 
 def getOptions():
     global options
     args = ()
     parser = OptionParser()
+    parser.add_option('-o', '--once', dest='once', action='store_true')
+    parser.add_option('-x', '--transferonly', dest='transferonly', action='store_true')
+    parser.add_option('-f', '--numframes', dest='numframes')
     parser.add_option('-s', '--startframe', dest='startframe')
     parser.add_option('-e', '--endframe', dest='endframe')
     parser.add_option('-t', '--targetdir', dest='targetdir')
@@ -278,18 +418,29 @@ def getOptions():
 
     (options, args) = parser.parse_args()
 
-    for testopt in ['startframe', 'endframe', 'targetdir', 'mode', 'filmlength']:
-        if testopt not in options.__dict__:
-            logger.error('Missing option [%s]' % testopt)
-            parser.print_help()
-            return None
+#    for testopt in ['startframe', 'endframe', 'targetdir', 'mode', 'filmlength']:
+#        if testopt not in options.__dict__:
+#            logger.error('Missing option [%s]' % testopt)
+#            parser.print_help()
+#            return None
 
-    return options
+#    return options
+
+def getSDFiles():
+    sdCard = FlashAir()
+#    pdb.set_trace()
+    try:
+        sdCard.connect()
+        sdCard.processFiles()
+        sdCard.disconnect()
+
+    except RuntimeError as ee:
+        logger.error(ee.message)
 
 
 def main():
     logger.info('Init')
-    options = getOptions()
+    getOptions()
     if options is None:
         logger.error('Bad command line options')
         sys.exit(1)
@@ -298,70 +449,12 @@ def main():
         logger.info("Creating %s" % options.targetdir)
         os.mkdir(options.targetdir)
 
-    serdev = SerialPort(SerialProtocol(), options.serdev, reactor, 57600)
-    reactor.run()
+    if True == options.transferonly:
+        getSDFiles()
+    else:
+        serdev = SerialPort(SerialProtocol(), options.serdev, reactor, 57600)
+        reactor.run()
+    return exitCode
 
-main()
 
-#
-#
-#time.sleep(2)
-#(frameStart, frameEnd) = [int(xx) for xx in sys.argv[1:3]]
-#frameCount = frameStart
-#
-#def swrite(data):
-##    print "Serial: %s" % data
-#    serdev.write(data)
-#
-##command = '%u[-' % ptArray[chunkSize * int(frameStart / 1000)]
-#
-##time.sleep(1)
-#print 'Sleep 5'
-#time.sleep(5)
-#print 'Set pretension %s' % sys.argv[3]
-#command = '%s[-' % sys.argv[3]
-#swrite(command)
-#swrite('t')
-#time.sleep(1)
-#
-#def fPrint(ii): print ii
-#def fSwrite(ii): swrite('C')
-#def fNext(ii): swrite('n')
-#def fSleep1(ii):
-#    print 'Sleep 1'
-#    time.sleep(1)
-##def fUntension(ii): 
-##    if ((ii % 100) == 0):
-##        swrite('u')
-##        time.sleep(1)
-#
-##funcTable = [ fPrint, fSwrite, fSleep1, fSleep1 ]
-#funcTable = [ fPrint, fSwrite, fSleep1, fSleep1, fSleep1, fSleep1, fSleep1 ]
-##funcTable = [ fPrint, fNext, fSleep1, fSleep1, fSleep1, fSleep1, fUntension ]
-#    
-#for ii in range(frameCount, frameEnd):
-##    print "%s <- %s -> %s" % (frameCount, ii, frameEnd)
-#    for ff in funcTable:
-#        ff(ii)
-#            #sys.stdout.write("=> %s" % serdev.read(100))
-#
-#swrite('x')
-#serdev.close()
-#
-##while ((count > 0))
-##do
-##    echo $count frames remaining
-##    if [[ "$TRIPLE" == "" ]]
-##    then
-##        echo C | tr -d '\r\n'  > $USBDEV
-##        sleep 2
-##    else
-##        echo 3 | tr -d '\r\n'  > $USBDEV
-##        sleep 4
-##    fi
-##    ((count--))
-##done
-##echo x | tr -d '\r\n'  > $USBDEV
-##
-##serdev.close()
-#
+sys.exit(main())
