@@ -41,6 +41,19 @@ fileHandler = RotatingFileHandler(filename='/tmp/autocrop_%u.log' % os.getpid(),
 fileHandler.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
+def whiteCount(filename):
+    imp = PILImage.open(filename).convert('L')
+    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
+    (height, width) = im.shape
+
+    im[im < 100] = 0
+    im[im >= 100] = 255
+
+    whiteCount = numpy.count_nonzero(im)
+    index = whiteCount / (height * width)
+
+    print "%s: Total %u white %u index %f" % (filename, height * width, whiteCount, index)
+
 def findSuper8Sprocket3(image, filename):
     matches = cv2m(image, arrToFind, cv2.TM_SQDIFF)
     (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches) 
@@ -136,6 +149,10 @@ def processSuper8(filenames, outputpath):
     if 3 != len(files):
         logger.error("Need three filenames")
         sys.exit(1)
+
+    if options.whitecount:
+        for file in filenames:
+            whiteCount(file)
 
     ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
     if [True, True, True] == ofiles:
@@ -358,6 +375,10 @@ def process8mm(filenames, outputpath):
         logger.debug("Output files aready exist for %s" % filenames)
         return 
 
+    if options.whitecount:
+        for file in filenames:
+            whiteCount(file)
+
     imp = PILImage.open(filename).convert('L')
     im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
     #(fcWidth, fcHeight) = im.shape
@@ -373,7 +394,7 @@ def process8mm(filenames, outputpath):
 
     im1Image = scipy.misc.toimage(im1)
     (spLeftX, spCenterY) = find8mmSprocket(im1Image, filename)
-    spLeftX = 272
+    spLeftX = 152
     logger.debug( "%s leftX %u centerY %u" % (filename, spLeftX, spCenterY))
     if (0, 0) == (spLeftX, spCenterY):
         logger.error("Cannot process %s" % filename)
@@ -388,7 +409,7 @@ def process8mm(filenames, outputpath):
 #    frameOriginY -= ((.465 * pxPerMm))
 
     frameWidth = int(4.57 * pxPerMm)
-    frameHeight = int(3.59 * pxPerMm)
+    frameHeight = int(3.39 * pxPerMm)
 
     if frameWidth % 2 == 1:
         frameWidth += 1
@@ -423,11 +444,13 @@ def main():
     parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
     parser.add_option('-s', '--debug', dest='debug', help='Save intermediary images', action='store_true')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
+    parser.add_option('-w', '--whitecount', dest='whitecount', action='store_true', default=False)
     parser.add_option('-i', '--input-dir', dest='inputdir')
     parser.add_option('-o', '--output-dir', dest='outputdir')
     parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, comma separated')
     parser.add_option('-m','--mode', dest='mode', default='8mm')
     parser.add_option('-l','--listfile', dest='listfile', help='file containing list of triplets')
+
     (options, args) = parser.parse_args()
 
     if options.mode not in ('8mm', 'super8'):
