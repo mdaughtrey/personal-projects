@@ -55,8 +55,8 @@ ARDUINO = ../core/
 FRAM = $(ARDUINO)/Adafruit_FRAM_I2C-master/
 
 SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
-      $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c 
-#      $(ARDUINO)/twi.c 
+      $(ARDUINO)/Serial.c $(ARDUINO)/uart.c $(ARDUINO)/wiring.c \
+      $(ARDUINO)/twi.c 
 
 #$(ARDUINO)/Print.cpp 
 #$(ARDUINO)/Stream.cpp 
@@ -64,9 +64,9 @@ SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
 CXXSRC = $(TARGET).cpp \
     $(ARDUINO)/WString.cpp \
     $(ARDUINO)/HardwareSerial.cpp \
-    $(ARDUINO)/WRandom.cpp 
-#    $(ARDUINO)/TwoWire.cpp 
-#    $(FRAM)/Adafruit_FRAM_I2C.cpp 
+    $(ARDUINO)/WRandom.cpp  \
+    $(ARDUINO)/TwoWire.cpp  \
+    $(FRAM)/Adafruit_FRAM_I2C.cpp 
 
 #MCU = atmega168
 MCU = atmega328p
@@ -85,8 +85,8 @@ DEBUG = stabs
 OPT = s
 
 # Place -D or -U options here
-CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP # -DSDEBUG
-CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP -DVALUEHISTORY
+CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP -DUSEFRAM
+CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP 
 # -DSDEBUG
 
 # Place -I options here
