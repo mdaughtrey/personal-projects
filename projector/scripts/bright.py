@@ -18,6 +18,7 @@ def initDb(dbName):
     cur = conn.cursor()
     cur.execute('''CREATE TABLE picdata (
      rawfile text,
+     rawdir test,
      ignore boolean,
      size integer,
      whitecount integer,
@@ -26,12 +27,12 @@ def initDb(dbName):
     conn.commit()
     conn.close()
 
-def saveToDb(filename, size, whitecount, index):
+def saveToDb(dirname, filename, size, whitecount, index):
     if False == os.path.isfile(DBNAME):
         initDb(DBNAME)
     conn = sqlite3.connect(DBNAME)
     cur = conn.cursor()
-    insert = "'%s',%u,'FALSE',%u,%f" % (filename, size, whitecount, index)
+    insert = "'%s','%s',%u,'FALSE',%u,%f" % (dirname,filename, size, whitecount, index)
     cur.execute('INSERT INTO picdata values (' + insert + ')')
     conn.commit()
     conn.close()
@@ -48,10 +49,11 @@ def getWhiteContent(filename):
     whiteCount = numpy.count_nonzero(im)
     index = whiteCount / (height * width)
 
-    saveToDb(filename, height * width, whiteCount, index)
+    dirname = os.path.dirname(filename)
+    saveToDb(dirname, filename, height * width, whiteCount, index)
     print "%s: Total %u white %u index %f" % (filename, height * width, whiteCount, index)
 
-files = sorted(glob('%s/*.JPG' % sys.argv[1]))
+files = sorted(glob(sys.argv[1]))
 for ff in files:
     getWhiteContent(ff)
 
