@@ -15,6 +15,8 @@ let frameLimit=0
 # logs command line invocations. Useful when you've forgotten what stage of the 
 # process you were in
 RUN_LOG=/home/mattd/documents/runlog.txt
+HD1=/mnt/temphd
+HD2=/mnt/temphd2
 SCRIPT_DIR=~/git/personal-projects/projector/scripts/
 SCRIPT_INTERPOLATE1=${SCRIPT_DIR}/pp_interpolate1.avs
 SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
@@ -32,7 +34,8 @@ AVS2YUV=Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe
 # where to put the temporary video files 
 #YUVTMP=~/tmp/`basename $PWD`
 YUVTMP=$PWD
-FRAMETMP=/media/usb0/videotmp_`basename $PWD`
+PROCDIR1=`pwd`
+PROCDIR2=${PROCDIR1/$HD1/$HD2}
 FFMPEG=avconv
 LEVELS_TXT=levels.txt
 LEVELS_ERROR=levelcheck.out
@@ -237,8 +240,8 @@ genyuv()
 {
 	vOut === genyuv
 	#scaler # $1
-	rm $YUVTMP/title_stream.yuv
-	rm $YUVTMP/stream_${1}.yuv
+	rm ./title_stream.yuv
+	rm ./stream_${1}.yuv
 	rm -f titlelist.txt
 	rm -f contentlist.txt
 
@@ -247,17 +250,17 @@ genyuv()
 		echo title/SAM_$(printf "%06u" $ii).JPG >> titlelist.txt
 	done
 
-	let end=$(($(ls fused/SAM_*.JPG | wc -l)-1))
+	let end=$(($(ls ${PROCDIR}/fused/SAM_*.JPG | wc -l)-1))
     if ((frameLimit != 0))
     then
         let end=$frameLimit
     fi
 	((end+=$TITLE_STREAM_FRAMES))
-    sourceDir=fused
-    if [[ "$2" == 'bw' ]]
-    then
-        sourceDir=bw
-    fi
+    sourceDir=${PROCDIR2}/fused
+    #if [[ "$2" == 'bw' ]]
+    #then
+    #    sourceDir=bw
+    #fi
 	for ii in `seq ${TITLE_STREAM_FRAMES} $end`
 	do
 		#echo fused/SAM_$(printf "%06u" $ii).JPG >> contentlist.txt
@@ -273,14 +276,14 @@ genyuv()
 
     cropoptions="-vf scale=800:600"
 
-   	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=$YUVTMP/titlestream.yuv
+   	doCommand mplayer -lavdopts threads=`nproc` mf://@titlelist.txt $cropoptions ${options}:file=./titlestream.yuv
 
 	vOut cropoptions $cropoptions
-	options="${cropoptions} ${options}:file=$YUVTMP/contentstream.yuv"
+	options="${cropoptions} ${options}:file=./contentstream.yuv"
     doCommand mplayer -msglevel all=6 -lavdopts threads=`nproc` mf://@contentlist.txt ${options} 
 
 	vOut Concatenating YUV Streams
-	(cat $YUVTMP/titlestream.yuv; cat $YUVTMP/contentstream.yuv | (read junk; cat)) > $YUVTMP/stream_${1}.yuv
+	(cat ./titlestream.yuv; cat ./contentstream.yuv | (read junk; cat)) > ${PROCDIR2}/stream_${1}.yuv
 	vOut Concatenation Done
 }
 
@@ -288,23 +291,23 @@ genyuv()
 avi()
 {
     vOut === avi
-    if [[ ! -f $YUVTMP/stream_${1}.yuv ]]
+    if [[ ! -f ${PROCDIR2}/stream_${1}.yuv ]]
     then
         genyuv $1 $2
     fi
-    cat $YUVTMP/stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | $FFMPEG -loglevel info -i - -vcodec rawvideo -y $YUVTMP/rawframes.avi
+    cat ${PROCDIR2}/stream_${1}.yuv  | yuvfps -v 0 -r 18:1 -v 1 | $FFMPEG -loglevel info -i - -vcodec rawvideo -y ./rawframes.avi
 }
 
 # YUV files converted to mpeg, copied to final destination
 mpeg2()
 {
-    if [[ ! -f $YUVTMP/stream_${1}.yuv ]]
+    if [[ ! -f ${PROCDIR2}/stream_${1}.yuv ]]
     then
         genyuv $1
     fi
     dvdfile=${PWD//\//_}dvd.mpg
 
-    cat $YUVTMP/stream_${1}.yuv  | yuvfps -r ${fps}:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $dvdfile
+    cat ${PROCDIR2}/stream_${1}.yuv  | yuvfps -r ${fps}:1 -v 1 | mpeg2enc --multi-thread 4 -f 0 -a 1 -b $bw -V 3000 -q 1 -o $dvdfile
     mv $dvdfile $HOME/imageinput/dvd
 }
 
@@ -314,10 +317,10 @@ postprocess()
 	majorMode=$1
 	if ((clean == 1))
 	then
-		rm $YUVTMP/out.yuv
+		rm ./out.yuv
 	fi
 
-	if [[ ! -f $YUVTMP/rawframes.avi ]]
+	if [[ ! -f ./rawframes.avi ]]
 	then
 		avi dvd $majorMode
 	fi
@@ -413,9 +416,8 @@ gentitle()
 		exit 1
 	fi
 	type=${1:-"dvd"}
-	#scaler #$type
-	#firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
-	firstfile=${2:-"fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
+
+	firstfile=${2:-"${PROCDIR2}/fused/SAM_$(printf '%06u' $TITLE_STREAM_FRAMES).JPG"}
 
 	if [[ ! -f $firstfile ]]
 	then
@@ -612,9 +614,8 @@ autocrop()
 	then 
         rm -rf autocropped
 	fi
-    mkdir autocropped
-    mkdir sprockets
-    mkdir bw
+    mkdir -p ./autocropped
+
     rm /tmp/autocrop_in_*.txt
     mode=""
     if [[ -f "8mm" ]]
@@ -629,7 +630,7 @@ autocrop()
         echo "No autocrop mode set"
         return
     fi
-    read -a croppedfiles <<< $(ls ./cropped/*.JPG | sort)
+    read -a croppedfiles <<< $(ls ${PROCDIR2}/cropped/*.JPG | sort)
     let numfiles=${#croppedfiles[@]}
 
     if ((($numfiles / 3) * 3 != ${#croppedfiles[@]}))
@@ -664,7 +665,7 @@ autocrop()
 
     for inputfile in /tmp/autocrop_in_*.txt
     do
-        $SEM -N0 --jobs 200% autocrop.py --debug -m $mode  -v -l $inputfile -o autocropped 
+        $SEM -N0 --jobs 200% autocrop.py --debug -m $mode  -v -l $inputfile -o ./autocropped 
     done
 
     $SEM --wait
@@ -705,14 +706,12 @@ autocropOld()
 
 onePrecrop()
 {
-	let index=$(echo -n 10#$1)
-	outfile="cropped/SAM_$(printf '%06u' $index).JPG"
+    infile=$1
+	outfile=$2
     if [[ ! -f "$outfile" ]]
     then
-    	convert ${2}PHOTO/${3} -crop ${4}x${5}+${6}+${7} -flop -flip $outfile
+    	convert $infile -crop ${3}x${4}+${5}+${6} -flop -flip $outfile
     fi
-	#cp ${2}PHOTO/${3}  $outfile
-    #autocrop.py -v -f ${2}PHOTO/${3} 
 }
 
 export -f onePrecrop
@@ -726,12 +725,10 @@ precrop()
     fi
 	if ((clean == 1))
 	then
-		rm -rf cropped
+		rm -rf ${PROCDIR2}/cropped
 	fi
-	if [[ ! -d cropped ]]
-	then
-		mkdir cropped
-	fi
+ 	mkdir -p ${PROCDIR2}/cropped
+
 	let to=${TITLE_STREAM_FRAMES}
 	((numFrames+=2))
 
@@ -748,13 +745,12 @@ precrop()
 		for number in $numbers
 		do
 			let index=$(echo -n 10#$to)
-			outfile="cropped/SAM_$(printf '%06u' $to).JPG"
+			outfile="${PROCDIR2}/cropped/SAM_$(printf '%06u' $to).JPG"
 			if [[ ! -f $outfile ]]
 			then
 				filename=SAM_$(printf '%04u' $((10#$number))).JPG
-				$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset
-    	        echo Precrop ${dir}PHOTO/${filename} to $outfile +${xOffset}+${yOffset} ${width}x${height}
-				#$SEM -N0 --jobs 200% onePrecrop $index $dir $filename $width $height $xOffset $yOffset -flop
+				$SEM -N0 --jobs 200% onePrecrop ${dir}PHOTO/${filename} $outfile $width $height $xOffset $yOffset
+				echo onePrecrop ${dir}PHOTO/${filename} $outfile $width $height $xOffset $yOffset
 			fi
 			((to++))
 			if ((to == numFrames))
@@ -877,12 +873,9 @@ tonefuse()
 
 	if ((clean == 1))
 	then 
-		rm -rf fused
+		rm -rf ${PROCDIR2}/fused
 	fi
-	if [[ ! -d fused ]]
-	then
-		mkdir fused
-	fi
+	mkdir -p ${PROCDIR2}/fused
 	let baseindex=$TITLE_STREAM_FRAMES
 
     read -a infiles <<< $(ls autocropped/*.JPG)
@@ -890,7 +883,7 @@ tonefuse()
 
     for ((ii = 0; ii < numfiles - 3; ii += 3))
     do
-		outfile="fused/SAM_$(printf "%06u" $((baseindex+3))).JPG"
+		outfile="${PROCDIR2}/fused/SAM_$(printf "%06u" $((baseindex+3))).JPG"
         ((baseindex++))
         ifile1=${infiles[((ii + 0))]}
         ifile2=${infiles[((ii + 1))]}
@@ -1010,12 +1003,13 @@ cropfuse()
 
 import()
 {
-    mkdir -p $FRAMETMP
-	rsync -urav --ignore-existing ???PHOTO $FRAMETMP/
-	cp crop.cfg $FRAMETMP
-	cp title*.txt $FRAMETMP
-    cp super8 $FRAMETMP
-    cp 8mm $FRAMETMP
+    TARGET=${HD1}/`basename $PWD`
+    mkdir -p $TARGET
+	rsync -urav --ignore-existing ???PHOTO $TARGET/
+	cp crop.cfg $TARGET
+	cp title*.txt $TARGET
+    cp super8 $TARGET
+    cp 8mm $TARGET
 }
 
 pptests()
