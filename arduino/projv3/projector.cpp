@@ -6,7 +6,7 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
 #define PC_SHUTTER 2
-#define PB_CAMERAPOWER 0
+#define PD_CAMERAPOWER 7
 #define PB_SERVO 3
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
@@ -38,8 +38,8 @@
 #define SHUTTER_OPEN PORTC &= ~_BV(PC_SHUTTER)
 #define SHUTTER_CLOSE PORTC |= _BV(PC_SHUTTER)
 #define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
-#define CAMERA_ON PORTB |= _BV(PB_CAMERAPOWER);
-#define CAMERA_OFF PORTB &= ~_BV(PB_CAMERAPOWER);
+#define CAMERA_ON PORTD |= _BV(PD_CAMERAPOWER);
+#define CAMERA_OFF PORTD &= ~_BV(PD_CAMERAPOWER);
 
 #define DELAYEDSTATE(dd, ss) { stateLoop = dd/10; stateSaved = ss; waitingFor = DELAYLOOP; }
 
@@ -366,7 +366,9 @@ void setup ()
     //PORTB |= _BV(PC_OPTOINT); // tie led sensor line high
     //PORTB |= _BV(PB_CAMERAPOWER);
     PORTC |= _BV(PC_SHUTTER);
-    DDRB |= _BV(PB_LAMP) | _BV(PB_CAMERAPOWER);
+    PORTD |= _BV(PD_CAMERAPOWER);
+    DDRD |= _BV(PD_CAMERAPOWER);
+    DDRB |= _BV(PB_LAMP);
     DDRC |= _BV(PC_SHUTTER);
     CAMERA_OFF;
     lampOff();
@@ -391,6 +393,7 @@ void setup ()
 
 void loop ()
 {
+
 
 //    if (PINC & _BV(PC_OPTOINT))
 //    {
