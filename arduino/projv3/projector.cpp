@@ -4,6 +4,7 @@
 #include <Adafruit_FRAM_I2C-master/Adafruit_FRAM_I2C.h>
 #endif // USEFRAM
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+#define SPROCKETSEEK
 
 #define PC_SHUTTER 2
 #define PD_CAMERAPOWER 7
@@ -16,7 +17,7 @@
 #define MOTOR_PRETENSION_NEXT 40 
 #define MOTOR_PRETENSION_FF 20
 #define MOTOR_REWIND_FAST 100 
-#define MOTOR_REWIND_SLOW 10 
+#define MOTOR_REWIND_SLOW 70 
 #define MOTOR_OFF 0 
 #define SERVO_MIN 64
 #define SERVO_STOP 94
@@ -24,6 +25,7 @@
 #define SERVO_NEXTFRAME_FAST 74 
 //#define SERVO_NEXTFRAME_SLOW 70 
 #define SERVO_NEXTFRAME_SLOW 84 
+#define SERVO_NEXTFRAME_VERY_SLOW 87
 #define SERVO_REVERSE 110 
 
 #define LAMP_TIMEOUT_MS 3000
@@ -59,6 +61,13 @@ typedef enum
         EXPOSURESERIES1,
         EXPOSURESERIES,
         SHUTTEROPEN,
+#ifdef SPROCKETSEEK
+//        REVERSESEEK,
+        OPTOINT_HALF,
+        OPTOINT_FULL,
+        OPTOINT_REVERSE,
+        OPTOINT_FULL2,
+#endif // SPROCKETSEEK
         TRIPLESTART = SHUTTEROPEN
 } WaitFor;
 
@@ -255,6 +264,9 @@ u08 decFrameCount()
     }
     return 0;
 }
+#define NOTRANSITION 0
+#define FULLFRAME 1
+#define HALFFRAME 2
 
 u08 halfFrameTransition()
 {
@@ -264,7 +276,7 @@ u08 halfFrameTransition()
     framWrite8('3');
     framWrite32(optoIntTimeout);
 #endif // USEFRAM
-    return 2; // half frame transition
+    return HALFFRAME; // half frame transition
 }
 
 u08 fullFrameTransition()
@@ -275,13 +287,14 @@ u08 fullFrameTransition()
 #endif // USEFRAM
     sensorValue = !sensorValue;
     optoIntTimeout = 0;
-    return 1; // full frame transition
+    return FULLFRAME; // full frame transition
 }
 //
 // 0 = no transition
 // 1 = full frame
 // 2 = half frame
 //
+
 u08 isOptoTransition()
 {
     u32 now = millis();
@@ -308,7 +321,7 @@ u08 isOptoTransition()
         framWrite32(now);
 #endif // USEFRAM
         reset();
-        return 0;
+        return NOTRANSITION;
     }
     if (FILM_SUPER8 == filmMode)
     {
@@ -411,6 +424,10 @@ void loop ()
             break;
 
         case FRAMESTOP:
+        if (verbose)
+        {
+            Serial.println("FRAMESTOP");
+        }
             setServo(SERVO_STOP);
             if (frameCount == 0)
             {
@@ -425,11 +442,85 @@ void loop ()
                 DELAYEDSTATE(1000, SHUTTEROPEN);
             }
             break;
+            
+//#ifdef SPROCKETSEEK
+//        case REVERSESEEK:
+//            {
+//                char opto;
+//                opto = isOptoTransition();
+//                Serial.print((int)opto);
+//                if (0 != opto)
+//                {
+//                    optoIntTimeout = 0;
+//                    setMotor(motorPretensionNext);
+//                    waitingFor = FRAMESTOP;
+//                    Serial.print("-> FRAMESTOP");
+//                    Serial.print('\n');
+//                }
+//            }
+//            break;
+//#endif // SPROCKETSEEK
+
+        case OPTOINT_HALF:
+            if (verbose)
+            {
+                Serial.println("OPTOINT_HALF");
+            }
+            if (HALFFRAME == isOptoTransition())
+            {
+                setServo(SERVO_NEXTFRAME_SLOW);
+                waitingFor = OPTOINT_FULL;
+            }
+            break;
+
+        case OPTOINT_FULL:
+            if (verbose)
+            {
+                Serial.println("OPTOINT_FULL");
+            }
+            if (FULLFRAME == isOptoTransition())
+            {
+                setMotor(MOTOR_REWIND_SLOW);
+                setServo(SERVO_REVERSE);
+                waitingFor = OPTOINT_REVERSE;
+            }
+            break;
+
+        case OPTOINT_REVERSE:
+            if (verbose)
+            {
+                Serial.println("OPTOINT_REVERSE");
+            }
+            if (HALFFRAME == isOptoTransition())
+            {
+                setMotor(motorPretensionNext);
+                setServo(SERVO_NEXTFRAME_VERY_SLOW);
+                waitingFor = OPTOINT_FULL2;
+            }
+            break;
+
+        case OPTOINT_FULL2:
+            if (FULLFRAME == isOptoTransition())
+            {
+                waitingFor = FRAMESTOP;
+            }
+            break;
 
         case OPTOINT_CHANGED:
             switch (isOptoTransition())
             {
+#ifdef SPROCKETSEEK
+                case 1:
+                    optoIntTimeout = 0;
+//                    waitingFor = REVERSESEEK;
+                    waitingFor = OPTOINT_HALF;
+                    setMotor(MOTOR_REWIND_SLOW);
+                    setServo(SERVO_REVERSE);
+                    //DELAYEDSTATE(1000, REVERSESEEK);
+                    break;
+#else
                 case 1: waitingFor = FRAMESTOP; break;
+#endif // SPROCKETSEEK
                 case 2: setServo(SERVO_NEXTFRAME_SLOW); break;
             }
 //            Serial.print("OIC ");
@@ -452,7 +543,8 @@ void loop ()
         //        Serial.print("Timeout = ");
         //        Serial.println(optoIntTimeout);
         //    }
-            waitingFor = OPTOINT_CHANGED;
+            //waitingFor = OPTOINT_CHANGED;
+            waitingFor = OPTOINT_HALF;
             break;
 
         case SHUTTERCLOSED:
