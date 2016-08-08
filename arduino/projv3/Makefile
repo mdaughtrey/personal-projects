@@ -52,6 +52,7 @@ PORT=/dev/tty.usbserial-A601KW2O
 #PORT = /dev/ttyUSB0
 
 ARDUINO = ../core/
+ARDUINOCPP = ${ARDUINO}/StandardCplusplus-master
 FRAM = $(ARDUINO)/Adafruit_FRAM_I2C-master/
 
 SRC = $(ARDUINO)/buffer.c $(ARDUINO)/pins_arduino.c \
@@ -66,7 +67,7 @@ CXXSRC = $(TARGET).cpp \
     $(ARDUINO)/HardwareSerial.cpp \
     $(ARDUINO)/WRandom.cpp \
     $(ARDUINO)/TwoWire.cpp \
-    $(FRAM)/Adafruit_FRAM_I2C.cpp 
+    $(FRAM)/Adafruit_FRAM_I2C.cpp \
 
 #MCU = atmega168
 MCU = atmega328p
@@ -85,13 +86,13 @@ DEBUG = stabs
 OPT = s
 
 # Place -D or -U options here
-CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP -DUSEFRAM -DLOGSTATE
-CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP -DUSEFRAM -DLOGSTATE
+CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP 
+CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP 
 # -DSDEBUG
 
 # Place -I options here
-CINCS = -I$(ARDUINO)  -I. -I/usr/local/CrossPack-AVR/avr/include
-CXXINCS = -I$(ARDUINO)  -I.
+CINCS = -I$(ARDUINO)  -I. -I/usr/local/CrossPack-AVR/avr/include -I${ARDUINOCPP}
+CXXINCS = -I$(ARDUINO)  -I. -I${ARDUINOCPP}
 
 # Compiler flag to set the C Standard level.
 # c89   - "ANSI" C
