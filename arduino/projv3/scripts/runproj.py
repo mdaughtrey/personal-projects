@@ -39,7 +39,7 @@ def Sleep(sleepFor):
     time.sleep(sleepFor)
 
 class FlashAir():
-    AIRPORT='en0'
+#    AIRPORT='en0'
     SSID='CamSD'
     KEY='12345678'
     IP='192.168.1.222'
@@ -72,7 +72,7 @@ class FlashAir():
 
     def _isAirportOn(self):
         try:
-            result = subprocess.check_output((FlashAir.GETAIRPORTPOWER + "%s" % FlashAir.AIRPORT).split(' '))
+            result = subprocess.check_output((FlashAir.GETAIRPORTPOWER + "%s" % options.wifidev).split(' '))
             result = result.split(':')[-1].strip()
             if "On" != result:
                 return True
@@ -84,17 +84,17 @@ class FlashAir():
 
     def _turnAirportOn(self):
         logger.debug("_turnAirportOn")
-        rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s on" % FlashAir.AIRPORT).split(' '))
+        rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s on" % options.wifidev).split(' '))
         logging.debug('_turnAirportOn %u' % rc)
 
     def _turnAirportOff(self):
         logger.debug("_turnAirportOff")
-        rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s off" % FlashAir.AIRPORT).split(' '))
+        rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s off" % options.wifidev).split(' '))
         logging.debug('_turnAirportOff %u' % rc)
 
     def connectToCard(self):
         logger.info("connectToCard")
-        result = subprocess.check_output((FlashAir.SETAIRPORTNETWORK + "%s %s %s" % (FlashAir.AIRPORT, FlashAir.SSID, FlashAir.KEY)).split(' '))
+        result = subprocess.check_output((FlashAir.SETAIRPORTNETWORK + "%s %s %s" % (options.wifidev, FlashAir.SSID, FlashAir.KEY)).split(' '))
         if '' != result:
             logger.error("Connect to %s failed: %s" % (FlashAir.SSID, result))
             return False
@@ -108,20 +108,20 @@ class FlashAir():
         logger.info("getFiles: Requesting %s" % command)
         retryCount = 0
         while retryCount < 5:
-            try:
+#            try:
                 retryCount += 1
                 self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
                 self.conn.request("GET", command)
                 break
 
-            except httplib.HTTPException as ee:
-                logger.warning("%s, retrying" % ee.message )
-
-            except socket.error as ee:
-                logger.warning("%s, retrying" % ee.message )
-
-            except socket.timeout as ee:
-                logger.warning("%s, retrying" % ee.message )
+#            except httplib.HTTPException as ee:
+#                logger.warning("%s, retrying" % ee.message )
+#
+#            except socket.error as ee:
+#                logger.warning("%s, retrying" % ee.message )
+#
+#            except socket.timeout as ee:
+#                logger.warning("%s, retrying" % ee.message )
 
         if 5 == retryCount:
             logger.error("getFiles failed, abandoning")
@@ -178,10 +178,20 @@ class FlashAir():
             return None
 
     def deleteFile(self, url):
-        self.conn.request("GET", "/upload.cgi?DEL=%s" % url)
-        response = self.conn.getresponse()
-        logger.debug("deleteFile %s" % response.read())
-        return response.read()
+        retryCount = 0
+        while retryCount < 3:
+            try:
+                self.conn.request("GET", "/upload.cgi?DEL=%s" % url)
+                response = self.conn.getresponse()
+                logger.debug("deleteFile %s" % response.read())
+                return response.read()
+
+            except socket.timeout as ee:
+                logger.warn("%s, resetting HTTP connection" % ee.message)
+                self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
+                retryCount += 1
+
+        return "socket timed out"
 
     def clearCard(self):
         self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
@@ -200,7 +210,12 @@ class FlashAir():
                 return status
 
     def processFiles(self):
-        self.urls = self.getFiles()
+        try:
+            self.urls = self.getFiles()
+        except socket.timeout as ee:
+            logger.error("socket timeout %s" % ee.message)
+            raise RuntimeError("restart")
+
         if False == self.urls:
             logger.error("getFiles failed, aborting")
             raise RuntimeError("getFiles")
@@ -252,6 +267,7 @@ class SerialProtocol(LineOnlyReceiver):
         self._waiton = {'Init OK': self._initProjector}
         self.sdCard = FlashAir()
         self.sdCard.disconnect()
+        self._currentSlowSeq = None
 
     def connectionLost(self, reason):
         logger.info('Disconnected from serial port %s', reason)
@@ -289,7 +305,7 @@ class SerialProtocol(LineOnlyReceiver):
 
         except RuntimeError as ee:
             logger.error("%s at generator step %u" % (ee.message, ii))
-            return
+            raise
 
     def _initProjector(self):
         self._waiton.pop('Init OK', None)
@@ -314,6 +330,7 @@ class SerialProtocol(LineOnlyReceiver):
     def _slowSequence(self, sequence = None):
         logger.debug("_slowSequence")
         if sequence is not None:
+            self._currentSlowSeq = sequence
             self._ssIter = self._generator(sequence)
 
         if False == hasattr(self, '_ssIter') or self._ssIter is None:
@@ -325,9 +342,16 @@ class SerialProtocol(LineOnlyReceiver):
 
         except StopIteration:
             del self._ssIter
+            del self._currentSlowSeq
 
         except RuntimeError as ee:
             del self._ssIter
+            if 'restart' == ee.message and self._currentSlowSeq is not None:
+                logger.info("Restarting sequence")
+                self._ssITer = self._generator(self._currentSlowSeq)
+            else:    
+                pdb.set_trace()
+            
 
     def _stopProjector(self):
         reactor.callLater(0, lambda: self._getFileInfo(last = True))
@@ -363,26 +387,36 @@ class SerialProtocol(LineOnlyReceiver):
                 exitCode = EX_TIMEOUT
                 self.transport.loseConnection()
 
-        try:
-            self._slowSequence([
-                lambda: self.send('C'),
-                lambda: self.send('c'),
-                self.sdCard.connect,
-                self.sdCard.processFiles,
-                self.sdCard.clearCard,
-                self.sdCard.disconnect,
-                lambda: testLast(self, last)
-                ])
+##        while True:
+#            try:
+        self._slowSequence([
+            lambda: self.send('C'),
+            lambda: self.send('c'),
+            self.sdCard.connect,
+            self.sdCard.processFiles,
+            self.sdCard.clearCard,
+            self.sdCard.disconnect,
+            lambda: testLast(self, last)
+            ])
 
-        except RuntimeError as ee:
-            logger.error("Something crapped out badly %s" % ee.message)
-            retryCount += 1
-            if retryCount > 3:
-                global exitCode
-                exitCode = EX_ERROR
-                logging.error("Giving up")
-                self.transport.loseConnection()
-
+#            except httplib.HTTPException as ee:
+#                logger.warning("%s, retrying" % ee.message )
+#
+#            except socket.error as ee:
+#                logger.warning("%s, retrying" % ee.message )
+#
+#            except socket.timeout as ee:
+#                logger.warning("%s, retrying" % ee.message )
+#
+#            except RuntimeError as ee:
+#                logger.error("Something crapped out badly %s" % ee.message)
+#                retryCount += 1
+#                if retryCount > 3:
+#                    global exitCode
+#                    exitCode = EX_ERROR
+#                    logging.error("Giving up")
+#                    self.transport.loseConnection()
+#
 #    def _processSDFiles(self):
 #        self.sdCard.processFiles()
 #        logger.debug("Disconnecting from SD Card")
@@ -413,6 +447,7 @@ def getOptions():
     parser.add_option('-r', '--servo', dest='servo')
     parser.add_option('-m', '--mode', dest='mode', help='super8|8mm')
     parser.add_option('-l', '--length', dest='filmlength', help='film length (small|large)')
+    parser.add_option('-w', '--wifidev', dest='wifidev', help='wifi device')
     parser.add_option('-d', '--serdevice', dest='serdev', help='Serial device',
         default='/dev/tty.usbserial-A601KW2O')
 
@@ -454,6 +489,7 @@ def main():
     else:
         serdev = SerialPort(SerialProtocol(), options.serdev, reactor, 57600)
         reactor.run()
+
     return exitCode
 
 
