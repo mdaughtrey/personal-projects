@@ -68,6 +68,7 @@ CXXSRC = $(TARGET).cpp \
     $(ARDUINO)/WRandom.cpp \
     $(ARDUINO)/TwoWire.cpp \
     $(FRAM)/Adafruit_FRAM_I2C.cpp \
+    stepper.cpp
 
 #MCU = atmega168
 MCU = atmega328p
@@ -86,8 +87,8 @@ DEBUG = stabs
 OPT = s
 
 # Place -D or -U options here
-CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP 
-CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP 
+CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP -DUSESTEPPER
+CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP  -DUSESTEPPER
 # -DSDEBUG
 
 # Place -I options here
