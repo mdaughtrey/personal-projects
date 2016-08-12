@@ -1,5 +1,8 @@
 #include <WProgram.h>
 #include <avrlibtypes.h>
+#ifdef USESTEPPER
+#include <stepper.h>
+#endif // USESTEPPER
 #ifdef USEFRAM
 #define LOGSTATE
 #include <Adafruit_FRAM_I2C-master/Adafruit_FRAM_I2C.h>
@@ -10,7 +13,9 @@
 #define PC_SHUTTER 2
 #define PD_CAMERAPOWER 7
 #define PD_SHUTTERREADY 6
+#ifndef USESTEPPER
 #define PB_SERVO 3
+#endif // USESTEPPER
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
 #define PC_OPTOINT 1 // PC1
@@ -21,6 +26,7 @@
 #define MOTOR_REWIND_FAST 100 
 #define MOTOR_REWIND_SLOW 70 
 #define MOTOR_OFF 0 
+#ifndef USESTEPPER
 #define SERVO_MIN 64
 #define SERVO_STOP 94
 #define SERVO_MAX 128
@@ -29,16 +35,21 @@
 #define SERVO_NEXTFRAME_SLOW 84 
 #define SERVO_NEXTFRAME_VERY_SLOW 87
 #define SERVO_REVERSE 110 
+#endif // USESTEPPER
 
 #define CAMERABUSYTIMEOUT 1000
 #define LAMP_TIMEOUT_MS 3000
 #define NEXT_FRAME_TIMEOUT_MS 8000
-#define SERVO_TIMEOUT_MS 2000
 #define SENSORTHRESHOLD 200
 #define LAMP_OFF PORTB &= ~_BV(PB_LAMP)
 #define LAMP_ON PORTB |= _BV(PB_LAMP)
+
+#ifndef USESTEPPER
+#define SERVO_TIMEOUT_MS 2000
 #define SERVO_ON PORTB |= _BV(PB_SERVO)
 #define SERVO_OFF PORTB &= ~_BV(PB_SERVO)
+#endif // USESTEPPER
+
 #define SHUTTER_OPEN PORTC &= ~_BV(PC_SHUTTER)
 #define SHUTTER_CLOSE PORTC |= _BV(PC_SHUTTER)
 #define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
@@ -89,9 +100,12 @@ typedef enum
 void incMotor();
 void decMotor();
 void setMotor(u08 set);
+
+#ifndef USESTEPPER
 void incServo();
 void decServo();
 void setServo(u08 set);
+#endif // USESTEPPER
 void lampOn();
 void lampOff();
 void lampCheck();
@@ -101,7 +115,9 @@ u16 parameter = 0;
 volatile u08 intCount = 0;
 volatile u08 lastIntCount = 0;
 u08 verbose = 1;
+#ifndef USESTEPPER
 u08 servoPulse = SERVO_STOP;
+#endif // USESTEPPER
 u08 motorPulse = 255;
 u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
 //u08 servoSpeed = SERVO_NEXTFRAME_FAST;
@@ -119,8 +135,10 @@ u08 filmMode = FILM_NONE;
 volatile u08 shutterState = 0;
 
 //u08 highCount;
+#ifndef USESTEPPER
 u16 servoCount = 0;
 u16 servoThreshold = 0;
+#endif // USESTEPPER
 
 #ifdef USEFRAM
 Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
@@ -187,6 +205,7 @@ u32 framRead32(u16 address)
 //-                    u16 fValue((fram.read8(ii) << 8) | fram.read8(ii+1));
 #endif // USEFRAM
 
+#ifndef USESTEPPER
 ISR(TIMER2_OVF_vect)
 {
     ++servoCount;
@@ -200,6 +219,7 @@ ISR(TIMER2_OVF_vect)
     }
     servoCount &= 0x03ff;
 }
+#endif // USESTEPPER
 
 ISR(PCINT2_vect)
 {
@@ -222,6 +242,7 @@ void setMotor(u08 set)
     analogWrite(PIN_MOTOR, motorPulse);
 }
 
+#ifndef USESTEPPER
 void incServo()
 {
     if (servoPulse >= SERVO_MAX)
@@ -261,6 +282,7 @@ void setServo(u08 set)
 //    servoPulse = set;
 //    OCR2A = servoPulse;
 }
+#endif // USESTEPPER
 
 void lampOn()
 {
@@ -296,7 +318,11 @@ u08 decFrameCount()
     frameCount--;
     if (frameCount == 0)
     {
+#ifndef USESTEPPER
         setServo(SERVO_STOP);
+#else
+        stepperStop();
+#endif // USESTEPPER
         waitingFor = FRAMESTOP;
         return 1;
     }
@@ -316,7 +342,7 @@ u08 halfFrameTransition()
 u08 fullFrameTransition()
 {
     sensorValue = !sensorValue;
-    optoIntTimeout = 0;
+    //optoIntTimeout = 0;
     return FULLFRAME; // full frame transition
 }
 //
@@ -371,7 +397,11 @@ u08 isOptoTransition()
 void reset()
 {
     Serial.println("Reset");
+#ifndef USESTEPPER
     setServo(SERVO_STOP);
+#else
+    stepperInit();
+#endif // USESTEPPER
     lampOff();
     //SHUTTERINT_OFF;
     CAMERA_OFF;
@@ -406,8 +436,10 @@ void setup ()
     DDRC |= _BV(PC_SHUTTER);
     CAMERA_OFF;
     lampOff();
-    cli();
+    Serial.println("Init Start 4");
 
+#ifndef USESTEPPER
+    cli();
     TCCR2B |= _BV(CS20); // no prescaler   
     TIFR2 &= ~_BV(TOV2); // clear overflow interrupt flag
     TIMSK2 |= _BV(TOIE2); // enable counter2 overflow interrupt
@@ -415,9 +447,14 @@ void setup ()
     servoPulse = SERVO_STOP;
     TCNT2 = 0x00;
     DDRB |= _BV(PB_SERVO);
-    shutterState = 0xaa;
     sei();
+#else // USESTEPPER
+    Serial.println("stepperInit");
+    stepperInit();
+#endif // USESTEPPER
+    shutterState = 0xaa;
 #ifdef USEFRAM
+    Serial.println("Init FRAM");
     if (fram.begin())
     {
         Serial.println("FRAM ok");
@@ -429,9 +466,15 @@ void setup ()
     Serial.println("Init OK");
 }
 
+#ifdef LOGSTATE
 u08 lastReportedState(255);
+#endif // LOGSTATE
+
 void loop ()
 {
+#ifdef USESTEPPER
+    stepperPoll();
+#endif // USESTEPPER
     lampCheck();
 #ifdef USEFRAM
 #ifdef LOGSTATE
@@ -473,7 +516,11 @@ void loop ()
             {
                 Serial.println("FRAMESTOP");
             }
+#ifndef USESTEPPER
             setServo(SERVO_STOP);
+#else
+            stepperStop();
+#endif // USESTEPPER
             if (frameCount == 0)
             {
                 setMotor(MOTOR_OFF);
@@ -487,6 +534,16 @@ void loop ()
                 //waitingFor = SHUTTEROPEN;
                 cameraBusyTimeout = millis();
                 waitingFor = WAITCAMERABUSY;
+                if (verbose)
+                {
+                    Serial.print("OIC ");
+                    Serial.print(millis() - optoIntTimeout, 10);
+                    Serial.print("\r\n");
+                }
+                if ((millis() - optoIntTimeout) < 750)
+                {
+                    stepperDelay(1);
+                }
             }
             break;
 
@@ -528,7 +585,9 @@ void loop ()
             }
             if (HALFFRAME == isOptoTransition())
             {
+#ifndef USESTEPPER
                 setServo(SERVO_NEXTFRAME_SLOW);
+#endif // USESTEPPER
                 waitingFor = OPTOINT_FULL;
             }
             break;
@@ -541,8 +600,12 @@ void loop ()
             if (FULLFRAME == isOptoTransition())
             {
                 setMotor(MOTOR_REWIND_SLOW);
+#ifndef USESTEPPER
                 setServo(SERVO_REVERSE);
                 waitingFor = OPTOINT_REVERSE;
+#else
+                waitingFor = FRAMESTOP;
+#endif // USESTEPPER
             }
             break;
 
@@ -554,7 +617,9 @@ void loop ()
             if (HALFFRAME == isOptoTransition())
             {
                 setMotor(motorPretensionNext);
+#ifndef USESTEPPER
                 setServo(SERVO_NEXTFRAME_VERY_SLOW);
+#endif // USESTEPPER
                 waitingFor = OPTOINT_FULL2;
             }
             break;
@@ -582,13 +647,15 @@ void loop ()
 //                    waitingFor = REVERSESEEK;
                     waitingFor = OPTOINT_HALF;
                     setMotor(MOTOR_REWIND_SLOW);
+#ifndef USESTEPPER
                     setServo(SERVO_REVERSE);
+#endif // USESTEPPER
                     //DELAYEDSTATE(1000, REVERSESEEK);
                     break;
+#ifndef USESTEPPER
                 case 2: setServo(SERVO_NEXTFRAME_SLOW); break;
+#endif // USESTEPPER
             }
-//            Serial.print("OIC ");
-//            Serial.println(millis());
             break;
 
         case SENSORSTART:
@@ -600,7 +667,11 @@ void loop ()
             {
                 setMotor(motorPretensionNext);
             }
+#ifndef USESTEPPER
             setServo(SERVO_NEXTFRAME_FAST);
+#else
+            stepperGo();
+#endif // USESTEPPER
             SENSORVALUEINIT;
             optoIntTimeout = 0;
 //#ifdef USEFRAM
@@ -650,67 +721,70 @@ void loop ()
 //            }
 //            break;
 
-        case EXPOSURESERIES4:
-            lampOff();
-            SHUTTERINT_OFF;
-            SHUTTER_CLOSE;
-            waitingFor = SHUTTERCLOSED;
-            break;
-
-        case EXPOSURESERIES3A:
-            if (0x01 & shutterState)
-            {
-                waitingFor = EXPOSURESERIES4;
-            }
-            break;
+//        case EXPOSURESERIES4:
+////            lampOff();
+////            SHUTTERINT_OFF;
+////            SHUTTER_CLOSE;
+//            waitingFor = SHUTTERCLOSED;
+//            break;
+//
+//        case EXPOSURESERIES3A:
+//            if (0x01 & shutterState)
+//            {
+//                break;
+//            }
+//            waitingFor = EXPOSURESERIES4;
+//            break;
 
         case EXPOSURESERIES3:
             if (0x01 & shutterState)
             {
-                break;
+                lampOn();
+                SHUTTERINT_OFF;
+                SHUTTER_CLOSE;
+                delay(30);
+                lampOff();
+                waitingFor = SHUTTERCLOSED;
+                //waitingFor = EXPOSURESERIES3A;
             }
-            lampOn();
-            delay(60);
-            lampOff();
-            waitingFor = EXPOSURESERIES3A;
             break;
 
         case EXPOSURESERIES2A:
             if (0x01 & shutterState)
             {
-                waitingFor = EXPOSURESERIES3;
+                break;
             }
+            waitingFor = EXPOSURESERIES3;
             break;
 
         case EXPOSURESERIES2: 
             if (0x01 & shutterState)
             {
-                break;
+                lampOn();
+                delay(10);
+                lampOff();
+                waitingFor = EXPOSURESERIES2A;
             }
-            lampOn();
-            delay(20);
-            lampOff();
-            waitingFor = EXPOSURESERIES2A;
             break;
 
         // next state when pulse ends
         case EXPOSURESERIES1A:
             if (0x01 & shutterState)
             {
-                waitingFor = EXPOSURESERIES2;
+                break;
             }
+            waitingFor = EXPOSURESERIES2;
             break;
 
         // wait for lowgoing pulse
         case EXPOSURESERIES1: 
             if (0x01 & shutterState)
             {
-                break;
+                lampOn();
+                delay(2);
+                lampOff();
+                waitingFor = EXPOSURESERIES1A;
             }
-            lampOn();
-            delay(4);
-            lampOff();
-            waitingFor = EXPOSURESERIES1A;
             break;
 
         // Trigger shutter
@@ -718,6 +792,7 @@ void loop ()
             shutterState = 0xff;
             SHUTTERINT_ON;
             SHUTTER_OPEN;
+            delay(20);
             waitingFor = EXPOSURESERIES1;
 //            delay(100);
 //            lampOn();
@@ -923,7 +998,11 @@ void loop ()
             break;
 
         case 't': // pretension
+#ifndef USESTEPPER
             setServo(SERVO_STOP);
+#else
+            stepperStop();
+#endif // USESTEPPER
 //            if (parameter > 0)
 //            {
                 setMotor(motorPretensionNext);
@@ -931,7 +1010,11 @@ void loop ()
             break;
 
         case 'u': // untension
+#ifndef USESTEPPER
             setServo(SERVO_STOP);
+#else
+            stepperStop();
+#endif // USESTEPPER
             setMotor(MOTOR_OFF);
             break;
 
@@ -941,17 +1024,23 @@ void loop ()
                 SENSORVALUEINIT;
             }
             setMotor(MOTOR_PRETENSION_FF);
+#ifndef USESTEPPER
             setServo(SERVO_MIN);
+#else
+            stepperGo();
+#endif // USESTEPPER
             if (frameCount)
             {
                 waitingFor = STOPONFRAMEZERO;
             }
             break;
 
-        case 'F': // backward
-            setMotor(MOTOR_REWIND_SLOW);
-            setServo(SERVO_REVERSE);
-            break;
+//        case 'F': // backward
+//            setMotor(MOTOR_REWIND_SLOW);
+//#ifndef USESTEPPER
+//            setServo(SERVO_REVERSE);
+//#endif // USESTEPPER
+//            break;
 
         case 'r':
             SENSORVALUEINIT;
