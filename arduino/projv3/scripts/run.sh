@@ -3,17 +3,34 @@
 NUMFRAMES=200
 MNTPOINT=/Volumes/imageinput
 SERVER=smb://GUEST:@nas-36-FE-22%20%28SMB%29._smb._tcp.local/imageinput
+#TARGETDIR=/Volumes/imageinput/tmp
+#TARGETDIR=./scans/Niall/NK0032
+TARGETDIR=./scans/test/001
+MODE=super8
+WIFIDEV=en1
 
-if [[ ! -d $MNTPOINT ]]
+#let retry=3
+#while [[ ! -d $MNTPOINT ]]
+#do
+#    open $SERVER
+#    sleep 10
+#    ((retry--))
+#    if ((0 == retry))
+#    then
+#        echo Cannot mount, giving up
+#    fi
+#done
+
+if [[ ! -d "$TARGETDIR" ]]
 then
-    open $SERVER
+    mkdir -p $TARGETDIR
 fi
 
 arg=${1:-capture}
 
 if [[ "capture" == "$arg" ]]
 then
-    exec ./runproj.py --targetdir ./tmp --numframes $NUMFRAMES --pretension 20 --mode 8mm 
+    exec ./runproj.py --targetdir $TARGETDIR --numframes $NUMFRAMES --pretension 30 --mode $MODE --wifidev $WIFIDEV
 else
-    exec ./runproj.py --targetdir ./tmp --transferonly
+    exec ./runproj.py --targetdir $TARGETDIR --transferonly --wifidev $WIFIDEV
 fi
