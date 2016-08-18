@@ -433,7 +433,7 @@ void setup ()
 //    PORTD |= _BV(PD_SHUTTERREADY);
     DDRD |= _BV(PD_CAMERAPOWER);
     DDRB |= _BV(PB_LAMP);
-    DDRC |= _BV(PC_SHUTTER);
+    DDRC |= _BV(PC_SHUTTER) | 0x02;
     CAMERA_OFF;
     lampOff();
     Serial.println("Init Start 4");
@@ -472,6 +472,12 @@ u08 lastReportedState(255);
 
 void loop ()
 {
+    if (2 == verbose)
+    {
+        Serial.print(PINC, 2);
+        Serial.print("\r\n");
+        delay(100);
+    }
 #ifdef USESTEPPER
     stepperPoll();
 #endif // USESTEPPER
@@ -599,7 +605,8 @@ void loop ()
             }
             if (FULLFRAME == isOptoTransition())
             {
-                setMotor(MOTOR_REWIND_SLOW);
+                //setMotor(MOTOR_REWIND_SLOW);
+                setMotor(motorPretensionNext);
 #ifndef USESTEPPER
                 setServo(SERVO_REVERSE);
                 waitingFor = OPTOINT_REVERSE;
@@ -997,16 +1004,31 @@ void loop ()
             }
             break;
 
-        case 't': // pretension
+        case 't': // auto pretension
 #ifndef USESTEPPER
             setServo(SERVO_STOP);
 #else
             stepperStop();
 #endif // USESTEPPER
-//            if (parameter > 0)
-//            {
-                setMotor(motorPretensionNext);
-//            }
+            {
+//                setMotor(0);
+//                delay(500);
+//                setMotor(65);
+//                delay(500);
+                //Serial.println("autotension");
+                for (motorPretensionNext = 60;
+                    motorPretensionNext > 10 && !(PINC & 0x02);
+                    motorPretensionNext -= 5)
+                {
+                    setMotor(motorPretensionNext);
+//                    Serial.print("mpn ");
+//                    Serial.print(motorPretensionNext, 10);
+//                    Serial.print(" PINC ");
+//                    Serial.print(PINC, 2);
+//                    Serial.print("\r\n");
+                    delay(250);
+                }
+            }
             break;
 
         case 'u': // untension
