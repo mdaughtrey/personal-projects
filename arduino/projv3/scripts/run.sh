@@ -6,8 +6,8 @@ SERVER=smb://GUEST:@nas-36-FE-22%20%28SMB%29._smb._tcp.local/imageinput
 #TARGETDIR=/Volumes/imageinput/tmp
 #TARGETDIR=./scans/Niall/NK0032
 TARGETDIR=./scans/test/001
-MODE=super8
-WIFIDEV=en1
+MODE=8mm
+WIFIDEV=en0
 
 #let retry=3
 #while [[ ! -d $MNTPOINT ]]
@@ -30,7 +30,7 @@ arg=${1:-capture}
 
 if [[ "capture" == "$arg" ]]
 then
-    exec ./runproj.py --targetdir $TARGETDIR --numframes $NUMFRAMES --pretension 30 --mode $MODE --wifidev $WIFIDEV
+    exec ./runproj.py --targetdir $TARGETDIR --numframes $NUMFRAMES --pretension 10 --mode $MODE --wifidev $WIFIDEV
 else
     exec ./runproj.py --targetdir $TARGETDIR --transferonly --wifidev $WIFIDEV
 fi

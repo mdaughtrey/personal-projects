@@ -318,8 +318,10 @@ class SerialProtocol(LineOnlyReceiver):
 
         sequence = [
             lambda: self.send(' '),
+            lambda: self.send('70m'), # manual tensions
+            lambda: self.send('t'),  # autotension
             lambda: self.send('vc'),
-            lambda: self.send("%s[" % options.pretension),
+        #    lambda: self.send("%s[" % options.pretension),
             lambda: self.send({'8mm': 'd', 'super8': 'D'}[options.mode]),
             lambda: self.send("%so" % options.numframes),
             lambda: setWaiton(self),
@@ -328,9 +330,10 @@ class SerialProtocol(LineOnlyReceiver):
         self._slowSequence(sequence)
 
     def _slowSequence(self, sequence = None):
-        logger.debug("_slowSequence")
+        logger.debug("_slowSequence, sequence is %s" % sequence)
         if sequence is not None:
             self._currentSlowSeq = sequence
+            logger.debug("self._currentSlowSeq %s" % self._currentSlowSeq)
             self._ssIter = self._generator(sequence)
 
         if False == hasattr(self, '_ssIter') or self._ssIter is None:
@@ -348,7 +351,8 @@ class SerialProtocol(LineOnlyReceiver):
             del self._ssIter
             if 'restart' == ee.message and self._currentSlowSeq is not None:
                 logger.info("Restarting sequence")
-                self._ssITer = self._generator(self._currentSlowSeq)
+#                self._ssITer = self._generator(self._currentSlowSeq)
+                reactor.callLater(2, self._slowSequence(self._currentSlowSeq))
             else:    
                 pdb.set_trace()
             
