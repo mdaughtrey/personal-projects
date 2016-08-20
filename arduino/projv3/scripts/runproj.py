@@ -48,27 +48,28 @@ class FlashAir():
     SETAIRPORTNETWORK='networksetup -setairportnetwork '
     LISTAPS='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s'
 
-    def connect(self):
-        self._turnAirportOff()
-        Sleep(5)
-        self._turnAirportOn()
-        Sleep(10)
-        while self.waitingForAP(FlashAir.SSID):
-            Sleep(2)
-        if False == self.connectToCard():
-#            pdb.set_trace()
-            raise RuntimeError("FlashAir.connect")
+#    def connect(self):
+#        self._turnAirportOff()
+#        Sleep(5)
+#        self._turnAirportOn()
+#        Sleep(10)
+#        while self.waitingForAP(FlashAir.SSID):
+#            Sleep(2)
+#        if False == self.connectToCard():
+#            raise RuntimeError("FlashAir.connect")
             
     def disconnect(self):
         self._turnAirportOff()
 
     def waitingForAP(self, ap):
+        logger.debug('waitingForAP')
         result = subprocess.check_output((FlashAir.LISTAPS).split(' '))
         for line in result.split('\n'):
+            logger.debug(line)
             if ap in line.split():
-                return False
+                return 
 
-        return True
+        raise RuntimeError("Cannot see %s" % ap)
 
     def _isAirportOn(self):
         try:
@@ -95,13 +96,11 @@ class FlashAir():
     def connectToCard(self):
         logger.info("connectToCard")
         result = subprocess.check_output((FlashAir.SETAIRPORTNETWORK + "%s %s %s" % (options.wifidev, FlashAir.SSID, FlashAir.KEY)).split(' '))
+        logger.debug(result)
         if '' != result:
-            logger.error("Connect to %s failed: %s" % (FlashAir.SSID, result))
-            return False
+            raise RuntimeError("Connect to %s failed: %s" % (FlashAir.SSID, result))
 
         logger.info("WIFI Connected to %s" % FlashAir.SSID)
-        #self.conn = httplib.HTTPConnection(FlashAir.IP, 80, timeout = 5)
-        return True
 
     def getFiles(self):
         command="/command.cgi?op=100&DIR=/DCIM"
@@ -264,10 +263,11 @@ class SerialProtocol(LineOnlyReceiver):
         Sleep(1)
         self.transport.setDTR(True)
         self._waiton = dict()
-        self._waiton = {'Init OK': self._initProjector}
+        self._waiton = {"{State:Ready}" : self._initProjector1}
         self.sdCard = FlashAir()
         self.sdCard.disconnect()
         self._currentSlowSeq = None
+        self._slowSeqInterval = 2
 
     def connectionLost(self, reason):
         logger.info('Disconnected from serial port %s', reason)
@@ -307,27 +307,38 @@ class SerialProtocol(LineOnlyReceiver):
             logger.error("%s at generator step %u" % (ee.message, ii))
             raise
 
-    def _initProjector(self):
-        self._waiton.pop('Init OK', None)
-        logger.debug("_initProjector")
-
-        def setWaiton(self):
-            self._waiton = dict()
-            self._waiton['Frames Done'] = lambda: self._getFileInfo(last = False)
-            self._waiton['Opto int timeout'] = self._stopProjector
+    def _initProjector1(self):
+        self._waiton.pop('{State:Ready}', None)
+        logger.debug("_initProjector1")
+        self._waiton['{pt:'] = self._initProjector2
 
         sequence = [
             lambda: self.send(' '),
-            lambda: self.send('70m'), # manual tensions
-            lambda: self.send('t'),  # autotension
-            lambda: self.send('vc'),
-        #    lambda: self.send("%s[" % options.pretension),
+            lambda: self.send('vt')  # autotension
+            ]
+        self._slowSequence(sequence)
+
+    def _initProjector2(self):
+        self._waiton.pop('{pt:}', None)
+        logger.debug("_initProjector2")
+
+        def setWaiton(self):
+            self._waiton = dict()
+            self._waiton['{Remaining:0}'] = lambda: self._getFileInfo(last = False)
+            self._waiton['Opto int timeout'] = self._stopProjector
+
+        sequence = [
+            lambda: self._setSSInterval(2),
+            lambda: self.send('c'),
             lambda: self.send({'8mm': 'd', 'super8': 'D'}[options.mode]),
             lambda: self.send("%so" % options.numframes),
             lambda: setWaiton(self),
             lambda: self.send('S')
             ]
         self._slowSequence(sequence)
+
+    def _setSSInterval(self, interval):
+        self._slowSeqInterval = interval
 
     def _slowSequence(self, sequence = None):
         logger.debug("_slowSequence, sequence is %s" % sequence)
@@ -341,7 +352,7 @@ class SerialProtocol(LineOnlyReceiver):
 
         try:
             next(self._ssIter)
-            reactor.callLater(2, self._slowSequence)
+            reactor.callLater(self._slowSeqInterval, self._slowSequence)
 
         except StopIteration:
             del self._ssIter
@@ -352,6 +363,7 @@ class SerialProtocol(LineOnlyReceiver):
             if 'restart' == ee.message and self._currentSlowSeq is not None:
                 logger.info("Restarting sequence")
 #                self._ssITer = self._generator(self._currentSlowSeq)
+                pdb.set_trace()
                 reactor.callLater(2, self._slowSequence(self._currentSlowSeq))
             else:    
                 pdb.set_trace()
@@ -385,7 +397,7 @@ class SerialProtocol(LineOnlyReceiver):
 
         def testLast(self, last):
             if False == last:
-                reactor.callLater(1, self._initProjector)
+                reactor.callLater(1, self._initProjector1)
             else:
                 global exitCode
                 exitCode = EX_TIMEOUT
@@ -394,10 +406,18 @@ class SerialProtocol(LineOnlyReceiver):
 ##        while True:
 #            try:
         self._slowSequence([
-            lambda: self.send('C'),
+            lambda: self._setSSInterval(2),
+            lambda: self.send(' '),
             lambda: self.send('c'),
             self.sdCard.connect,
+            lambda: self._setSSInterval(5),
+            self.sdCard.turnAirportOff,
+            self.sdCard.turnAirportOn,
+            lambda: self._setSSInterval(10),
+            lambda: self.sdCard.waitingForAP(FlashAir.SSID),
+            self.sdCard.connectToCard,
             self.sdCard.processFiles,
+            lambda: self._setSSInterval(2),
             self.sdCard.clearCard,
             self.sdCard.disconnect,
             lambda: testLast(self, last)

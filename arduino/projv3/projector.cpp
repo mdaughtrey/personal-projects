@@ -19,6 +19,7 @@
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
 #define PC_OPTOINT 1 // PC1
+#define PC_TENSIONSENSOR 0 // PC0
 #define OPTOINT_TIMEOUT 5000
 
 #define MOTOR_PRETENSION_NEXT 40 
@@ -36,6 +37,7 @@
 #define SERVO_NEXTFRAME_VERY_SLOW 87
 #define SERVO_REVERSE 110 
 #endif // USESTEPPER
+#define PRETENSIONDELAY 200
 
 #define CAMERABUSYTIMEOUT 1000
 #define LAMP_TIMEOUT_MS 3000
@@ -114,12 +116,12 @@ void reset();
 u16 parameter = 0;
 volatile u08 intCount = 0;
 volatile u08 lastIntCount = 0;
-u08 verbose = 1;
+u08 verbose = 0;
 #ifndef USESTEPPER
 u08 servoPulse = SERVO_STOP;
 #endif // USESTEPPER
 u08 motorPulse = 255;
-u08 motorPretensionNext = MOTOR_PRETENSION_NEXT;
+u08 pretension = MOTOR_PRETENSION_NEXT;
 //u08 servoSpeed = SERVO_NEXTFRAME_FAST;
 u32 lampTimeout = 0;
 volatile u32 optoIntTimeout;
@@ -359,13 +361,17 @@ u08 isOptoTransition()
     }
     if ((now - optoIntTimeout) > OPTOINT_TIMEOUT)
     {
-        if (1 == verbose)
-        {
-            Serial.print("Opto int timeout ");
-            Serial.print(optoIntTimeout);
-            Serial.print(" vs ");
-            Serial.println(now);
-        }
+//        if (1 == verbose)
+//        {
+//            Serial.print("Opto int timeout ");
+//            Serial.print(optoIntTimeout);
+//            Serial.print(" vs ");
+//            Serial.println(now);
+//        }
+        // JSON
+        Serial.print("{OIT:");
+        Serial.print(now - optoIntTimeout, 10);
+        Serial.println("}");
         reset();
         return NOTRANSITION;
     }
@@ -428,15 +434,14 @@ void setup ()
     analogWrite(PIN_MOTOR, MOTOR_OFF);
     //PORTB |= _BV(PC_OPTOINT); // tie led sensor line high
     //PORTB |= _BV(PB_CAMERABUSY);
-    PORTC |= _BV(PC_SHUTTER);
+    PORTC |= _BV(PC_SHUTTER) | _BV(PC_TENSIONSENSOR);
     PORTD |= _BV(PD_CAMERAPOWER);
 //    PORTD |= _BV(PD_SHUTTERREADY);
     DDRD |= _BV(PD_CAMERAPOWER);
     DDRB |= _BV(PB_LAMP);
-    DDRC |= _BV(PC_SHUTTER) | 0x02;
+    DDRC |= _BV(PC_SHUTTER);
     CAMERA_OFF;
     lampOff();
-    Serial.println("Init Start 4");
 
 #ifndef USESTEPPER
     cli();
@@ -449,12 +454,11 @@ void setup ()
     DDRB |= _BV(PB_SERVO);
     sei();
 #else // USESTEPPER
-    Serial.println("stepperInit");
     stepperInit();
 #endif // USESTEPPER
     shutterState = 0xaa;
 #ifdef USEFRAM
-    Serial.println("Init FRAM");
+    //Serial.println("Init FRAM");
     if (fram.begin())
     {
         Serial.println("FRAM ok");
@@ -463,7 +467,7 @@ void setup ()
     iqTail = 0;
     iqHead = 0;
 #endif // USEFRAM
-    Serial.println("Init OK");
+    Serial.println("{State:Ready}");
 }
 
 #ifdef LOGSTATE
@@ -472,12 +476,12 @@ u08 lastReportedState(255);
 
 void loop ()
 {
-    if (2 == verbose)
-    {
-        Serial.print(PINC, 2);
-        Serial.print("\r\n");
-        delay(100);
-    }
+//    if (2 == verbose)
+//    {
+//        Serial.print(PINC, 2);
+//        Serial.print("\r\n");
+//        delay(100);
+//    }
 #ifdef USESTEPPER
     stepperPoll();
 #endif // USESTEPPER
@@ -540,12 +544,9 @@ void loop ()
                 //waitingFor = SHUTTEROPEN;
                 cameraBusyTimeout = millis();
                 waitingFor = WAITCAMERABUSY;
-                if (verbose)
-                {
-                    Serial.print("OIC ");
-                    Serial.print(millis() - optoIntTimeout, 10);
-                    Serial.print("\r\n");
-                }
+                Serial.print("{OIC:");
+                Serial.print(millis() - optoIntTimeout, 10);
+                Serial.println("}");
                 if ((millis() - optoIntTimeout) < 750)
                 {
                     stepperDelay(1);
@@ -606,7 +607,7 @@ void loop ()
             if (FULLFRAME == isOptoTransition())
             {
                 //setMotor(MOTOR_REWIND_SLOW);
-                setMotor(motorPretensionNext);
+                setMotor(pretension);
 #ifndef USESTEPPER
                 setServo(SERVO_REVERSE);
                 waitingFor = OPTOINT_REVERSE;
@@ -623,7 +624,7 @@ void loop ()
             }
             if (HALFFRAME == isOptoTransition())
             {
-                setMotor(motorPretensionNext);
+                setMotor(pretension);
 #ifndef USESTEPPER
                 setServo(SERVO_NEXTFRAME_VERY_SLOW);
 #endif // USESTEPPER
@@ -672,7 +673,7 @@ void loop ()
             }
             if (frameCount > 0)
             {
-                setMotor(motorPretensionNext);
+                setMotor(pretension);
             }
 #ifndef USESTEPPER
             setServo(SERVO_NEXTFRAME_FAST);
@@ -699,22 +700,16 @@ void loop ()
                 Serial.println("SHUTTERCLOSED");
             }
 
+            --frameCount;
+            Serial.print("{Remaining:");
+            Serial.print(frameCount, 10);
+            Serial.println("}");
             if (frameCount > 0)
             {
-                --frameCount;
-                if (verbose)
-                {
-                    Serial.print("Frame ");
-                    Serial.println(frameCount, 10);
-                }
                 waitingFor = SENSORSTART;
             }
             else
             {
-                if (verbose)
-                {
-                    Serial.println("Frames Done");
-                }
                 waitingFor = NONE;
             }
             break;
@@ -889,18 +884,12 @@ void loop ()
 
         case 'd':
             filmMode = FILM_8MM;
-            if (verbose)
-            {
-                Serial.println("8mm");
-            }
+            Serial.println("{mode:8mm}");
             break;
 
         case 'D':
             filmMode = FILM_SUPER8;
-            if (verbose)
-            {
-                Serial.println("Super 8");
-            }
+            Serial.println("{mode:super8}");
             break;
 
         case 'c':
@@ -949,14 +938,8 @@ void loop ()
             Serial.print((int)optoIntTimeout);
             Serial.print("\r\nsensorValue ");
             Serial.print((int)sensorValue);
-            //Serial.print("\r\nlastSensorValue ");
-            //Serial.print((int)lastSensorValue);
             Serial.print("\r\nwaitingFor ");
             Serial.print((int)waitingFor);
-//            Serial.print("\r\nstateLoop ");
-//            Serial.print((int)stateLoop);
-//            Serial.print("\r\nstateSaved ");
-//            Serial.print((int)stateSaved);
             Serial.print("\r\nlastCommand ");
             Serial.print(lastCommand);
             Serial.print("\r\nframeCount ");
@@ -964,9 +947,12 @@ void loop ()
             Serial.print("\r\nfilmMode ");
             Serial.print((int)filmMode);
             Serial.print("\r\nparameter ");
-            Serial.print((int)motorPretensionNext);
-            Serial.print("\r\nmotorPretensionNext ");
             Serial.print((int)parameter);
+            Serial.print("\r\npretension ");
+            Serial.print((int)pretension);
+            Serial.print("\r\nSense ");
+            Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
+            Serial.print("\r\n");
             break;
 
         case ' ':
@@ -997,11 +983,8 @@ void loop ()
 //            break;
 
         case 'm':
-            if (parameter > 0)
-            {
-                setMotor(parameter);
-                parameter = 0;
-            }
+            setMotor(parameter);
+            parameter = 0;
             break;
 
         case 't': // auto pretension
@@ -1011,23 +994,34 @@ void loop ()
             stepperStop();
 #endif // USESTEPPER
             {
-//                setMotor(0);
-//                delay(500);
-//                setMotor(65);
-//                delay(500);
-                //Serial.println("autotension");
-                for (motorPretensionNext = 60;
-                    motorPretensionNext > 10 && !(PINC & 0x02);
-                    motorPretensionNext -= 5)
+                pretension = 10;
+                while (pretension < 70)
                 {
-                    setMotor(motorPretensionNext);
-//                    Serial.print("mpn ");
-//                    Serial.print(motorPretensionNext, 10);
-//                    Serial.print(" PINC ");
-//                    Serial.print(PINC, 2);
-//                    Serial.print("\r\n");
-                    delay(250);
+                    setMotor(10);
+                    delay(PRETENSIONDELAY);
+                    setMotor(70);
+                    delay(PRETENSIONDELAY);
+                    setMotor(10);
+                    delay(PRETENSIONDELAY);
+                    setMotor(pretension);
+                    delay(PRETENSIONDELAY);
+                    if (verbose)
+                    {
+                        Serial.print("PT ");
+                        Serial.print(pretension, 10);
+                        Serial.print(" Sense ");
+                        Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
+                        Serial.print("\r\n");
+                    }
+                    if (PINC & _BV(PC_TENSIONSENSOR))
+                    {
+                        break;
+                    }
+                    pretension += 10;
                 }
+                Serial.print("{pt:");
+                Serial.print(pretension, 10);
+                Serial.println("}");
             }
             break;
 
@@ -1057,13 +1051,6 @@ void loop ()
             }
             break;
 
-//        case 'F': // backward
-//            setMotor(MOTOR_REWIND_SLOW);
-//#ifndef USESTEPPER
-//            setServo(SERVO_REVERSE);
-//#endif // USESTEPPER
-//            break;
-
         case 'r':
             SENSORVALUEINIT;
             setMotor(MOTOR_REWIND_FAST);
@@ -1086,15 +1073,10 @@ void loop ()
             break;
 
         case '[':
-            motorPretensionNext = parameter;
+            pretension = parameter;
             parameter = 0;
             break;
 
-//        case ']':
-//            servoSpeed = parameter;
-//            parameter = 0;
-//            break;
-//
         case '-':
             parameter = 0;
             break;
@@ -1105,7 +1087,10 @@ void loop ()
                 parameter *= 10;
                 parameter += (lastCommand - '0');
             }
-            Serial.print(parameter, 10);
+            if (verbose)
+            {
+                Serial.print(parameter, 10);
+            }
             break;
     }
     return;
