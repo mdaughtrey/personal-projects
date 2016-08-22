@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NUMFRAMES=20
+NUMFRAMES=200
 MNTPOINT=/Volumes/imageinput
 SERVER=smb://GUEST:@nas-36-FE-22%20%28SMB%29._smb._tcp.local/imageinput
 #TARGETDIR=/Volumes/imageinput/tmp
