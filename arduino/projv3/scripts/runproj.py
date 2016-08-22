@@ -28,7 +28,7 @@ EX_NOFILES = 3
 exitCode = 0
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(levelname)s %(lineno)s %(message)s')
-fileHandler = RotatingFileHandler(filename = './runproj_log.txt', maxBytes = 10e6, backupCount = 5)
+fileHandler = RotatingFileHandler(filename = './runproj_txt', maxBytes = 10e6, backupCount = 5)
 fileHandler.setLevel(logging.DEBUG)
 fileHandler.setFormatter(logging.Formatter(fmt='%(asctime)s %(lineno)s %(message)s'))
 logger = logging.getLogger('runproj')
@@ -49,9 +49,9 @@ class FlashAir():
     LISTAPS='/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport -s'
 
 #    def connect(self):
-#        self._turnAirportOff()
+#        self.turnAirportOff()
 #        Sleep(5)
-#        self._turnAirportOn()
+#        self.turnAirportOn()
 #        Sleep(10)
 #        while self.waitingForAP(FlashAir.SSID):
 #            Sleep(2)
@@ -59,7 +59,7 @@ class FlashAir():
 #            raise RuntimeError("FlashAir.connect")
             
     def disconnect(self):
-        self._turnAirportOff()
+        self.turnAirportOff()
 
     def waitingForAP(self, ap):
         logger.debug('waitingForAP')
@@ -71,7 +71,7 @@ class FlashAir():
 
         raise RuntimeError("Cannot see %s" % ap)
 
-    def _isAirportOn(self):
+    def isAirportOn(self):
         try:
             result = subprocess.check_output((FlashAir.GETAIRPORTPOWER + "%s" % options.wifidev).split(' '))
             result = result.split(':')[-1].strip()
@@ -83,22 +83,23 @@ class FlashAir():
         except CalledProcessError as err:
             return False
 
-    def _turnAirportOn(self):
-        logger.debug("_turnAirportOn")
+    def turnAirportOn(self):
+        logger.debug("turnAirportOn")
         rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s on" % options.wifidev).split(' '))
-        logging.debug('_turnAirportOn %u' % rc)
+        logging.debug('turnAirportOn %u' % rc)
 
-    def _turnAirportOff(self):
-        logger.debug("_turnAirportOff")
+    def turnAirportOff(self):
+        logger.debug("turnAirportOff")
         rc = subprocess.call((FlashAir.SETAIRPORTPOWER + "%s off" % options.wifidev).split(' '))
-        logging.debug('_turnAirportOff %u' % rc)
+        logging.debug('turnAirportOff %u' % rc)
 
     def connectToCard(self):
         logger.info("connectToCard")
         result = subprocess.check_output((FlashAir.SETAIRPORTNETWORK + "%s %s %s" % (options.wifidev, FlashAir.SSID, FlashAir.KEY)).split(' '))
         logger.debug(result)
         if '' != result:
-            raise RuntimeError("Connect to %s failed: %s" % (FlashAir.SSID, result))
+            logger.error("Connect to %s failed: %s" % (FlashAir.SSID, result))
+            raise RuntimeError("restart")
 
         logger.info("WIFI Connected to %s" % FlashAir.SSID)
 
@@ -262,21 +263,21 @@ class SerialProtocol(LineOnlyReceiver):
         self.transport.setDTR(False)
         Sleep(1)
         self.transport.setDTR(True)
-        self._waiton = dict()
-        self._waiton = {"{State:Ready}" : self._initProjector1}
+        self.waiton = dict()
+        self.waiton = {"{State:Ready}" : self.initProjector1}
         self.sdCard = FlashAir()
         self.sdCard.disconnect()
-        self._currentSlowSeq = None
-        self._slowSeqInterval = 2
+        self.currentSlowSeq = None
+        self.slowSeqInterval = 2
 
     def connectionLost(self, reason):
         logger.info('Disconnected from serial port %s', reason)
         reactor.callFromThread(reactor.stop)
 
     def lineReceived(self, line):
-        logger.debug('lineReceived %s, %d waiton entries' % (line, len(self._waiton)))
+        logger.debug('lineReceived %s, %d waiton entries' % (line, len(self.waiton)))
         self.accumulated += line
-        for kk, vv in self._waiton.iteritems():
+        for kk, vv in self.waiton.iteritems():
             if -1 != self.accumulated.find(kk):
                 logger.debug("Triggered on %s", kk)
                 self.accumulated = ''
@@ -286,7 +287,7 @@ class SerialProtocol(LineOnlyReceiver):
         logger.debug("Sending: %s" % data)
         self.transport.write(data)
 
-    def _generator(self, sequence):
+    def generator(self, sequence):
         ii = 0;
         if sequence is None:
             pdb.set_trace()
@@ -307,82 +308,81 @@ class SerialProtocol(LineOnlyReceiver):
             logger.error("%s at generator step %u" % (ee.message, ii))
             raise
 
-    def _initProjector1(self):
-        self._waiton.pop('{State:Ready}', None)
-        logger.debug("_initProjector1")
-        self._waiton['{pt:'] = self._initProjector2
+    def initProjector1(self):
+        self.waiton.pop('{State:Ready}', None)
+        logger.debug("initProjector1")
+        self.waiton['{pt:'] = self.initProjector2
 
         sequence = [
             lambda: self.send(' '),
             lambda: self.send('vt')  # autotension
             ]
-        self._slowSequence(sequence)
+        self.slowSequence(sequence)
 
-    def _initProjector2(self):
-        self._waiton.pop('{pt:}', None)
-        logger.debug("_initProjector2")
+    def initProjector2(self):
+        self.waiton.pop('{pt:}', None)
+        logger.debug("initProjector2")
 
         def setWaiton(self):
-            self._waiton = dict()
-            self._waiton['{Remaining:0}'] = lambda: self._getFileInfo(last = False)
-            self._waiton['Opto int timeout'] = self._stopProjector
+            self.waiton = dict()
+            self.waiton['{Remaining:0}'] = lambda: self.getFileInfo(last = False)
+            self.waiton['Opto int timeout'] = self.stopProjector
 
         sequence = [
-            lambda: self._setSSInterval(2),
+            lambda: self.setSSInterval(2),
             lambda: self.send('c'),
             lambda: self.send({'8mm': 'd', 'super8': 'D'}[options.mode]),
             lambda: self.send("%so" % options.numframes),
             lambda: setWaiton(self),
             lambda: self.send('S')
             ]
-        self._slowSequence(sequence)
+        self.slowSequence(sequence)
 
-    def _setSSInterval(self, interval):
-        self._slowSeqInterval = interval
+    def setSSInterval(self, interval):
+        self.slowSeqInterval = interval
 
-    def _slowSequence(self, sequence = None):
-        logger.debug("_slowSequence, sequence is %s" % sequence)
+    def slowSequence(self, sequence = None):
+        logger.debug("slowSequence, sequence is %s" % sequence)
         if sequence is not None:
-            self._currentSlowSeq = sequence
-            logger.debug("self._currentSlowSeq %s" % self._currentSlowSeq)
-            self._ssIter = self._generator(sequence)
+            self.currentSlowSeq = sequence
+            logger.debug("self.currentSlowSeq %s" % self.currentSlowSeq)
+            self.ssIter = self.generator(sequence)
 
-        if False == hasattr(self, '_ssIter') or self._ssIter is None:
+        if False == hasattr(self, 'ssIter') or self.ssIter is None:
             return
 
         try:
-            next(self._ssIter)
-            reactor.callLater(self._slowSeqInterval, self._slowSequence)
+            next(self.ssIter)
+            reactor.callLater(self.slowSeqInterval, self.slowSequence)
 
         except StopIteration:
-            del self._ssIter
-            del self._currentSlowSeq
+            del self.ssIter
+            del self.currentSlowSeq
 
         except RuntimeError as ee:
-            del self._ssIter
-            if 'restart' == ee.message and self._currentSlowSeq is not None:
+            del self.ssIter
+            if 'restart' == ee.message and self.currentSlowSeq is not None:
                 logger.info("Restarting sequence")
-#                self._ssITer = self._generator(self._currentSlowSeq)
-                pdb.set_trace()
-                reactor.callLater(2, self._slowSequence(self._currentSlowSeq))
+#                self.ssITer = self.generator(self.currentSlowSeq)
+                reactor.callLater(2, self.slowSequence(self.currentSlowSeq))
             else:    
                 pdb.set_trace()
             
 
-    def _stopProjector(self):
-        reactor.callLater(0, lambda: self._getFileInfo(last = True))
-#        self._waiton = dict()
+    def stopProjector(self):
+        reactor.callLater(0, lambda: self.getFileInfo(last = True))
+#        self.waiton = dict()
 #        logger.debug("Projector stopped")
 #        sequence = [
 #            lambda: self.send('c'),
 #            lambda: self.send('s'),
-#            lambda: reactor.callLater(0, lambda: self._getFileInfo(last = True))
+#            lambda: reactor.callLater(0, lambda: self.getFileInfo(last = True))
 #            ]
 #        global exitCode
 #        exitCode = EX_TIMEOUT
-#        self._slowSequence(sequence)
+#        self.slowSequence(sequence)
 
-#    def _findSDFiles(self):
+#    def findSDFiles(self):
 #        self.urls = self.sdCard.getFiles()
 #        if False == self.urls:
 #            logger.error("getFiles failed, aborting")
@@ -392,32 +392,29 @@ class SerialProtocol(LineOnlyReceiver):
 #            logger.info("No ready files yet")
 #            raise RuntimeError("No ready files")
 
-    def _getFileInfo(self, last = False):
-        logger.debug("_getFileInfo")
+    def getFileInfo(self, last = False):
+        logger.debug("getFileInfo")
 
         def testLast(self, last):
             if False == last:
-                reactor.callLater(1, self._initProjector1)
+                reactor.callLater(1, self.initProjector1)
             else:
                 global exitCode
                 exitCode = EX_TIMEOUT
                 self.transport.loseConnection()
 
-##        while True:
-#            try:
-        self._slowSequence([
-            lambda: self._setSSInterval(2),
+        self.slowSequence([
+            lambda: self.setSSInterval(2),
             lambda: self.send(' '),
             lambda: self.send('c'),
-            self.sdCard.connect,
-            lambda: self._setSSInterval(5),
+            lambda: self.setSSInterval(5),
             self.sdCard.turnAirportOff,
             self.sdCard.turnAirportOn,
-            lambda: self._setSSInterval(10),
+            lambda: self.setSSInterval(10),
             lambda: self.sdCard.waitingForAP(FlashAir.SSID),
             self.sdCard.connectToCard,
             self.sdCard.processFiles,
-            lambda: self._setSSInterval(2),
+            lambda: self.setSSInterval(2),
             self.sdCard.clearCard,
             self.sdCard.disconnect,
             lambda: testLast(self, last)
@@ -441,7 +438,7 @@ class SerialProtocol(LineOnlyReceiver):
 #                    logging.error("Giving up")
 #                    self.transport.loseConnection()
 #
-#    def _processSDFiles(self):
+#    def processSDFiles(self):
 #        self.sdCard.processFiles()
 #        logger.debug("Disconnecting from SD Card")
 #        self.sdCard.disconnect()
@@ -452,7 +449,7 @@ class SerialProtocol(LineOnlyReceiver):
 #        if options.once:
 #            self.transport.loseConnection()
 #        if EX_TIMEOUT != exitCode:
-#            reactor.callLater(5, self._initProjector)
+#            reactor.callLater(5, self.initProjector)
 #        else:
 #            logger.info("Projector timed out, exiting")
 #            self.transport.loseConnection()
@@ -485,16 +482,44 @@ def getOptions():
 
 #    return options
 
-def getSDFiles():
-    sdCard = FlashAir()
-#    pdb.set_trace()
-    try:
-        sdCard.connect()
-        sdCard.processFiles()
-        sdCard.disconnect()
+class TransferOnly(SerialProtocol):
+    def _init__self():
+        super(TransferOnly, self).__init__()
 
-    except RuntimeError as ee:
-        logger.error(ee.message)
+    def initProjector1(self):
+        self.waiton.pop('{State:Ready}', None)
+        logger.debug("TransferOnly")
+        self.getFileInfo()
+
+    def getFileInfo(self, last = False):
+        logger.debug("getFileInfo")
+
+        self.slowSequence([
+            lambda: self.setSSInterval(2),
+            lambda: self.send(' '),
+            lambda: self.send('c'),
+            lambda: self.setSSInterval(5),
+            self.sdCard.turnAirportOff,
+            self.sdCard.turnAirportOn,
+            lambda: self.setSSInterval(10),
+            lambda: self.sdCard.waitingForAP(FlashAir.SSID),
+            self.sdCard.connectToCard,
+            self.sdCard.processFiles,
+            lambda: self.setSSInterval(2),
+            self.sdCard.clearCard,
+            self.sdCard.disconnect
+            ])
+
+#def getSDFiles():
+#    sdCard = FlashAir()
+##    pdb.set_trace()
+#    try:
+#        sdCard.connect()
+#        sdCard.processFiles()
+#        sdCard.disconnect()
+#
+#    except RuntimeError as ee:
+#        logger.error(ee.message)
 
 
 def main():
@@ -509,10 +534,11 @@ def main():
         os.mkdir(options.targetdir)
 
     if True == options.transferonly:
-        getSDFiles()
+        #getSDFiles()
+        serdev = SerialPort(TransferOnly(), options.serdev, reactor, 57600)
     else:
         serdev = SerialPort(SerialProtocol(), options.serdev, reactor, 57600)
-        reactor.run()
+    reactor.run()
 
     return exitCode
 
