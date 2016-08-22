@@ -15,9 +15,9 @@ let frameLimit=0
 # logs command line invocations. Useful when you've forgotten what stage of the 
 # process you were in
 RUN_LOG=/home/mattd/documents/runlog.txt
-HD1=/mnt/temphd
-HD2=/mnt/temphd2
-SCRIPT_DIR=~/git/personal-projects/projector/scripts/
+HD1=${P3HD1:/mnt/temphd}
+HD2=${P3HD2:/mnt/temphd2}
+SCRIPT_DIR=${P3SCRIPTDIR:~/git/personal-projects/projector/scripts/}
 SCRIPT_INTERPOLATE1=${SCRIPT_DIR}/pp_interpolate1.avs
 SCRIPT_INTERPOLATE2=${SCRIPT_DIR}/pp_interpolate2.avs
 SCRIPT_CLEAN1=${SCRIPT_DIR}/pp_clean1.avs
