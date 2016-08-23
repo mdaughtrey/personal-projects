@@ -3,17 +3,14 @@
 from flask import Flask, request
 import pdb
 import json
-import PersistentStore
-import FileManager
+from PersistentStore import PersistentStore
+from FileManager import FileManager
 
 import logging
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(message)s')
 logger = logging.getLogger('autocrop')
-fileHandler = RotatingFileHandler(filename='controller.log', maxBytes=10e6, backupCount=2)
-fileHandler.setLevel(logging.DEBUG)
 
-logger.addHandler(fileHandler)
 app = Flask(__name__)
 pstore = PersistentStore(logging.getLogger('PersistentStore'))
 fileman = FileManager(logging.getLogger('FileManager'))
@@ -37,7 +34,7 @@ def uploadFile():
         project = request.args['project']
         ff = request.files['filename']
         fileman.newFileStream(request.args['project'], request.args['container'], ff)
-        pstore.newRawFile(request.args['project'], request.args['container', ff.name())
+        pstore.newRawFile(request.args['project'], request.args['container'], ff.name)
         return json.dumps(['OK'])
         #ff.save('somefile')
         #return ''
