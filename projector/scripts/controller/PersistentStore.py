@@ -4,7 +4,7 @@ import pdb
 
 class PersistentStore():
     def __init__(self, logger, dblocation = './', overwrite = False):
-        self._dblocation = dblocation
+        self._dbroot = dblocation
 #        self._conn = None
         self._overwrite = overwrite
         self._logger = logger
@@ -15,29 +15,48 @@ class PersistentStore():
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
             rawfile text,
-            container text)''')
+            container text,
+            precrop text,
+            autocrop text,
+            fused text
+            )''')
+        cur.execute('''CREATE UNIQUE INDEX picdata_idx ON picdata(rawfile)''')
 
         conn.commit()
         conn.close()
 
     def _openDb(self, project):
         '''
-        if False == os.path.isdir(self._dblocation):
-            os.mkdir(self._dbLocation)
+        if False == os.path.isdir(self._dbroot):
+            os.mkdir(self._dbroot)
             self._initDb(project)
         else:
             '''
-        if True == self._overwrite:
-            os.remove(self._dblocation)
+        project += 'db'
+        dblocation = "%s/%s" % (self._dbroot, project)
+        if True == os.path.isfile(dblocation):
+            if True == self._overwrite:
+                os.remove(self._dbroot)
+        else:
             self._initDb(project)
 
         return sqlite3.connect('%s' % project)
 
     def newRawFile(self, project,container, filename):
-        pdb.set_trace()
-        project += 'db'
-        conn = self._openDb(project).cursor().execute('''INSERT INTO picdata
-                rawfile='%s',container='%s')''' % (filename, container))
+        insert = "(rawfile,container) values('%s','%s')" % (filename, container)
+        statement = "INSERT OR REPLACE INTO picdata %s" % insert
+        conn = self._openDb(project)
+        cursor = conn.cursor()
+        cursor.execute(statement)
         conn.commit()
         conn.close()
+
+    def unprocessedRaw(self, projectname, limit=10):
+        conn = self._openDb(projectname)
+        cursor = conn.cursor()
+        files = cursor.execute(
+                "SELECT container,rawfile FROM picdata WHERE precrop is null limit %d" % limit)
+        result = cursor.fetchall()
+        conn.close()
+        return result
 
