@@ -12,6 +12,15 @@ class FileManager():
         if False == os.path.isdir(targetDir):
             self._logger.debug("Creating %s" % targetDir)
             os.makedirs(targetDir)
-        target = "%s/%s" % (targetDir, fileStream.name)
+        target = "%s/%s" % (targetDir, fileStream.filename)
         self._logger.debug("Saving to %s" % target)
         fileStream.save(target)
+
+    def getRawFileLocation(self, project, container, filename):
+        return "%s/%s/%s/%s" % (self._fileRoot, project, container, filename)
+
+    def getPrecropDir(self, project):
+        pcdir = "%s/%s/precropped" % (self._fileRoot, project)
+        if False == os.path.isdir(pcdir):
+            os.makedirs(pcdir)
+        return pcdir
