@@ -3,30 +3,28 @@
 from flask import Flask, request
 import pdb
 import json
-import PersistentStore
-import FileManager
-
+from PersistentStore import PersistentStore
+from FileManager import FileManager
+from JobManager import JobManager
 import logging
 
-logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(message)s')
+logFormat='%(asctime)s %(levelname)s %(name)s %(message)s'
+logging.basicConfig(level = logging.DEBUG, format=logFormat)
 logger = logging.getLogger('autocrop')
-fileHandler = RotatingFileHandler(filename='controller.log', maxBytes=10e6, backupCount=2)
+fileHandler = logging.FileHandler('controller.log')
 fileHandler.setLevel(logging.DEBUG)
-
+formatter = logging.Formatter(logFormat)
+fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
+logging.getLogger('PersistentStore').addHandler(fileHandler)
+logging.getLogger('FileManager').addHandler(fileHandler)
+logging.getLogger('JobManager').addHandler(fileHandler)
+
 app = Flask(__name__)
 pstore = PersistentStore(logging.getLogger('PersistentStore'))
 fileman = FileManager(logging.getLogger('FileManager'))
+jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman)
 
-#@app.route('/')
-#def hello():
-#    return "root"
-#
-#@app.route('/newfile')
-#def newfile():
-#    filename = request.args['filename']
-#    app.logger.debug('filename is %s' % filename)
-#    return json.dumps(['one',{'two': (3, 'four')}])
 
 #
 # Upload a new raw file
@@ -37,10 +35,9 @@ def uploadFile():
         project = request.args['project']
         ff = request.files['filename']
         fileman.newFileStream(request.args['project'], request.args['container'], ff)
-        pstore.newRawFile(request.args['project'], request.args['container', ff.name())
+        pstore.newRawFile(request.args['project'], request.args['container'], ff.filename)
+        jobman.newRawFile(request.args['project'])
         return json.dumps(['OK'])
-        #ff.save('somefile')
-        #return ''
 
 #
 # Start precrop (with parameters)
