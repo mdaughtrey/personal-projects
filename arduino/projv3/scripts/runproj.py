@@ -69,7 +69,8 @@ class FlashAir():
             if ap in line.split():
                 return 
 
-        raise RuntimeError("Cannot see %s" % ap)
+        logger.error("Cannot see %s" % ap)
+        raise RuntimeError("restart")
 
     def isAirportOn(self):
         try:
@@ -334,11 +335,12 @@ class SerialProtocol(LineOnlyReceiver):
             lambda: self.send({'8mm': 'd', 'super8': 'D'}[options.mode]),
             lambda: self.send("%so" % options.numframes),
             lambda: setWaiton(self),
-            lambda: self.send('S')
+            lambda: self.send('S'),
             ]
         self.slowSequence(sequence)
 
     def setSSInterval(self, interval):
+        logger.debug("SlowSeq Interval %d" % interval)
         self.slowSeqInterval = interval
 
     def slowSequence(self, sequence = None):
@@ -364,7 +366,7 @@ class SerialProtocol(LineOnlyReceiver):
             if 'restart' == ee.message and self.currentSlowSeq is not None:
                 logger.info("Restarting sequence")
 #                self.ssITer = self.generator(self.currentSlowSeq)
-                reactor.callLater(2, self.slowSequence(self.currentSlowSeq))
+                reactor.callLater(2, lambda: self.slowSequence(self.currentSlowSeq))
             else:    
                 pdb.set_trace()
             
@@ -403,9 +405,10 @@ class SerialProtocol(LineOnlyReceiver):
                 exitCode = EX_TIMEOUT
                 self.transport.loseConnection()
 
+#            self.transport.loseConnection()
         self.slowSequence([
             lambda: self.setSSInterval(2),
-            lambda: self.send(' '),
+#            lambda: self.send(' '),
             lambda: self.send('c'),
             lambda: self.setSSInterval(5),
             self.sdCard.turnAirportOff,
