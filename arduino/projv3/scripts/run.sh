@@ -5,7 +5,8 @@ MNTPOINT=/Volumes/imageinput
 SERVER=smb://GUEST:@nas-36-FE-22%20%28SMB%29._smb._tcp.local/imageinput
 #TARGETDIR=/Volumes/imageinput/tmp
 #TARGETDIR=./scans/Niall/NK0032
-TARGETDIR=./scans/test/001
+#TARGETDIR=./scans/test/001
+TARGETDIR=~/Documents/vmshared/scans/Niall/NK0032
 MODE=8mm
 WIFIDEV=en0
 
