@@ -60,3 +60,15 @@ class PersistentStore():
         conn.close()
         return result
 
+    def markPrecropped(self, project, container, filename):
+        conn = self._openDb(project);
+        cursor = conn.cursor()
+        cursor.execute("UPDATE picdata SET precrop='%s' WHERE container='%s' and rawfile='%s'"
+                % (filename, container, filename))
+        conn.commit()
+        conn.close()
+
+
+
+
+

@@ -8,7 +8,7 @@ from FileManager import FileManager
 from JobManager import JobManager
 import logging
 
-logFormat='%(asctime)s %(levelname)s %(name)s %(message)s'
+logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
 logger = logging.getLogger('autocrop')
 fileHandler = logging.FileHandler('controller.log')
