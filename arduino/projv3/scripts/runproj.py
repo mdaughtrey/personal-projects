@@ -28,7 +28,7 @@ EX_NOFILES = 3
 exitCode = 0
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(levelname)s %(lineno)s %(message)s')
-fileHandler = RotatingFileHandler(filename = './runproj_txt', maxBytes = 10e6, backupCount = 5)
+fileHandler = RotatingFileHandler(filename = './runproj.log', maxBytes = 10e6, backupCount = 5)
 fileHandler.setLevel(logging.DEBUG)
 fileHandler.setFormatter(logging.Formatter(fmt='%(asctime)s %(lineno)s %(message)s'))
 logger = logging.getLogger('runproj')
@@ -324,9 +324,15 @@ class SerialProtocol(LineOnlyReceiver):
         self.waiton.pop('{pt:}', None)
         logger.debug("initProjector2")
 
+        def noMoreFrames(self):
+            global exitcode
+            exitcode = EX_TIMEOUT;
+            self.transport.loseConnection();
+
         def setWaiton(self):
             self.waiton = dict()
-            self.waiton['{Remaining:0}'] = lambda: self.getFileInfo(last = False)
+            #self.waiton['{Remaining:0}'] = lambda: self.getFileInfo(last = False)
+            self.waiton['{Remaining:0}'] = lambda: noMoreFrames(self)
             self.waiton['Opto int timeout'] = self.stopProjector
 
         sequence = [
@@ -405,10 +411,9 @@ class SerialProtocol(LineOnlyReceiver):
                 exitCode = EX_TIMEOUT
                 self.transport.loseConnection()
 
-#            self.transport.loseConnection()
         self.slowSequence([
             lambda: self.setSSInterval(2),
-#            lambda: self.send(' '),
+            lambda: self.send('C'),
             lambda: self.send('c'),
             lambda: self.setSSInterval(5),
             self.sdCard.turnAirportOff,
@@ -498,10 +503,9 @@ class TransferOnly(SerialProtocol):
         logger.debug("getFileInfo")
 
         self.slowSequence([
-            lambda: self.setSSInterval(2),
-            lambda: self.send(' '),
-            lambda: self.send('c'),
             lambda: self.setSSInterval(5),
+            lambda: self.send('C'),
+            lambda: self.send('c'),
             self.sdCard.turnAirportOff,
             self.sdCard.turnAirportOn,
             lambda: self.setSSInterval(10),
