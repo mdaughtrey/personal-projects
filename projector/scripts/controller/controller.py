@@ -7,10 +7,12 @@ from PersistentStore import PersistentStore
 from FileManager import FileManager
 from JobManager import JobManager
 import logging
+import signal
+import sys
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
-logger = logging.getLogger('autocrop')
+logger = logging.getLogger('Controller')
 fileHandler = logging.FileHandler('controller.log')
 fileHandler.setLevel(logging.DEBUG)
 formatter = logging.Formatter(logFormat)
@@ -25,6 +27,13 @@ pstore = PersistentStore(logging.getLogger('PersistentStore'))
 fileman = FileManager(logging.getLogger('FileManager'))
 jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman)
 
+def signal_handler(signal, frame):
+    logger.debug("Control C")
+    jobman.shutdown()
+    logger.debug("Shutdown")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
 
 #
 # Upload a new raw file

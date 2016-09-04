@@ -14,13 +14,14 @@ class PersistentStore():
         conn = sqlite3.connect('%s' % projectname)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
-            rawfile text,
-            container text,
-            precrop text,
-            autocrop text,
-            fused text
+            processing integer,
+            rawfile TEXT,
+            container TEXT,
+            precrop TEXT,
+            autocrop TEXT,
+            fused TEXT
             )''')
-        cur.execute('''CREATE UNIQUE INDEX picdata_idx ON picdata(rawfile)''')
+        cur.execute('''CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container)''')
 
         conn.commit()
         conn.close()
@@ -51,14 +52,35 @@ class PersistentStore():
         conn.commit()
         conn.close()
 
-    def unprocessedRaw(self, projectname, limit=10):
+    def _getPendingWork(self, projectname, statement):
         conn = self._openDb(projectname)
         cursor = conn.cursor()
-        files = cursor.execute(
-                "SELECT container,rawfile FROM picdata WHERE precrop is null limit %d" % limit)
+        statements = ['PRAGMA temp_store=MEMORY;',
+                'BEGIN TRANSACTION;',
+                statement,
+                'UPDATE picdata SET processing=1 WHERE rowid IN (SELECT rowid from ttable)',
+                'END TRANSACTION',
+                'SELECT * FROM ttable;'
+                ]
+
+        for statement in statements:
+            try:
+                cursor.execute(statement)
+
+            except sqlite3.OperationalError as ee:
+                self._logger.error(ee.message)
+
         result = cursor.fetchall()
         conn.close()
         return result
+
+    def toBePrecropped(self, projectname, limit = 10):
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
+                 WHERE precrop IS NULL AND processing != 1 ORDER BY rawfile LIMIT %s;''' % limit
+        self._logger.debug(statement)
+
+        return self._getPendingWork(projectname, statement)
+
 
     def markPrecropped(self, project, container, filename):
         conn = self._openDb(project);
@@ -68,7 +90,22 @@ class PersistentStore():
         conn.commit()
         conn.close()
 
+    def toBeAutocropped(self, projectname, limit = 10):
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
+                 WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
+                 ORDER BY precrop LIMIT %s;''' % limit
+        self._logger.debug(statement)
+
+        rows = self._getPendingWork(projectname, statement)
 
 
+
+    def markAutocropped(self, project, filename):
+        conn = self._openDb(project);
+        cursor = conn.cursor()
+        cursor.execute("UPDATE picdata SET autocrop='%s' WHERE container='%s' and rawfile='%s'"
+                % (filename, container, filename))
+        conn.commit()
+        conn.close()
 
 

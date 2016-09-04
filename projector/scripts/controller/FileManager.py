@@ -19,8 +19,15 @@ class FileManager():
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s/%s/%s" % (self._fileRoot, project, container, filename)
 
-    def getPrecropDir(self, project):
-        pcdir = "%s/%s/precropped" % (self._fileRoot, project)
+
+    def getPrecropDir(self, project, container):
+        pcdir = "%s/%s/%s/precrop" % (self._fileRoot, project, container)
         if False == os.path.isdir(pcdir):
             os.makedirs(pcdir)
         return pcdir
+
+    def getAutoropDir(self, project, container):
+        acdir = "%s/%s/%s/autocrop" % (self._fileRoot, project, container)
+        if False == os.path.isdir(acdir):
+            os.makedirs(acdir)
+        return acdir
