@@ -26,12 +26,20 @@ if [[ ! -d "$TARGETDIR" ]]
 then
     mkdir -p $TARGETDIR
 fi
-
-arg=${1:-capture}
-
-if [[ "capture" == "$arg" ]]
+if [[ "$1" != "" ]]
 then
-    exec ./runproj.py --targetdir $TARGETDIR --numframes $NUMFRAMES --pretension 10 --mode $MODE --wifidev $WIFIDEV
-else
-    exec ./runproj.py --targetdir $TARGETDIR --transferonly --wifidev $WIFIDEV
+    ./runproj.py --targetdir $TARGETDIR --transferonly --wifidev $WIFIDEV
+    exit 0
 fi
+
+while [[ 0 ]]
+do
+    ./runproj.py --targetdir $TARGETDIR --numframes $NUMFRAMES --mode $MODE --wifidev $WIFIDEV
+    echo scanresult $scanresult
+    scanresult=$?
+    ./runproj.py --targetdir $TARGETDIR --transferonly --wifidev $WIFIDEV
+    if ((0 != $scanresult))
+    then
+        echo Done
+    fi
+done
