@@ -83,7 +83,7 @@ class PersistentStore():
     def markPrecropped(self, project, container, filename):
         conn = self._openDb(project);
         cursor = conn.cursor()
-        cursor.execute("UPDATE picdata SET (precrop, processing) values ('%s', 0) WHERE container='%s' and rawfile='%s'"
+        cursor.execute("UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
                 % (filename, container, filename))
         conn.commit()
         conn.close()
@@ -99,7 +99,7 @@ class PersistentStore():
     def markAutocropped(self, project, container, precropped, autocropped):
         conn = self._openDb(project);
         cursor = conn.cursor()
-        cursor.execute("UPDATE picdata SET (autocrop, processing) values('%s', 0) WHERE container='%s' and rawfile='%s'"
+        cursor.execute("UPDATE picdata SET autocrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
                 % (autocropped, container, precropped))
         conn.commit()
         conn.close()
