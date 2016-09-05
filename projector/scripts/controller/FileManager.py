@@ -26,7 +26,7 @@ class FileManager():
             os.makedirs(pcdir)
         return pcdir
 
-    def getAutoropDir(self, project, container):
+    def getAutocropDir(self, project, container):
         acdir = "%s/%s/%s/autocrop" % (self._fileRoot, project, container)
         if False == os.path.isdir(acdir):
             os.makedirs(acdir)

@@ -45,7 +45,7 @@ def uploadFile():
         ff = request.files['filename']
         fileman.newFileStream(request.args['project'], request.args['container'], ff)
         pstore.newRawFile(request.args['project'], request.args['container'], ff.filename)
-        jobman.newRawFile(request.args['project'])
+        #jobman.newRawFile(request.args['project'])
         return json.dumps(['OK'])
 
 #
