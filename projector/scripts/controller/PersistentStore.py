@@ -11,7 +11,7 @@ class PersistentStore():
         self._logger.debug("PersistentStore init")
 
     def _initDb(self, projectname):
-        conn = sqlite3.connect('%s' % projectname)
+        conn = sqlite3.connect(projectname)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
             processing integer,
@@ -34,14 +34,15 @@ class PersistentStore():
         else:
             '''
         project += 'db'
-        dblocation = "%s/%s" % (self._dbroot, project)
+        dblocation = "%s/%s" % (os.path.abspath(self._dbroot), project)
         if True == os.path.isfile(dblocation):
             if True == self._overwrite:
                 os.remove(self._dbroot)
         else:
-            self._initDb(project)
+            self._initDb(dblocation)
 
-        return sqlite3.connect('%s' % project)
+        self._logger.debug('Connecting to %s' % dblocation)
+        return sqlite3.connect('%s' % dblocation)
 
     def newRawFile(self, project,container, filename):
         insert = "(processing, rawfile,container) values(0, '%s','%s')" % (filename, container)
@@ -91,17 +92,21 @@ class PersistentStore():
     def toBeAutocropped(self, projectname, limit = 10):
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
                  WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
-                 ORDER BY precrop LIMIT %s;''' % limit
+                 ORDER BY container,precrop LIMIT %s;''' % limit
         self._logger.debug(statement)
         return self._getPendingWork(projectname, statement)
 
 
-    def markAutocropped(self, project, container, precropped, autocropped):
+    def markAutocropped(self, project, container, filename):
         conn = self._openDb(project);
         cursor = conn.cursor()
         cursor.execute("UPDATE picdata SET autocrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
-                % (autocropped, container, precropped))
+                % (filename, container, filename))
         conn.commit()
         conn.close()
+
+    def abortAutocrop(self, project, container, file1, file2, file3):
+        self._logger.warning("TODO abortAutocrop")
+        pass
 
 
