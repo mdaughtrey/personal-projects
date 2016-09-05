@@ -10,6 +10,8 @@ import logging
 import signal
 import sys
 
+ROOTOFALL='/media/sf_vmshared/scans/'
+
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
 logger = logging.getLogger('Controller')
@@ -23,8 +25,8 @@ logging.getLogger('FileManager').addHandler(fileHandler)
 logging.getLogger('JobManager').addHandler(fileHandler)
 
 app = Flask(__name__)
-pstore = PersistentStore(logging.getLogger('PersistentStore'))
-fileman = FileManager(logging.getLogger('FileManager'))
+pstore = PersistentStore(logging.getLogger('PersistentStore'), ROOTOFALL)
+fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
 jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman)
 
 def signal_handler(signal, frame):
@@ -43,9 +45,11 @@ def uploadFile():
     if request.method == 'POST':
         project = request.args['project']
         ff = request.files['filename']
-        fileman.newFileStream(request.args['project'], request.args['container'], ff)
-        pstore.newRawFile(request.args['project'], request.args['container'], ff.filename)
-        #jobman.newRawFile(request.args['project'])
+        arguments = []
+        for elem in ['project','container','filename']:
+            arguments.append(request.args[elem])
+        fileman.newFileStream(ff, *arguments)
+        pstore.newRawFile(*arguments)
         return json.dumps(['OK'])
 
 #
