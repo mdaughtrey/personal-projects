@@ -56,11 +56,11 @@ def whiteCount(filename):
 
 def findSuper8Sprocket3(image, filename):
     matches = cv2m(image, arrToFind, cv2.TM_SQDIFF)
-    (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches) 
+    (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches)
     return minLoc
 
 def findSuper8Sprocket2(image, filename):
-    (label, numFeatures) = scipy.ndimage.measurements.label(image)   
+    (label, numFeatures) = scipy.ndimage.measurements.label(image)
     found = ndimage.find_objects(label)
     (imX, imY) = image.size
 
@@ -79,7 +79,7 @@ def findSuper8Sprocket2(image, filename):
 
 def findSuper8Sprocket(image, filename):
     (imX, imY) = image.size
-    fromLeft = {} 
+    fromLeft = {}
     fromRight = {}
     #leftExtent = {}
     imgData = list(image.getdata())
@@ -101,7 +101,7 @@ def findSuper8Sprocket(image, filename):
     # fromLeft and leftExtent contain data for rows that have both
     # black and white pixels
 
-    if options.debug and sprockets_dir is not None: 
+    if options.debug and sprockets_dir is not None:
         imaged = ImageDraw.Draw(image)
         for row, value in fromLeft.iteritems():
             imaged.line((0, row, value, row), fill=192)
@@ -157,7 +157,7 @@ def processSuper8(filenames, outputpath):
     ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
     if [True, True, True] == ofiles:
         logger.debug("Output files aready exist for %s" % filenames)
-        return 
+        return
 
     imp = PILImage.open(filename).convert('L')
     im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
@@ -200,7 +200,7 @@ def processSuper8(filenames, outputpath):
         logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
         return
 
-    if options.debug and bw_dir is not None: 
+    if options.debug and bw_dir is not None:
         bwd = ImageDraw.Draw(imp)
         bwd.line((spLeftX, spCenterY, fcWidth, spCenterY), fill=0)
         bwd.line((spLeftX, spCenterY - (2.015 * pxPerMm),
@@ -223,14 +223,14 @@ def processSuper8(filenames, outputpath):
 #    print "%s -> %s" % (filenames, outputpath)
 #    for file in files:
 #        try:
-#            frame = PIL.Image.open(file) 
+#            frame = PIL.Image.open(file)
 #            frame = frame.crop((int(frameOriginX), int(frameOriginY),
 #                int(frameOriginX + frameWidth),
 #                int(frameOriginY + frameHeight)))
 #            frame.save('%s/%s' % (outputpath, os.path.basename(file)))
 #        except:
 #            print "Did not save %s/%s" % (outputpath, os.path.basename(file))
-#    
+#
 
 #-    (top, bottom) = (0, 0)
 #-    (sfWidth, sfHeight) = image.size
@@ -256,7 +256,7 @@ def processSuper8(filenames, outputpath):
 def find8mmSprocket(image, filename):
     (imX, imY) = image.size
     imgData = list(image.getdata())
-    fromLeft = {} 
+    fromLeft = {}
     fromRight = {}
     # Scan each row from the left looking for white, store in fromLeft
     # Then continue to scan for black, store in leftExtent
@@ -274,7 +274,7 @@ def find8mmSprocket(image, filename):
         except ValueError:
             pass
 
-    if options.debug and sprockets_dir is not None: 
+    if options.debug and sprockets_dir is not None:
         imaged = ImageDraw.Draw(image)
         for row, value in fromLeft.iteritems():
             imaged.line((0, row, value, row), fill=192)
@@ -369,11 +369,11 @@ def process8mm(filenames, outputpath):
     if 3 != len(files):
         logger.error("Need three filenames")
         sys.exit(1)
-    
+
     ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
     if [True, True, True] == ofiles:
         logger.debug("Output files aready exist for %s" % filenames)
-        return 
+        return
 
     if options.whitecount:
         for file in filenames:
@@ -418,7 +418,7 @@ def process8mm(filenames, outputpath):
 #        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
 #        return
 
-    if options.debug and bw_dir is not None: 
+    if options.debug and bw_dir is not None:
         bwd = ImageDraw.Draw(imp)
         bwd.line((spLeftX, spCenterY, fcWidth, spCenterY), fill=0)
         bwd.line((spLeftX, spCenterY - (1.64 * pxPerMm),
@@ -457,7 +457,8 @@ def main():
         logger.error("Invalid sprocket option %s" % options.sprocket)
         sys.exit(1)
 
-    imgToFind = PILImage.open('/mnt/imageinput/tofind.jpg').convert('L')
+    pdb.set_trace()
+    imgToFind = PILImage.open('%s/tofind.jpg' % os.path.dirname(os.path.abspath(__file__))).convert('L')
     arrToFind = scipy.misc.fromimage(imgToFind, flatten = True).astype(numpy.uint8)
     #arrFindIn[arrFindIn < 100] = 0
     #arrFindIn[arrFindIn >= 100] = 255

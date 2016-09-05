@@ -44,7 +44,7 @@ class PersistentStore():
         return sqlite3.connect('%s' % project)
 
     def newRawFile(self, project,container, filename):
-        insert = "(rawfile,container) values('%s','%s')" % (filename, container)
+        insert = "(processing, rawfile,container) values(0, '%s','%s')" % (filename, container)
         statement = "INSERT OR REPLACE INTO picdata %s" % insert
         conn = self._openDb(project)
         cursor = conn.cursor()
@@ -78,14 +78,12 @@ class PersistentStore():
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
                  WHERE precrop IS NULL AND processing != 1 ORDER BY rawfile LIMIT %s;''' % limit
         self._logger.debug(statement)
-
         return self._getPendingWork(projectname, statement)
-
 
     def markPrecropped(self, project, container, filename):
         conn = self._openDb(project);
         cursor = conn.cursor()
-        cursor.execute("UPDATE picdata SET precrop='%s' WHERE container='%s' and rawfile='%s'"
+        cursor.execute("UPDATE picdata SET (precrop, processing) values ('%s', 0) WHERE container='%s' and rawfile='%s'"
                 % (filename, container, filename))
         conn.commit()
         conn.close()
@@ -95,16 +93,14 @@ class PersistentStore():
                  WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
                  ORDER BY precrop LIMIT %s;''' % limit
         self._logger.debug(statement)
-
-        rows = self._getPendingWork(projectname, statement)
-
+        return self._getPendingWork(projectname, statement)
 
 
-    def markAutocropped(self, project, filename):
+    def markAutocropped(self, project, container, precropped, autocropped):
         conn = self._openDb(project);
         cursor = conn.cursor()
-        cursor.execute("UPDATE picdata SET autocrop='%s' WHERE container='%s' and rawfile='%s'"
-                % (filename, container, filename))
+        cursor.execute("UPDATE picdata SET (autocrop, processing) values('%s', 0) WHERE container='%s' and rawfile='%s'"
+                % (autocropped, container, precropped))
         conn.commit()
         conn.close()
 
