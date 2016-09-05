@@ -457,13 +457,13 @@ def main():
         logger.error("Invalid sprocket option %s" % options.sprocket)
         sys.exit(1)
 
-    pdb.set_trace()
     imgToFind = PILImage.open('%s/tofind.jpg' % os.path.dirname(os.path.abspath(__file__))).convert('L')
     arrToFind = scipy.misc.fromimage(imgToFind, flatten = True).astype(numpy.uint8)
     #arrFindIn[arrFindIn < 100] = 0
     #arrFindIn[arrFindIn >= 100] = 255
 
     processor = {'super8': processSuper8, '8mm': process8mm }[options.mode]
+#    pdb.set_trace()
 
     if options.filenames is not None:
         processor(options.filenames, options.outputdir)

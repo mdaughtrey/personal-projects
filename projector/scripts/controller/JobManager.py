@@ -12,8 +12,10 @@ def worker(object):
     object._logger.debug("workerManager ends")
 
 class JobManager():
-    JobLimit = 10
-    WorkerManagerInline = True
+    JobLimit = 1
+    WorkerManagerInline = False
+    DisablePrecrop = True
+    #WorkerManagerInline = False
     def __init__(self, logger, pstore, fileman):
         self._logger = logger
         self._pstore = pstore
@@ -37,10 +39,6 @@ class JobManager():
         #    else:
         #        time.sleep(1)
 
-    def newRawFile(self):
-        pass
-
-
     def _workerManager(self, projectname):
         def schedulePrecrop(self, freeWorkers):
             scheduled = 0
@@ -48,29 +46,36 @@ class JobManager():
             if toBePrecropped:
                 for (rowid, container, filename) in toBePrecropped:
                     self._logger.debug("Container %s filename %s" % (container, filename))
-                    args = (projectname, container, filename)
+                    jobargs = (projectname, container, filename)
                     if JobManager.WorkerManagerInline == True:
-                        self._vmPrecrop(*args)
+                        self._vmPrecrop(*jobargs)
                     else:
-                        self._workers.append(Process(target = self._vmPrecrop, args = args))
+                        self._workers.append(Process(target = self._vmPrecrop, args = jobargs))
                         self._workers[-1].start()
                     scheduled += 1
             return scheduled
 
         def scheduleAutocrop(self, freeWorkers):
             scheduled = 0
-            pdb.set_trace()
-            toBeAutocropped = self._pstore.toBeAutocropped(projectname, freeWorkers)
-            if toBeAutocropped:
-                for (container, file1, file2, file3) in toBeAutocropped:
-                    self._logger.debug("Container %s filename %s %s %s" % (container, file1, file2, file3))
-                    args = (projectname, container, file1, file2, file3)
-                    if jobManager.WorkerManagerInline == True:
-                        self._vmAutocrop(*args)
-                    else:
-                        self._workers.append(Process(target = self._vmAutocrop, args = args))
+            tba = self._pstore.toBeAutocropped(projectname, freeWorkers * 3)
+            while len(tba) >= 3:
+                testargs = {tba[0][1]: 1}
+                testargs[tba[1][1]] = 1
+                testargs[tba[2][1]] = 1
+                if len(testargs.keys()) > 1:
+                    self._logger.error("Mismatched container values")
+                    del tba[:3]
+                
+                jobargs = (self._projectname, tba[0][1], tba[0][2], tba[1][2], tba[2][2])
+
+#                self._logger.debug("Container %s filename %s %s %s" % jobargs)
+                if JobManager.WorkerManagerInline == True:
+                    self._vmAutocrop(*jobargs)
+                else:
+                    self._workers.append(Process(target = self._vmAutocrop, args = jobargs))
                     self._workers[-1].start()
-                    scheduled += 1
+                scheduled += 1
+                del tba[:3]
             return scheduled
 
         self._workerCleanup()
@@ -88,22 +93,27 @@ class JobManager():
 
     def _vmAutocrop(self, project, container, file1, file2, file3):
         self._logger.debug("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
-        sourceDir = os.path.abspath(self._fileman.getPrecropDir(self, project, container))
+        sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
-        source2 = "%s/%s "% (sourceDir, file2)
-        source3 = "%s/%s "% (sourceDir, file3)
-        targetfile = self._fileman.getAutocropDir(project, container) + "/%s" % file1
+        source2 = "%s/%s" % (sourceDir, file2)
+        source3 = "%s/%s" % (sourceDir, file3)
+        outputdir = self._fileman.getAutocropDir(project, container)
         jobargs = ('../autocrop.py', '--filenames',
-            '%s,%s,%s' % (file1, file2, file3),
+            '%s,%s,%s' % (source1, source2, source3),
             '--mode', '8mm',
-            '--outputfile', targetfile)
-        retcode = subprocess.call(jobargs)
-        #self._logger.debug("Done %s %s %s rc %d" % (project, container, filename, retcode))
-        if 0 == retcode:
-            self._pstore.markAutocropped(project, container, file1, file2, file3, targetfile)
-        self._logger.debug("_wmAutocrop Done")
+            '--output-dir', outputdir)
+        self._logger.debug("Calling %s" % ' '.join(jobargs))
+#        pdb.set_trace()
+        try:
+            subprocess.check_call(jobargs)
+            self._logger.debug("Done %s %s %s" % (project, container, outputdir))
+            for file in [file1, file2, file3]:
+                self._pstore.markAutocropped(project, container, file)
+            self._logger.debug("_wmAutocrop Done")
 
-        return retcode
+        except subprocess.CalledProcessError as ee:
+            self._logger.error("autocrop failed rc %d $s" % (ee.returncode, ee.output))
+            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmPrecrop(self, project, container, filename):
         self._logger.debug("Precrop %s %s %s" % (project, container, filename))
@@ -112,9 +122,13 @@ class JobManager():
         jobargs = ('convert', sourcefile,
             '-crop', "%dx%d+%d+%d" % (1755, 1083, 2500, 1680),
             '-flop', '-flip', targetfile)
-        retcode = subprocess.call(jobargs)
+        self._logger.debug("Calling %s" % ' '.join(jobargs))
+        retcode = 0
+        if True == JobManager.DisablePrecrop:
+            self._logger.debug("Precrop disabled")
+        else:
+            retcode = subprocess.call(jobargs)
         self._logger.debug("Done %s %s %s rc %d" % (project, container, filename, retcode))
-        pdb.set_trace()
         if 0 == retcode:
             self._pstore.markPrecropped(project, container, filename)
         self._logger.debug("_vmPrecrop Done")

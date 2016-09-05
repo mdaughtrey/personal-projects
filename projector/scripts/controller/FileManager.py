@@ -7,12 +7,12 @@ class FileManager():
         self._fileRoot = fileroot
         self._logger.debug("FileManager init root %s" % self._fileRoot)
 
-    def newFileStream(self, project, container, fileStream):
+    def newFileStream(self, fileStream, project, container, filename):
         targetDir = "%s/%s/%s/" % (self._fileRoot, project, container)
         if False == os.path.isdir(targetDir):
             self._logger.debug("Creating %s" % targetDir)
             os.makedirs(targetDir)
-        target = "%s/%s" % (targetDir, fileStream.filename)
+        target = "%s/%s" % (targetDir, filename)
         self._logger.debug("Saving to %s" % target)
         fileStream.save(target)
 
