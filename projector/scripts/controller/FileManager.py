@@ -12,6 +12,8 @@ class FileManager():
         if False == os.path.isdir(targetDir):
             self._logger.debug("Creating %s" % targetDir)
             os.makedirs(targetDir)
+            for subdir in ['precrop','autocrop','fused']:
+                os.makedirs('%s/%s' % (targetDir, subdir))
         target = "%s/%s" % (targetDir, filename)
         self._logger.debug("Saving to %s" % target)
         fileStream.save(target)
@@ -19,15 +21,11 @@ class FileManager():
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s/%s/%s" % (self._fileRoot, project, container, filename)
 
-
     def getPrecropDir(self, project, container):
-        pcdir = "%s/%s/%s/precrop" % (self._fileRoot, project, container)
-        if False == os.path.isdir(pcdir):
-            os.makedirs(pcdir)
-        return pcdir
+        return "%s/%s/%s/precrop" % (self._fileRoot, project, container)
 
     def getAutocropDir(self, project, container):
-        acdir = "%s/%s/%s/autocrop" % (self._fileRoot, project, container)
-        if False == os.path.isdir(acdir):
-            os.makedirs(acdir)
-        return acdir
+        return "%s/%s/%s/autocrop" % (self._fileRoot, project, container)
+
+    def getTonefuseDir(self, project, container):
+        return "%s/%s/%s/fused" % (self._fileRoot, project, container)
