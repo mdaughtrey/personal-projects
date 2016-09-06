@@ -2,13 +2,22 @@
 
 set -o xtrace
 
-SRCDIR=/media/sf_vmshared/scans/Niall/NK0032/100PHOTO/
+SERVER=192.168.0.18:5000
+SRCDIR=~/Documents/vmshared/scans/Niall/NK0032/100PHOTO/
 
-container=$(basename $SRCDIR)
+let count=0
+let limit=120
+container=$(basename $SRCDIR | cut -b1-3)
 for filename in ${SRCDIR}/*.JPG
 do
     basefile=$(basename $filename)
-    curl -i  -F "filename=@${filename}" http://192.168.0.23:5000/upload\?project=uploadtest\&container=${container}\&filename=${basefile}
-    exit 0
+	filenum=$(echo $basefile | cut -b5-8)
+    filenum=$(printf '%06u' $((10#$filenum)))
+    curl -i  -F "filename=@${filename}" http://${SERVER}/upload\?project=uploadtest\&container=${container}\&filename=${filenum}.JPG
+    ((count++))
+    if ((count > $limit))
+    then
+        exit 0
+    fi
 done
 
