@@ -12,10 +12,11 @@ def worker(object):
     object._logger.debug("workerManager ends")
 
 class JobManager():
-    JobLimit = 1
-    WorkerManagerInline = False
-    DisablePrecrop = True
-    #WorkerManagerInline = False
+    JobLimit = 10
+    WorkerManagerControl = 'Off'
+    DisablePrecrop = False
+    DisableAutocrop = False
+    #WorkerManagerControl = False
     def __init__(self, logger, pstore, fileman):
         self._logger = logger
         self._pstore = pstore
@@ -23,8 +24,10 @@ class JobManager():
         self._workers = []
         self._logger.debug("JobManager init")
         self._projectname = 'uploadtest'
+        if 'Off' == JobManager.WorkerManagerControl:
+            return
         self._wmrunning = True
-        if False == JobManager.WorkerManagerInline:
+        if False == JobManager.WorkerManagerControl:
             self._thread = threading.Thread(target = worker, args = (self,))
             self._thread.start()
         else:
@@ -34,7 +37,7 @@ class JobManager():
         self._wmrunning = False
         #while self._thread.is_alive():
         #    self._logger.debug("Waiting on worker thread shutdown")
-        #    if False == JobManager.WorkerManagerInline:
+        #    if False == JobManager.WorkerManagerControl:
         #        self._thread.join()
         #    else:
         #        time.sleep(1)
@@ -47,7 +50,7 @@ class JobManager():
                 for (rowid, container, filename) in toBePrecropped:
                     self._logger.debug("Container %s filename %s" % (container, filename))
                     jobargs = (projectname, container, filename)
-                    if JobManager.WorkerManagerInline == True:
+                    if JobManager.WorkerManagerControl == True:
                         self._vmPrecrop(*jobargs)
                     else:
                         self._workers.append(Process(target = self._vmPrecrop, args = jobargs))
@@ -66,10 +69,9 @@ class JobManager():
                     self._logger.error("Mismatched container values")
                     del tba[:3]
                 
-                jobargs = (self._projectname, tba[0][1], tba[0][2], tba[1][2], tba[2][2])
+                jobargs = (projectname, tba[0][1], tba[0][2], tba[1][2], tba[2][2])
 
-#                self._logger.debug("Container %s filename %s %s %s" % jobargs)
-                if JobManager.WorkerManagerInline == True:
+                if JobManager.WorkerManagerControl == True:
                     self._vmAutocrop(*jobargs)
                 else:
                     self._workers.append(Process(target = self._vmAutocrop, args = jobargs))
@@ -78,6 +80,29 @@ class JobManager():
                 del tba[:3]
             return scheduled
 
+        def scheduleTonefuse(self, freeWorkers):
+            scheduled = 0
+            todo = self._pstore.toBeFused(projectname, freeWorkers * 3)
+            while len(todo) >= 3:
+                testargs = {todo[0][1]: 1}
+                testargs[todo[1][1]] = 1
+                testargs[todo[2][1]] = 1
+                if len(testargs.keys()) > 1:
+                    self._logger.error("Mismatched container values")
+                    del todo[:3]
+                
+                jobargs = (projectname, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
+
+                if JobManager.WorkerManagerControl == True:
+                    self._vmTonefuse(*jobargs)
+                else:
+                    self._workers.append(Process(target = self._vmTonefuse, args = jobargs))
+                    self._workers[-1].start()
+                scheduled += 1
+                del todo[:3]
+            return scheduled
+
+
         self._workerCleanup()
         freeWorkers = JobManager.JobLimit - len(self._workers)
         if 0 == freeWorkers:
@@ -85,11 +110,31 @@ class JobManager():
             time.sleep(1)
             return
 
-        freeWorkers -= schedulePrecrop(self, freeWorkers)
+        if freeWorkers: freeWorkers -= schedulePrecrop(self, freeWorkers)
         if freeWorkers: freeWorkers -= scheduleAutocrop(self, freeWorkers)
+        if freeWorkers: freeWorkers -= scheduleTonefuse(self, freeWorkers)
 
         if freeWorkers:
             time.sleep(5)
+
+    def _vmTonefuse(self, project, container, file1, file2, file3):
+        self._logger.debug("Tonefuse %s %s %s %s %s" % (project, container, file1, file2, file3))
+        sourceDir = os.path.abspath(self._fileman.getAutocropDir(project, container))
+        source1 = "%s/%s" % (sourceDir, file1)
+        source2 = "%s/%s" % (sourceDir, file2)
+        source3 = "%s/%s" % (sourceDir, file3)
+        outputfile = self._fileman.getTonefuseDir(project, container) + '/%s' % file1
+        jobargs = ('enfuse', '--output', outputfile, source1, source2, source3)
+        self._logger.debug("Calling %s" % ' '.join(jobargs))
+        try:
+            subprocess.check_call(jobargs)
+            self._logger.debug("Done %s %s %s" % (project, container, outputfile))
+            self._pstore.markFused(project, container, file1, file2, file3)
+            self._logger.debug("_wmTonefuse Done")
+
+        except subprocess.CalledProcessError as ee:
+            self._logger.error("Tonefuse failed rc %d $s" % (ee.returncode, ee.output))
+            self._pstore.abortTonefuse(project, container, file1, file2, file3)
 
     def _vmAutocrop(self, project, container, file1, file2, file3):
         self._logger.debug("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
@@ -103,12 +148,10 @@ class JobManager():
             '--mode', '8mm',
             '--output-dir', outputdir)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
-#        pdb.set_trace()
         try:
             subprocess.check_call(jobargs)
             self._logger.debug("Done %s %s %s" % (project, container, outputdir))
-            for file in [file1, file2, file3]:
-                self._pstore.markAutocropped(project, container, file)
+            self._pstore.markAutocropped(project, container, file1, file2, file3)
             self._logger.debug("_wmAutocrop Done")
 
         except subprocess.CalledProcessError as ee:
@@ -139,3 +182,11 @@ class JobManager():
         self._logger.debug("Workers before cleanup: %d" % len(self._workers))
         self._workers = [xx for xx in self._workers if xx.is_alive()]
         self._logger.debug("Workers after cleanup: %d" % len(self._workers))
+
+    def quiescent(self):
+        if len(self._workers):
+            return False
+        return True
+
+    def gentitle():
+        pass

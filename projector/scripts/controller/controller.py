@@ -48,9 +48,22 @@ def uploadFile():
         arguments = []
         for elem in ['project','container','filename']:
             arguments.append(request.args[elem])
+        if pstore.rawFileExists(*arguments):
+            return json.dumps(['EXISTS'])
         fileman.newFileStream(ff, *arguments)
         pstore.newRawFile(*arguments)
         return json.dumps(['OK'])
+
+#
+# Start title generation
+#
+@app.route('/gentitle', methods = ['POST', 'GET'])
+def gentitle():
+    if !jobman.quiescent() or !pstore.quiescent():
+        return json.dumps(['NOTREADY'])
+
+    jobman.gentitle()
+    return json.dumps(['DONE'])
 
 #
 # Start precrop (with parameters)
