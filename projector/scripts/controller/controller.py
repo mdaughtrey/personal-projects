@@ -41,29 +41,27 @@ signal.signal(signal.SIGINT, signal_handler)
 # Upload a new raw file
 #
 @app.route('/upload', methods = ['GET', 'POST'])
-def uploadFile():
+def upload():
     if request.method == 'POST':
         project = request.args['project']
-        ff = request.files['filename']
-        arguments = []
-        for elem in ['project','container','filename']:
-            arguments.append(request.args[elem])
-        if pstore.rawFileExists(*arguments):
-            return json.dumps(['EXISTS'])
-        fileman.newFileStream(ff, *arguments)
-        pstore.newRawFile(*arguments)
-        return json.dumps(['OK'])
+        if 'container' in request.args:
+            return json.dumps(uploadImage(request))
+        if 'titlepage' in request.args:
+            return json.dumps(uploadTitleFile(request))
+        return json.dumps(['BADCOMMAND'])
 
 #
 # Start title generation
 #
 @app.route('/gentitle', methods = ['POST', 'GET'])
 def gentitle():
-    if !jobman.quiescent() or !pstore.quiescent():
-        return json.dumps(['NOTREADY'])
+    return json.dumps(['TODO'])
 
-    jobman.gentitle()
-    return json.dumps(['DONE'])
+#    if !jobman.quiescent() or !pstore.quiescent():
+#        return json.dumps(['NOTREADY'])
+#
+#    jobman.gentitle()
+#    return json.dumps(['DONE'])
 
 #
 # Start precrop (with parameters)
@@ -75,6 +73,30 @@ def gentitle():
 # Cancel running operation
 # Reset to state
 
+def uploadImage(request):
+    ff = request.files['filename']
+    arguments = []
+
+    for elem in ['project','container','filename']:
+        arguments.append(request.args[elem])
+
+    if pstore.rawFileExists(*arguments):
+        return json.dumps(['EXISTS'])
+
+    fileman.newFileStream(ff, *arguments)
+    pstore.newRawFile(*arguments)
+    return ['OK']
+
+def uploadTitleFile(request):
+    pdb.set_trace()
+    ff = request.files['filename']
+    arguments = []
+
+    for elem in ['project','titlepage']:
+        arguments.append(request.args[elem])
+
+    return fileman.newTitleFile(ff, *arguments)
+    
 
 if __name__ == "__main__":
     app.run('0.0.0.0')
