@@ -28,7 +28,7 @@ EX_NOFILES = 3
 exitCode = 0
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(levelname)s %(lineno)s %(message)s')
-fileHandler = RotatingFileHandler(filename = './runproj_txt', maxBytes = 10e6, backupCount = 5)
+fileHandler = RotatingFileHandler(filename = './runproj.log', maxBytes = 10e6, backupCount = 5)
 fileHandler.setLevel(logging.DEBUG)
 fileHandler.setFormatter(logging.Formatter(fmt='%(asctime)s %(lineno)s %(message)s'))
 logger = logging.getLogger('runproj')
@@ -69,7 +69,8 @@ class FlashAir():
             if ap in line.split():
                 return 
 
-        raise RuntimeError("Cannot see %s" % ap)
+        logger.error("Cannot see %s" % ap)
+        raise RuntimeError("restart")
 
     def isAirportOn(self):
         try:
@@ -323,9 +324,15 @@ class SerialProtocol(LineOnlyReceiver):
         self.waiton.pop('{pt:}', None)
         logger.debug("initProjector2")
 
+        def noMoreFrames(self):
+            global exitcode
+            exitcode = EX_TIMEOUT;
+            self.transport.loseConnection();
+
         def setWaiton(self):
             self.waiton = dict()
-            self.waiton['{Remaining:0}'] = lambda: self.getFileInfo(last = False)
+            #self.waiton['{Remaining:0}'] = lambda: self.getFileInfo(last = False)
+            self.waiton['{Remaining:0}'] = lambda: noMoreFrames(self)
             self.waiton['Opto int timeout'] = self.stopProjector
 
         sequence = [
@@ -334,11 +341,12 @@ class SerialProtocol(LineOnlyReceiver):
             lambda: self.send({'8mm': 'd', 'super8': 'D'}[options.mode]),
             lambda: self.send("%so" % options.numframes),
             lambda: setWaiton(self),
-            lambda: self.send('S')
+            lambda: self.send('S'),
             ]
         self.slowSequence(sequence)
 
     def setSSInterval(self, interval):
+        logger.debug("SlowSeq Interval %d" % interval)
         self.slowSeqInterval = interval
 
     def slowSequence(self, sequence = None):
@@ -364,7 +372,7 @@ class SerialProtocol(LineOnlyReceiver):
             if 'restart' == ee.message and self.currentSlowSeq is not None:
                 logger.info("Restarting sequence")
 #                self.ssITer = self.generator(self.currentSlowSeq)
-                reactor.callLater(2, self.slowSequence(self.currentSlowSeq))
+                reactor.callLater(2, lambda: self.slowSequence(self.currentSlowSeq))
             else:    
                 pdb.set_trace()
             
@@ -405,7 +413,7 @@ class SerialProtocol(LineOnlyReceiver):
 
         self.slowSequence([
             lambda: self.setSSInterval(2),
-            lambda: self.send(' '),
+            lambda: self.send('C'),
             lambda: self.send('c'),
             lambda: self.setSSInterval(5),
             self.sdCard.turnAirportOff,
@@ -495,10 +503,9 @@ class TransferOnly(SerialProtocol):
         logger.debug("getFileInfo")
 
         self.slowSequence([
-            lambda: self.setSSInterval(2),
-            lambda: self.send(' '),
-            lambda: self.send('c'),
             lambda: self.setSSInterval(5),
+            lambda: self.send('C'),
+            lambda: self.send('c'),
             self.sdCard.turnAirportOff,
             self.sdCard.turnAirportOn,
             lambda: self.setSSInterval(10),

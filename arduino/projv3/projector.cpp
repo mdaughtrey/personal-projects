@@ -39,7 +39,7 @@
 #endif // USESTEPPER
 #define PRETENSIONDELAY 200
 
-#define CAMERABUSYTIMEOUT 1000
+#define CAMERABUSYTIMEOUT 1200
 #define LAMP_TIMEOUT_MS 3000
 #define NEXT_FRAME_TIMEOUT_MS 8000
 #define SENSORTHRESHOLD 200
@@ -582,7 +582,17 @@ void loop ()
             {
                 Serial.println("Camera Ready");
             }
-            waitingFor = SHUTTEROPEN;
+            if (0 == frameCount)
+            {
+                Serial.println("{Remaining:0}");
+//                Serial.print(frameCount, 10);
+//                Serial.println("}");
+                waitingFor = NONE;
+            }
+            else
+            {
+                waitingFor = SHUTTEROPEN;
+            }
             break;
             
         case OPTOINT_HALF:
@@ -700,18 +710,20 @@ void loop ()
                 Serial.println("SHUTTERCLOSED");
             }
 
-            --frameCount;
-            Serial.print("{Remaining:");
-            Serial.print(frameCount, 10);
-            Serial.println("}");
             if (frameCount > 0)
             {
+                Serial.print("{Remaining:");
+                Serial.print(frameCount, 10);
+                Serial.println("}");
                 waitingFor = SENSORSTART;
             }
             else
             {
-                waitingFor = NONE;
+                cameraBusyTimeout = millis();
+                waitingFor = WAITCAMERABUSY;;
+//                waitingFor = NONE;
             }
+            --frameCount;
             break;
 
 //        case DELAYLOOP:
