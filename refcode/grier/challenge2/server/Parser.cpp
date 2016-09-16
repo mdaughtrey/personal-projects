@@ -99,8 +99,17 @@ Parser::handleData(char * data, int length, PODLResponse & response)
 
             string strMsg(msgPassword.begin(), msgPassword.begin() + msgPassword.length());
             //string strPwd(m_password.begin(), m_password.end());
-            cout << "Comparing " << strMsg << " to " << m_password << endl;
+//            cout << "Comparing " << strMsg << " to " << m_password << endl;
 
+            string::iterator iMsg(strMsg.begin());
+            string::iterator iPwd(msgPassword.begin());
+
+            for (; iMsg != strMsg.end() && iPwd != msgPassword.end(); iMsg++, iPwd++)
+            {
+                 std::cout << std::hex << std::setw(2) << std::setfill('0')
+                     << (int)(*iMsg & 0xff) << " " << (int)(*iPwd & 0xff) << std::endl;
+            }
+      
             if (true == lexicographical_compare(
                 strMsg.begin(), strMsg.end(),
                 m_password.begin(), m_password.end()))
