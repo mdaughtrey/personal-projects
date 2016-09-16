@@ -1,4 +1,4 @@
-PASSWORD=password
+PASSWORD=bcdefghikjlmnopqrstuvwxyz1234567890
 CXX=g++-4.6
 CXXFLAGS=-g -std=c++0x -Wall -pedantic -I.
 LDFLAGS=-lcrypto

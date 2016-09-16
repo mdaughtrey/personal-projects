@@ -25,6 +25,9 @@ extern "C"
     } PODLMessage;
 #pragma pack(pop)
 
+typedef std::vector<unsigned char> Vec;
+typedef Vec::iterator VecIter;
+
 class Strategy1
 {
 public:
@@ -35,9 +38,12 @@ protected:
     int m_socket;
     struct sockaddr_in m_servaddr;
 
-    void buildMessage(PODLMessage * msg, std::vector<unsigned char> & payload);
+    void buildMessage(PODLMessage * msg, Vec & payload);
     void buildMd5Sum(PODLMessage * message);
-    bool probe(PODLMessage * msg, std::vector<unsigned char> * result);
-    void dump(std::string caption, std::vector<unsigned char> & dump);
+    bool probe(PODLMessage * msg, Vec * result);
+    void dump(std::string caption, Vec & dump);
+    void hexDump(Vec & dump);
+    int getPasswordLength();
+    bool attack2();
 };
 
