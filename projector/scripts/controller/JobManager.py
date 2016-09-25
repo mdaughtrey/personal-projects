@@ -16,7 +16,7 @@ class JobManager():
     WorkerManagerControl = 'Off'
     DisablePrecrop = False
     DisableAutocrop = False
-    #WorkerManagerControl = False
+
     def __init__(self, logger, pstore, fileman):
         self._logger = logger
         self._pstore = pstore
@@ -35,12 +35,6 @@ class JobManager():
 
     def shutdown(self):
         self._wmrunning = False
-        #while self._thread.is_alive():
-        #    self._logger.debug("Waiting on worker thread shutdown")
-        #    if False == JobManager.WorkerManagerControl:
-        #        self._thread.join()
-        #    else:
-        #        time.sleep(1)
 
     def _workerManager(self, projectname):
         def schedulePrecrop(self, freeWorkers):
@@ -60,16 +54,16 @@ class JobManager():
 
         def scheduleAutocrop(self, freeWorkers):
             scheduled = 0
-            tba = self._pstore.toBeAutocropped(projectname, freeWorkers * 3)
-            while len(tba) >= 3:
-                testargs = {tba[0][1]: 1}
-                testargs[tba[1][1]] = 1
-                testargs[tba[2][1]] = 1
+            todo = self._pstore.toBeAutocropped(projectname, freeWorkers * 3)
+            while len(todo) >= 3:
+                testargs = {todo[0][1]: 1}
+                testargs[todo[1][1]] = 1
+                testargs[todo[2][1]] = 1
                 if len(testargs.keys()) > 1:
                     self._logger.error("Mismatched container values")
-                    del tba[:3]
+                    del todo[:3]
                 
-                jobargs = (projectname, tba[0][1], tba[0][2], tba[1][2], tba[2][2])
+                jobargs = (projectname, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
 
                 if JobManager.WorkerManagerControl == True:
                     self._vmAutocrop(*jobargs)
@@ -77,7 +71,7 @@ class JobManager():
                     self._workers.append(Process(target = self._vmAutocrop, args = jobargs))
                     self._workers[-1].start()
                 scheduled += 1
-                del tba[:3]
+                del todo[:3]
             return scheduled
 
         def scheduleTonefuse(self, freeWorkers):

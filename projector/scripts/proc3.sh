@@ -396,16 +396,16 @@ oneTitleFrame()
 }
 export -f oneTitleFrame
 
-textToImage()
-{
-	convert -background black \
-		-stroke yellow -strokewidth 2 \
-		-fill blue -font ${FONT} \
-		-size x100 label:"${2}" /tmp/$(basename $1)
-	geometry=($(identify -ping $firstfile  | cut -d' ' -f3 | sed 's/x/ /g'))
-	let underlayW=${geometry[0]}
-	let underlayH=${geometry[1]} 
-}
+#textToImage()
+#{
+#	convert -background black \
+#		-stroke yellow -strokewidth 2 \
+#		-fill blue -font ${FONT} \
+#		-size x100 label:"${2}" /tmp/$(basename $1)
+#	geometry=($(identify -ping $firstfile  | cut -d' ' -f3 | sed 's/x/ /g'))
+#	let underlayW=${geometry[0]}
+#	let underlayH=${geometry[1]} 
+#}
 
 gentitle()
 {

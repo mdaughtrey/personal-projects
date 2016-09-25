@@ -29,3 +29,13 @@ class FileManager():
 
     def getTonefuseDir(self, project, container):
         return "%s/%s/%s/fused" % (self._fileRoot, project, container)
+
+    def newTitleFile(self, fileStream, project, titlepage):
+        targetDir = "%s/%s/" % (self._fileRoot, project)
+        if False == os.path.isdir(targetDir):
+            return ['BADPROJECT']
+
+        target = "%s/title%s.txt" % (targetDir, titlepage)
+        self._logger.debug("Saving to %s" % target)
+        fileStream.save(target)
+        return ['OK']
