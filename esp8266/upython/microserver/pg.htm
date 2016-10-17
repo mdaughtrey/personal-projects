@@ -42,17 +42,25 @@ function led(event)
     var xmlhttp=new XMLHttpRequest(); 
     xmlhttp.open("GET","rgb=" + ledR + ',' + ledG + ',' + ledB); xmlhttp.send()	
 }
+function pwm(event)
+{
+    var xmlhttp=new XMLHttpRequest(); 
+    xmlhttp.open("GET","pwm=" + event.target.value); xmlhttp.send()	
+}
 </script> 
 </head> 
 <body> 
     <div class="dimwrap" id="dimwrap">
     <!-- div><h3>Manual</h3></div -->
 	  <!-- input class="dimVal" type="number" id="dimVal" min="40" max="115" step="3" value="0" onclick="dimSet(event)" oninput="dimSet(event)" --> 
-	  <input class= "dimSlide" type="range" id="dimSlide" min="40" max="115" step="3" value="0" onclick="dimSet(event)" oninput="dimSet(event)" >
+	  <input class= "dimSlide" type="range" id="dimSlide" min="40" max="115" step="3" value="0" onclick="pwm(event)" oninput="pwm(event)" >
 
 
     </div>
-    <div class="dimwrap" id="ledR">
+    <div class="dimwrap" id="ledpwm">
+	  <input class= "dimSlide" type="range" id="ledpwm" min="0" max="1024" step="1" value="0" onclick="pwm(event)" oninput="pwm(event)" >
+    </div>
+    <!-- div class="dimwrap" id="ledR">
 	  <input class= "dimSlide" type="range" id="ledR" min="0" max="255" step="1" value="0" onclick="led(event)" oninput="led(event)" >
     </div>
     <div class="dimwrap" id="ledR">
@@ -60,7 +68,7 @@ function led(event)
     </div>
     <div class="dimwrap" id="ledR">
 	  <input class= "dimSlide" type="range" id="ledB" min="0" max="255" step="1" value="0" onclick="led(event)" oninput="led(event)" >
-    </div>
+    </div -->
     <div>
     <div><id='stop' class='button' onclick="btnPress('stop',event)">STOP</div>
     <div><id='fight' class='button' onclick="btnPress('fight',event)">FIGHT</div>
