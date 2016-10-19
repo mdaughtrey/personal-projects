@@ -20,30 +20,39 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include <Adafruit_NeoPixel.h>
-#include <CMMC_OTA.h>
+#include <ESP8266WebServer.h>
+//#include <CMMC_OTA.h>
 #include <cstdlib>
+#include <ctype.h>
 #include <effect.h>
+#include <EEPROM.h>
 
-#define LED_HEARTBEAT 16
+//#define LED_HEARTBEAT 16
 #define NEO_NUMPIXELS 10
 /************************* WiFi Access Point *********************************/
 
-#define WLAN_SSID       "Zooma223"
+#define WLAN_SSID       "Zooma22"
 #define WLAN_PASS       "N0stromo"
 
 /************************* Adafruit.io Setup *********************************/
 
 #define AIO_SERVER      "192.168.0.30"
 #define AIO_SERVERPORT  1883                   // use 8883 for SSL
-#define AIO_USERNAME    "mdaughtrey"
+#define AIO_USERNAME    "tentacle"
 #define AIO_KEY         "Spackle"
+#define EPADDR_PASS 0
+#define EPADDR_SSID 33
 
 /************ Global State (you don't need to change this!) ******************/
-CMMC_OTA ota;
+// CMMC_OTA ota;
 // Create an ESP8266 WiFiClient class to connect to the MQTT server.
 WiFiClient client;
+//WifiServer * server(nullptr);
+ESP8266WebServer * webServer(nullptr);
 Adafruit_NeoPixel np(Adafruit_NeoPixel(NEO_NUMPIXELS, 14, NEO_GRB + NEO_KHZ800));
-Effect effect(np, 100);
+Effect effect(np, 50);
+IPAddress serverAddr(192, 168, 0, 1);
+
 //Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEO_NUMPIXELS, 14, NEO_GRB + NEO_KHZ800);
 // or... use WiFiFlientSecure for SSL
 //WiFiClientSecure client;
@@ -56,20 +65,11 @@ Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT, AIO_USERNAME, AIO
 // Setup a feed called 'photocell' for publishing.
 // Notice MQTT paths for AIO follow the form: <username>/feeds/<feedname>
 //Adafruit_MQTT_Publish photocell = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/photocell");
-
-// Setup a feed called 'onoff' for subscribing to changes.
-// Adafruit_MQTT_Subscribe onoffbutton = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/click");
-//Adafruit_MQTT_Subscribe heartbeat = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/hb");
-Adafruit_MQTT_Subscribe servo = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/servo");
-Adafruit_MQTT_Subscribe fight = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/fight");
-Adafruit_MQTT_Subscribe color = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/color");
-Adafruit_MQTT_Subscribe subEffect = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/effect");
-
-// Adafruit_MQTT_Subscribe red = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/red");
-// Adafruit_MQTT_Subscribe green = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/green");
-// Adafruit_MQTT_Subscribe blue = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/feeds/blue");
-
-//enum class Effect { off, tiphb };
+Adafruit_MQTT_Subscribe servo = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/servo");
+Adafruit_MQTT_Subscribe fight = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/fight");
+Adafruit_MQTT_Subscribe color = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/color");
+Adafruit_MQTT_Subscribe subEffect = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/effect");
+Adafruit_MQTT_Subscribe background = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME "/background");
 
 /*************************** Sketch Code ************************************/
 
@@ -77,70 +77,143 @@ Adafruit_MQTT_Subscribe subEffect = Adafruit_MQTT_Subscribe(&mqtt, AIO_USERNAME 
 // for some reason (only affects ESP8266, likely an arduino-builder bug).
 void MQTT_connect();
 
-uint8_t gammaTable[16] = {
-    0, 1, 2, 6, 12, 20, 31, 44, 60, 79, 100, 125, 153, 183, 218, 255
-};
-
 char doHeartbeat('0');
 Servo shaft;
-
-void setup() {
-  Serial.begin(115200);
-  delay(10);
-
-  Serial.println(F("Adafruit MQTT demo"));
-
-  // Connect to WiFi access point.
-  Serial.println(); Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(WLAN_SSID);
-
-  WiFi.begin(WLAN_SSID, WLAN_PASS);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println();
-
-  Serial.println("WiFi connected");
-  Serial.println("IP address: "); Serial.println(WiFi.localIP());
-
-  // Setup MQTT subscription for onoff feed.
-  // mqtt.subscribe(&onoffbutton);
-  //mqtt.subscribe(&heartbeat);
-  mqtt.subscribe(&servo);
-  mqtt.subscribe(&fight);
-  mqtt.subscribe(&color);
-  mqtt.subscribe(&subEffect);
-
-  // mqtt.subscribe(&red);
-  // mqtt.subscribe(&green);
-  // mqtt.subscribe(&blue);
-
-  pinMode(0, OUTPUT);
-  pinMode(LED_HEARTBEAT, OUTPUT);
-  shaft.attach(12);
-
-//   ota.on_start([]() { Serial.println("OTA Start"); });
-//   ota.on_end([]() { Serial.println("OTA End"); });
-//     ota.on_progress([](unsigned int progress, unsigned int total) {
-//         Serial.printf("_CALLBACK_ Progress: %u/%u\r\n", progress,  total);
-//     });
-// ota.on_error([](ota_error_t error) {
-//       Serial.printf("Error[%u]: ", error);
-//     });
-
-  ota.init();
-  // strip.begin();
-  // strip.show();
-}
-
-uint32_t x=0;
-//int effectCount = 0;
 uint8_t fightState = 0;
 uint32_t fightMillis;
 
-void loop() {
+
+bool eepromToVar(uint16_t addr, char * dest)
+{
+  uint8_t len(EEPROM.read(addr));
+  if (len > 32)
+  {
+      return false;
+  }
+  uint8_t ii;
+  for (ii = 0; ii < EEPROM.read(addr); ii++)
+  {
+      dest[ii] = EEPROM.read(addr + ii + 1);
+      if (!::isprint(dest[ii]))
+      {
+          return false;
+      }
+  }
+  dest[ii] = 0;
+  return true;
+}
+
+void handleRoot()
+{
+    webServer->send(200, "text/plain", "handleRoot");
+}
+
+void handleServo()
+{
+}
+
+void handleFight()
+{
+    fightState = webServer->arg("state").charAt(0);
+    fightMillis = millis();
+    if (fightState == '0')
+    {
+        fightState = 0;
+    }
+    Serial.print("handleFight state ");
+    Serial.println((int)fightState);
+}
+
+void handleColor()
+{
+}
+
+void handleEffect()
+{
+}
+
+void handleBackground()
+{
+}
+
+void setup() {
+  EEPROM.begin(512);
+  Serial.begin(115200);
+  delay(10);
+  bool doAP(false);
+
+  char ssid[16] = { 0 };
+  char pass[16] = { 0 };
+
+  do
+  {
+      if (false == eepromToVar(EPADDR_SSID, ssid)
+      || false == eepromToVar(EPADDR_PASS, pass))
+      {
+          doAP = true;
+          break;
+      }
+
+      Serial.print("Connecting to ");
+      Serial.println(ssid);
+
+      WiFi.begin(ssid, pass);
+      uint8_t retry(10);
+      while (WiFi.status() != WL_CONNECTED && retry--)
+      {
+        delay(500);
+        Serial.print(".");
+      }
+      Serial.println();
+      if (WiFi.status() == WL_CONNECT_FAILED)
+      {
+          Serial.println("No AP Found");
+          doAP = true;
+      }
+  } while (0);
+  if (doAP)
+  {
+      Serial.println("Configuring as access point SSID tentacle");
+      //server = new WiFiServer();1
+//      WiFi.begin("tentacle", "tentacle");
+      WiFi.mode(WIFI_AP);
+      WiFi.softAP("tentacle");
+
+      webServer = new ESP8266WebServer(80);
+      webServer->on("/", handleRoot);
+      webServer->on("/servo", handleServo);
+      webServer->on("/fight", handleFight);
+      webServer->on("/color", handleColor);
+      webServer->on("/effect", handleEffect);
+      webServer->on("/background", handleBackground);
+
+      webServer->begin();
+      Serial.print("Started HTTP Server at address 192.168.4.1");
+  }
+  else
+  {
+      Serial.println("WiFi connected");
+      Serial.println("IP address: "); Serial.println(WiFi.localIP());
+
+      mqtt.subscribe(&servo);
+      mqtt.subscribe(&fight);
+      mqtt.subscribe(&color);
+      mqtt.subscribe(&subEffect);
+      mqtt.subscribe(&background);
+
+      pinMode(0, OUTPUT);
+      shaft.attach(12);
+  }
+}
+
+
+void loop()
+{
+    if (webServer)
+    {
+        webServer->handleClient();
+        return;
+    }
   // Ensure the connection to the MQTT server is alive (this will make the first
   // connection and automatically reconnect when disconnected).  See the MQTT_connect
   // function definition further below.
@@ -152,13 +225,7 @@ void loop() {
   Adafruit_MQTT_Subscribe *subscription;
   while (true)
   {
-    ota.loop();
     subscription = mqtt.readSubscription(20);
-    // if (subscription == &onoffbutton) {
-    // //   Serial.print(F("Got: "));
-    // //   Serial.println((char *)onoffbutton.lastread);
-    //   digitalWrite(0, onoffbutton.lastread[0] == '1' ? 1 : 0);
-    // }
     if (subscription == &fight)
     {
         fightState = fight.lastread[0];
@@ -170,20 +237,26 @@ void loop() {
     }
     else if (subscription == &subEffect)
     {
-        // Serial.print(F("Effect "));
-        // Serial.println((char *)subEffect.lastread);
         effect.select((const char *)subEffect.lastread);
     }
     else if (subscription == &servo)
     {
         shaft.write(atoi((const char *) servo.lastread));
     }
-    if (subscription == &color)
+    else if (subscription == &color)
     {
         char * pp;
-        color.lastread[7] = 0;
         uint32 values = std::strtoul((char *)&color.lastread[1], &pp, 16);
         effect.color(
+            (values >> 16) & 0xff, // green
+            (values >> 8) & 0xff,  // red
+            values & 0xff);       // blue
+    }
+    else if (subscription == &background)
+    {
+        char * pp;
+        uint32 values = std::strtoul((char *)&background.lastread[1], &pp, 16);
+        effect.background(
             (values >> 16) & 0xff, // green
             (values >> 8) & 0xff,  // red
             values & 0xff);       // blue
@@ -201,44 +274,7 @@ void loop() {
         fightMillis = millis();
     }
     effect.loop();
-    // switch (effect)
-    // {
-    //     case Effect::tiphb: // Heartbeat at tip only
-    //     {
-    //         int duty = int(sin(radians(effectCount)) * 15);
-    //         if (duty > 0)
-    //         {
-    //             analogWrite(LED_HEARTBEAT, 1023 - gammaTable[duty] * 4);
-    //             for (int ii = 0; ii < NEO_NUMPIXELS; ii++)
-    //             {
-    //                 strip.setPixelColor(ii, strip.Color(gammaTable[duty], 0, 0));
-    //             }
-    //             strip.show();
-    //         }
-    //     }
-    //     effectCount += 10;
-    //     effectCount %= 360;
-    //     break;
-    // }
   }
-
-  // // Now we can publish stuff!
-  // Serial.print(F("\nSending photocell val "));
-  // Serial.print(x);
-  // Serial.print("...");
-  // if (! photocell.publish(x++)) {
-  //   Serial.println(F("Failed"));
-  // } else {
-  //   Serial.println(F("OK!"));
-  // }
-
-  // ping the server to keep the mqtt connection alive
-  // NOT required if you are publishing once every KEEPALIVE seconds
-  /*
-  if(! mqtt.ping()) {
-    mqtt.disconnect();
-  }
-  */
 }
 
 // Function to connect and reconnect as necessary to the MQTT server.
