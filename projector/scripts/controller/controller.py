@@ -3,10 +3,14 @@
 from flask import Flask, request
 import pdb
 import json
-from PersistentStore import PersistentStore
+from ProjectStore import ProjectStore
 from FileManager import FileManager
 from JobManager import JobManager
+<<<<<<< HEAD
+from ControllerStore import ControllerStore
+=======
 from nx300 import NX300
+>>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 import logging
 import signal
 import sys
@@ -21,16 +25,24 @@ fileHandler.setLevel(logging.DEBUG)
 formatter = logging.Formatter(logFormat)
 fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
-logging.getLogger('PersistentStore').addHandler(fileHandler)
+logging.getLogger('ProjectStore').addHandler(fileHandler)
 logging.getLogger('FileManager').addHandler(fileHandler)
 logging.getLogger('JobManager').addHandler(fileHandler)
+<<<<<<< HEAD
+logging.getLogger('ControllerStore').addHandler(fileHandler)
+=======
 logging.getLogger('RemoteDev').addHandler(filehandler)
+>>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 
 app = Flask(__name__)
-pstore = PersistentStore(logging.getLogger('PersistentStore'), ROOTOFALL)
+pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
 jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman)
+<<<<<<< HEAD
+cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
+=======
 remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
+>>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 
 def signal_handler(signal, frame):
     logger.debug("Control C")
@@ -77,29 +89,59 @@ def gentitle():
 # Reset to state
 
 def uploadImage(request):
-    ff = request.files['filename']
-    arguments = []
+    try:
+        ff = request.files['filename']
+        arguments = []
 
-    for elem in ['project','container','filename']:
-        arguments.append(request.args[elem])
+        for elem in ['project','container','filename']:
+            arguments.append(request.args[elem])
 
-    if pstore.rawFileExists(*arguments):
-        return json.dumps(['EXISTS'])
+        if pstore.rawFileExists(*arguments):
+            return json.dumps(['EXISTS'])
 
-    fileman.newFileStream(ff, *arguments)
-    pstore.newRawFile(*arguments)
-    return ['OK']
+        fileman.newFileStream(ff, *arguments)
+        pstore.newRawFile(*arguments)
+        return ['OK']
 
+    except KeyError as ee:
+        return json.dumps(['ERROR', ee.message])
+
+<<<<<<< HEAD
 def uploadTitleFile(request):
-    pdb.set_trace()
-    ff = request.files['filename']
-    arguments = []
+    try:
+        ff = request.files['filename']
+        arguments = []
+        
+        for elem in ['project','titlepage']:
+            arguments.append(request.args[elem])
 
-    for elem in ['project','titlepage']:
-        arguments.append(request.args[elem])
+        return fileman.newTitleFile(ff, *arguments)
 
+    except KeyError as ee:
+        return json.dumps(['ERROR', ee.message])
+
+def command(request):
+    try:
+        if 'gentitle' in request.args:
+            return json.dumps(jobman.generateTitle(request.args['project']))
+        if 'newproject' in request.args:
+            return json.dumps(cstore.addProject(request.args['projectname']))
+        if 'delproject' in request.args:
+            response = []
+            response.append(['database', cstore.deleteProject(request.args['projectname'])])
+            if 1 == request.args['deletefiles']:
+                response.append(['filemanager', fileman.deleteProject(request.args['projectname'])])
+            return json.dumps(response)
+
+    except KeyError as ee:
+        return json.dumps(['ERROR', ee.message])
+
+def getStatus(request):
+    return json.dumps(['STATUS', 'RESTing ha ha'])
+=======
     return fileman.newTitleFile(ff, *arguments)
 
+>>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 
 if __name__ == "__main__":
     app.run('0.0.0.0')
