@@ -182,5 +182,5 @@ class JobManager():
             return False
         return True
 
-    def gentitle():
+    def generateTitle(projectname):
         pass

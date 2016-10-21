@@ -39,3 +39,6 @@ class FileManager():
         self._logger.debug("Saving to %s" % target)
         fileStream.save(target)
         return ['OK']
+
+    def deleteProject(self, projectname):
+        return 'TODO'
