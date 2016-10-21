@@ -3,13 +3,13 @@ import os
 import pdb
 import threading
 
-class PersistentStore():
+class ProjectStore():
     def __init__(self, logger, dblocation = './', overwrite = False):
         self._dbroot = dblocation
 #        self._conn = None
         self._overwrite = overwrite
         self._logger = logger
-        self._logger.debug("PersistentStore init")
+        self._logger.debug("ProjectStore init")
         self._dbLock = threading.Lock()
 
     def _initDb(self, projectname):
