@@ -1,0 +1,80 @@
+<html> 
+<head> 
+<title>Tentacle Control</title> 
+  <link rel="icon" href="data:;base64,=">
+  <style type="text/css" id="style">
+	  .dimwrap { border: 2px solid red; height: 180px; width: 50px; float: left}
+	  .dimSlide { transform: scaleX(2) scaleY(1) rotate(270deg); position: relative; top: 70px; left: -45px;}
+//	  .dimVal { width: 45px; position: relative; top: 20px; left: 12px}
+      .button { width: 75px; height: 50px; border: 2px solid grey; position: relative; color: yellow }
+      body { background-color: black }
+  </style>
+<script language="javascript"> 
+
+var ledR = 0;
+var ledG = 0;
+var ledB = 0;
+
+function dimSet(evt) {
+	var me, he;
+    var resp, xmlhttp=new XMLHttpRequest(); 
+	me = evt.target;
+	//he = document.getElementById(me.id == "dimVal"? "dimSlide":"dimVal"); // need my other value node
+	he = document.getElementById("dimSlide"); 
+    xmlhttp.onreadystatechange=function() {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200){
+			resp = xmlhttp.responseText;
+			he.value = parseInt(resp);
+		}
+	}
+    xmlhttp.open("GET","servo=" + me.value,true); xmlhttp.send()	
+} 
+function btnPress(action,evt) {
+    var xmlhttp=new XMLHttpRequest(); 
+    xmlhttp.open("GET","action=" + action); xmlhttp.send()	
+} 
+function led(event)
+{
+    if (event.target.id == 'ledR') { ledR = event.target.value; }
+    if (event.target.id == 'ledG') { ledG = event.target.value; }
+    if (event.target.id == 'ledB') { ledB = event.target.value; }
+
+    var xmlhttp=new XMLHttpRequest(); 
+    xmlhttp.open("GET","rgb=" + ledR + ',' + ledG + ',' + ledB); xmlhttp.send()	
+}
+function pwm(event)
+{
+    var xmlhttp=new XMLHttpRequest(); 
+    xmlhttp.open("GET","pwm=" + event.target.value); xmlhttp.send()	
+}
+</script> 
+</head> 
+<body> 
+    <div class="dimwrap" id="dimwrap">
+    <!-- div><h3>Manual</h3></div -->
+	  <!-- input class="dimVal" type="number" id="dimVal" min="40" max="115" step="3" value="0" onclick="dimSet(event)" oninput="dimSet(event)" --> 
+	  <input class= "dimSlide" type="range" id="dimSlide" min="40" max="115" step="3" value="0" onclick="pwm(event)" oninput="pwm(event)" >
+
+
+    </div>
+    <div class="dimwrap" id="ledpwm">
+	  <input class= "dimSlide" type="range" id="ledpwm" min="0" max="1024" step="1" value="0" onclick="pwm(event)" oninput="pwm(event)" >
+    </div>
+    <!-- div class="dimwrap" id="ledR">
+	  <input class= "dimSlide" type="range" id="ledR" min="0" max="255" step="1" value="0" onclick="led(event)" oninput="led(event)" >
+    </div>
+    <div class="dimwrap" id="ledR">
+	  <input class= "dimSlide" type="range" id="ledG" min="0" max="255" step="1" value="0" onclick="led(event)" oninput="led(event)" >
+    </div>
+    <div class="dimwrap" id="ledR">
+	  <input class= "dimSlide" type="range" id="ledB" min="0" max="255" step="1" value="0" onclick="led(event)" oninput="led(event)" >
+    </div -->
+    <div>
+    <div><id='stop' class='button' onclick="btnPress('stop',event)">STOP</div>
+    <div><id='fight' class='button' onclick="btnPress('fight',event)">FIGHT</div>
+    <div><id='reset' class='button' onclick="btnPress('reset',event)">RESET</div>
+    <div><id='ledoff' class='button' onclick="btnPress('ledoff',event)">LED OFF</div>
+    <div><id='heartbeat' class='button' onclick="btnPress('heartbeat',event)">HEARTBEAT</div>
+    </div>
+</body>
+</html>

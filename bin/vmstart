@@ -1,0 +1,27 @@
+#!/bin/bash
+
+machines=$(VBoxManage list vms | cut -d' ' -f1 | sed 's/\"//g;' | tr '\n' ' ')
+running=$(VBoxManage list runningvms | cut -d' ' -f1 | sed 's/\"//g;' | tr '\n' ' ')
+
+if [[ "$1" == "" ]]
+then
+    echo Machines $machines
+    echo Running $running
+    exit 0
+fi
+
+if [[ " $machines " =~ " $1 " ]]
+then
+    if [[ ! " $running " =~ " $1 " ]]
+    then
+        VBoxManage startvm $1
+        exit 0
+    else
+        echo $1 is already running
+        exit 1
+    fi
+else
+    echo Unknown machine $1
+    exit 1
+fi
+exit 0
