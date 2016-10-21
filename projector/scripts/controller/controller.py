@@ -6,6 +6,7 @@ import json
 from PersistentStore import PersistentStore
 from FileManager import FileManager
 from JobManager import JobManager
+from nx300 import NX300
 import logging
 import signal
 import sys
@@ -23,11 +24,13 @@ logger.addHandler(fileHandler)
 logging.getLogger('PersistentStore').addHandler(fileHandler)
 logging.getLogger('FileManager').addHandler(fileHandler)
 logging.getLogger('JobManager').addHandler(fileHandler)
+logging.getLogger('RemoteDev').addHandler(filehandler)
 
 app = Flask(__name__)
 pstore = PersistentStore(logging.getLogger('PersistentStore'), ROOTOFALL)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
 jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman)
+remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
 
 def signal_handler(signal, frame):
     logger.debug("Control C")
@@ -96,7 +99,7 @@ def uploadTitleFile(request):
         arguments.append(request.args[elem])
 
     return fileman.newTitleFile(ff, *arguments)
-    
+
 
 if __name__ == "__main__":
     app.run('0.0.0.0')
