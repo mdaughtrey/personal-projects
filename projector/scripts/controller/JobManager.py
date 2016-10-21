@@ -62,7 +62,7 @@ class JobManager():
                 if len(testargs.keys()) > 1:
                     self._logger.error("Mismatched container values")
                     del todo[:3]
-                
+
                 jobargs = (projectname, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
 
                 if JobManager.WorkerManagerControl == True:
@@ -84,7 +84,7 @@ class JobManager():
                 if len(testargs.keys()) > 1:
                     self._logger.error("Mismatched container values")
                     del todo[:3]
-                
+
                 jobargs = (projectname, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
 
                 if JobManager.WorkerManagerControl == True:
