@@ -6,11 +6,8 @@ import json
 from ProjectStore import ProjectStore
 from FileManager import FileManager
 from JobManager import JobManager
-<<<<<<< HEAD
 from ControllerStore import ControllerStore
-=======
 from nx300 import NX300
->>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 import logging
 import signal
 import sys
@@ -28,21 +25,15 @@ logger.addHandler(fileHandler)
 logging.getLogger('ProjectStore').addHandler(fileHandler)
 logging.getLogger('FileManager').addHandler(fileHandler)
 logging.getLogger('JobManager').addHandler(fileHandler)
-<<<<<<< HEAD
 logging.getLogger('ControllerStore').addHandler(fileHandler)
-=======
 logging.getLogger('RemoteDev').addHandler(filehandler)
->>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
 jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman)
-<<<<<<< HEAD
 cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
-=======
 remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
->>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 
 def signal_handler(signal, frame):
     logger.debug("Control C")
@@ -106,7 +97,6 @@ def uploadImage(request):
     except KeyError as ee:
         return json.dumps(['ERROR', ee.message])
 
-<<<<<<< HEAD
 def uploadTitleFile(request):
     try:
         ff = request.files['filename']
@@ -138,10 +128,8 @@ def command(request):
 
 def getStatus(request):
     return json.dumps(['STATUS', 'RESTing ha ha'])
-=======
-    return fileman.newTitleFile(ff, *arguments)
+    #return fileman.newTitleFile(ff, *arguments)
 
->>>>>>> 66c4fcbcd11e0d747fbbcae3294856815a4160a0
 
 if __name__ == "__main__":
     app.run('0.0.0.0')
