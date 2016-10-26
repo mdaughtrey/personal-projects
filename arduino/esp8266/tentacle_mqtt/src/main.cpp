@@ -31,7 +31,7 @@
 #define NEO_NUMPIXELS 10
 /************************* WiFi Access Point *********************************/
 
-#define WLAN_SSID       "Zooma22"
+#define WLAN_SSID       "Zooma223"
 #define WLAN_PASS       "N0stromo"
 
 /************************* Adafruit.io Setup *********************************/
@@ -39,7 +39,7 @@
 #define AIO_SERVER      "192.168.0.30"
 #define AIO_SERVERPORT  1883                   // use 8883 for SSL
 #define AIO_USERNAME    "tentacle"
-#define AIO_KEY         "Spackle"
+#define AIO_KEY         "tentacle"
 #define EPADDR_PASS 0
 #define EPADDR_SSID 33
 
@@ -122,6 +122,7 @@ void handleFight()
     }
     Serial.print("handleFight state ");
     Serial.println((int)fightState);
+    webServer->send(200, "text/plain", "");
 }
 
 void handleColor()
@@ -147,30 +148,33 @@ void setup() {
 
   do
   {
-      if (false == eepromToVar(EPADDR_SSID, ssid)
-      || false == eepromToVar(EPADDR_PASS, pass))
-      {
-          doAP = true;
-          break;
-      }
+//      if (false == eepromToVar(EPADDR_SSID, ssid)
+//      || false == eepromToVar(EPADDR_PASS, pass))
+//      {
+//          doAP = true;
+//          break;
+//      }
 
       Serial.print("Connecting to ");
       Serial.println(ssid);
 
-      WiFi.begin(ssid, pass);
-      uint8_t retry(10);
+      //WiFi.begin(ssid, pass);
+      WiFi.begin(WLAN_SSID, WLAN_PASS);
+      uint8_t retry(100);
       while (WiFi.status() != WL_CONNECTED && retry--)
       {
         delay(500);
         Serial.print(".");
       }
       Serial.println();
+      break;
       if (WiFi.status() == WL_CONNECT_FAILED)
       {
           Serial.println("No AP Found");
           doAP = true;
       }
   } while (0);
+  #if 0
   if (doAP)
   {
       Serial.println("Configuring as access point SSID tentacle");
@@ -191,6 +195,7 @@ void setup() {
       Serial.print("Started HTTP Server at address 192.168.4.1");
   }
   else
+  #endif
   {
       Serial.println("WiFi connected");
       Serial.println("IP address: "); Serial.println(WiFi.localIP());
@@ -209,11 +214,13 @@ void setup() {
 
 void loop()
 {
+    #if 0
     if (webServer)
     {
         webServer->handleClient();
         return;
     }
+    #endif
   // Ensure the connection to the MQTT server is alive (this will make the first
   // connection and automatically reconnect when disconnected).  See the MQTT_connect
   // function definition further below.
