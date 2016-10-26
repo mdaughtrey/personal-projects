@@ -3,7 +3,8 @@
 BASEDIR=~/Video
 
 showname="$@"
-vendor='allmyvideos.net'
+#vendor='allmyvideos.net'
+vendor='openload.co'
 
 if [[ "$showname" == "" || ! -f "$showname" ]]
 then
