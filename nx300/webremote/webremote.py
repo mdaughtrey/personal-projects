@@ -17,7 +17,12 @@ fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument('--test', dest = 'test')
+argparser.add_argument('--testfile', dest = 'testfile')
+argparser.add_argument('--nohup', dest = 'nohup', action='store_true')
+argparser.add_argument('--tcp-nodelay', dest = 'tcp_nodelay', action='store_true')
+argparser.add_argument('--log-level', dest = 'log_level')
+
+DebugLevels = { 'debug': logging.DEBUG, 'info': logging.INFO, 'error': logging.ERROR, 'warning': logging.WARNING }
 
 args = argparser.parse_args()
 
@@ -94,48 +99,106 @@ def waitForShots():
     res = socket.getaddrinfo('192.168.107.2', 1801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
     af, socktype, proto, canonname, sa = res
     sock = socket.socket(af, socktype, proto)
+    if args.tcp_nodelay:
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     sock.bind(sa)
+    filenum = 0
 
     while True:
+        logger.debug('Listening')
         sock.listen(1)
         conn, addr = sock.accept()
+        accum = []
         logger.debug('Connected from %s',  str(addr))
         contentLength = 0
-        contentReceived = 0
-        while True:
+        cameraHost = ''
+        dataIndex = 0
+
+        while contentLength == 0 or len(accum) < contentLength:
+            logger.debug('select')
             (rlist, wlist, elist) = select.select([conn], [], [])
             for rsock in rlist:
-                accum = []
+                logger.debug('read')
                 while True: 
                     rdata = rsock.recv(4096)
                     if not rdata:
+                        logger.debug('rdata is None, breaking')
                         break
-                    logger.debug('Received %u bytes' % len(rdata))
+                    logger.debug('Received chunk %u bytes' % len(rdata))
                     accum.extend(rdata)
 
-                if 0 == contentLength:
-                    try:
-                        def find4(arr, idx, val):
+                    logger.debug('Got %u bytes so far' % len(accum))
+                    logger.debug('contentLength %u contentReceived %u' % (contentLength, len(accum)))
+
+                    if 0 == contentLength and len(accum) > 1000:
+                        logger.debug('Looking for Content-Length')
+                        def find4(arr, idx):
                             if len(arr) < idx + 3:
                                 return False
-                            for off in [1,2,3]:
-                                if arr[idx + off] != val + off:
+                            for off in [0, 1,2,3]:
+                                if arr[idx + off] not in ['\n', '\r']:
                                     return False
                             return True
 
-                        mm = [ii for ii, xx in enumerate(accum[:1000] find4(accum, ii, xx)]
-                        pdb.set_trace()
-                        headers = accum[:index]
-                        clLine =  filter(lambda xx: 'Content-length:' in xx, headers)
-                        cLength = clLine.split(':')[1]
-                    except:
-                        pass
+                        mm = [ii for ii, xx in enumerate(accum[:1000]) if find4(accum, ii)]
+                        if not mm:
+                            continue
+                        dataIndex = mm[0] + 4
+                        headers = ''.join(accum[:mm[0] + 4]).split('\r\n')
 
-                print 'received total %u bytes' % len(accum)
-                pdb.set_trace()
-                open('rsock.bin', 'a').write(accum)
+                        clLine =  filter(lambda xx: 'Content-length:' in xx, headers)
+                        logger.debug(clLine)
+                        contentLength = int(clLine[0].split(':')[1]) + mm[0] + 4
+                        logger.debug('contentLength is %u' % contentLength)
+
+                        chLine =  filter(lambda xx: 'Host:' in xx, headers)
+                        logger.debug(chLine)
+                        cameraHost = chLine[0].split(':')[1]
+                        logger.debug('Camera host is %s' % cameraHost)
+
+                    if len(accum) == contentLength:
+                        response = ["S2L/1.0 Result_OK",
+                            "Host: %s" % cameraHost,
+                            "Content-length: %u" % contentLength,
+                            "Authorization: suspend",
+                            "Sub-ErrorCode: 0",
+                            ""]
+                        rsock.sendall('\r\n'.join(response))
+                        if args.nohup is not None:
+                            logger.debug("Socket close")
+                            rsock.close()
+                        outfile='nx300_%u.jpg' % filenum
+                        logger.debug("Writing to %s" % outfile)
+                        open(outfile, 'w').write(''.join(accum[dataIndex:]))
+                        filenum += 1
+                        break
+
+        logger.debug('Received all content')
+
+def processTestFile(testfile):
+    accum = open(testfile).read()
+
+    def find4(arr, idx):
+        if len(arr) < idx + 3:
+            return False
+        for off in [0, 1,2,3]:
+            if arr[idx + off] not in ['\n', '\r']:
+                return False
+        return True
+
+    mm = [ii for ii, xx in enumerate(accum[:1000]) if find4(accum, ii)]
+    headerData = accum[:mm[0] + 4].split('\r\n')
+    pdb.set_trace()
+    clLine =  filter(lambda xx: 'Content-length:' in xx, headers)
+    cLength = int(clLine[0].split(':')[1])
 
 def main():
+#    fileHandler.setLevel(DebugLevels[args.log_level])
+    try:
+        processTestFile(args.testfile)
+        return
+    except:
+        pass
     init()
     shot2Link()
     waitForShots()
