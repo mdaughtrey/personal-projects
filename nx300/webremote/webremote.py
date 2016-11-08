@@ -21,13 +21,21 @@ argparser.add_argument('--testfile', dest = 'testfile')
 argparser.add_argument('--nohup', dest = 'nohup', action='store_true')
 argparser.add_argument('--tcp-nodelay', dest = 'tcp_nodelay', action='store_true')
 argparser.add_argument('--log-level', dest = 'log_level')
+argparser.add_argument('--mode', dest = 'mode', required = True, choices=['shot2link','getinfo'])
 
 DebugLevels = { 'debug': logging.DEBUG, 'info': logging.INFO, 'error': logging.ERROR, 'warning': logging.WARNING }
 
 args = argparser.parse_args()
 
+addrSelector = {
+    'shot2link': '192.168.107.1',
+    'getinfo': '192.168.107.1',
+    'dlna': '192.168.0.33'
+}
+
+
 def init():
-    conn = httplib.HTTPConnection('192.168.107.1', 7788)
+    conn = httplib.HTTPConnection(addrSelector[args.mode], 7788)
     headers = {
         'User-Agent': 'SEC_MODE_+1231231234',
         'Connection': 'Close',
@@ -49,7 +57,7 @@ def init():
     conn.close()
 
 def shot2Link():
-    res = socket.getaddrinfo('192.168.107.1', 801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
+    res = socket.getaddrinfo(addrSelector[args.mode], 801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
     af, socktype, proto, canonname, sa = res
     sock = socket.socket(af, socktype, proto)
     sock.connect(sa)
@@ -72,7 +80,7 @@ def shot2Link():
 
 
 def getInformation():
-    conn = httplib.HTTPConnection('192.168.107.1', 7788)
+    conn = httplib.HTTPConnection(addrSelector[args.mode], 7788)
     headers = {
         'Content-Type': 'text/xml',
         'HOST': 'http://192.168.107.1:7676',
@@ -88,11 +96,12 @@ def getInformation():
                 </s:Body>
                 </s:Envelope>
                 '''
-    conn.request('POST', '/smp_4_', body, headers)
-    response = conn.getresponse()
-    print response.status, response.reason, response.getheaders()
-    data = response.read()
-    print data
+    for idx in [1, 2, 3, 4]:
+        conn.request('POST', '/smp_%u_' % idx, '', headers)
+        response = conn.getresponse()
+        print response.status, response.reason, response.getheaders()
+        data = response.read()
+        print data
     conn.close()
 
 def waitForShots():
@@ -192,16 +201,18 @@ def processTestFile(testfile):
     clLine =  filter(lambda xx: 'Content-length:' in xx, headers)
     cLength = int(clLine[0].split(':')[1])
 
+
+def dlna():
+    pass
+
+modeRouter = {
+    'shot2link': lambda: init() or shot2Link() or waitForShots(),
+    'getinfo': lambda: init() or getInformation(),
+    'dlna': lambda: dlna()
+}
+
+
 def main():
-#    fileHandler.setLevel(DebugLevels[args.log_level])
-    try:
-        processTestFile(args.testfile)
-        return
-    except:
-        pass
-    init()
-    shot2Link()
-    waitForShots()
-#    getInformation()
+    modeRouter[args.mode]()
 
 main()
