@@ -40,6 +40,10 @@ class TheParser(HTMLParser):
         self._cbData = cb
 
     def recurseAttrs(self, attr):
+        if 2 == len(attr) and 'data-iframe' == attr[1][0]:
+            src = [elem for elem in attr[1][1].strip().split(' ') if 'src' in elem]
+            return self.recurseAttrs(('src', src[0].split('=')[1].replace('"','')))
+
         if 2 != len(attr):
             for elem in attr:
                 if True == self.recurseAttrs(elem):
@@ -48,11 +52,6 @@ class TheParser(HTMLParser):
 
         (name, value) = attr
 
-#        if isinstance(name, unicode):
-#            name = name.encode('ascii', 'ignore')
-#        if isinstance(value, unicode):
-#            value = value.encode('ascii', 'ignore')
-        
         if False == isinstance(name, str) or False == isinstance(value, str):
             return False
 
@@ -67,9 +66,9 @@ class TheParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         print 'starttag %s' % tag
-        if tag != 'iframe':
+        if tag != 'b':
             return
-#        pdb.set_trace()
+        pdb.set_trace()
         self.recurseAttrs(attrs)
 
     def handle_endtag(self, tag):
@@ -78,14 +77,16 @@ class TheParser(HTMLParser):
     def handle_data(self, data):
         print 'data %s' % data
         try:
-            self._extractMP4File(data, self._outputfile)
+            if '.mp4' in data:
+                pdb.set_trace()
+                self._extractMP4File(data, self._outputfile)
         except AttributeError:
             return
 
     def _extractMP4File(self, data, outputfile):
         origData = data
-        if -1 == data.find(self._lookForData):
-            return
+#        if -1 == data.find(self._lookForData):
+#            return
 
         data = data[data.find('{'):data.rfind('}') + 1]
         patterns = [
@@ -140,6 +141,7 @@ def processPage(url):
 
     if -1 != htmlData.find(options.vendor):
         parser.callBackOnStartTag(options.vendor, lambda url: startTagAllMyVideos(url))
+        #parser.callBackOnStartTag(options.vendor, lambda url: startTagAllMyVideos(url))
 #
 #
 #    if -1 != htmlData.find('allmyvideos.net'):
@@ -150,34 +152,34 @@ def processPage(url):
 #        parser.callBackOnStartTag('vidspot.net', lambda url: startTagIShared(url))
     parser.feed(htmlData)
 
-def mp4Data(data):
-    pass
+#def mp4Data(data):
+#    pass
 
-def startTagIShared(url):
-    page = urllib.urlretrieve(url)
-    htmlFile = open(page[0])
-    parser = TheParser(outputfile)
-    htmlData = repairHtml(''.join(htmlFile.readlines()))
-    iMp4 = htmlData.find('mp4')
-    iStart = htmlData.rfind('"', 0, iMp4)
-    iEnd = htmlData.find('"', iMp4)
-    mp4File = htmlData[iStart + 1: iEnd]
-    print "Downloading %s to %s" % (mp4File, outputfile)
-    subprocess.call(['wget', mp4File, '-O', outputfile])
-    sys.exit(0)
+#def startTagIShared(url):
+#    page = urllib.urlretrieve(url)
+#    htmlFile = open(page[0])
+#    parser = TheParser(outputfile)
+#    htmlData = repairHtml(''.join(htmlFile.readlines()))
+#    iMp4 = htmlData.find('mp4')
+#    iStart = htmlData.rfind('"', 0, iMp4)
+#    iEnd = htmlData.find('"', iMp4)
+#    mp4File = htmlData[iStart + 1: iEnd]
+#    print "Downloading %s to %s" % (mp4File, outputfile)
+#    subprocess.call(['wget', mp4File, '-O', outputfile])
+#    sys.exit(0)
 #    parser.callBackOnData('.mp4', lambda data: mp4Data(data))
 #    parser.feed(htmlData)
 
 def startTagAllMyVideos(url):
+    pdb.set_trace()
     page = urllib.urlretrieve(url)
     htmlFile = open(page[0])
     parser = TheParser(outputfile)
     fixedData = repairHtml(''.join(htmlFile.readlines()))
-    parser.callBackOnData('.mp4', lambda data: mp4Data(data))
+#    parser.callBackOnData('.mp4', lambda data: mp4Data(data))
     parser.feed(fixedData)
 
 def main():
-#    pdb.set_trace();
     global outputfile
     outputfile = "%s/%s" % (options.directory, options.output)
 #    outputfile = "%s/%s/%s-%s.mp4" % (options.directory,
