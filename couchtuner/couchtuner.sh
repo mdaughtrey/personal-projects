@@ -4,7 +4,8 @@ BASEDIR=~/Video
 
 showname="$@"
 #vendor='allmyvideos.net'
-vendor='openload.co'
+#vendor='openload.co'
+vendor='thevideo.me'
 
 if [[ "$showname" == "" || ! -f "$showname" ]]
 then
@@ -70,7 +71,8 @@ do
         continue
     fi
     rm xx_$$_${seasonNum}${episodeNum}
-    ./couchtuner.py -d . -v $vendor -u $url -o xx_${seasonNum}${episodeNum} >> commands.sh
+    command="./couchtuner.py -d . -v $vendor -u $url -o xx_${seasonNum}${episodeNum} >> commands.sh"
+    echo $command
     command="mv xx_${seasonNum}${episodeNum} '$outputfile'"
     echo $command
     echo $command | sh

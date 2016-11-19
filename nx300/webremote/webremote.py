@@ -21,31 +21,33 @@ argparser.add_argument('--testfile', dest = 'testfile')
 argparser.add_argument('--nohup', dest = 'nohup', action='store_true')
 argparser.add_argument('--tcp-nodelay', dest = 'tcp_nodelay', action='store_true')
 argparser.add_argument('--log-level', dest = 'log_level')
-argparser.add_argument('--mode', dest = 'mode', required = True, choices=['shot2link','getinfo'])
+argparser.add_argument('--mode', dest = 'mode', required = True, choices=['shot2link','getinfo','rshot'])
 
 DebugLevels = { 'debug': logging.DEBUG, 'info': logging.INFO, 'error': logging.ERROR, 'warning': logging.WARNING }
 
 args = argparser.parse_args()
 
 addrSelector = {
-    'shot2link': '192.168.107.1',
-    'getinfo': '192.168.107.1',
-    'dlna': '192.168.0.33'
+    'shot2link': { 'addr':'192.168.107.1', 'port': 7788 },
+    'getinfo': { 'addr': '192.168.107.1', 'port': 7788 },
+    'dlna': { 'addr': '192.168.0.33', 'port': 7788 },
+    'rshot': { 'addr': '192.168.107.1', 'port': 7788 },
 }
 
 
 def init():
-    conn = httplib.HTTPConnection(addrSelector[args.mode], 7788)
+    connInfo = addrSelector[args.mode]
+    conn = httplib.HTTPConnection(connInfo['addr'], connInfo['port'])
     headers = {
         'User-Agent': 'SEC_MODE_+1231231234',
         'Connection': 'Close',
         'NTS': 'Alive',
         'HOST-Mac': '02:00:00:00:00:00',
-        'HOST-Address': '192.168.0.18',
+        'HOST-Address': '192.168.107.2',
         'HOST-port': '7788',
         'HOST-PNumber': '+1231231234',
         'Access-Method': 'Manual',
-        'CALLBACK': '<http://192.168.0.18:7792/eventCallback>'
+        'CALLBACK': '<http://192.168.107.2:7792/eventCallback>'
     }
     conn.request('HEAD', '/mode/control', None, headers)
     response = conn.getresponse()
@@ -57,7 +59,7 @@ def init():
     conn.close()
 
 def shot2Link():
-    res = socket.getaddrinfo(addrSelector[args.mode], 801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
+    res = socket.getaddrinfo(addrSelector[args.mode]['addr'], 801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
     af, socktype, proto, canonname, sa = res
     sock = socket.socket(af, socktype, proto)
     sock.connect(sa)
@@ -80,7 +82,7 @@ def shot2Link():
 
 
 def getInformation():
-    conn = httplib.HTTPConnection(addrSelector[args.mode], 7788)
+    conn = httplib.HTTPConnection(addrSelector[args.mode]['addr'], 7788)
     headers = {
         'Content-Type': 'text/xml',
         'HOST': 'http://192.168.107.1:7676',
@@ -201,14 +203,91 @@ def processTestFile(testfile):
     clLine =  filter(lambda xx: 'Content-length:' in xx, headers)
     cLength = int(clLine[0].split(':')[1])
 
+def rshotPair():
+    res = socket.getaddrinfo('192.168.107.2', 7792, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
+    af, socktype, proto, canonname, sa = res
+    sock = socket.socket(af, socktype, proto)
+    if args.tcp_nodelay:
+        sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    sock.bind(sa)
+    filenum = 0
 
-def dlna():
-    pass
+    while True:
+        logger.debug('Listening')
+        sock.listen(1)
+        conn, addr = sock.accept()
+        accum = []
+        logger.debug('Connected from %s',  str(addr))
+        contentLength = 0
+        cameraHost = ''
+        dataIndex = 0
+
+        while contentLength == 0 or len(accum) < contentLength:
+            logger.debug('select')
+            (rlist, wlist, elist) = select.select([conn], [], [])
+            for rsock in rlist:
+                logger.debug('read')
+                while True: 
+                    rdata = rsock.recv(4096)
+                    if not rdata:
+                        logger.debug('rdata is None, breaking')
+                        break
+                    logger.debug('Received chunk %u bytes' % len(rdata))
+                    accum.extend(rdata)
+
+                    logger.debug('Got %u bytes so far' % len(accum))
+                    logger.debug('contentLength %u contentReceived %u' % (contentLength, len(accum)))
+
+'''                    
+                    if 0 == contentLength and len(accum) > 1000:
+                        logger.debug('Looking for Content-Length')
+                        def find4(arr, idx):
+                            if len(arr) < idx + 3:
+                                return False
+                            for off in [0, 1,2,3]:
+                                if arr[idx + off] not in ['\n', '\r']:
+                                    return False
+                            return True
+
+                        mm = [ii for ii, xx in enumerate(accum[:1000]) if find4(accum, ii)]
+                        if not mm:
+                            continue
+                        dataIndex = mm[0] + 4
+                        headers = ''.join(accum[:mm[0] + 4]).split('\r\n')
+
+                        clLine =  filter(lambda xx: 'Content-length:' in xx, headers)
+                        logger.debug(clLine)
+                        contentLength = int(clLine[0].split(':')[1]) + mm[0] + 4
+                        logger.debug('contentLength is %u' % contentLength)
+
+                        chLine =  filter(lambda xx: 'Host:' in xx, headers)
+                        logger.debug(chLine)
+                        cameraHost = chLine[0].split(':')[1]
+                        logger.debug('Camera host is %s' % cameraHost)
+
+                    if len(accum) == contentLength:
+                        response = ["S2L/1.0 Result_OK",
+                            "Host: %s" % cameraHost,
+                            "Content-length: %u" % contentLength,
+                            "Authorization: suspend",
+                            "Sub-ErrorCode: 0",
+                            ""]
+                        rsock.sendall('\r\n'.join(response))
+                        if args.nohup is not None:
+                            logger.debug("Socket close")
+                            rsock.close()
+                        outfile='nx300_%u.jpg' % filenum
+                        logger.debug("Writing to %s" % outfile)
+                        open(outfile, 'w').write(''.join(accum[dataIndex:]))
+                        filenum += 1
+                        break
+'''
+
 
 modeRouter = {
     'shot2link': lambda: init() or shot2Link() or waitForShots(),
     'getinfo': lambda: init() or getInformation(),
-    'dlna': lambda: dlna()
+    'rshot': lambda: init() or rshotPair()
 }
 
 
