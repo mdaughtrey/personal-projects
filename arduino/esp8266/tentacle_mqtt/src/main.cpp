@@ -36,7 +36,7 @@
 
 /************************* Adafruit.io Setup *********************************/
 
-#define AIO_SERVER      "192.168.0.30"
+#define AIO_SERVER      "192.168.0.35"
 #define AIO_SERVERPORT  1883                   // use 8883 for SSL
 #define AIO_USERNAME    "tentacle"
 #define AIO_KEY         "tentacle"
