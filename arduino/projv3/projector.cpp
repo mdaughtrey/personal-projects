@@ -8,11 +8,12 @@
 #include <Adafruit_FRAM_I2C-master/Adafruit_FRAM_I2C.h>
 #endif // USEFRAM
 #pragma GCC diagnostic ignored "-Wwrite-strings"
+//#define READY2
 
 #define PB_CAMERABUSY 0
 #define PC_SHUTTER 2
 #define PD_CAMERAPOWER 7
-#define PD_SHUTTERREADY 6
+#define PB_SHUTTERREADY 0
 #ifndef USESTEPPER
 #define PB_SERVO 3
 #endif // USESTEPPER
@@ -226,10 +227,11 @@ ISR(TIMER2_OVF_vect)
 ISR(PCINT2_vect)
 {
     intCount++;
-    shutterState <<= 1;
-    if (PIND & _BV(PD_SHUTTERREADY)) //  && (0 == shutterState & 0x01))
+//    shutterState <<= 1;
+    if (PINB & _BV(PB_SHUTTERREADY)) //  && (0 == shutterState & 0x01))
     {
-        shutterState |= 1;
+        shutterState = 1;
+//        shutterState |= 1;
     }
 #ifdef USEFRAM
     IntEntry entry = { iqHead, iqTail, millis(), intCount, shutterState, waitingFor };
@@ -432,11 +434,8 @@ void setup ()
     PORTC |= _BV(PC_OPTOINT); // tie opt int sensor line hight
 
     analogWrite(PIN_MOTOR, MOTOR_OFF);
-    //PORTB |= _BV(PC_OPTOINT); // tie led sensor line high
-    //PORTB |= _BV(PB_CAMERABUSY);
     PORTC |= _BV(PC_SHUTTER) | _BV(PC_TENSIONSENSOR);
     PORTD |= _BV(PD_CAMERAPOWER);
-//    PORTD |= _BV(PD_SHUTTERREADY);
     DDRD |= _BV(PD_CAMERAPOWER);
     DDRB |= _BV(PB_LAMP);
     DDRC |= _BV(PC_SHUTTER);
@@ -474,8 +473,26 @@ void setup ()
 u08 lastReportedState(255);
 #endif // LOGSTATE
 
+#ifdef READY2
+u08 pdState = 0;
+#endif // READY2
+
 void loop ()
 {
+// #ifdef READY2
+//     //if (0 == pdState && (PIND & _BV(PD_SHUTTERREADY)))
+//     if (0 == pdState && (PINB & _BV(0)))
+//     {
+//         pdState = 1;
+//         Serial.println("1");
+//     }
+//     else if (1 == pdState && !(PINB & _BV(0)))
+//     {
+//         pdState = 0;
+//         Serial.println("0");
+//     }
+// #endif // READY2
+
 //    if (2 == verbose)
 //    {
 //        Serial.print(PINC, 2);
@@ -751,7 +768,7 @@ void loop ()
 //            break;
 
         case EXPOSURESERIES3:
-            if (0x01 & shutterState)
+            if (0 == shutterState)
             {
                 lampOn();
                 SHUTTERINT_OFF;
@@ -763,347 +780,20 @@ void loop ()
             }
             break;
 
-        case EXPOSURESERIES2A:
-            if (0x01 & shutterState)
-            {
-                break;
-            }
-            waitingFor = EXPOSURESERIES3;
-            break;
+//        case EXPOSURESERIES2A:
+//            if (0x01 & shutterState)
+//            {
+//                break;
+//            }
+//            waitingFor = EXPOSURESERIES3;
+//            break;
 
         case EXPOSURESERIES2: 
-            if (0x01 & shutterState)
+            if (1 == shutterState)
             {
                 lampOn();
                 delay(10);
                 lampOff();
-                waitingFor = EXPOSURESERIES2A;
+                waitingFor = EXPOSURESERIES3;
             }
             break;
-
-        // next state when pulse ends
-        case EXPOSURESERIES1A:
-            if (0x01 & shutterState)
-            {
-                break;
-            }
-            waitingFor = EXPOSURESERIES2;
-            break;
-
-        // wait for lowgoing pulse
-        case EXPOSURESERIES1: 
-            if (0x01 & shutterState)
-            {
-                lampOn();
-                delay(2);
-                lampOff();
-                waitingFor = EXPOSURESERIES1A;
-            }
-            break;
-
-        // Trigger shutter
-        case SHUTTEROPEN:
-            shutterState = 0xff;
-            SHUTTERINT_ON;
-            SHUTTER_OPEN;
-            delay(20);
-            waitingFor = EXPOSURESERIES1;
-//            delay(100);
-//            lampOn();
-//            delay(4);
-//            lampOff();
-//            DELAYEDSTATE(350, EXPOSURESERIES2);
-            break;
-
-       case STOPONFRAMEZERO:
-            if (isOptoTransition())
-            {
-                if (decFrameCount())
-                {
-                    setMotor(MOTOR_OFF);
-                    waitingFor = NONE;
-                }
-            }
-//            Serial.print("SOFZ ");
-//            Serial.println(millis());
-        break;
-
-        default:
-            break;
-    }
-
-    if (!Serial.available())
-    {
-        return;
-    }
-
-    lastCommand = Serial.read();
-    u16 ii;
-    switch (lastCommand)
-    {
-#ifdef USEFRAM
-        case 'q':
-            Serial.println("Q!\r\n");
-            Serial.println((int)framIndex);
-            ii = 0;
-            while (ii < framIndex)
-            {
-                u08 type(fram.read8(ii++));
-                if (FHEADER_STATE == type)
-                {
-                    Serial.print("STA ");
-                }
-                else
-                {
-                    Serial.print("ISR ");
-                }
-
-                Serial.print((int)fram.read8(ii));       // head
-                Serial.print(" ");
-                Serial.print((int)fram.read8(ii + 1));       // tail
-                Serial.print(" ");
-                Serial.print(framRead32(ii + 2)); //  millis
-                Serial.print(" ");
-                Serial.print((int)fram.read8(ii + 6));       // intCount
-                Serial.print(" ");
-                Serial.print(fram.read8(ii + 7), 2);   // shutterState
-                Serial.print(" ");
-                Serial.print(fram.read8(ii + 8), 16);   // waitingFor
-                Serial.print(" ");
-                ii += 9;
-//                ii += 5;
-//                }
-//                else if (FHEADER_ISR == type)
-//                {
-//
-//                    Serial.print(framRead32(ii)); //  millis
-//                    Serial.print(" ");
-//                    Serial.print(fram.read8(ii + 6), 16); // waitingFor
-//                    Serial.print(" ");
-//                    Serial.print(fram.read8(ii + 5), 16); // shutterstate
-//                    Serial.print(" ");
-//                    Serial.print((int)fram.read8(ii + 4)); // intcount
-//                    ii += 7;
-//                }
-                Serial.print("\r\n");
-            }
-            break;
-
-        case 'Q':
-            framIndex = 0;
-            break;
-#endif // USEFRAM
-
-        case 'd':
-            filmMode = FILM_8MM;
-            Serial.println("{mode:8mm}");
-            break;
-
-        case 'D':
-            filmMode = FILM_SUPER8;
-            Serial.println("{mode:super8}");
-            break;
-
-        case 'c':
-            SHUTTERINT_ON;
-            CAMERA_ON;
-            if (verbose)
-            {
-                Serial.println("Camera on");
-            }
-            break;
-
-        case 'C':
-            CAMERA_OFF;
-            if (verbose)
-            {
-                Serial.println("Camera off");
-            }
-            break;
-
-        case 's':
-            SHUTTER_OPEN;
-            delay(2);
-            SHUTTER_CLOSE;
-            break;
-
-        case 'S': // triple shutter
-            if (FILM_NONE == filmMode)
-            {
-                Serial.println("Mode?");
-            }
-            else
-            {
-                waitingFor = SENSORSTART;
-            }
-            break;
-
-        case 'T': // triple
-            shutterState = 0xff;
-            SHUTTERINT_ON;
-            SHUTTER_OPEN;
-            waitingFor = EXPOSURESERIES1;
-            break;
-
-        case 'x':
-            Serial.print("optoIntTimeout ");
-            Serial.print((int)optoIntTimeout);
-            Serial.print("\r\nsensorValue ");
-            Serial.print((int)sensorValue);
-            Serial.print("\r\nwaitingFor ");
-            Serial.print((int)waitingFor);
-            Serial.print("\r\nlastCommand ");
-            Serial.print(lastCommand);
-            Serial.print("\r\nframeCount ");
-            Serial.print((int)frameCount);
-            Serial.print("\r\nfilmMode ");
-            Serial.print((int)filmMode);
-            Serial.print("\r\nparameter ");
-            Serial.print((int)parameter);
-            Serial.print("\r\npretension ");
-            Serial.print((int)pretension);
-            Serial.print("\r\nSense ");
-            Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
-            Serial.print("\r\n");
-            break;
-
-        case ' ':
-            reset();
-            break;
-
-        case 'l':
-            //LAMP_ON;
-            lampOn();
-            break;
-
-        case 'L':
-            //LAMP_OFF;
-            lampOff();
-            break;
-
-        case 'o':
-            if (parameter > 0)
-            {
-                frameCount = parameter;
-                parameter = 0;
-            }
-            break;
-
-//        case 's':
-//            setServo(parameter);
-//            parameter = 0;
-//            break;
-
-        case 'm':
-            setMotor(parameter);
-            parameter = 0;
-            break;
-
-        case 't': // auto pretension
-#ifndef USESTEPPER
-            setServo(SERVO_STOP);
-#else
-            stepperStop();
-#endif // USESTEPPER
-            {
-                pretension = 10;
-                while (pretension < 70)
-                {
-                    setMotor(10);
-                    delay(PRETENSIONDELAY);
-                    setMotor(70);
-                    delay(PRETENSIONDELAY);
-                    setMotor(10);
-                    delay(PRETENSIONDELAY);
-                    setMotor(pretension);
-                    delay(PRETENSIONDELAY);
-                    if (verbose)
-                    {
-                        Serial.print("PT ");
-                        Serial.print(pretension, 10);
-                        Serial.print(" Sense ");
-                        Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
-                        Serial.print("\r\n");
-                    }
-                    if (PINC & _BV(PC_TENSIONSENSOR))
-                    {
-                        break;
-                    }
-                    pretension += 10;
-                }
-                Serial.print("{pt:");
-                Serial.print(pretension, 10);
-                Serial.println("}");
-            }
-            break;
-
-        case 'u': // untension
-#ifndef USESTEPPER
-            setServo(SERVO_STOP);
-#else
-            stepperStop();
-#endif // USESTEPPER
-            setMotor(MOTOR_OFF);
-            break;
-
-        case 'f': // forward
-            if (frameCount)
-            {
-                SENSORVALUEINIT;
-            }
-            setMotor(MOTOR_PRETENSION_FF);
-#ifndef USESTEPPER
-            setServo(SERVO_MIN);
-#else
-            stepperGo();
-#endif // USESTEPPER
-            if (frameCount)
-            {
-                waitingFor = STOPONFRAMEZERO;
-            }
-            break;
-
-        case 'r':
-            SENSORVALUEINIT;
-            setMotor(MOTOR_REWIND_FAST);
-            if (frameCount)
-            {
-                waitingFor = STOPONFRAMEZERO;
-            }
-            break;
-
-        case 'n': // next frame
-            waitingFor = SENSORSTART;
-            break;
-
-        case 'v': // verbose
-            verbose = 1;
-            break;
-
-        case 'V': // very verbose
-            verbose = 2;
-            break;
-
-        case '[':
-            pretension = parameter;
-            parameter = 0;
-            break;
-
-        case '-':
-            parameter = 0;
-            break;
-
-        default:
-            if (lastCommand >= '0' && lastCommand <= '9')
-            {
-                parameter *= 10;
-                parameter += (lastCommand - '0');
-            }
-            if (verbose)
-            {
-                Serial.print(parameter, 10);
-            }
-            break;
-    }
-    return;
-}
