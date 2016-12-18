@@ -28,10 +28,10 @@ DebugLevels = { 'debug': logging.DEBUG, 'info': logging.INFO, 'error': logging.E
 args = argparser.parse_args()
 
 addrSelector = {
-    'shot2link': { 'addr':'192.168.107.1', 'port': 7788 },
-    'getinfo': { 'addr': '192.168.107.1', 'port': 7788 },
+    'shot2link': { 'addr':'192.168.0.33', 'port': 7788 },
+    'getinfo': { 'addr': '192.168.0.33', 'port': 7788 },
     'dlna': { 'addr': '192.168.0.33', 'port': 7788 },
-    'rshot': { 'addr': '192.168.107.1', 'port': 7788 },
+    'rshot': { 'addr': '192.168.0.33', 'port': 7788 },
 }
 
 
@@ -85,7 +85,7 @@ def getInformation():
     conn = httplib.HTTPConnection(addrSelector[args.mode]['addr'], 7788)
     headers = {
         'Content-Type': 'text/xml',
-        'HOST': 'http://192.168.107.1:7676',
+        'HOST': 'http://192.168.0.33:7676',
         'SOAPACTION': 'urn:schemas-upnp-org:service:ContentDirectory:1#GetInfomation'
     }
     body = '''
