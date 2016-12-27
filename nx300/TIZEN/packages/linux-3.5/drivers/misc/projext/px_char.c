@@ -6,11 +6,9 @@
 #include <asm/uaccess.h>    /* For copy to user function */
 #include <linux/interrupt.h>
 #include <linux/slab.h>
-
-//#include <linux/platform_device.h>
 #include <linux/gpio.h>
-//#include <linux/workqueue.h>
-//#include <linux/leds.h>
+#include <linux/timer.h>
+//#include "fio.c"
 
 #define DRIVER_AUTHOR "Matt Daughtrey matt@daughtrey.com"
 #define DRIVER_DESC   "Projector Extensions"
@@ -18,30 +16,17 @@
 #define CLASS_NAME "projext"
 
 static int majorNumber;
-static int numberOpens = 0;
 static struct class *pecharClass = NULL;
 static struct device * pecharDevice = NULL;
-static int storedValue;
-static char * params = "";
-module_param(params, charp, 0000);
-MODULE_PARM_DESC(params, "IRQ,IO,State[:IRQ,IO,State[:...]]");
 
 static int dev_open(struct inode *, struct file *);
 static int dev_release(struct inode *, struct file *);
 static ssize_t dev_read(struct file *, char *, size_t, loff_t *);
 static ssize_t dev_write(struct file *, const char *, size_t, loff_t *);
 static irqreturn_t projext_isr(int irq, void *handle);
-//static int __devinit projext_led_probe(struct platform_device *pdev);
-//static int __devexit projext_led_remove(struct platform_device *pdev);
-static int buildIrqList(void);
-
-typedef struct 
-{ 
-    struct list_head list;
-    int trigger;
-    int output;
-    int outstate;
-} list_elem;
+static int monGpio = -1;
+static struct timer_list sdTimer;
+static int sdTimeout = -1;
 
 static struct file_operations fops = 
 {
@@ -51,91 +36,20 @@ static struct file_operations fops =
     .release = dev_release
 };
 
-static LIST_HEAD(irq_list);
-//static const struct of_device_id of_projext_leds_match[] = {
-//	{ .compatible = "projext", },
-//	{},
-//};
-//
-//static struct platform_driver projext_led_driver = {
-//	.probe		= projext_led_probe,
-//	.remove		= __devexit_p(projext_led_remove),
-//	.driver		= {
-//		.name	= "projext",
-//		.owner	= THIS_MODULE
-//		.of_match_table = of_projext_leds_match,
-//	},
-//};
-
-//static int __devinit projext_led_probe(struct platform_device *pdev)
-//{
-//    printk(KERN_INFO "projext_led_probe\n");
-	//struct gpio_led_platform_data *pdata = pdev->dev.platform_data;
-	//struct gpio_leds_priv *priv;
-	//int i, ret = 0;
-
-	//if (pdata && pdata->num_leds) {
-	//	priv = kzalloc(sizeof_gpio_leds_priv(pdata->num_leds),
-	//			GFP_KERNEL);
-	//	if (!priv)
-	//		return -ENOMEM;
-
-	//	priv->num_leds = pdata->num_leds;
-	//	for (i = 0; i < priv->num_leds; i++) {
-	//		ret = create_gpio_led(&pdata->leds[i],
-	//				      &priv->leds[i],
-	//				      &pdev->dev, pdata->gpio_blink_set);
-	//		if (ret < 0) {
-	//			/* On failure: unwind the led creations */
-	//			for (i = i - 1; i >= 0; i--)
-	//				delete_gpio_led(&priv->leds[i]);
-	//			kfree(priv);
-	//			return ret;
-	//		}
-	//	}
-	//} else {
-	//	priv = gpio_leds_create_of(pdev);
-	//	if (!priv)
-	//		return -ENODEV;
-	//}
-
-	//platform_set_drvdata(pdev, priv);
-
-	//return 0;
-//}
-
-//static int __devexit projext_led_remove(struct platform_device *pdev)
-//{
-//    printk(KERN_INFO "projext_led_remove\n");
-	//struct gpio_leds_priv *priv = dev_get_drvdata(&pdev->dev);
-	//int i;
-
-	//if(priv !=NULL){		
-	//	for (i = 0; i < priv->num_leds; i++)
-	//		delete_gpio_led(&priv->leds[i]);
-
-	//	dev_set_drvdata(&pdev->dev, NULL);
-	//	kfree(priv);
-	//}
-//	return 0;
-//}
-//
 static int __init init_projext(void)
 {
-    printk(KERN_INFO "projext init\n");
     majorNumber = register_chrdev(0, DEVICE_NAME, &fops);
     if (majorNumber < 0)
     {
-        printk(KERN_ALERT "Could not register a major number");
+        printk(KERN_ALERT "PXC: Could not register a major number\n");
         return majorNumber;
     }
-    printk(KERN_INFO "Registered major number %u\n", majorNumber);
 
     pecharClass = class_create(THIS_MODULE, CLASS_NAME);
     if (IS_ERR(pecharClass))
     {
         unregister_chrdev(majorNumber, DEVICE_NAME);
-        printk(KERN_ALERT "Failed to register device class\n");
+        printk(KERN_ALERT "PXC: Failed to register device class\n");
         return PTR_ERR(pecharClass);
     }
 
@@ -144,64 +58,26 @@ static int __init init_projext(void)
     {
         class_destroy(pecharClass);
         unregister_chrdev(majorNumber, DEVICE_NAME);
-        printk(KERN_ALERT "Failed to create the device\n");
+        printk(KERN_ALERT "PXC: Failed to create the device\n");
         return PTR_ERR(pecharDevice);
     }
 
-    printk(KERN_INFO "Looks like we're all registered\n");
-    printk(KERN_INFO "Params %s\n", params);
-    buildIrqList();
-
+    request_irq(199, projext_isr, IRQF_DISABLED, "power_key", NULL);
+    request_irq(200, projext_isr, IRQF_DISABLED, "power_key", NULL);
+    request_irq(290, projext_isr, IRQF_DISABLED, "power_key", NULL);
     return 0;
 }
 
 static void __exit cleanup_projext(void)
 {
-    printk(KERN_INFO "projext cleanup\n");
+    free_irq(199, NULL);
+    free_irq(200, NULL);
+    free_irq(290, NULL);
+    del_timer(&sdTimer);
     device_destroy(pecharClass, MKDEV(majorNumber, 0));
     class_unregister(pecharClass);
     class_destroy(pecharClass);
     unregister_chrdev(majorNumber, DEVICE_NAME);
-    printk(KERN_INFO "And I'm spent\n");
-}
-
-static int buildIrqList(void)
-{
-    int trigger;
-    int output;
-    int state;
-    char * pptr = params;
-    int numsets = 0;
-    while (*pptr)
-    {
-        int numread = sscanf(pptr, "%u,%u,%u", &trigger, &output, &state);
-        if (3 != numread)
-        {
-            printk(KERN_INFO "sscanf fails, %u parameters read\n", numread);
-            return -1;
-        }
-        printk(KERN_INFO "Trigger %u Output %u State %u\n", trigger, output, state);
-#if 0
-        list_elem * le = kzalloc(sizeof(list_elem), GFP_KERNEL);
-        if (0 == le)
-        {
-            printk(KERN_INFO "le kzalloc fails\n");
-            return -1;
-        }
-        le->trigger = trigger;
-        le->output = output;
-        le->outstate = state;
-		list_add_tail(le->list, &irq_list);
-#endif // 0
-       pptr = strchr(pptr, ':');
-       printk(KERN_INFO "pptr is %u\n", (int)pptr);
-       if (pptr)
-       {
-           pptr++;
-       }
-       printk(KERN_INFO "pptr is %s\n", pptr);
-    }
-    return numsets;
 }
 
 module_init(init_projext);
@@ -213,188 +89,99 @@ MODULE_AUTHOR(DRIVER_AUTHOR);   /* Who wrote this module? */
 MODULE_DESCRIPTION(DRIVER_DESC);    /* What does this module do */
 MODULE_VERSION("0.1");
 
-//MODULE_SUPPORTED_DEVICE("mattd");
-//module_param(greeting, charp, S_IRUGO);
-//MODULE_PARM_DESC(greeting, "Greeting text");
-//
 // ---------------------------------------------------
 // Device operation handlers 
 // ---------------------------------------------------
 static int dev_open(struct inode * inodep, struct file * filep)
 {
-    numberOpens++;
-    printk(KERN_INFO "open: %u open instances\n", numberOpens);
     return 0;
 }
 
 static int dev_release(struct inode * inodep, struct file * filep)
 {
-    if (numberOpens > 0)
-    {
-        numberOpens--;
-        printk(KERN_INFO "release: %u open instances\n", numberOpens);
-    }
-    else
-    {
-        printk(KERN_ALERT "Somehow closed more times than opened\n");
-    }
-    if (0 == numberOpens)
-    {
-#if 0
-        struct list_head * list = NULL;
-        while(!list_empty(&irq_list)) 
-        {
-            list_elem * le = list_entry(list, list_elem, list);
-            if (le)
-            {
-                free_irq(le->irqnum, (void *)le);
-                printk(KERN_INFO "Released IRQ %u\n", le->irqnum);
-                list_del(&le->list);
-                kfree(le);
-            }
-        }
-#endif // 0
-    }
     return 0;
 }
 
 static ssize_t dev_read(struct file * filep, char * buffer, size_t len, loff_t * offset)
 {
-    char tmp[32];
-    if (-1 == storedValue)
+    char local[8];
+    if (-1 == sdTimeout)
     {
+        printk(KERN_INFO "PXC: sdTimeout not set\n");
         return 0;
     }
-    sprintf(tmp, "%d", storedValue);
-
-    //int error_count = 0;
-    printk(KERN_INFO "dev read\n");
-	copy_to_user((void *)buffer, (const void *)tmp, strlen(tmp));
-    printk(KERN_INFO "Buffer [%s]", buffer);
-    //gpio_set_value(GPIO_AF_LED, 0);
-    //gpio_set_value(GPIO_SHUTTER_KEY2, 1);
-    //return tmp;
-    storedValue = -1;
-    return strlen(tmp);
+    sprintf(local, "%u", sdTimeout);
+    copy_to_user(buffer, local, 1);
+    //monGpio = -1;
+    //sdTimeout = -1;
+    printk(KERN_INFO "PXC: Returning %s\n", local);
+    return 1;
 }
 
 static irqreturn_t projext_isr(int irq, void *handle)
 {
-    //list_elem * param = (list_elem *)handle;
-    //if (param->outpin)
-    //{
-    //    gpio_set_value(param->outpin, param->outstate);
-    //}
+    printk(KERN_INFO "PXC: projext_isr IRQ %d\n", irq);
+    if (199 == irq) { gpio_set_value(193, 0); }
+    if (200 == irq) { gpio_set_value(193, 1); }
+    // if LED is on, reset timer
+    if (290 == irq)
+    {
+        printk(KERN_INFO "PXC: CARD LED changed\n"); //  %u\n", gpio_get_value(194));
+        printk(KERN_INFO "PXC: sdTimeout %d\n", sdTimeout);
+        if (sdTimeout != -1)
+        {
+            printk(KERN_INFO "PXC: Resetting timer\n");
+            mod_timer(&sdTimer, jiffies + msecs_to_jiffies(1000));
+        }
+    }
     return IRQ_HANDLED;
 }
-#if 0
-static void dump_irq_list(struct list_head * irqlist)
+static void timerCallback(unsigned long data)
 {
-	list_elem * elem = NULL;
-	struct list_head *list;
-	list_for_each(list, irqlist)
-	{
-		elem = list_entry(list, list_elem, list);
-        printk(KERN_INFO "irqnum %d outpin %d outstate %d\n",
-                elem->irqnum, elem->outpin, elem->outstate);
-	}
+    printk(KERN_INFO "PXC: TimerCallback\n");
+    sdTimeout = 1;
 }
-#endif // 0
 
 static ssize_t dev_write(struct file * filep, const char * buffer, size_t len, loff_t * offset)
 {
-    char cmd;
-    int pin;
-    int value;
-    int retval = 0;
-    //int outpin = 0;
-    //int outstate = 0;
-    list_elem * le = NULL;
+    int gpionum;
+    int state;
+    char operation[8];
 
-//    printk(KERN_INFO "irq_list %x prev %x next %x\n", 
-//            (int)&irq_list, (int)irq_list.prev, (int)irq_list.next);
-    if (1 != sscanf(buffer, "%c", &cmd))
+    printk(KERN_INFO "PXC: dev_write\n");
+
+    if (2 != sscanf(buffer, "%s %d", operation, &gpionum))
     {
-        printk(KERN_INFO "sscanf failed\n");
-        return 0;
-    }
-    printk(KERN_INFO "Cmd %c\n", cmd);
-    if ('r' == (cmd | 0x20) && 2 == sscanf(buffer, "%c %u", &cmd, &pin))
-    {
-        if ('r' == cmd)
-        {
-            retval = gpio_request(pin, "projext");
-            if (0 != retval)
-            {
-                printk(KERN_INFO "gpio_request failed %d\n", retval);
-                return retval;
-            }
-        }
-        storedValue = gpio_get_value(pin);
-        printk(KERN_INFO "Read value %u from pin %u\n", storedValue, pin);
-        if ('r' == cmd)
-        {
-           gpio_free(pin);
-        }
+        printk(KERN_INFO "PXC: sscanf fails\n");
         return len;
     }
-    if ('w' == (cmd|0x20) && 3 == sscanf(buffer, "%c %u %u", &cmd, &pin, &value))
+    if (0 == strncmp("IRQ", operation, 3))
     {
-        if ('w' == cmd)
-        {
-            retval = gpio_request(pin, "projext");
-            if (0 != retval)
-            {
-                printk(KERN_INFO "gpio_request failed %d\n", retval);
-                return retval;
-            }
-        }
-        gpio_set_value(pin, value);
-        printk(KERN_INFO "Set pin %u to %u\n", pin, value);
-        if ('w' == cmd)
-        {
-            gpio_free(pin);
-        }
-        return len;
+        state = gpio_to_irq(gpionum);
+        printk(KERN_INFO "PXC: %d maps to %d\n", gpionum, state);
     }
-    if ('i' == cmd && 2 == sscanf(buffer, "%c %u", &cmd, &pin))
+    else if (0 == strncmp("IO", operation, 2))
     {
-		storedValue = gpio_to_irq(pin);
-        printk(KERN_INFO "Pin %u maps to IRQ %u\n", pin, storedValue);
-        return len;
+        if (3 != sscanf(buffer, "%s %d %d", operation, &gpionum, &state))
+        {
+            printk(KERN_INFO "PXC: IO sscanf fails\n");
+            return len;
+        }
+        printk(KERN_INFO "PXC: %s GPIO %d state %d\n", operation, gpionum, state);
+        gpio_set_value(gpionum, state);
     }
-    //if ('I' == cmd && 4 == sscanf(buffer, "%c %u %u %u", 
-    //            &cmd, &pin, &outpin, &outstate))
+    else if (0 == strncmp("MONT", operation, 4))
+    {
+        printk(KERN_INFO "PXC: Timed Monitor\n"); //  GPIO %d\n", gpionum);
+        monGpio = gpionum;
+        setup_timer(&sdTimer, timerCallback, 0);
+        sdTimeout = 0;
+    }
+    //else if (0 == strncmp("MON", operation, 3))
     //{
-    //    printk(KERN_INFO "pin %d outpin %d outstate %d", pin, outpin, outstate);
-	//	le = kzalloc(sizeof(list_elem), GFP_KERNEL);
-    //    if (0 == le)
-    //    {
-    //        printk(KERN_INFO "le NULL\n");
-    //        return -1;
-    //    }
-    //    printk(KERN_INFO "le %x\n", (int)le);
-    //    le->irqnum = pin;
-    //    le->outpin = outpin;
-    //    le->outstate = outstate;
-
-    //    le->list.next = &irq_list;
-    //    le->list.prev = irq_list.prev;
-    //    printk(KERN_INFO "1 %x\n", (int)irq_list.prev->next);
-    //    printk(KERN_INFO "2 %x\n", (int)&le->list);
-    //    
-    //    //irq_list.prev->next = &le->list;
-    //    irq_list.prev = &le->list;
-
-
-	//	//retval = request_irq(pin, projext_isr, IRQF_DISABLED, "PXCHAR IRQ", (void*)le);
-    //    //printk(KERN_INFO "request_irq %d\n", retval);
-	//	//list_add_tail(&le->list, &irq_list);
-    //    //dump_irq_list(&irq_list);
-    //    return len;
+    //    printk(KERN_INFO "PXC: Monitor GPIO %d\n", gpionum);
+    //    //monGpio = gpionum;
     //}
-    ////gpio_set_value(GPIO_AF_LED, 0);
-    //return len;
-    return -1;
+    return len;
 }
 

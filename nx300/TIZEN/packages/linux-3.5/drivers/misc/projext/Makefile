@@ -1,1 +1,1 @@
-obj-m	+= px_char.o
+obj-m	+= px_char.o 
