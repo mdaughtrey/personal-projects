@@ -13,24 +13,26 @@ def worker(object):
 
 class JobManager():
     JobLimit = 10
-    WorkerManagerControl = 'Off'
+#    WorkerManagerControl = False # True # 'Off'
     DisablePrecrop = False
     DisableAutocrop = False
 
-    def __init__(self, logger, pstore, fileman):
+    def __init__(self, logger, pstore, fileman, mode, project):
         self._logger = logger
         self._pstore = pstore
         self._fileman = fileman
         self._workers = []
         self._logger.debug("JobManager init")
-        self._projectname = 'uploadtest'
-        if 'Off' == JobManager.WorkerManagerControl:
+        self._projectname = project
+        self._mode = mode
+
+        if 'disable' == mode: # JobManager.WorkerManagerControl:
             return
         self._wmrunning = True
-        if False == JobManager.WorkerManagerControl:
+        if 'proc' == mode: # JobManager.WorkerManagerControl:
             self._thread = threading.Thread(target = worker, args = (self,))
             self._thread.start()
-        else:
+        elif 'inline' == mode:
             self._workerManager(self._projectname)
 
     def shutdown(self):
@@ -44,7 +46,7 @@ class JobManager():
                 for (rowid, container, filename) in toBePrecropped:
                     self._logger.debug("Container %s filename %s" % (container, filename))
                     jobargs = (projectname, container, filename)
-                    if JobManager.WorkerManagerControl == True:
+                    if 'inline' == self._mode: # JobManager.WorkerManagerControl == True:
                         self._vmPrecrop(*jobargs)
                     else:
                         self._workers.append(Process(target = self._vmPrecrop, args = jobargs))
@@ -65,7 +67,7 @@ class JobManager():
 
                 jobargs = (projectname, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
 
-                if JobManager.WorkerManagerControl == True:
+                if 'inline' == self._mode: # JobManager.WorkerManagerControl == True:
                     self._vmAutocrop(*jobargs)
                 else:
                     self._workers.append(Process(target = self._vmAutocrop, args = jobargs))
@@ -87,7 +89,7 @@ class JobManager():
 
                 jobargs = (projectname, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
 
-                if JobManager.WorkerManagerControl == True:
+                if 'inline' == self._mode: # JobManager.WorkerManagerControl == True:
                     self._vmTonefuse(*jobargs)
                 else:
                     self._workers.append(Process(target = self._vmTonefuse, args = jobargs))
@@ -184,3 +186,4 @@ class JobManager():
 
     def generateTitle(projectname):
         pass
+

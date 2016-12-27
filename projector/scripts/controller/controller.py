@@ -11,6 +11,13 @@ from nx300 import NX300
 import logging
 import signal
 import sys
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--workman', dest='workman', default='proc', 
+    choices = ['proc', 'inline', 'disable'], help='worker manager mode')
+parser.add_argument('--project', required = True, dest='project', help='set jobman project name')
+args = parser.parse_args()
 
 ROOTOFALL='/media/sf_vmshared/scans/'
 
@@ -26,12 +33,12 @@ logging.getLogger('ProjectStore').addHandler(fileHandler)
 logging.getLogger('FileManager').addHandler(fileHandler)
 logging.getLogger('JobManager').addHandler(fileHandler)
 logging.getLogger('ControllerStore').addHandler(fileHandler)
-logging.getLogger('RemoteDev').addHandler(filehandler)
+logging.getLogger('RemoteDev').addHandler(fileHandler)
 
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
-jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman)
+jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, args.workman, args.project)
 cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
 remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
 
@@ -46,16 +53,24 @@ signal.signal(signal.SIGINT, signal_handler)
 #
 # Upload a new raw file
 #
-@app.route('/upload', methods = ['GET', 'POST'])
+@app.route('/upload', methods = ['PUT'])
 def upload():
-    if request.method == 'POST':
-        project = request.args['project']
-        if 'container' in request.args:
-            return json.dumps(uploadImage(request))
-        if 'titlepage' in request.args:
-            return json.dumps(uploadTitleFile(request))
+    try:
+        if False in [request.args[elem] for elem in ('container', 'file', 'project')]:
+            return json.dumps(['BADCOMMAND'])
+        return json.dumps(uploadImage(request))
+    except:
         return json.dumps(['BADCOMMAND'])
+    return json.dumps(['OK'])
 
+# set up a triple for processing
+#@app.route('/triple', methods = ['GET'])
+#def triple():
+#    if False in [request.args[elem] for elem in ('container', 'files', 'project')]:
+#        return json.dumps(['BADCOMMAND'])
+#    files = urllib.parse.unquote(request.args['files'])
+#    return json.dumps(jobman.triple(project, container, files))
+#
 #
 # Start title generation
 #
@@ -81,16 +96,16 @@ def gentitle():
 
 def uploadImage(request):
     try:
-        ff = request.files['filename']
+        #ff = request.args['file']
         arguments = []
 
-        for elem in ['project','container','filename']:
-            arguments.append(request.args[elem])
+        for elem in ['project','container','file']:
+            arguments.append(request.args[elem].encode('ascii','ignore'))
 
         if pstore.rawFileExists(*arguments):
             return json.dumps(['EXISTS'])
 
-        fileman.newFileStream(ff, *arguments)
+        fileman.newFile(request.data, *arguments)
         pstore.newRawFile(*arguments)
         return ['OK']
 
@@ -110,12 +125,15 @@ def uploadTitleFile(request):
     except KeyError as ee:
         return json.dumps(['ERROR', ee.message])
 
-def command(request):
+# Various commands
+@app.route('/command', methods = ['GET'])
+def command():
     try:
         if 'gentitle' in request.args:
             return json.dumps(jobman.generateTitle(request.args['project']))
-        if 'newproject' in request.args:
-            return json.dumps(cstore.addProject(request.args['projectname']))
+        # Set or create project
+#        if 'project' in request.args:
+#            return json.dumps(cstore.setProject(request.args['project']))
         if 'delproject' in request.args:
             response = []
             response.append(['database', cstore.deleteProject(request.args['projectname'])])
