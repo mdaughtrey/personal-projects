@@ -13,11 +13,15 @@ import serial
 import BeautifulSoup
 import telnetlib
 import socket
+import requests
+import urllib
 
 SerialPort = '/dev/tty.usbserial-A601KW2O'
 CameraIP = '192.168.0.33'
 CameraPort = 1000
 TelnetRoot = '/mnt/mmc'
+ControllerIP = '192.168.0.18'
+ControllerPort = 5000
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(levelname)s %(lineno)s %(message)s')
 logger = logging.getLogger('pcontrol')
@@ -29,21 +33,16 @@ logger.addHandler(fileHandler)
 parser = argparse.ArgumentParser()
 parser.add_argument('--simulate', action='store_true', help='simulate (no I/O)')
 parser.add_argument('--cycles', dest='cycles', default=10, type=int, help='number of frames to capture')
-parser.add_argument('--filmtype', dest='filmtype', help='film type (8mm/super8)')
-
+parser.add_argument('--filmtype', dest='filmtype', required=True, choices=['8mm','s8'], help='film type')
+parser.add_argument('--mode', dest='mode', required=True, choices=['upload','pipeline'], help='upload a file')
+parser.add_argument('--project', dest='project', required=True, help='set project name')
+parser.add_argument('--container', dest='container', required=True, help='set container name')
+parser.add_argument('--filename', dest='filename', help='set filename')
 args = parser.parse_args()
-
-def cameraOn():
-    serial.write('c')
-    pass
-
-def triple():
-    pass
 
 def click(cb):
     def subclick(cmds):
         for cmd in cmds:
-#            pdb.set_trace()
             url = '/api/v1/input/inject?key%s' % cmd
             while True:
                 try:
@@ -59,26 +58,33 @@ def click(cb):
 
     cb()
     subclick(['down=Super_L','down=Super_R'])
-    #time.sleep(1)
     subclick(['up=Super_L','up=Super_R'])
-
-def armLamp():
-    pass
 
 def transferPicture(dir, filename, telnet):
     http = httplib.HTTPConnection(CameraIP, 80)
     fileurl = '/DCIM/%s/%s' % (dir, filename)
     fileurl = fileurl.encode('ascii', 'ignore')
+    logger.debug("pre GET")
     http.request('GET', fileurl)
+    logger.debug("post GET")
     response = http.getresponse()
     logger.debug('Status %s' % response.status)
     if 200 != response.status:
         logger.error("Status %u getting %s" % (response.status, fileurl))
         return
+    logger.debug("pre response.read")
     data = response.read()
-    #cameraConn.close()
-    open('%s' % filename, 'w').write(data)
+    logger.debug("post response.read")
+    #    open('%s' % filename, 'w').write(data)
     logger.debug("Downloaded %s, %u bytes" % (fileurl, len(data)))
+
+    pdb.set_trace()
+    hargs = (ControllerIP, ControllerPort, args.project, dir, filename)
+    hUrl = 'http://%s:%u/upload?project=%s&container=%s&file=%s' % hargs
+    response = requests.put(url=hUrl, data=data,
+        headers={'Content-Type': 'application/octet-stream'})
+
+    logger.debug("Uploaded %s, %u bytes" % (fileurl, len(data)))
     logger.debug("Deleting %s/%s" % (TelnetRoot, fileurl))
     telnet.write("rm %s/%s\n" % (TelnetRoot, fileurl))
     telnet.read_very_lazy()
@@ -139,7 +145,7 @@ def transferPictures(telnet):
         fileTags=[ee.string for ee in bs.findAll('a') if '.JPG' in ee.string]
 #        conn.close()
         for file in fileTags:
-            transferPicture(dir, file, telnet)
+            transferPicture(dir.replace('/',''), file, telnet)
 #    conn.close()
 
 def doCycles(serial, telnet):
@@ -167,6 +173,7 @@ def doCycles(serial, telnet):
         click(lambda: serial.write('30m-200a-'))
 #//        waitFor(serial, '{LampDone}')
         waitCardOps(telnet)
+        serial.write('n')
         transferPictures(telnet)
 
 def waitFor(port, text):
@@ -178,16 +185,64 @@ def waitFor(port, text):
     logger.debug("Received %s" % text)
     return accum
 
+#def setProject(name):
+#    http = httplib.HTTPConnection(ControllerIP, ControllerPort)
+#    http.request('GET', '/command?project=%s' % name)
+#    response = http.getresponse()
+#    data = response.read()
+#    logger.debug(data)
+
+def uploadFile(project, container, filename):
+    if False in (project, container, filename):
+        logger.error("Undefined parameter")
+        return 1
+
+    hargs = (ControllerIP, ControllerPort, project, container, filename)
+    hUrl = 'http://%s:%u/upload?project=%s&container=%s&file=%s' % hargs
+    response = requests.put(url=hUrl, data=open(filename).read(),
+        headers={'Content-Type': 'application/octet-stream'})
+    return 0
+
+#    http = httplib.HTTPConnection(ControllerIP, ControllerPort)
+#    hargs = (project, container, filename)
+#    url = '/upload?project=%s&container=%s&file=%s' % hargs
+#    http.putrequest('PUT', url)
+#    #http.putheader('Content-Length', str(os.stat(filename).st_size))
+#    http.putheader('Content-Length', '10')
+#    http.endheaders()
+#    http.send("0123456789")
+#    #http.send(open(filename).read())
+#    response = http.getresponse()
+#    pdb.set_trace()
+#    data = response.read()
+#    logger.debug(data)
+
+
+#def procTriple(project, container, filenames):
+#    if False in (project, container, filenames):
+#        logger.error("Undefined parameter")
+#        return 1
+#
+#    hargs = (ControllerIP, ControllerPort, project, container, urllib.parse.quote(filenames))
+#    hUrl = 'http://%s:%u/triple?project=%s&container=%s&files=%s' % hargs
+#    response = requests.get(hUrl)
+#    return 0
+
 def main():
     logger.debug("Init")
+    if 'upload' == args.mode:
+        return uploadFile(args.project, args.container, args.filename)
+    if 'pipeline' != args.mode:
+        return 1
+
     serPort = serial.Serial(SerialPort, 57600)
     logger.debug("Opening %s" % SerialPort)
     if serPort.isOpen():
         serPort.close()
     serPort.open()
     waitFor(serPort, '{State:Ready}')
-    serPort.write(b'cd') # on, verbose, 8mm
-    waitFor(serPort, '{mode:8mm}')
+    serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) # on, verbose, 8mm
+#    waitFor(serPort, '{mode:8mm}')
 
     if False == args.simulate:
         time.sleep(2)
@@ -199,7 +254,7 @@ def main():
         doCycles(serPort, telnet)
 
     logger.debug("Closing %s" % SerialPort)
-    serPort.write(b'C')
+    serPort.write(b'TC')
     serPort.close()
     return 0
 
