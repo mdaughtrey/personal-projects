@@ -21,7 +21,7 @@
 #define PIN_MOTOR 10  // PB2
 #define PC_OPTOINT 1 // PC1
 #define PC_TENSIONSENSOR 0 // PC0
-#define OPTOINT_TIMEOUT 5000
+#define OPTOINT_TIMEOUT 3000
 
 #define MOTOR_PRETENSION_NEXT 40 
 #define MOTOR_PRETENSION_FF 20
@@ -39,7 +39,7 @@
 #define SERVO_REVERSE 110 
 #endif // USESTEPPER
 #define PRETENSIONDELAY 200
-#define LAMPDEFER 40
+#define LAMPDEFER 0
 
 #define CAMERABUSYTIMEOUT 1200
 #define LAMP_TIMEOUT_MS 3000
@@ -77,15 +77,22 @@ typedef enum
         SENSORSTART,        
         OPTOINT_CHANGED,    
         STOPONFRAMEZERO,    
+        SHUTTERLED1,
+        SHUTTERLED1A,
+        SHUTTERLED2,
+        SHUTTERLED2A,
+        SHUTTERLED3,
+        SHUTTERLED3A,
+//        ARM_LAMP,
         //SHUTTERCLOSED,      
 //        EXPOSURESERIES5,  
 //        EXPOSURESERIES4,  
-        EXPOSURESERIES3A,   
-        EXPOSURESERIES3,    
-        EXPOSURESERIES2A,   
-        EXPOSURESERIES2,    
-        EXPOSURESERIES1A,   
-        EXPOSURESERIES1,    
+//        EXPOSURESERIES3A,   
+//        EXPOSURESERIES3,    
+//        EXPOSURESERIES2A,   
+//        EXPOSURESERIES2,    
+//        EXPOSURESERIES1A,   
+//        EXPOSURESERIES1,    
         //SHUTTEROPEN,      
         OPTOINT_HALF,       
         OPTOINT_FULL,       
@@ -430,6 +437,8 @@ void reset()
 }
 
 u08 lampDefer = LAMPDEFER;
+u08 lampDuration = 0;
+
 void setup ()
 { 
     Serial.begin(57600);
@@ -765,6 +774,7 @@ void loop ()
 //            waitingFor = EXPOSURESERIES4;
 //            break;
 
+#if 0
         // wait for high state
         case EXPOSURESERIES3:
             if (SHUTTER_READY)
@@ -826,6 +836,7 @@ void loop ()
                 waitingFor = EXPOSURESERIES1A;
             }
             break;
+#endif // 0
 
         // Trigger shutter
 //        case SHUTTEROPEN:
@@ -840,6 +851,66 @@ void loop ()
 ////            lampOff();
 ////            DELAYEDSTATE(350, EXPOSURESERIES2);
 //            break;
+        case SHUTTERLED3A:
+            if (SHUTTER_READY)
+            {
+                break;
+            }
+            if (verbose) { Serial.println("SL3A"); }
+            Serial.println("{TRIPLE:DONE}");
+            waitingFor = NONE;
+            break;
+
+        case SHUTTERLED3: 
+            if (SHUTTER_READY)
+            {
+                delay(lampDefer);
+                lampOn();
+                delay(30);
+                lampOff();
+                waitingFor = SHUTTERLED3A;
+            }
+            break;
+
+        case SHUTTERLED2A:
+            if (SHUTTER_READY)
+            {
+                break;
+            }
+            if (verbose) { Serial.println("SL2A"); }
+            waitingFor = SHUTTERLED3;
+            break;
+
+        case SHUTTERLED2: 
+            if (SHUTTER_READY)
+            {
+                delay(lampDefer);
+                lampOn();
+                delay(10);
+                lampOff();
+                waitingFor = SHUTTERLED2A;
+            }
+            break;
+
+        case SHUTTERLED1A:
+            if (SHUTTER_READY)
+            {
+                break;
+            }
+            if (verbose) { Serial.println("SL1A"); }
+            waitingFor = SHUTTERLED2;
+            break;
+
+        case SHUTTERLED1: 
+            if (SHUTTER_READY)
+            {
+                delay(lampDefer);
+                lampOn();
+                delay(2);
+                lampOff();
+                waitingFor = SHUTTERLED1A;
+            }
+            break;
 
        case STOPONFRAMEZERO:
             if (isOptoTransition())
@@ -947,16 +1018,16 @@ void loop ()
             }
             break;
 
-        case 's': // triple shutter
-            if (FILM_NONE == filmMode)
-            {
-                Serial.println("Mode?");
-            }
-            else
-            {
-                waitingFor = EXPOSURESERIES1;
-            }
-            break;
+//        case 's': // triple shutter
+//            if (FILM_NONE == filmMode)
+//            {
+//                Serial.println("Mode?");
+//            }
+//            else
+//            {
+//                waitingFor = EXPOSURESERIES1;
+//            }
+//            break;
 
 //        case 'T': // triple
 //            shutterState = 0xff;
@@ -993,9 +1064,19 @@ void loop ()
             reset();
             break;
 
-        case 'a':
+        case 'm': // lamp flash duration
             if (parameter > 0)
             {
+                lampDuration = parameter;
+                parameter = 0;
+            }
+            
+            break;
+
+        case 'a': // durations 2, 10, 30ms
+            if (parameter > 0) //  && lampDuration > 0)
+            {
+                waitingFor = SHUTTERLED1;
                 lampDefer = parameter;
                 parameter = 0;
             }
@@ -1024,10 +1105,10 @@ void loop ()
 //            parameter = 0;
 //            break;
 
-        case 'm':
-            setMotor(parameter);
-            parameter = 0;
-            break;
+//         case 'm':
+//             setMotor(parameter);
+//             parameter = 0;
+//             break;
 
         case 't': // auto pretension
 #ifndef USESTEPPER
