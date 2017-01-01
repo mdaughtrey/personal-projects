@@ -36,29 +36,36 @@ parser.add_argument('--cycles', dest='cycles', default=10, type=int, help='numbe
 parser.add_argument('--filmtype', dest='filmtype', required=True, choices=['8mm','s8'], help='film type')
 parser.add_argument('--mode', dest='mode', required=True, choices=['upload','pipeline'], help='upload a file')
 parser.add_argument('--project', dest='project', required=True, help='set project name')
-parser.add_argument('--container', dest='container', required=True, help='set container name')
+#parser.add_argument('--container', dest='container', required=True, help='set container name')
 parser.add_argument('--filename', dest='filename', help='set filename')
+parser.add_argument('--noupload', dest='noupload', action='store_true', help='disable upload')
 args = parser.parse_args()
 
-def click(cb):
-    def subclick(cmds):
-        for cmd in cmds:
-            url = '/api/v1/input/inject?key%s' % cmd
-            while True:
-                try:
-                    http = httplib.HTTPConnection(CameraIP, 80, timeout = 5)
-                    http.request('GET', url)
-                    break
-                except socket.error as ee:
-                    logger.debug("No connection, retry in 1 sec")
-                    time.sleep(5)
+#def click(cb):
+def subclick(cmds):
+    for cmd in cmds:
+        url = '/api/v1/input/inject?key%s' % cmd
+        while True:
+            try:
+                logger.debug('pre http')
+                http = httplib.HTTPConnection(CameraIP, 80, timeout = 5)
+                logger.debug('pre request')
+                http.request('GET', url)
+                logger.debug('post request')
+                break
+            except socket.error as ee:
+                logger.debug("No connection, retry in 1 sec")
+                time.sleep(5)
 
-            response = http.getresponse()
-            data = response.read()
+        logger.debug('pre response')
+        response = http.getresponse()
+        logger.debug('post response')
+        data = response.read()
+        logger.debug('post data')
 
-    cb()
-    subclick(['down=Super_L','down=Super_R'])
-    subclick(['up=Super_L','up=Super_R'])
+#    cb()
+#    subclick(['down=Super_L','down=Super_R'])
+#    subclick(['up=Super_L','up=Super_R'])
 
 def transferPicture(dir, filename, telnet):
     http = httplib.HTTPConnection(CameraIP, 80)
@@ -73,18 +80,21 @@ def transferPicture(dir, filename, telnet):
         logger.error("Status %u getting %s" % (response.status, fileurl))
         return
     logger.debug("pre response.read")
-    data = response.read()
+    imgdata = response.read()
     logger.debug("post response.read")
     #    open('%s' % filename, 'w').write(data)
-    logger.debug("Downloaded %s, %u bytes" % (fileurl, len(data)))
+    logger.debug("Downloaded %s, %u bytes" % (fileurl, len(imgdata)))
 
-    pdb.set_trace()
-    hargs = (ControllerIP, ControllerPort, args.project, dir, filename)
-    hUrl = 'http://%s:%u/upload?project=%s&container=%s&file=%s' % hargs
-    response = requests.put(url=hUrl, data=data,
-        headers={'Content-Type': 'application/octet-stream'})
+    if False == args.noupload:
+        hargs = (ControllerIP, ControllerPort, args.project)
+        hUrl = 'http://%s:%u/upload?project=%s' % hargs
+        try:
+            response = requests.put(url=hUrl, data=imgdata,
+                headers={'Content-Type': 'application/octet-stream'})
+            logger.debug("Uploaded %s, %u bytes" % (fileurl, len(imgdata)))
+        except:
+            logger.error("HTTP upload fail") # , %s" % ee.message)
 
-    logger.debug("Uploaded %s, %u bytes" % (fileurl, len(data)))
     logger.debug("Deleting %s/%s" % (TelnetRoot, fileurl))
     telnet.write("rm %s/%s\n" % (TelnetRoot, fileurl))
     telnet.read_very_lazy()
@@ -152,27 +162,52 @@ def doCycles(serial, telnet):
     def waitCardOps(telnet):
         logger.debug("Waiting on card ops")
         telnet.write('/mnt/mmc/moncard.sh\n')
-        rx = telnet.read_until("Timeout")
+        rx = ''
+        while True:
+            rx += telnet.read_some()
+            logger.debug("rx %s" % rx)
+            if "Timeout" in rx:
+                break
+#        rx = telnet.read_until("Timeout")
         logger.debug("moncard.sh returns %s" % rx)
         if "Wait " in rx:
             logger.error("Error waiting on SD card activity")
 
-    for ii in xrange(1, args.cycles):
+
+    for ii in xrange(1, args.cycles + 1):
+        oit = serial.read(100)
+        logger.debug("oit is %s" % oit)
+        if '{OIT:' in oit:
+            # projector has stopped, hopefully out of film
+            logger.debug("IOT, capture complete")
+            sys.exit(0)
         logger.debug("Frame %u of %u" % (ii, args.cycles))
-        logger.debug("Click 1")
-        click(lambda: serial.write('2m-200a-'))
-#        waitFor(serial, '{LampDone}')
-        waitCardOps(telnet)
-        transferPictures(telnet)
-        logger.debug("Click 2")
-        click(lambda: serial.write('10m-200a-'))
-#//        waitFor(serial, '{LampDone}')
-        waitCardOps(telnet)
-        transferPictures(telnet)
-        logger.debug("Click 3")
-        click(lambda: serial.write('30m-200a-'))
-#//        waitFor(serial, '{LampDone}')
-        waitCardOps(telnet)
+        serial.write('200a')
+        subclick(['down=Super_L','down=Super_R'])
+
+        triple = ''
+        while True:
+            if serial.inWaiting():
+                triple += serial.read()
+                logger.debug("triple is %s" % triple)
+                if '{TRIPLE:DONE}' in triple:
+                    logger.debug("Triple Done")
+                    break
+#            time.sleep(0.1)
+
+        subclick(['up=Super_L','up=Super_R'])
+
+#        logger.debug("Click 1")
+#        click(lambda: serial.write('2m-200a-'))
+#        waitCardOps(telnet)
+#        transferPictures(telnet)
+#        logger.debug("Click 2")
+#        click(lambda: serial.write('10m-200a-'))
+#        waitCardOps(telnet)
+#        transferPictures(telnet)
+#        logger.debug("Click 3")
+#        click(lambda: serial.write('30m-200a-'))
+#        waitCardOps(telnet)
         serial.write('n')
         transferPictures(telnet)
 
@@ -192,13 +227,13 @@ def waitFor(port, text):
 #    data = response.read()
 #    logger.debug(data)
 
-def uploadFile(project, container, filename):
-    if False in (project, container, filename):
+def uploadFile(project, filename):
+    if False in (project, filename):
         logger.error("Undefined parameter")
         return 1
 
-    hargs = (ControllerIP, ControllerPort, project, container, filename)
-    hUrl = 'http://%s:%u/upload?project=%s&container=%s&file=%s' % hargs
+    hargs = (ControllerIP, ControllerPort, project)
+    hUrl = 'http://%s:%u/upload?project=%s' % hargs
     response = requests.put(url=hUrl, data=open(filename).read(),
         headers={'Content-Type': 'application/octet-stream'})
     return 0
@@ -231,17 +266,18 @@ def uploadFile(project, container, filename):
 def main():
     logger.debug("Init")
     if 'upload' == args.mode:
-        return uploadFile(args.project, args.container, args.filename)
+        return uploadFile(args.project, args.filename)
     if 'pipeline' != args.mode:
         return 1
 
-    serPort = serial.Serial(SerialPort, 57600)
+    serPort = serial.Serial(SerialPort, 57600) # , timeout=1)
     logger.debug("Opening %s" % SerialPort)
     if serPort.isOpen():
         serPort.close()
     serPort.open()
     waitFor(serPort, '{State:Ready}')
-    serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) # on, verbose, 8mm
+    # Camera on, film type, autotension
+    serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
 #    waitFor(serPort, '{mode:8mm}')
 
     if False == args.simulate:
