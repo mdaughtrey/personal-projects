@@ -36,6 +36,7 @@ addrSelector = {
 
 
 def init():
+    pdb.set_trace()
     connInfo = addrSelector[args.mode]
     conn = httplib.HTTPConnection(connInfo['addr'], connInfo['port'])
     headers = {
@@ -43,11 +44,11 @@ def init():
         'Connection': 'Close',
         'NTS': 'Alive',
         'HOST-Mac': '02:00:00:00:00:00',
-        'HOST-Address': '192.168.107.2',
+        'HOST-Address': '192.168.0.31',
         'HOST-port': '7788',
         'HOST-PNumber': '+1231231234',
         'Access-Method': 'Manual',
-        'CALLBACK': '<http://192.168.107.2:7792/eventCallback>'
+        'CALLBACK': '<http://192.168.0.31:7792/eventCallback>'
     }
     conn.request('HEAD', '/mode/control', None, headers)
     response = conn.getresponse()
@@ -59,6 +60,7 @@ def init():
     conn.close()
 
 def shot2Link():
+    pdb.set_trace()
     res = socket.getaddrinfo(addrSelector[args.mode]['addr'], 801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
     af, socktype, proto, canonname, sa = res
     sock = socket.socket(af, socktype, proto)
@@ -69,7 +71,7 @@ def shot2Link():
         'User-Agent: APP-TYPE',
         'Content-Length: 0',
         'HOST-Mac : 02:00:00:00:00:00',
-        'HOST-Address : 192.168.107.2',
+        'HOST-Address : 192.168.0.31',
         'HOST-port : 1801',
         'HOST-PNumber : +1231231234',
         'Host-Gps : N147396XW266202',
@@ -107,7 +109,7 @@ def getInformation():
     conn.close()
 
 def waitForShots():
-    res = socket.getaddrinfo('192.168.107.2', 1801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
+    res = socket.getaddrinfo('192.168.0.31', 1801, socket.AF_UNSPEC, socket.SOCK_STREAM)[0]
     af, socktype, proto, canonname, sa = res
     sock = socket.socket(af, socktype, proto)
     if args.tcp_nodelay:
