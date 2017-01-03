@@ -7,7 +7,7 @@ class FileManager():
         self._fileRoot = fileroot
         self._logger.debug("FileManager init root %s" % self._fileRoot)
 
-    def newFileStream(self, fileStream, project, container, filename):
+    def newFile(self, fileData, project, container, filename):
         targetDir = "%s/%s/%s/" % (self._fileRoot, project, container)
         if False == os.path.isdir(targetDir):
             self._logger.debug("Creating %s" % targetDir)
@@ -16,7 +16,11 @@ class FileManager():
                 os.makedirs('%s/%s' % (targetDir, subdir))
         target = "%s/%s" % (targetDir, filename)
         self._logger.debug("Saving to %s" % target)
-        fileStream.save(target)
+        try:
+            open(target, 'w').write(fileData)
+        except ee:
+            logger.error("Write to %s failed, %s" % (target, ee.message))
+        
 
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s/%s/%s" % (self._fileRoot, project, container, filename)

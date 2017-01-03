@@ -46,11 +46,11 @@ class ProjectStore():
         self._logger.debug('Connecting to %s' % dblocation)
         return sqlite3.connect('%s' % dblocation)
 
-    def rawFileExists(self, project, container, filename):
+    def rawFileExists(self, project, container, file):
         with self._dbLock:
             conn = self._openDb(project)
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM picdata WHERE container='%s' AND rawfile='%s'" % (container, filename))
+            cursor.execute("SELECT COUNT(*) FROM picdata WHERE container='%s' AND rawfile='%s'" % (container, file))
             result = cursor.fetchall()
             conn.commit()
             conn.close()
