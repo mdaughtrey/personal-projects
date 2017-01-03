@@ -55,17 +55,17 @@ class ControllerStore():
             conn.close()
             return True
 
-    def addProject(self, projectname):
-        projectroot = 'TODO'
-        insert = "(projectname, projectroot) values('%s','%s')" % (projectname, projectroot)
-        statement = "INSERT OR REPLACE INTO projects %s" % insert
-        with self._dbLock:
-            conn = self._openDb(project)
-            cursor = conn.cursor()
-            cursor.execute(statement)
-            conn.commit()
-            conn.close()
-
+#    def setProject(self, name):
+#        root = 'TODO'
+#        insert = "(projectname, projectroot) values('%s','%s')" % (name, root)
+#        statement = "INSERT OR REPLACE INTO projects %s" % insert
+#        with self._dbLock:
+#            conn = self._openDb(name)
+#            cursor = conn.cursor()
+#            cursor.execute(statement)
+#            conn.commit()
+#            conn.close()
+#
     def deleteProject(self, projectname):
         with self._dbLock:
             conn = self._openDb(project)
@@ -73,7 +73,6 @@ class ControllerStore():
             cursor.execute("DELETE FROM projects WHERE projectname='%s' and projectroot='%s'" % (projectname, projectname))
             conn.commit()
             conn.close()
-
 
     def rawFileExists(self, project, container, filename):
         with self._dbLock:
