@@ -46,10 +46,8 @@ TARGET=projector
 #
 # $Id$
 
-#/dev/tty.usbserial-A501RN1O
-#PORT = /dev/tty.usbserial-A501RN1O
 PORT=/dev/tty.usbserial-A601KW2O
-#PORT = /dev/ttyUSB0
+#PORT=/dev/tty.usbserial-A601KVL0
 
 ARDUINO = ../core/
 ARDUINOCPP = ${ARDUINO}/StandardCplusplus-master
@@ -87,8 +85,8 @@ DEBUG = stabs
 OPT = s
 
 # Place -D or -U options here
-CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP -DUSESTEPPER
-CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP  -DUSESTEPPER
+CDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP
+CXXDEFS = -DF_CPU=$(F_CPU) -DDISABLE_TIMER2A_SETUP
 # -DSDEBUG
 
 # Place -I options here

@@ -47,21 +47,21 @@ def subclick(cmds):
         url = '/api/v1/input/inject?key%s' % cmd
         while True:
             try:
-                logger.debug('pre http')
+#                logger.debug('subclick pre http')
                 http = httplib.HTTPConnection(CameraIP, 80, timeout = 5)
-                logger.debug('pre request')
+#                logger.debug('subclick pre request')
                 http.request('GET', url)
-                logger.debug('post request')
+#                logger.debug('subclick post request')
                 break
             except socket.error as ee:
-                logger.debug("No connection, retry in 1 sec")
+                logger.debug("subclick No connection, retry in 1 sec")
                 time.sleep(5)
 
-        logger.debug('pre response')
+#        logger.debug('subclick pre response')
         response = http.getresponse()
-        logger.debug('post response')
+#        logger.debug('subclick post response')
         data = response.read()
-        logger.debug('post data')
+#        logger.debug('subclick post data')
 
 #    cb()
 #    subclick(['down=Super_L','down=Super_R'])
@@ -96,7 +96,7 @@ def transferPicture(dir, filename, telnet):
             logger.error("HTTP upload fail") # , %s" % ee.message)
 
     logger.debug("Deleting %s/%s" % (TelnetRoot, fileurl))
-    telnet.write("rm %s/%s\n" % (TelnetRoot, fileurl))
+    telnet.write("rm %s/%s > /dev/null\n" % (TelnetRoot, fileurl))
     telnet.read_very_lazy()
     logger.debug('transferPicture end')
 
@@ -175,25 +175,15 @@ def doCycles(serial, telnet):
 
 
     for ii in xrange(1, args.cycles + 1):
-        oit = serial.read(100)
-        logger.debug("oit is %s" % oit)
-        if '{OIT:' in oit:
-            # projector has stopped, hopefully out of film
-            logger.debug("IOT, capture complete")
+        if serialWaitFor(serial, '{OIT:'):
+            logger.debug("OIT")
             sys.exit(0)
         logger.debug("Frame %u of %u" % (ii, args.cycles))
         serial.write('200a')
         subclick(['down=Super_L','down=Super_R'])
 
-        triple = ''
-        while True:
-            if serial.inWaiting():
-                triple += serial.read()
-                logger.debug("triple is %s" % triple)
-                if '{TRIPLE:DONE}' in triple:
-                    logger.debug("Triple Done")
-                    break
-#            time.sleep(0.1)
+        while True == serial.getCTS():
+            pass
 
         subclick(['up=Super_L','up=Super_R'])
 
@@ -211,7 +201,17 @@ def doCycles(serial, telnet):
         serial.write('n')
         transferPictures(telnet)
 
-def waitFor(port, text):
+def serialWaitFor(serial, text):
+    accum = ''
+    while serial.inWaiting():
+        accum += serial.read()
+
+    if text in accum:
+        return True
+
+    return False
+
+def portWaitFor(port, text):
     accum = ''
     logger.debug("Waiting on %s" % text)
     while not text in accum:
@@ -275,10 +275,10 @@ def main():
     if serPort.isOpen():
         serPort.close()
     serPort.open()
-    waitFor(serPort, '{State:Ready}')
+    portWaitFor(serPort, '{State:Ready}')
     # Camera on, film type, autotension
     serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
-#    waitFor(serPort, '{mode:8mm}')
+#    portWaitFor(serPort, '{mode:8mm}')
 
     if False == args.simulate:
         time.sleep(2)

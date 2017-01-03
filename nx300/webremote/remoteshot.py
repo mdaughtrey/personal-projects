@@ -1,6 +1,8 @@
 #!/usr/bin/python
 
 import httplib
+import urllib2
+import requests
 import time
 import pdb
 import argparse
@@ -10,7 +12,9 @@ import BeautifulSoup
 import telnetlib
 
 CameraIP='192.168.0.33'
-ShutterDelay=1
+ControllerIP='192.168.0.18'
+ControllerPort=5000
+ShutterDelay=1.3
 TelnetRoot='/mnt/mmc/'
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
@@ -25,6 +29,8 @@ logger.addHandler(fileHandler)
 argparser = argparse.ArgumentParser()
 argparser.add_argument('--frames', dest='numframes', type=int, default=1000, help='Capture N frames')
 argparser.add_argument('--dry-run', dest='dryrun', action='store_true', help='dry run')
+argparser.add_argument('--upload', dest='upload', help='upload from filename')
+argparser.add_argument('--project', dest='project', help='project name')
 #argparser.add_argument('--log-level', dest = 'log_level')
 #argparser.add_argument('--mode', dest = 'mode', required = True, choices=['shot2link','getinfo','rshot'])
 
@@ -50,24 +56,37 @@ def click(delay = ShutterDelay):
     subclick(['up=Super_L','up=Super_R'])
 
 def transferPicture(dir, filename, telnet):
-    conn = httplib.HTTPConnection(CameraIP, 80)
+    cameraConn = httplib.HTTPConnection(CameraIP, 80)
     fileurl = '/DCIM/%s/%s' % (dir, filename)
     fileurl = fileurl.encode('ascii', 'ignore')
-    conn.request('GET', fileurl)
-    response = conn.getresponse()
+    cameraConn.request('GET', fileurl)
+    response = cameraConn.getresponse()
     logger.debug('Status %s' % response.status)
     if 200 != response.status:
         logger.error("Status %u getting %s" % (response.status, fileurl))
         return
     data = response.read()
+    cameraConn.close()
     open('%s' % filename, 'w').write(data)
     logger.debug("Downloaded %s, %u bytes" % (fileurl, len(data)))
     logger.debug("Deleting %s/%s" % (TelnetRoot, fileurl))
     telnet.write("rm %s/%s\n" % (TelnetRoot, fileurl))
     telnet.read_very_lazy()
+    logger.debug('transferPicture end')
 
 
 def getPictures():
+    numAvailable = 0
+    while numAvailable < 3:
+        telnet = telnetlib.Telnet(CameraIP)
+        telnet.read_until('nx300:/#')
+        # wait for at least 3 available images
+        telnet.write("find %s/DCIM -name '*.JPG' | wc -l\n" % TelnetRoot)
+        tData = telnet.read_until('nx300:/#').replace('\r\n', '\n')
+        numAvailable = int(tData.split('\n')[-2])
+        logger.debug('numAvailable %u' % numAvailable)
+        time.sleep(1)
+
     conn = httplib.HTTPConnection(CameraIP, 80)
     headers = {
     'Host': CameraIP,
@@ -97,20 +116,23 @@ def getPictures():
         bs=BeautifulSoup.BeautifulSoup(fileInfo)
         fileTags=[ee.string for ee in bs.findAll('a') if '.JPG' in ee.string]
         conn.close()
-        telnet = telnetlib.Telnet(CameraIP)
-        telnet.read_until('nx300:/#')
         for file in fileTags:
             transferPicture(dir, file, telnet)
 
     conn.close()
 
+def uploadFile():
+    rargs = (ControllerIP, ControllerPort, args.project, 100, 'SAM_1212.JPG')
+    url = "http://%s:%u/upload?project=%s&container=%s&filename=%s" % rargs
+    files = { 'file': open('SAM_1212.JPG', 'r')}
+    rr = requests.post(url, files = files)
+
 def main():
-
-
-
+    if args.upload is not None:
+        uploadFile()
     logger.debug("Capturing %u frames" % args.numframes)
     for ff in xrange(0, args.numframes):
-        logger.debug("Frame %u" % ff)
+        logger.debug("Frame %u of %u" % (ff, args.numframes))
         click(ShutterDelay)
         getPictures()
 
