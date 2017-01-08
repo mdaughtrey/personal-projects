@@ -41,7 +41,7 @@ class FileManager():
 
         target = "%s/title%s.txt" % (targetDir, titlepage)
         self._logger.debug("Saving to %s" % target)
-        fileStream.save(target)
+        open(target, 'w').write(fileStream)
         return ['OK']
 
     def deleteProject(self, projectname):
