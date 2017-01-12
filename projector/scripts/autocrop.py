@@ -172,7 +172,8 @@ def processSuper8(filenames, outputpath):
     if options.debug and eroded_dir is not None:
         scipy.misc.imsave('eroded/%s' % os.path.basename(filename), im1)
 
-    pxPerMm = 369
+    #pxPerMm = 369
+    pxPerMm = 378
     im1Image = scipy.misc.toimage(im1)
     #(spLeftX, spCenterY) = findSuper8Sprocket3(im1Image, filename)
     (spLeftX, spCenterY) = findSuper8Sprocket3(im1, filename)
@@ -188,7 +189,8 @@ def processSuper8(filenames, outputpath):
 
     # FUDGE FACTOR for misaligned images
     #frameOriginY -= (122  + (.455 * pxPerMm))
-    frameOriginY -= ((.465 * pxPerMm))
+    frameOriginY -= ((.465 * pxPerMm) - 200)
+#    frameOriginX -= 80
 
     frameWidth = int(5.7 * pxPerMm)
     frameHeight = int(4.11 * pxPerMm)
