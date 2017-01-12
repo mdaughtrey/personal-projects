@@ -27,7 +27,6 @@ class JobManager():
         self._mode = mode
         self._film = film
         self._root = root
-        self._generateTitle = False
 
         if 'disable' == mode: # JobManager.WorkerManagerControl:
             return
@@ -103,13 +102,28 @@ class JobManager():
             return scheduled
 
         def scheduleGenTitle(self, freeWorkers):
+            if False == self._generateTitles: return 0
             if 'inline' == self._mode: 
                 self._vmGenTitle(self._projectname, self._root)
+                return 0
             else:
                 self._workers.append(Process(target = self._vmGenTitle,
                     args = (self._projectname, self._root)))
                 self._workers[-1].start()
-            self._generateTitle = False
+            self._generateTitles = False
+            return 1    
+
+        def scheduleGenChunk(self, freeWorkers):
+            chunks, processed = self._pstore.getVideoChunkStatus(self._projectname)
+            todo = [ee.encode('ascii', 'ignore') for ee in chunks if ee not in processed]
+            if 0 == len(todo):
+                return 0
+            if 'inline' == self._mode: 
+                self._vmGenChunk(self._projectname, self._root, todo[0])
+            else:
+                self._workers.append(Process(target = self._vmGenChunk,
+                    args = (self._projectname, self._root, todo[0])))
+                self._workers[-1].start()
             return 1    
 
         self._workerCleanup()
@@ -119,11 +133,10 @@ class JobManager():
             time.sleep(1)
             return
 
-        if freeWorkers: freeWorkers -= schedulePrecrop(self, freeWorkers)
-        if freeWorkers: freeWorkers -= scheduleAutocrop(self, freeWorkers)
-        if freeWorkers: freeWorkers -= scheduleTonefuse(self, freeWorkers)
-        if freeWorkers and True == self._generateTitle:
-            freeWorkers -= scheduleGenTitle(self, freeWorkers)
+        for scheduler in [scheduleGenChunk]:
+        #for scheduler in [schedulePrecrop, scheduleAutocrop, scheduleTonefuse,
+        #    scheduleGenTitle, scheduleGenChunk]:
+            if freeWorkers: freeWorkers -= scheduler(self, freeWorkers)
 
         if freeWorkers:
             time.sleep(5)
@@ -175,7 +188,7 @@ class JobManager():
         targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
         jobargs = ('convert', sourcefile,
             '-strip', '-flop', '-flip',
-            '-crop', "%dx%d+%d+%d" % (2500, 1600, 1080, 530),
+            '-crop', "%dx%d+%d+%d" % (2700, 1900, 1280, 530),
             targetfile)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         retcode = 0
@@ -192,7 +205,14 @@ class JobManager():
     def _vmGenTitle(self, project, root):
         jobargs = ('../gentitle.sh', '-p', project, '-r', root)
         retcode = subprocess.call(jobargs)
-#        logger.debug("gentitle retcode %u" % retcode)
+        return retcode
+
+    def _vmGenChunk(self, project, root, container):
+        self._pstore.markChunkProcessing(project, container)
+        jobargs = ('../gencontent.sh', '-p', project, '-r', root)
+        retcode = subprocess.call(jobargs)
+        if 0 == retcode:
+            self._pstore.markChunkProcessed(project, container)
         return retcode
 
     def _workerCleanup(self):
@@ -206,5 +226,6 @@ class JobManager():
         return True
 
     def genTitle(self):
-        self._generateTitle = True
+        self._generateTitles = True
+
 
