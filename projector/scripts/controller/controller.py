@@ -74,14 +74,6 @@ def titlefile():
     except:
         return json.dumps(['ERROR'])
 
-# set up a triple for processing
-#@app.route('/triple', methods = ['GET'])
-#def triple():
-#    if False in [request.args[elem] for elem in ('container', 'files', 'project')]:
-#        return json.dumps(['BADCOMMAND'])
-#    files = urllib.parse.unquote(request.args['files'])
-#    return json.dumps(jobman.triple(project, container, files))
-#
 #
 # Start title generation
 #
@@ -96,52 +88,12 @@ def gentitle():
     return json.dumps(['OK'])
 
 #
-# Start precrop (with parameters)
-# Start autocrop
-# Start tonefuse
-# Set film mode
-# Set title
-# Get state and progress
-# Cancel running operation
-# Reset to state
-
-
-def uploadTitleFile(request):
-    try:
-        ff = request.files['filename']
-        arguments = []
-        
-        for elem in ['project','titlepage']:
-            arguments.append(request.args[elem])
-
-        return fileman.newTitleFile(ff, *arguments)
-
-    except KeyError as ee:
-        return json.dumps(['ERROR', ee.message])
-
-# Various commands
-@app.route('/command', methods = ['GET'])
-def command():
-    try:
-#        if 'gentitle' in request.args:
-#            return json.dumps(jobman.generateTitle(request.args['project']))
-        # Set or create project
-#        if 'project' in request.args:
-#            return json.dumps(cstore.setProject(request.args['project']))
-        if 'delproject' in request.args:
-            response = []
-            response.append(['database', cstore.deleteProject(request.args['projectname'])])
-            if 1 == request.args['deletefiles']:
-                response.append(['filemanager', fileman.deleteProject(request.args['projectname'])])
-            return json.dumps(response)
-
-    except KeyError as ee:
-        return json.dumps(['ERROR', ee.message])
-
-def getStatus(request):
-    return json.dumps(['STATUS', 'RESTing ha ha'])
-    #return fileman.newTitleFile(ff, *arguments)
-
+# Generate Movie
+#
+@app.route('/genmovie', methods = ['GET'])
+def genmovie():
+    #jobman.genMovie()
+    return json.dumps(['OK'])
 
 if __name__ == "__main__":
     app.run('0.0.0.0')
