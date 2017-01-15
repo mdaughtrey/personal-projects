@@ -57,7 +57,9 @@ def whiteCount(filename):
 def findSuper8Sprocket3(image, filename):
     matches = cv2m(image, arrToFind, cv2.TM_SQDIFF)
     (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches)
-    return minLoc
+    if minLoc[0] < maxLoc[0]:
+        return minLoc
+    return maxLoc
 
 def findSuper8Sprocket2(image, filename):
     (label, numFeatures) = scipy.ndimage.measurements.label(image)
@@ -156,7 +158,7 @@ def processSuper8(filenames, outputpath):
 
     ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
     if [True, True, True] == ofiles:
-        logger.debug("Output files aready exist for %s" % filenames)
+        logger.debug("Output files already exist for %s" % filenames)
         return
 
     imp = PILImage.open(filename).convert('L')
@@ -465,7 +467,6 @@ def main():
     #arrFindIn[arrFindIn >= 100] = 255
 
     processor = {'super8': processSuper8, '8mm': process8mm }[options.mode]
-#    pdb.set_trace()
 
     if options.filenames is not None:
         processor(options.filenames, options.outputdir)

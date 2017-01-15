@@ -4,7 +4,7 @@ import pdb
 import threading
 
 class ProjectStore():
-    FilesPerContainer = 30
+    FilesPerContainer = 999
     def __init__(self, logger, dblocation = './', overwrite = False):
         self._dbroot = dblocation
 #        self._conn = None
@@ -169,14 +169,16 @@ class ProjectStore():
             files = cursor.fetchall()
             conn.close()
 
-        if len(files) > ProjectStore.FilesPerContainer:
+        self._logger.debug("len(files) %u" % len(files))
+
+        if len(files) >= ProjectStore.FilesPerContainer:
             newContainer = int(containers[-1][0]) + 1
             newFile = 0
         else:
             files.sort()
             newFile = int(files[-1][0].split('.')[0]) + 1
             newContainer = int(containers[-1][0])
-
+        self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
         return "%03u" % int(newContainer), "%06u.JPG" % newFile
 
     def getVideoChunkStatus(self, project):
@@ -191,9 +193,8 @@ class ProjectStore():
             cursor.execute("SELECT container FROM videodata")
             processed = cursor.fetchall()
             conn.close()
-        pdb.set_trace()
         containers = [ee[0] for ee in containers if ee[1] > ProjectStore.FilesPerContainer]
-        return [ee[0] for ee in containers], [ee[0] for ee in processed]
+        return containers, [ee[0] for ee in processed]
 
     def markChunkProcessing(self, project, container):
         statement = "(processing, container) VALUES(1, '%s')" % container
