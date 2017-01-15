@@ -14,11 +14,12 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--workman', dest='workman', default='proc', 
-    choices = ['proc', 'inline', 'disable'], help='worker manager mode')
+parser.add_argument('--jobmode', dest='jobmode', default='proc', 
+    choices = ['proc', 'inline', 'disable'], help='background job mode')
 parser.add_argument('--project', required = True, dest='project', help='set jobman project name')
 parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
-args = parser.parse_args()
+parser.add_argument('--worker', dest='workers', action='append')
+config = parser.parse_args()
 
 ROOTOFALL='/media/sf_vmshared/scans/'
 
@@ -39,8 +40,7 @@ logging.getLogger('RemoteDev').addHandler(fileHandler)
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
-jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman,
-    args.workman, args.project, args.film, ROOTOFALL)
+jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
 cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
 remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
 
@@ -58,9 +58,9 @@ signal.signal(signal.SIGINT, signal_handler)
 @app.route('/upload', methods = ['PUT'])
 def upload():
     try:
-        container, filename = pstore.getNextImageLocation(args.project)
-        fileman.newFile(request.data, args.project, container, filename)
-        pstore.newRawFile(args.project, container, filename)
+        container, filename = pstore.getNextImageLocation(config.project)
+        fileman.newFile(request.data, config.project, container, filename)
+        pstore.newRawFile(config.project, container, filename)
         return json.dumps(['OK'])
 
     except KeyError as ee:
@@ -70,7 +70,7 @@ def upload():
 @app.route('/titlefile', methods = ['PUT'])
 def titlefile():
     try:
-        return json.dumps(fileman.newTitleFile(request.data, args.project, request.args['page']))
+        return json.dumps(fileman.newTitleFile(request.data, config.project, request.config['page']))
     except:
         return json.dumps(['ERROR'])
 
@@ -80,7 +80,7 @@ def titlefile():
 @app.route('/gentitle', methods = ['PUT'])
 def gentitle():
     try:
-        result = fileman.newTitleFile(request.data, args.project, request.args['page'])
+        result = fileman.newTitleFile(request.data, config.project, request.config['page'])
     except:
         return json.dumps(['ERROR'])
 
