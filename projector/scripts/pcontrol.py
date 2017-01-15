@@ -10,7 +10,7 @@ import os
 import httplib
 import argparse
 import serial
-import BeautifulSoup
+#import BeautifulSoup
 import telnetlib
 import socket
 import requests
@@ -20,8 +20,12 @@ from multiprocessing import Process
 import tempfile
 import re
 import glob
+import threading
+import sqlite3
 
-FifoName = "/var/tmp/pcontrol.fifo"
+#Fifoname = "/var/tmp/pcontrol.fifo"
+dbName="/var/tmp/pcontroldb"
+dbLock = threading.Lock()
 SerialPort = '/dev/tty.usbserial-A601KW2O'
 CameraIP = '0.0.0.0'
 CameraPort = 1000
@@ -42,42 +46,71 @@ parser.add_argument('--simulate', action='store_true', help='simulate (no I/O)')
 parser.add_argument('--cycles', dest='cycles', default=10, type=int, help='number of frames to capture')
 parser.add_argument('--filmtype', dest='filmtype', required=True, choices=['8mm','s8'], help='film type')
 parser.add_argument('--mode', dest='mode', required=True, choices=['gentitle','genmovie','fifotest','upload','pipeline'], help='upload a file')
-#parser.add_argument('--project', dest='project', required=True, help='set project name')
-#parser.add_argument('--container', dest='container', required=True, help='set container name')
 parser.add_argument('--filename', dest='filename', help='set filename')
 parser.add_argument('--noupload', dest='noupload', action='store_true', help='disable upload')
+parser.add_argument('--inline', dest='inline', action='store_true')
 args = parser.parse_args()
+upl = None
 
+def initDb():
+    if os.path.isfile(dbName):
+        os.remove(dbName)
+    logger.debug("Creating %s" % dbName)
+    conn = sqlite3.connect(dbName)
+    cur = conn.cursor()
+    cur.execute('CREATE TABLE pending (filename TEXT)')
+    conn.commit()
+    conn.close()
+
+def putUploadFile(filename):
+    with dbLock:
+        conn = sqlite3.connect(dbName)
+        cur = conn.cursor()
+        cur.execute("INSERT INTO pending (filename) values('%s')" % filename)
+        conn.commit()
+        conn.close()
+
+def getNextUploadFile():
+    with dbLock:
+        conn = sqlite3.connect(dbName)
+        cur = conn.cursor()
+        cur.execute("SELECT filename FROM pending ORDER BY rowid LIMIT 1")
+        data = cur.fetchall()
+        if 0 == len(data):
+            return None
+        return data[0][0].encode('ascii', 'ignore')
+
+def markUploaded(filename):
+    with dbLock:
+        conn = sqlite3.connect(dbName)
+        cur = conn.cursor()
+        cur.execute("DELETE FROM pending WHERE filename='%s'" % filename)
+        conn.commit()
+    
 def uploader():
-#    pdb.set_trace()
     logger.debug("uploader")
-    logger.debug("Creating %s" % FifoName)
-    os.mkfifo(FifoName)
     while True:
-        fifo = open(FifoName,'r')
-        logger.debug("Opened %s" % FifoName)
-        for filename in fifo:
-            filename = filename.rstrip('\r\n')
-            logger.debug("uploader gets %s" % filename)
-            if 'exit' == filename:
-                logger.debug("uploader exits")
-                logger.debug("Close %s" % FifoName)
-                fifo.close()
-                return
+        filename = getNextUploadFile()
+        if filename is None:
+            time.sleep(2)
+            continue
+        logger.debug("uploader gets %s" % filename)
+        if 'exit' == filename:
+            logger.debug("uploader exits")
+            return
 
-            hargs = (ControllerIP, ControllerPort)
-            hUrl = 'http://%s:%u/upload' % hargs
-            try:
-                logger.debug(hUrl)
-                response = requests.put(url=hUrl, data=open(filename).read(),
-                    headers={'Content-Type': 'application/octet-stream'})
-                logger.debug("Uploaded %s" % hUrl)
-            except:
-                logger.error("HTTP upload fail") # , %s" % ee.message)
+        hargs = (ControllerIP, ControllerPort)
+        hUrl = 'http://%s:%u/upload' % hargs
+        try:
+            logger.debug(hUrl)
+            response = requests.put(url=hUrl, data=open(filename).read(),
+                headers={'Content-Type': 'application/octet-stream'})
+            logger.debug("Uploaded %s" % hUrl)
+        except:
+            logger.error("HTTP upload fail") # , %s" % ee.message)
 
-            os.remove(filename)
-        logger.debug("Close %s" % FifoName)
-        fifo.close()
+        os.remove(filename)
+        markUploaded(filename)
 
 #def uploadToController(filename):
 #    hargs = (ControllerIP, ControllerPort, args.project)
@@ -130,7 +163,10 @@ def transferPicture(dir, filename, telnet):
         imgfile.write(imgdata)
         imgfile.close()
         logger.debug("Wrote imagedata to %s" % imgname)
-        open(FifoName,'w').write(imgname)
+        putUploadFile(imgname)
+        if args.inline:
+            uploader()
+#        open(Fifoname,'w').write(imgname)
 #        hargs = (ControllerIP, ControllerPort, args.project)
 #        hUrl = 'http://%s:%u/upload?project=%s' % hargs
 #        try:
@@ -149,28 +185,35 @@ def transferPicture(dir, filename, telnet):
 def transferPictures(telnet):
     logger.debug('transferPictures')
     numAvailable = 0
-    while numAvailable < 1:
+    while numAvailable < 3:
         # wait for at least 3 available images
-        telnet.write("find %s/DCIM -name '*.JPG' | wc -l\n" % TelnetRoot)
-#        pdb.set_trace()
-        tData = ''
-        while True:
-            rx = telnet.read_very_eager()
-            if '' == rx:
-                break
-            time.sleep(0.5)
-            tData += rx
-        logger.debug(tData)
+        telnet.write("ls %s/DCIM/*/*.JPG | tail -3\n" % TelnetRoot)
+        tData = telnet.read_until('nx300:/#')
+        images = [ee for ee in tData.split('\r\n') if 'PHOTO/SAM' in ee]
+        numAvailable = len(images)
 
-        for elem in tData.split('\r\n'):
-            try:
-                numAvailable = int(elem)
-            except:
-                pass
-        logger.debug('numAvailable %u' % numAvailable)
-        time.sleep(0.1)
+    for image in images:
+        ee = image.split('/')[-2:]
+        transferPicture(ee[0], ee[1], telnet)
 
-    http = httplib.HTTPConnection(CameraIP, 80)
+
+#        while True:
+#            rx = telnet.read_very_eager()
+#            if '' == rx:
+#                break
+#            time.sleep(0.5)
+#            tData += rx
+#        logger.debug(tData)
+
+#        for elem in tData.split('\r\n'):
+#            try:
+#                numAvailable = int(elem)
+#            except:
+#                pass
+#        logger.debug('numAvailable %u' % numAvailable)
+#        time.sleep(0.1)
+
+#    http = httplib.HTTPConnection(CameraIP, 80)
 #     headers = {
 #     'Host': CameraIP,
 #     'Connection': 'keep-alive',
@@ -182,25 +225,25 @@ def transferPictures(telnet):
 #     'Accept-Language': 'en-US,en;q=0.8'
 #     }
     
-    http.request('GET', '/DCIM/') #, None, headers)
-    response = http.getresponse()
+#    http.request('GET', '/DCIM/') #, None, headers)
+#    response = http.getresponse()
     #logger.debug('Status %s' % response.status)
     #logger.debug('Reason %s' % response.reason)
     #logger.debug('Headers %s' % response.getheaders())
-    data = response.read()
+#    data = response.read()
     #logger.debug('Data %s' % data)
-    bs=BeautifulSoup.BeautifulSoup(data)
-    dirtags=[ee.string for ee in bs.findAll('a') if 'PHOTO' in ee.string]
-    for dir in dirtags:
-        http = httplib.HTTPConnection(CameraIP, 80)
-        http.request('GET', '/DCIM/%s' % dir)
-        response = http.getresponse()
-        fileInfo = response.read()
-        bs=BeautifulSoup.BeautifulSoup(fileInfo)
-        fileTags=[ee.string for ee in bs.findAll('a') if '.JPG' in ee.string]
+#    bs=BeautifulSoup.BeautifulSoup(data)
+#    dirtags=[ee.string for ee in bs.findAll('a') if 'PHOTO' in ee.string]
+#    for line in tData:
+#        http = httplib.HTTPConnection(CameraIP, 80)
+#        http.request('GET', '/DCIM/%s' % dir)
+#        response = http.getresponse()
+#        fileInfo = response.read()
+#        bs=BeautifulSoup.BeautifulSoup(fileInfo)
+#        fileTags=[ee.string for ee in bs.findAll('a') if '.JPG' in ee.string]
 #        conn.close()
-        for file in fileTags:
-            transferPicture(dir.replace('/',''), file, telnet)
+#    for file in fileTags:
+#        transferPicture(dir.replace('/',''), file, telnet)
 #    conn.close()
 
 def doCycles(serial, telnet):
@@ -276,9 +319,7 @@ def portWaitFor(port, text):
 #    logger.debug(data)
 
 def uploadFile(filename):
-    fifo = open(FifoName,'w')
-    fifo.write(filename)
-    ff.close()
+    putUploadFile(filename)
     return 0
 
 #    http = httplib.HTTPConnection(ControllerIP, ControllerPort)
@@ -307,24 +348,12 @@ def uploadFile(filename):
 #    return 0
 
 def uploaderInit():
-    try:
-        stat.S_ISFIFO(os.stat(FifoName).st_mode)
-        os.remove(FifoName)
-        logger.debug("Deleted %s" % FifoName)
-    except:
-        pass
-
-    upl = Process(target = uploader)
-    upl.start()
-    logger.debug("Started uploader")
-    while True:
-        try:
-            stat.S_ISFIFO(os.stat(FifoName).st_mode)
-            logger.debug("%s is created" % FifoName)
-            break
-        except:
-            logger.debug("Waiting on %s" % FifoName)
-            time.sleep(0.1)
+    initDb()
+    if args.inline is None:
+        global upl
+        upl = Process(target = uploader)
+        upl.start()
+        logger.debug("Started uploader")
 
 def genMovie():
     try:
@@ -384,14 +413,13 @@ def getCameraIP():
 
 def main():
     logger.debug("Init")
+    initDb()
     if args.mode in ('gentitle'):
         uploadTitleFiles(glob.glob(args.filename))
         return 0
     if 'genmovie' == args.mode:
         genMovie()
         return 0
-    if 'fifotest' == args.mode:
-        uploader()
     if False == args.noupload:
         uploaderInit()
     if 'upload' == args.mode:
@@ -423,6 +451,9 @@ def main():
     logger.debug("Closing %s" % SerialPort)
     serPort.write(b'TC')
     serPort.close()
+    logger.debug("Waiting on upload exit")
+    putUploadFile('exit')
+    upl.join()
     return 0
 
 sys.exit(main())
