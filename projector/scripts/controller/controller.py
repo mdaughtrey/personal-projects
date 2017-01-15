@@ -17,6 +17,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--workman', dest='workman', default='proc', 
     choices = ['proc', 'inline', 'disable'], help='worker manager mode')
 parser.add_argument('--project', required = True, dest='project', help='set jobman project name')
+parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
 args = parser.parse_args()
 
 ROOTOFALL='/media/sf_vmshared/scans/'
@@ -38,7 +39,8 @@ logging.getLogger('RemoteDev').addHandler(fileHandler)
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
-jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, args.workman, args.project)
+jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman,
+    args.workman, args.project, args.film, ROOTOFALL)
 cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
 remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
 
@@ -56,12 +58,21 @@ signal.signal(signal.SIGINT, signal_handler)
 @app.route('/upload', methods = ['PUT'])
 def upload():
     try:
-        if False in [request.args[elem] for elem in ('container', 'file', 'project')]:
-            return json.dumps(['BADCOMMAND'])
-        return json.dumps(uploadImage(request))
+        container, filename = pstore.getNextImageLocation(args.project)
+        fileman.newFile(request.data, args.project, container, filename)
+        pstore.newRawFile(args.project, container, filename)
+        return json.dumps(['OK'])
+
+    except KeyError as ee:
+        return json.dumps(['ERROR', ee.message])
+
+# Upload title file
+@app.route('/titlefile', methods = ['PUT'])
+def titlefile():
+    try:
+        return json.dumps(fileman.newTitleFile(request.data, args.project, request.args['page']))
     except:
-        return json.dumps(['BADCOMMAND'])
-    return json.dumps(['OK'])
+        return json.dumps(['ERROR'])
 
 # set up a triple for processing
 #@app.route('/triple', methods = ['GET'])
@@ -74,15 +85,15 @@ def upload():
 #
 # Start title generation
 #
-@app.route('/gentitle', methods = ['POST', 'GET'])
+@app.route('/gentitle', methods = ['PUT'])
 def gentitle():
-    return json.dumps(['TODO'])
+    try:
+        result = fileman.newTitleFile(request.data, args.project, request.args['page'])
+    except:
+        return json.dumps(['ERROR'])
 
-#    if !jobman.quiescent() or !pstore.quiescent():
-#        return json.dumps(['NOTREADY'])
-#
-#    jobman.gentitle()
-#    return json.dumps(['DONE'])
+    jobman.genTitle()
+    return json.dumps(['OK'])
 
 #
 # Start precrop (with parameters)
@@ -94,23 +105,6 @@ def gentitle():
 # Cancel running operation
 # Reset to state
 
-def uploadImage(request):
-    try:
-        #ff = request.args['file']
-        arguments = []
-
-        for elem in ['project','container','file']:
-            arguments.append(request.args[elem].encode('ascii','ignore'))
-
-        if pstore.rawFileExists(*arguments):
-            return json.dumps(['EXISTS'])
-
-        fileman.newFile(request.data, *arguments)
-        pstore.newRawFile(*arguments)
-        return ['OK']
-
-    except KeyError as ee:
-        return json.dumps(['ERROR', ee.message])
 
 def uploadTitleFile(request):
     try:
@@ -129,8 +123,8 @@ def uploadTitleFile(request):
 @app.route('/command', methods = ['GET'])
 def command():
     try:
-        if 'gentitle' in request.args:
-            return json.dumps(jobman.generateTitle(request.args['project']))
+#        if 'gentitle' in request.args:
+#            return json.dumps(jobman.generateTitle(request.args['project']))
         # Set or create project
 #        if 'project' in request.args:
 #            return json.dumps(cstore.setProject(request.args['project']))
