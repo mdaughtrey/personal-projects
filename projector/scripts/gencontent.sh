@@ -2,19 +2,20 @@
 
 SEM=sem
 
-while getopts "p:r:" OPT
+while getopts "p:r:c:" OPT
 do
     case $OPT in
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
+        c) container=$OPTARG ;;
         *) echo What?; exit 1 ;;
     esac
 done
 
-export imgroot=$fileroot/$project
+export imgroot=$fileroot/$project/$container/fused
 export projroot=$fileroot/$project
 
-if [[ "" == $project || "" == $fileroot ]]
+if [[ "" == $project || "" == $fileroot || "" == $container ]]
 then
     echo Some parameter is missing
     exit 1
@@ -23,32 +24,32 @@ fi
 getImages()
 {
     IFS=\|
-    select="select container,fused from picdata where fused is not NULL order by container,fused"
-    sqlite3 -list $fileroot/${project}db "$select" | uniq | while read container filename
+    select="select fused from picdata where fused is not NULL and container='$container' order by fused"
+    sqlite3 -list $fileroot/${project}db "$select" | uniq | while read filename
     do
-        echo $fileroot/$project/$container/fused/$filename
+        echo $imgroot/$filename
     done
 }
 
 genyuvstream()
 {
-    getImages > $projroot/contentlist.txt
+    getImages > $imgroot/contentlist.txt
 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
-        mf://@$projroot/contentlist.txt \
+        mf://@$imgroot/contentlist.txt \
         -vf scale=800:600 \
     	-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub \
-        -vo yuv4mpeg:file=$projroot/content.yuv
+        -vo yuv4mpeg:file=$imgroot/content.yuv
 }
 
 converttoavi()
 {
-    if [[ ! -f "$projroot/content.yuv" ]]
+    if [[ ! -f "$imgroot/content.yuv" ]]
     then
         genyuvstream
     fi
-    cat $projroot/content.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
-        avconv -loglevel info -i - -vcodec rawvideo -y $projroot/content.avi
+    cat $imgroot/content.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
+        avconv -loglevel info -i - -vcodec rawvideo -y $imgroot/content.avi
 }
 
 converttoavi
