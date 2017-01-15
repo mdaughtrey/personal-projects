@@ -1035,21 +1035,14 @@ do
         *) echo What?; exit 1 ;;
     esac
 done
+
 shift $((OPTIND-1))
-#echo $@
 case "$1" in 
 	title) gentitle $2 ;;
 	renumber) renumber $2 ;;
     preview) preview ;;
 	previewtitle) previewTitle ;;
-    #genyuv) genyuv web; genyuv dvd; genyuv hd ;;
     genyuv) genyuv dvd;;
-    #web) scaler web; gentitle web; mpeg2 web ;;
-    #dvd) scaler dvd; gentitle dvd; mpeg2 dvd ;;
-    #dvd) scaler dvd; mpeg2 dvd ;;
-    #hd) mpeg2 hd ;;
-    #mklinks) mklinks ;;
-    #mkrlinks) mkrlinks ;;
     mpeg2) mpeg2 web; mpeg2 dvd; mpeg2 hd ;;
 	mp42jpg) mp42jpg $2 ;;
 	avi) avi dvd ;;
@@ -1061,8 +1054,6 @@ case "$1" in
     tfsample) sample fused tfsample;; 
     autocrop) autocrop ;;
 	optimize) optimize ;;
-	#tonecheck) toneCheck ;;
-    tonefuse2) tonefuse2 ;;
 	tonefuse) tonefuse ;;
 	cropfuse) cropfuse ;;
 	import) import ;;

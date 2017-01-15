@@ -198,7 +198,7 @@ def processSuper8(filenames, outputpath):
     # crop and save
     if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
         logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
-        return
+        sys.exit(1)
 
     if options.debug and bw_dir is not None:
         bwd = ImageDraw.Draw(imp)
