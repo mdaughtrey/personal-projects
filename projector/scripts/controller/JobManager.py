@@ -17,7 +17,7 @@ class JobManager():
     DisablePrecrop = False
     DisableAutocrop = False
 
-    def __init__(self, logger, pstore, fileman, mode, project):
+    def __init__(self, logger, pstore, fileman, mode, project, film, root):
         self._logger = logger
         self._pstore = pstore
         self._fileman = fileman
@@ -25,6 +25,9 @@ class JobManager():
         self._logger.debug("JobManager init")
         self._projectname = project
         self._mode = mode
+        self._film = film
+        self._root = root
+        self._generateTitle = False
 
         if 'disable' == mode: # JobManager.WorkerManagerControl:
             return
@@ -37,6 +40,7 @@ class JobManager():
 
     def shutdown(self):
         self._wmrunning = False
+        map(lambda pp: pp.terminate(), self._workers)
 
     def _workerManager(self, projectname):
         def schedulePrecrop(self, freeWorkers):
@@ -98,6 +102,15 @@ class JobManager():
                 del todo[:3]
             return scheduled
 
+        def scheduleGenTitle(self, freeWorkers):
+            if 'inline' == self._mode: 
+                self._vmGenTitle(self._projectname, self._root)
+            else:
+                self._workers.append(Process(target = self._vmGenTitle,
+                    args = (self._projectname, self._root)))
+                self._workers[-1].start()
+            self._generateTitle = False
+            return 1    
 
         self._workerCleanup()
         freeWorkers = JobManager.JobLimit - len(self._workers)
@@ -109,6 +122,8 @@ class JobManager():
         if freeWorkers: freeWorkers -= schedulePrecrop(self, freeWorkers)
         if freeWorkers: freeWorkers -= scheduleAutocrop(self, freeWorkers)
         if freeWorkers: freeWorkers -= scheduleTonefuse(self, freeWorkers)
+        if freeWorkers and True == self._generateTitle:
+            freeWorkers -= scheduleGenTitle(self, freeWorkers)
 
         if freeWorkers:
             time.sleep(5)
@@ -141,7 +156,7 @@ class JobManager():
         outputdir = self._fileman.getAutocropDir(project, container)
         jobargs = ('../autocrop.py', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
-            '--mode', '8mm',
+            '--mode', self._film,
             '--output-dir', outputdir)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         try:
@@ -159,8 +174,9 @@ class JobManager():
         sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
         jobargs = ('convert', sourcefile,
-            '-crop', "%dx%d+%d+%d" % (1755, 1083, 2500, 1680),
-            '-flop', '-flip', targetfile)
+            '-strip', '-flop', '-flip',
+            '-crop', "%dx%d+%d+%d" % (2500, 1600, 1080, 530),
+            targetfile)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         retcode = 0
         if True == JobManager.DisablePrecrop:
@@ -171,7 +187,12 @@ class JobManager():
         if 0 == retcode:
             self._pstore.markPrecropped(project, container, filename)
         self._logger.debug("_vmPrecrop Done")
+        return retcode
 
+    def _vmGenTitle(self, project, root):
+        jobargs = ('../gentitle.sh', '-p', project, '-r', root)
+        retcode = subprocess.call(jobargs)
+#        logger.debug("gentitle retcode %u" % retcode)
         return retcode
 
     def _workerCleanup(self):
@@ -184,6 +205,6 @@ class JobManager():
             return False
         return True
 
-    def generateTitle(projectname):
-        pass
+    def genTitle(self):
+        self._generateTitle = True
 

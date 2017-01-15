@@ -21,7 +21,8 @@ class ProjectStore():
                     container TEXT,
                     precrop TEXT,
                     autocrop TEXT,
-                    fused TEXT
+                    fused TEXT,
+                    titleframe TEXT
                     )''')
         cur.execute('''CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container)''')
 
@@ -146,3 +147,27 @@ class ProjectStore():
     def abortTonefuse(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortTonefuse")
 
+
+    def getNextImageLocation(self, project):
+        with self._dbLock:
+            # Find the most recent container
+            conn = self._openDb(project)
+            cursor = conn.cursor()
+            cursor.execute("SELECT DISTINCT(container) FROM picdata")
+            containers = cursor.fetchall()
+            if 0 == len(containers): # New project
+                return "100", "000000.JPG"
+
+            containers.sort()
+            cursor = conn.cursor()
+            cursor.execute("SELECT rawfile FROM picdata WHERE container='%s'" % containers[-1])
+            files = cursor.fetchall()
+            conn.close()
+            if len(files) > 999:
+                newContainer = int(containers[-1][0]) + 1
+                newFile = 0
+            else:
+                files.sort()
+                newFile = int(files[-1][0].split('.')[0]) + 1
+                newContainer = int(containers[-1][0])
+            return "%03u" % int(newContainer), "%06u.JPG" % newFile
