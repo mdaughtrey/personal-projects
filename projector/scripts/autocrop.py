@@ -57,7 +57,9 @@ def whiteCount(filename):
 def findSuper8Sprocket3(image, filename):
     matches = cv2m(image, arrToFind, cv2.TM_SQDIFF)
     (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches)
-    return minLoc
+    if minLoc[0] < maxLoc[0]:
+        return minLoc
+    return maxLoc
 
 def findSuper8Sprocket2(image, filename):
     (label, numFeatures) = scipy.ndimage.measurements.label(image)
@@ -156,7 +158,7 @@ def processSuper8(filenames, outputpath):
 
     ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
     if [True, True, True] == ofiles:
-        logger.debug("Output files aready exist for %s" % filenames)
+        logger.debug("Output files already exist for %s" % filenames)
         return
 
     imp = PILImage.open(filename).convert('L')
@@ -172,7 +174,8 @@ def processSuper8(filenames, outputpath):
     if options.debug and eroded_dir is not None:
         scipy.misc.imsave('eroded/%s' % os.path.basename(filename), im1)
 
-    pxPerMm = 369
+    #pxPerMm = 369
+    pxPerMm = 378
     im1Image = scipy.misc.toimage(im1)
     #(spLeftX, spCenterY) = findSuper8Sprocket3(im1Image, filename)
     (spLeftX, spCenterY) = findSuper8Sprocket3(im1, filename)
@@ -188,7 +191,8 @@ def processSuper8(filenames, outputpath):
 
     # FUDGE FACTOR for misaligned images
     #frameOriginY -= (122  + (.455 * pxPerMm))
-    frameOriginY -= ((.465 * pxPerMm))
+    frameOriginY -= ((.465 * pxPerMm) - 200)
+#    frameOriginX -= 80
 
     frameWidth = int(5.7 * pxPerMm)
     frameHeight = int(4.11 * pxPerMm)
@@ -463,7 +467,6 @@ def main():
     #arrFindIn[arrFindIn >= 100] = 255
 
     processor = {'super8': processSuper8, '8mm': process8mm }[options.mode]
-#    pdb.set_trace()
 
     if options.filenames is not None:
         processor(options.filenames, options.outputdir)

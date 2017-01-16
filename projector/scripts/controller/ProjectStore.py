@@ -4,6 +4,7 @@ import pdb
 import threading
 
 class ProjectStore():
+    FilesPerContainer = 999
     def __init__(self, logger, dblocation = './', overwrite = False):
         self._dbroot = dblocation
 #        self._conn = None
@@ -24,6 +25,10 @@ class ProjectStore():
                     fused TEXT,
                     titleframe TEXT
                     )''')
+        cur.execute('''CREATE TABLE videodata (
+            container TEXT,
+            processing integer
+            )''')
         cur.execute('''CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container)''')
 
         conn.commit()
@@ -163,11 +168,37 @@ class ProjectStore():
             cursor.execute("SELECT rawfile FROM picdata WHERE container='%s'" % containers[-1])
             files = cursor.fetchall()
             conn.close()
-            if len(files) > 999:
-                newContainer = int(containers[-1][0]) + 1
-                newFile = 0
-            else:
-                files.sort()
-                newFile = int(files[-1][0].split('.')[0]) + 1
-                newContainer = int(containers[-1][0])
-            return "%03u" % int(newContainer), "%06u.JPG" % newFile
+
+        self._logger.debug("len(files) %u" % len(files))
+
+        if len(files) >= ProjectStore.FilesPerContainer:
+            newContainer = int(containers[-1][0]) + 1
+            newFile = 0
+        else:
+            files.sort()
+            newFile = int(files[-1][0].split('.')[0]) + 1
+            newContainer = int(containers[-1][0])
+        self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
+        return "%03u" % int(newContainer), "%06u.JPG" % newFile
+
+    def getVideoChunkStatus(self, project):
+        with self._dbLock:
+            conn = self._openDb(project)
+            cursor = conn.cursor()
+            statement = ''.join([
+                "SELECT container,COUNT(container) FROM picdata "
+                "WHERE container IN (SELECT DISTINCT(container) FROM picdata)"])
+            cursor.execute(statement)
+            containers = cursor.fetchall()
+            cursor.execute("SELECT container FROM videodata")
+            processed = cursor.fetchall()
+            conn.close()
+        containers = [ee[0] for ee in containers if ee[1] > ProjectStore.FilesPerContainer]
+        return containers, [ee[0] for ee in processed]
+
+    def markChunkProcessing(self, project, container):
+        statement = "(processing, container) VALUES(1, '%s')" % container
+        self.simpleUpdate(project, "INSERT OR REPLACE INTO videodata %s" % statement)
+
+    def markChunkProcessed(self, project, container):
+        self.simpleUpdate(project, "SET processing=0 where CONTAINER='%s'" % container)
