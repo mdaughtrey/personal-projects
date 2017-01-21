@@ -42,7 +42,6 @@ fileHandler.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--simulate', action='store_true', help='simulate (no I/O)')
 parser.add_argument('--cycles', dest='cycles', default=10, type=int, help='number of frames to capture')
 parser.add_argument('--filmtype', dest='filmtype', required=True, choices=['8mm','s8'], help='film type')
 parser.add_argument('--mode', dest='mode', required=True, choices=['gentitle','genmovie','fifotest','upload','pipeline','uploader'])
@@ -198,6 +197,7 @@ def transferPicture(dir, filename, telnet):
 
     logger.debug("Deleting %s/%s" % (TelnetRoot, fileurl))
     telnet.write("rm %s/%s > /dev/null\n" % (TelnetRoot, fileurl))
+    logger.debug("read_until nx300")
     tData = telnet.read_until('nx300:/#')
     logger.debug('transferPicture end')
     return True
@@ -219,7 +219,7 @@ def transferPictures(telnet):
             return False
     return True
 
-def doCycles(serial, telnet):
+def doCycles(serial, telnet, numCycles):
     def waitCardOps(telnet):
         logger.debug("Waiting on card ops")
         telnet.write('/mnt/mmc/moncard.sh\n')
@@ -235,25 +235,28 @@ def doCycles(serial, telnet):
             logger.error("Error waiting on SD card activity")
 
 
-    for ii in xrange(1, args.cycles + 1):
+    for ii in xrange(1, numCycles + 1):
         if serialWaitFor(serial, '{OIT:'):
             logger.debug("OIT")
             sys.exit(0)
         logger.debug("Frame %u of %u" % (ii, args.cycles))
         serial.write('200a')
         if False == subclick(['down=Super_L','down=Super_R']):
-            return False
+            return ii
 
+        now = time.clock() 
         while True == serial.getCTS():
-            pass
+            if (time.clock() - now) > 3.0:
+                logger.error("CTS loop timed out")
+                return ii
 
         if False == subclick(['up=Super_L','up=Super_R']):
-            return False
+            return ii
         serial.write('n')
         if False == transferPictures(telnet):
-            return False
+            return ii
 
-    return True
+    return ii
 
 def serialWaitFor(serial, text):
     accum = ''
@@ -344,10 +347,11 @@ def getCameraIP():
                 return ipAddress
 
 def waitForCamera(telnet):
+    logger.debug("waitForCamera")
     telnet.read_until('nx300:/#')
-#    logger.debug("Deleting extraneous camera images")
-#    telnet.write("rm -rf %s/DCIM/* > /dev/null\n" % TelnetRoot)
-#    telnet.read_until('nx300:/#')
+    logger.debug("Deleting extraneous camera images")
+    telnet.write("rm -rf %s/DCIM/* > /dev/null\n" % TelnetRoot)
+    telnet.read_until('nx300:/#')
 
     while True:
         time.sleep(3)
@@ -380,36 +384,46 @@ def main():
     if 'pipeline' != args.mode:
         return 1
 
-    serPort = serial.Serial(SerialPort, 57600) # , timeout=1)
-    logger.debug("Opening %s" % SerialPort)
-    if serPort.isOpen():
+    def cameraOff(serPort):
+        logger.debug("Closing %s" % SerialPort)
+        serPort.write(b'TC')
         serPort.close()
-    serPort.open()
-    portWaitFor(serPort, '{State:Ready}')
-    # Camera on, film type, autotension
-    serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
-    serPort.write('n')
-#    portWaitFor(serPort, '{mode:8mm}')
 
-    if False == args.simulate:
+    numCycles = args.cycles
+    doneCycles = 0
+    while True:
+        serPort = serial.Serial(SerialPort, 57600) # , timeout=1)
+        logger.debug("Opening %s" % SerialPort)
+        if serPort.isOpen():
+            serPort.close()
+
+        serPort.open()
+        portWaitFor(serPort, '{State:Ready}')
+        # Camera on, film type, autotension
+        serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
+        serPort.write('n')
+
         time.sleep(2)
         if False == serPort.isOpen():
             logger.error("Cannot open %s, exiting" % SerialPort)
             return 1
+
         global CameraIP
         CameraIP = getCameraIP()
+        logger.debug("Establishing telnet connection")
         telnet = telnetlib.Telnet(CameraIP)
         waitForCamera(telnet)
-        if False == doCycles(serPort, telnet):
-            logger.error("doCycles fails")
 
-    logger.debug("Closing %s" % SerialPort)
-    serPort.write(b'TC')
-    serPort.close()
-    logger.debug("sending uploader exit")
-#    putUploadFile('exit')
-#    logger.debug("Waiting on upload exit")
-#    upl.join()
+        doneCycles += doCycles(serPort, telnet, numCycles - doneCycles)
+        if doneCycles >= numCycles:
+            break
+
+        logger.error("doCycles fails, restart camera")
+        cameraOff(serPort)
+        time.sleep(5)
+
+    logger.debug("Complete, shutting down")
+    cameraOff(serPort)
     return 0
 
 sys.exit(main())

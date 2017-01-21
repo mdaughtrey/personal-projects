@@ -28,7 +28,8 @@ ss = requests.Session()
 
 def initDb():
     if os.path.isfile(dbName):
-        os.remove(dbName)
+        return
+#        os.remove(dbName)
     logger.debug("Creating %s" % dbName)
     conn = sqlite3.connect(dbName)
     cur = conn.cursor()
@@ -84,5 +85,5 @@ def uploader():
         except Exception as ee:
             logger.error("HTTP upload fail %s" % str(ee))
 
-#initDb()
+initDb()
 uploader()
