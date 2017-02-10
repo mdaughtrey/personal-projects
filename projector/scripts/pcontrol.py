@@ -9,27 +9,37 @@ from logging.handlers import RotatingFileHandler
 import os
 import argparse
 import serial
-import telnetlib
+#import telnetlib
 import requests
 import tempfile
 import re
 import sqlite3
 import code
 import signal
+import socket
+import select
 
 ctlSession = requests.Session()
 camSession = requests.Session()
 CtlTimeout = 1
 CamTimeout = 2
+lastKeepAlive = 0
+serPort = None
+wait = 1
+
+def killHandler(sig, frame):
+    cameraOff(serPort)
+    sys.exit(1)
 
 signal.signal(signal.SIGUSR2, lambda sig, frame: code.interact())
+signal.signal(signal.SIGINT, killHandler)
 #Fifoname = "/var/tmp/pcontrol.fifo"
 dbName="/var/tmp/pcontroldb"
 #dbLock = threading.Lock()
-SerialPort = '/dev/tty.usbserial-A601KW2O'
+SerialPort = '/dev/ttyUSB0'
 CameraIP = '0.0.0.0'
-CameraPort = 80
-TelnetRoot = '/mnt/mmc'
+CameraPort = 9000
+DCIMRoot = '/mnt/mmc'
 ControllerIP = '192.168.0.18'
 ControllerPort = 5000
 
@@ -48,6 +58,7 @@ parser.add_argument('--mode', dest='mode', required=True, choices=['gentitle','g
 parser.add_argument('--filename', dest='filename', help='set filename')
 parser.add_argument('--noupload', dest='noupload', action='store_true', help='disable upload')
 parser.add_argument('--inline', dest='inline', action='store_true')
+parser.add_argument('--batch', dest='batch', type=int, default=1)
 args = parser.parse_args()
 upl = None
 
@@ -60,6 +71,52 @@ def initDb():
     cur.execute('CREATE TABLE pending (filename TEXT)')
     conn.commit()
     conn.close()
+
+def tcp(data):
+    def nbRecv(camSock):
+        accum = ''
+        while len(accum) < 6 or 'ENDEND' != accum[-6:]:
+            logger.debug("select entry")
+            while ([], [], []) != select.select([camSock.fileno()], [], [], 5.0):
+                logger.debug('select wake')
+                rx = camSock.recv(1000000)
+                logger.debug('rx %u bytes' % len(rx))
+                if '' == rx:
+                    break
+                accum += rx
+                time.sleep(.1)
+#                if 'ENDEND'  == accum[-6:]:
+#                    return accum[:-6]
+#            logger.warn('select timeout')
+        return accum[:-6]
+
+    try:
+        try:
+            logger.debug('creating socket')
+            camSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            logger.debug('created, connecting')
+            camSock.connect((CameraIP, CameraPort))
+            logger.debug('connected')
+        except:
+            logger.error("Connect failed")
+            camSock = None
+            return None
+
+        logger.debug("Connected, sending %s" % data)
+        try:
+            camSock.sendall(data.rstrip('\r\n'))
+            logger.debug("TCP Sent")
+        except:
+            return tcp(data)
+
+        data = nbRecv(camSock)
+        camSock.close()
+        return data
+
+    except:
+        logger.warn("TCP Socket Error")
+        raise RuntimeError("FATAL Socket")
+        return None
 
 def putUploadFile(filename):
     try:
@@ -125,6 +182,28 @@ def uploader():
 #    except:
 #        logger.error("HTTP upload fail") # , %s" % ee.message)
 
+def keepAlive():
+#    if (time.clock() - lastKeepAlive) < 20.0:
+#        return
+#    global lastKeepAlive
+#    lastKeepAlive = time.clock()
+    uheaders = {
+    'Host': '%s' % CameraIP,
+    'Connection': 'keep-alive',
+    'Accept': '*/*',
+    'X-Requested-With': 'XMLHttpRequest',
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Accept-Language': 'en-US,en;q=0.8'
+    }
+
+    hUrl = 'http://%s/api/v1/input/inject_keep_alive' % CameraIP
+    logger.debug("KeepAlive")
+    response = camSession.get(hUrl, timeout=CamTimeout, headers=uheaders)
+#    response = requests.get(url=hUrl, headers=uheaders)
+    logger.debug("KeepAlive Done")
+    if not response.ok:
+        logger.error("KeepAlive request failed")
+    
 def urlRetry(url, callback):
     retries = 3
     while retries:
@@ -162,88 +241,92 @@ def subclick(cmds):
         return False
     return True
 
-def transferPicture(dir, filename, telnet):
-    fileurl = ('/DCIM/%s/%s' % (dir, filename)).encode('ascii', 'ignore')
-    url = 'http://%s%s' % (CameraIP, fileurl)
-#    if False == urlRetry(url, lambda: camSession.get(url, timeout = CamTimeout)):
-#        return False
-    retries = 3
-    while retries:
-        try:
-            response = camSession.get(url, timeout=CamTimeout)
-            if 200 != response.status_code:
-                logger.error("Status %u getting %s" % (response.status, url))
-                return
-            logger.debug("Downloaded %s, %u bytes" % (fileurl, len(response.content)))
-            break
-        except Exception as ee:
-            logger.error("transferPicture fails, %s" % str(ee))
-            time.sleep(1)
-            retries -= 1
+#def telnetWait(telnet, waitFor):
+#    pdb.set_trace()
+#    tData = telnet.read_until(waitFor, 2000)
+#    if tData is None or len(tData) == 0:
+#        logger.error("telnet.read_until %s timeout [%s]" % (waitFor, tData))
+#        raise RuntimeError('telnetWait timeout')
+#
+#    return tData
 
-    if 0 == retries:
-        logger.error("Too many retries, giving up")
-        return False
+def transferPicture(dir, filename):
+    filename = "%s/DCIM/%s/%s" % (DCIMRoot, dir, filename)
+    content = tcp("txf %s" % filename)[:-6]
+    logger.debug('%s is %u bytes' % (filename, len(content)))
 
     if False == args.noupload:
         imgfile = tempfile.NamedTemporaryFile(delete = False, prefix='pcntl')
         imgname = imgfile.name
-        imgfile.write(response.content)
+        imgfile.write(content)
         imgfile.close()
         logger.debug("Wrote imagedata to %s" % imgname)
         putUploadFile(imgname)
         if args.inline:
             uploader()
 
-    logger.debug("Deleting %s/%s" % (TelnetRoot, fileurl))
-    telnet.write("rm %s/%s > /dev/null\n" % (TelnetRoot, fileurl))
-    logger.debug("read_until nx300")
-    tData = telnet.read_until('nx300:/#')
-    logger.debug('transferPicture end')
+    if 1 == args.batch:
+        logger.debug("Deleting %s" % filename)
+        tcp("cmd rm %s" % filename)
     return True
 
 
-def transferPictures(telnet):
+def transferPictures():
     logger.debug('transferPictures')
     numAvailable = 0
-    while numAvailable < 3:
+    while numAvailable < args.batch * 3:
         # wait for at least 3 available images
-        telnet.write("ls %s/DCIM/*/*.JPG | tail -3\n" % TelnetRoot)
-        tData = telnet.read_until('nx300:/#')
-        images = [ee for ee in tData.split('\r\n') if 'PHOTO/SAM' in ee]
+        time.sleep(0.5)
+        tData = tcp("cmd ls %s/DCIM/*/*.JPG\n" % DCIMRoot)
+        logger.debug("tData %s" % tData)
+        images = [ee for ee in tData.split('\n') if 'PHOTO/SAM' in ee]
         numAvailable = len(images)
 
     for image in images:
         ee = image.split('/')[-2:]
-        if False == transferPicture(ee[0], ee[1], telnet):
+        keepAlive()
+        time.sleep(10)
+        if False == transferPicture(ee[0], ee[1]):
             return False
     return True
 
-def doCycles(serial, telnet, numCycles):
-    def waitCardOps(telnet):
-        logger.debug("Waiting on card ops")
-        telnet.write('/mnt/mmc/moncard.sh\n')
-        rx = ''
-        while True:
-            rx += telnet.read_some()
-            logger.debug("rx %s" % rx)
-            if "Timeout" in rx:
-                break
-#        rx = telnet.read_until("Timeout")
-        logger.debug("moncard.sh returns %s" % rx)
-        if "Wait " in rx:
-            logger.error("Error waiting on SD card activity")
+def doCycles(serial, numCycles):
+#    def waitCardOpsTelnet(telnet):
+#        logger.debug("Waiting on card ops telnet")
+#        telnet.write('/mnt/mmc/moncard.sh\n')
+#        rx = ''
+#        while True:
+#            rx += telnet.read_some()
+#            logger.debug("rx %s" % rx)
+#            if "Timeout" in rx:
+#                break
+#        logger.debug("moncard.sh returns %s" % rx)
+#        if "Wait " in rx:
+#            logger.error("Error waiting on SD card activity")
+#
+#    def waitCardOpsTcp():
+#        logger.debug("Waiting on card ops TCP")
+#        result = tcp("/mnt/mmc/moncard.sh", ['Wait', 'Timeout'])
+#        if 'Timeout' in result:
+#            return True
+#        return False
 
+    for ii in xrange(1, numCycles + 1): #, args.batch):
+        logger.debug("Frame %u of %u" % (ii, args.cycles))
+        time.sleep(20)
+        keepAlive()
+        continue
 
-    for ii in xrange(1, numCycles + 1):
+#        for bb in xrange(1, args.batch):
         if serialWaitFor(serial, '{OIT:'):
             logger.debug("OIT")
             sys.exit(0)
-        logger.debug("Frame %u of %u" % (ii, args.cycles))
         serial.write('200a')
         if False == subclick(['down=Super_L','down=Super_R']):
             return ii
 
+#        if False == transferPictures():
+#            return ii
         now = time.clock() 
         while True == serial.getCTS():
             if (time.clock() - now) > 3.0:
@@ -253,8 +336,19 @@ def doCycles(serial, telnet, numCycles):
         if False == subclick(['up=Super_L','up=Super_R']):
             return ii
         serial.write('n')
-        if False == transferPictures(telnet):
-            return ii
+        transferPictures()
+        time.sleep(2)
+
+#        try:
+#            if False == (telnet):
+#                return ii
+#        except RuntimeError as ee:
+#            logger.error("RuntimeError %s" % str(ee))
+#            return ii
+
+#        if 1 != args.batch:
+#            logger.debug("Deleting mages")
+#            tcp("cmd rm %s/DCIM/*" % DCIMRoot)
 
     return ii
 
@@ -335,8 +429,8 @@ def getCameraIP():
     ipAddress = ''
     if response.ok:
         while True:
+            time.sleep(5)
             logger.debug("Waiting for router")
-            time.sleep(1)
             response = requests.get('http://192.168.0.1/wlanAccess.asp')
             if not response.ok:
                 continue
@@ -346,12 +440,20 @@ def getCameraIP():
                 logger.debug("Camera IP is %s" % ipAddress)
                 return ipAddress
 
-def waitForCamera(telnet):
+def waitForCamera():
     logger.debug("waitForCamera")
-    telnet.read_until('nx300:/#')
-    logger.debug("Deleting extraneous camera images")
-    telnet.write("rm -rf %s/DCIM/* > /dev/null\n" % TelnetRoot)
-    telnet.read_until('nx300:/#')
+    while None == tcp('cmd uname'):
+        time.sleep(1)
+
+#    logger.debug("Deleting extraneous camera images")
+#    if False == UseTcp:
+#        telnet.write("rm -rf %s/DCIM/* > /dev/null\n" % DCIMRoot)
+#        try:
+#            telnetWait(telnet, 'nx300:/#')
+#        except RuntimeError:
+#            return False
+#    else:
+#        result = tcp("cmd rm -rf %s/DCIM/*" % DCIMRoot)
 
     while True:
         time.sleep(3)
@@ -364,6 +466,11 @@ def waitForCamera(telnet):
             break
 
     logger.debug("Camera ready")
+
+def cameraOff(serPort):
+    logger.debug("Closing %s" % SerialPort)
+    serPort.write(b'TC')
+    serPort.close()
 
 def main():
     logger.debug("Init")
@@ -384,21 +491,22 @@ def main():
     if 'pipeline' != args.mode:
         return 1
 
-    def cameraOff(serPort):
-        logger.debug("Closing %s" % SerialPort)
-        serPort.write(b'TC')
-        serPort.close()
 
     numCycles = args.cycles
     doneCycles = 0
     while True:
+        global serPort
+        global serPort
         serPort = serial.Serial(SerialPort, 57600) # , timeout=1)
         logger.debug("Opening %s" % SerialPort)
         if serPort.isOpen():
             serPort.close()
 
         serPort.open()
-        portWaitFor(serPort, '{State:Ready}')
+        time.sleep(2)
+        serPort.write(' ')
+        #portWaitFor(serPort, '{State:Ready}')
+        portWaitFor(serPort, 'Reset')
         # Camera on, film type, autotension
         serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
         serPort.write('n')
@@ -410,11 +518,10 @@ def main():
 
         global CameraIP
         CameraIP = getCameraIP()
-        logger.debug("Establishing telnet connection")
-        telnet = telnetlib.Telnet(CameraIP)
-        waitForCamera(telnet)
+        waitForCamera()
+        
 
-        doneCycles += doCycles(serPort, telnet, numCycles - doneCycles)
+        doneCycles += doCycles(serPort, numCycles - doneCycles)
         if doneCycles >= numCycles:
             break
 
