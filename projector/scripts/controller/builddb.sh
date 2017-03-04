@@ -27,7 +27,7 @@ do
     echo $afile | while read container type filename
     do
 #        echo Container $container Type $type Filename $filename
-        (echo "INSERT INTO picdata (container,rawfile) values('"$container"','"$filename"');") >> $sqlfile
+        (echo "INSERT INTO picdata (processing,container,rawfile) values(0,'"$container"','"$filename"');") >> $sqlfile
     done
 done
 
