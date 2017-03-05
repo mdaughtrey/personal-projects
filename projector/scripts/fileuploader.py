@@ -2,7 +2,7 @@
 
 import requests
 import os
-#import time
+import time
 import pdb
 import socket
 import logging
@@ -33,7 +33,7 @@ args = parser.parse_args()
 
 
 def getFiles():
-    for file in glob.glob("%s/*.done" % args.dir):
+    for file in sorted(glob.glob("%s/*.done" % args.dir)):
         yield (file.replace("done", "jpg"), file)
 
 def markDone(filename):
@@ -52,8 +52,12 @@ def uploader():
            logger.debug("Uploaded %s" % hUrl)
            logger.debug("removing %s" % jpg)
            os.remove(done)
+           os.remove(jpg)
 
        except Exception as ee:
            logger.error("HTTP upload fail %s" % str(ee))
 
-uploader()
+while True:
+    uploader()
+    logger.debug("Sleeping");
+    time.sleep(60)
