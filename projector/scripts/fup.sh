@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./fileuploader.py --dir ~/Documents/CamTemp
+./fileuploader.py --dir /home/mattd/cam/images
