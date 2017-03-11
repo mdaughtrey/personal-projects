@@ -2,9 +2,11 @@ import sqlite3
 import os
 import pdb
 import threading
+import mutex
 
 class ProjectStore():
     FilesPerContainer = 999
+    mtxMakeDirs = threading.Lock()
     def __init__(self, logger, dblocation = './', overwrite = False):
         self._dbroot = dblocation
 #        self._conn = None
@@ -122,7 +124,20 @@ class ProjectStore():
         self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
                 % (filename, container, filename))
 
+    def getRemaining(self, project, ptype):
+        statement = '''SELECT COUNT(*) FROM picdata WHERE %s = NULL;''' % ptype
+        with self._dbLock:
+            conn = self._openDb(project)
+            cursor = conn.cursor()
+            cursor.execute(statement)
+            result = cursor.fetchall()
+            conn.close()
+        return result[0][0]
+
     def toBeAutocropped(self, projectname, limit):
+        # don't offer any files unless all precropped is complete
+        if 0 != self.getRemaining(projectname, 'precrop'):
+            return []
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
                  WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
                  ORDER BY container,precrop LIMIT %s;''' % limit
@@ -141,6 +156,9 @@ class ProjectStore():
         self._logger.warning("TODO abortAutocrop")
 
     def toBeFused(self, project, limit):
+        # don't offer any files unless all autocropped is complete
+        if 0 != self.getRemaining(project, 'autocrop'):
+            return []
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,autocrop FROM picdata
                  WHERE autocrop IS NOT NULL AND fused IS NULL AND processing != 1
                  ORDER BY container,autocrop LIMIT %s;''' % limit
@@ -177,8 +195,10 @@ class ProjectStore():
             containers = cursor.fetchall()
             if 0 == len(containers): # New project
                 contDir = "%s/%s/100" % (self._dbroot, project)
+                ProjectStore.mtxMakeDirs.acquire()
                 if False == os.path.isdir(contDir):
                     os.makedirs(contDir)
+                ProjectStore.mtxMakeDirs.release()
                 return "100", "000000.JPG"
 
             containers.sort()
@@ -198,12 +218,17 @@ class ProjectStore():
             newContainer = int(containers[-1][0])
 
         newDir = "%s/%s/%u" % (self._dbroot, project, newContainer)
+        ProjectStore.mtxMakeDirs.acquire()
         if False == os.path.isdir(newDir):
             os.makedirs(newDir)
+        ProjectStore.mtxMakeDirs.release()
         self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
         return "%03u" % int(newContainer), "%06u.JPG" % newFile
 
     def getVideoChunkStatus(self, project):
+        # don't make any chunks available until all fusing is done
+        if 0 != self.getRemaining(project, 'fused'):
+            return [], []
         with self._dbLock:
             conn = self._openDb(project)
             cursor = conn.cursor()

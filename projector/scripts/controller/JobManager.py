@@ -12,7 +12,7 @@ def trampoline(object):
     object._logger.debug("workerManager ends")
 
 class JobManager():
-    PrecropGeometry="2912x1988+200+212"
+    PrecropGeometry="2912x2200+200+0"
     JobLimit = 4 
 #    WorkerManagerControl = False # True # 'Off'
     DisablePrecrop = False
@@ -26,7 +26,7 @@ class JobManager():
             "ac": self._scheduleAutocrop,
             "tf": self._scheduleTonefuse,
             "gt": self._scheduleGenTitle,
-            "gc": self._scheduleGenChunk }
+            "gc": self._scheduleGenContent }
 
         for task in tasks:
             try:
@@ -48,7 +48,7 @@ class JobManager():
 #            self._scheduleAutocrop,
 #            self._scheduleTonefuse,
 #            self._scheduleGenTitle,
-#            self._scheduleGenChunk]
+#            self._scheduleGenContent]
 #
         if 'disable' == self._config.jobmode: # JobManager.WorkerManagerControl:
             return
@@ -127,15 +127,15 @@ class JobManager():
         self._generateTitles = False
         return 1    
 
-    def _scheduleGenChunk(self, freeWorkers):
+    def _scheduleGenContent(self, freeWorkers):
         chunks, processed = self._pstore.getVideoChunkStatus(self._config.project)
         todo = [ee.encode('ascii', 'ignore') for ee in chunks if ee not in processed]
         if 0 == len(todo):
             return 0
         if 'inline' == self._config.jobmode: 
-            self._vmGenChunk(self._config.project, self._root, todo[0])
+            self._vmGenContent(self._config.project, self._root, todo[0])
         else:
-            self._workers.append(Process(target = self._vmGenChunk,
+            self._workers.append(Process(target = self._vmGenContent,
                 args = (self._config.project, self._root, todo[0])))
             self._workers[-1].start()
         return 1    
@@ -199,7 +199,7 @@ class JobManager():
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputdir = self._fileman.getAutocropDir(project, container)
-        jobargs = ('../autocrop.py', '--filenames',
+        jobargs = ('../autocrop.py', '-s', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
             '--mode', self._config.film,
             '--output-dir', outputdir)
@@ -248,9 +248,9 @@ class JobManager():
         retcode = subprocess.call(jobargs)
         return retcode
 
-    def _vmGenChunk(self, project, root, container):
+    def _vmGenContent(self, project, root, container):
         self._pstore.markChunkProcessing(project, container)
-        jobargs = ('../gencontent.sh', '-p', project, '-r', root, '-c', container)
+        jobargs = ('../gencontent.sh', '-p', project, '-r', root)
         retcode = subprocess.call(jobargs)
         if 0 == retcode:
             self._pstore.markChunkProcessed(project, container)

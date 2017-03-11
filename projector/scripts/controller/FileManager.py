@@ -1,7 +1,9 @@
 import os
 import pdb
+from threading import Lock
 
 class FileManager():
+    mtxGetDir = Lock()
     def __init__(self, logger, fileroot = './'):
         self._logger = logger
         self._fileRoot = fileroot
@@ -10,9 +12,11 @@ class FileManager():
 
     def _getdir(self, project, container, dirname):
         targetDir = "%s/%s/%s/%s" % (self._fileRoot, project, container, dirname)
+        FileManager.mtxGetDir.acquire()
         if False == os.path.isdir(targetDir):
             self._logger.debug("Creating %s" % targetDir)
             os.makedirs(targetDir)
+        FileManager.mtxGetDir.release()
         return targetDir
 
     def newFile(self, fileData, project, container, filename):

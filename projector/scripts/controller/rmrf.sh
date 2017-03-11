@@ -6,7 +6,7 @@ container=$2
 filename=`printf '%06u.JPG' $3`
 sqlfile=/var/tmp/rfpc.sql
 
-fullfile=$SCANBASE/$project/$container/precrop/$filename 
+fullfile=$SCANBASE/$project/$container/rawfile/$filename 
 
 if [[ -f "$fullfile" ]]
 then
@@ -15,7 +15,7 @@ fi
 
 projbase=${SCANBASE}/${project}
 cat << SELECT > $sqlfile
-DELETE FROM picdata WHERE container='$container' AND precrop='$filename';
+DELETE FROM picdata WHERE container='$container' AND rawfile='$filename';
 SELECT
 
 #cat $sqlfile

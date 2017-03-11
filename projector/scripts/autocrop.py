@@ -18,22 +18,39 @@ import logging
 from logging.handlers import RotatingFileHandler
 import cv2
 from cv2 import matchTemplate as cv2m
-
-greyed_dir = {True:'greyed', False: None}[os.path.isdir('greyed')]
-bw_dir = {True:'bw', False: None}[os.path.isdir('bw')]
-corner_dir = {True:'corner', False: None}[os.path.isdir('corner')]
-sprockets_dir = {True:'sprockets', False: None}[os.path.isdir('sprockets')]
-eroded_dir = {True:'eroded', False: None}[os.path.isdir('eroded')]
+from collections import namedtuple
+from operator import mul
 
 options = {}
-arrToFind = None
+
+parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
+parser.add_option('-s', '--debug', dest='debug', help='Save intermediary images', action='store_true')
+parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
+parser.add_option('-w', '--whitecount', dest='whitecount', action='store_true', default=False)
+parser.add_option('-i', '--input-dir', dest='inputdir')
+parser.add_option('-o', '--output-dir', dest='outputdir')
+parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, comma separated')
+parser.add_option('-m','--mode', dest='mode', default='8mm')
+parser.add_option('-l','--listfile', dest='listfile', help='file containing list of triplets')
+
+(options, args) = parser.parse_args()
+
+
+greyed_dir = {True:'greyed', False: None}[os.path.isdir('%s/greyed' % options.outputdir)]
+bw_dir = {True:'bw', False: None}[os.path.isdir('%s/bw' % options.outputdir)]
+corner_dir = {True:'corner', False: None}[os.path.isdir('%s/corner' % options.outputdir)]
+sprockets_dir = {True:'sprockets', False: None}[os.path.isdir('%s/sprockets' % options.outputdir)]
+eroded_dir = {True:'eroded', False: None}[os.path.isdir('%s/eroded' % options.outputdir)]
+
+#arrToFind = None
 
 FrameHeightMm = 3.3
 FrameWidthMm = 4.5
 SprocketSuper8 = (1.14, .91) # H, W
 Sprocket8mm = (1.27, 1.83) # H, W
 #PxPerMm8mm = 380
-#PxPerMmSuper8 = 393
+PxPerMmSuper8 = 398
+Info = namedtuple('Info', 'start height')
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(message)s')
 logger = logging.getLogger('autocrop')
@@ -41,24 +58,79 @@ fileHandler = RotatingFileHandler(filename='/tmp/autocrop_%u.log' % os.getpid(),
 fileHandler.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
-def whiteCount(filename):
-    imp = PILImage.open(filename).convert('L')
-    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
-    (height, width) = im.shape
+#def whiteCount(filename):
+#    imp = PILImage.open(filename).convert('L')
+#    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
+#    (height, width) = im.shape
+#
+#    im[im < 100] = 0
+#    im[im >= 100] = 255
+#
+#    whiteCount = numpy.count_nonzero(im)
+#    index = whiteCount / (height * width)
+#
+#    print "%s: Total %u white %u index %f" % (filename, height * width, whiteCount, index)
 
-    im[im < 100] = 0
-    im[im >= 100] = 255
+def findLargestRect(mat, value=0):
+    """Find height, width of the largest rectangle containing all `value`'s."""
+    it = iter(mat)
+    rowIdx = 1
+    endRow = 0
+    endCol = 0
+    hist = [(el==value) for el in next(it, [])]
+    max_size, endCol = maxRect(hist)
+    for row in it:
+        hist = [(1+h) if el == value else 0 for h, el in zip(hist, row)]
+        this_size, thisEnd = maxRect(hist)
+        #print "row %u this_size %s thisEnd %u" % (rowIdx, this_size, thisEnd)
+        if area(this_size) > area(max_size):
+            max_size = this_size
+            endRow = rowIdx
+            endCol = thisEnd
+        rowIdx += 1
+    return max_size, (endRow, endCol)
 
-    whiteCount = numpy.count_nonzero(im)
-    index = whiteCount / (height * width)
+def maxRect(histogram):
+    """Find height, width of the largest rectangle that fits entirely under
+    the histogram."""
+    stack = []
+    top = lambda: stack[-1]
+    max_size = (0, 0) # height, width of the largest rectangle
+    pos = 0 # current position in the histogram
+    endCol = 0
+    for pos, height in enumerate(histogram):
+        start = pos # position where rectangle starts
+        while True:
+            if not stack or height > top().height:
+                stack.append(Info(start, height)) # push
+            elif stack and height < top().height:
+                thisArea = (top().height, pos - top().start)
+                if area(thisArea) > area(max_size):
+                    endCol = pos
+                    max_size = thisArea
+                start, _ = stack.pop()
+                continue
+            break # height == top().height goes here
 
-    print "%s: Total %u white %u index %f" % (filename, height * width, whiteCount, index)
+    pos += 1
+    for start, height in stack:
+        max_size = max(max_size, (height, (pos - start)), key=area)    
+#    if 0 == endCol: endCol = len(histogram)
+    return max_size, endCol - 1
+
+def area(size):
+    return reduce(mul, size)
+
+def findSuper8Sprocket4(image):
+    info = findLargestRect(image, 255)
+    return info[1]
 
 def findSuper8Sprocket3(image, filename):
-    matches = cv2m(image, arrToFind, cv2.TM_SQDIFF)
+    #arrToFind = scipy.ones((300,200), numpy.uint8)
+    #arrToFind = scipy.ones((400,300), numpy.uint8)
+    arrToFind = scipy.ones((100,100), numpy.uint8)
+    matches = cv2m(image, arrToFind, cv2.TM_CCOEFF)
     (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches)
-    if minLoc[0] < maxLoc[0]:
-        return minLoc
     return maxLoc
 
 def findSuper8Sprocket2(image, filename):
@@ -113,7 +185,7 @@ def findSuper8Sprocket(image, filename):
             imaged.line((offset, row, offset + value, row), fill=96)
 
         logger.debug("Saved %s/%s" % ((sprockets_dir, os.path.basename(filename))))
-        image.save('%s/%s' % (sprockets_dir, os.path.basename(filename)))
+        image.save('%s/%s/%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)))
 
     # candidateRows contain white areas that could be a sprocket
     candidateRows = {kk for kk, vv in fromRight.iteritems() if vv > 100}
@@ -146,59 +218,62 @@ def findSuper8Sprocket(image, filename):
 
 def processSuper8(filenames, outputpath):
     files = filenames.split(',')
-    # Select the midrange image for figuring out the cropping
-    filename = files[1]
     if 3 != len(files):
         logger.error("Need three filenames")
         sys.exit(1)
 
-    if options.whitecount:
-        for file in filenames:
-            whiteCount(file)
+#    if options.whitecount:
+#        for file in filenames:
+#            whiteCount(file)
 
-    ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
-    if [True, True, True] == ofiles:
-        logger.debug("Output files already exist for %s" % filenames)
-        return
-
+    # Select the brightest image for figuring out the cropping
+    filename = files[1]
+#    ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
+#    if [True, True, True] == ofiles:
+#        logger.debug("Output files already exist for %s" % filenames)
+#        return
+#    pdb.set_trace()
     imp = PILImage.open(filename).convert('L')
-    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
+    flattened = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
     #(fcWidth, fcHeight) = im.shape
-    (fcHeight, fcWidth) = im.shape
+    (fcHeight, fcWidth) = flattened.shape
     #im = im[:,:400]
-    im = im[:,:600]
-    im1 = ndimage.grey_erosion(im, size=(25, 25))
+    flattened = flattened[:,:350]
+#    flattened = flattened[700:,:350]
+#    flattened = flattened[:700,:]
+    eroded = ndimage.grey_erosion(flattened, size=(25, 25))
 
-    im1[im1 < 100] = 0
-    im1[im1 >= 100] = 255
+    eroded[eroded < 128] = 0
+    eroded[eroded >= 128] = 255
+    eroded[:,-1] = 0
+#    pdb.set_trace()
     if options.debug and eroded_dir is not None:
-        scipy.misc.imsave('eroded/%s' % os.path.basename(filename), im1)
+        scipy.misc.imsave('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
-    #pxPerMm = 369
-    pxPerMm = 378
-    im1Image = scipy.misc.toimage(im1)
-    #(spLeftX, spCenterY) = findSuper8Sprocket3(im1Image, filename)
-    (spLeftX, spCenterY) = findSuper8Sprocket3(im1, filename)
-    #pdb.set_trace()
-    spCenterY += (SprocketSuper8[0] * pxPerMm / 2 )
-    logger.debug( "%s leftX %u centerY %u" % (filename, spLeftX, spCenterY))
-    if (0, 0) == (spLeftX, spCenterY):
-        logger.error("Cannot process %s" % filename)
-        return
+# super8 sprocket size 0.91W 1.14H centered
+# 8mm sprocket size 1.8W 1.23H between
+    #imEroded = scipy.misc.toimage(eroded)
+#    pdb.set_trace()
+    ((rectH, rectW), (spBottomY, spRightX)) = findLargestRect(eroded, 255)
+    
+   # (spBottomY, spRightX) = findSuper8Sprocket4(eroded)
+    spCenterY = ((spBottomY - rectH / 2)) #  + 700) # * PxPerMmSuper8) + 700
+    #spCenterY = ((spBottomY - rectH / 2)) # * PxPerMmSuper8) + 700
+    logger.debug("%s spRightX %u spCenterY %u" % (filename, spRightX, spCenterY))
+#    if (0, 0) == (spLeftX, spCenterY):
+#        logger.error("Cannot process %s" % filename)
+#        return
 
-    frameOriginX = int(spLeftX + ((.8 + .1) * pxPerMm))
-    frameOriginY = int(spCenterY - (2.015 * pxPerMm))
-
-    # FUDGE FACTOR for misaligned images
-    #frameOriginY -= (122  + (.455 * pxPerMm))
-    frameOriginY -= ((.465 * pxPerMm) - 200)
-#    frameOriginX -= 80
-
-    frameWidth = int(5.7 * pxPerMm)
-    frameHeight = int(4.11 * pxPerMm)
-
+    frameWidth = int(5.82 * PxPerMmSuper8)
     if frameWidth % 2 == 1:
         frameWidth += 1
+    frameHeight = int(4.11 * PxPerMmSuper8)
+
+    frameOriginX = int((spRightX - rectW) + ((0.91 + .05) * PxPerMmSuper8))
+    frameOriginY = int(spCenterY - frameHeight/ 2)
+
+    logger.debug("frame X %u Y %u W %u H %u" % (frameOriginX, frameOriginY, frameWidth, frameHeight))
+
     # crop and save
     if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
         logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
@@ -206,13 +281,13 @@ def processSuper8(filenames, outputpath):
 
     if options.debug and bw_dir is not None:
         bwd = ImageDraw.Draw(imp)
-        bwd.line((spLeftX, spCenterY, fcWidth, spCenterY), fill=0)
-        bwd.line((spLeftX, spCenterY - (2.015 * pxPerMm),
-            spLeftX, spCenterY + (2.015 * pxPerMm)), fill = 0)
+        bwd.line((0, spCenterY, 600, spCenterY), fill=0)
+        bwd.line((spRightX, spCenterY - (2.015 * PxPerMmSuper8),
+            spRightX, spCenterY + (2.015 * PxPerMmSuper8)), fill = 0)
         bwd.rectangle((frameOriginX, frameOriginY,
             frameOriginX + frameWidth,
             frameOriginY + frameHeight), fill=192)
-        imp.save('%s/%s' % (bw_dir, os.path.basename(filename)))
+        imp.save('%s/%s/%s' % (options.outputdir, bw_dir, os.path.basename(filename)))
 
     for iFile in files:
         try:
@@ -288,7 +363,7 @@ def find8mmSprocket(image, filename):
             imaged.line((offset, row, offset + value, row), fill=96)
 
         logger.debug("Saved %s/%s" % ((sprockets_dir, os.path.basename(filename))))
-        image.save('%s/%s' % (sprockets_dir, os.path.basename(filename)))
+        image.save('%s/%s/%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)))
 
     whiteRows = {kk for kk, vv in fromLeft.iteritems() if vv < (imX - 50)}
     whiteRanges = []
@@ -379,9 +454,9 @@ def process8mm(filenames, outputpath):
         logger.debug("Output files aready exist for %s" % filenames)
         return
 
-    if options.whitecount:
-        for file in filenames:
-            whiteCount(file)
+#    if options.whitecount:
+#        for file in filenames:
+#            whiteCount(file)
 
     imp = PILImage.open(filename).convert('L')
     im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
@@ -394,7 +469,7 @@ def process8mm(filenames, outputpath):
     im1[im1 < 100] = 0
     im1[im1 >= 100] = 255
     if options.debug and eroded_dir is not None:
-        scipy.misc.imsave('eroded/%s' % os.path.basename(filename), im1)
+        scipy.misc.imsave('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), im1)
 
     im1Image = scipy.misc.toimage(im1)
     (spLeftX, spCenterY) = find8mmSprocket(im1Image, filename)
@@ -430,7 +505,7 @@ def process8mm(filenames, outputpath):
         bwd.rectangle((frameOriginX, frameOriginY,
             frameOriginX + frameWidth,
             frameOriginY + frameHeight), fill=192)
-        imp.save('%s/%s' % (bw_dir, os.path.basename(filename)))
+        imp.save('%s/%s/%s' % (options.outputdir, bw_dir, os.path.basename(filename)))
 
     for iFile in files:
         try:
@@ -443,26 +518,29 @@ def process8mm(filenames, outputpath):
             logger.error("Did not save %s/%s" % (outputpath, os.path.basename(iFile)))
 
 def main():
-    global options
-    global arrToFind
-    parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
-    parser.add_option('-s', '--debug', dest='debug', help='Save intermediary images', action='store_true')
-    parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
-    parser.add_option('-w', '--whitecount', dest='whitecount', action='store_true', default=False)
-    parser.add_option('-i', '--input-dir', dest='inputdir')
-    parser.add_option('-o', '--output-dir', dest='outputdir')
-    parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, comma separated')
-    parser.add_option('-m','--mode', dest='mode', default='8mm')
-    parser.add_option('-l','--listfile', dest='listfile', help='file containing list of triplets')
-
-    (options, args) = parser.parse_args()
-
+#    global options
+#    global arrToFind
+#    parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
+#    parser.add_option('-s', '--debug', dest='debug', help='Save intermediary images', action='store_true')
+#    parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
+#    parser.add_option('-w', '--whitecount', dest='whitecount', action='store_true', default=False)
+#    parser.add_option('-i', '--input-dir', dest='inputdir')
+#    parser.add_option('-o', '--output-dir', dest='outputdir')
+#    parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, comma separated')
+#    parser.add_option('-m','--mode', dest='mode', default='8mm')
+#    parser.add_option('-l','--listfile', dest='listfile', help='file containing list of triplets')
+#
+#    (options, args) = parser.parse_args()
+#
     if options.mode not in ('8mm', 'super8'):
         logger.error("Invalid sprocket option %s" % options.sprocket)
         sys.exit(1)
 
     imgToFind = PILImage.open('%s/tofind.jpg' % os.path.dirname(os.path.abspath(__file__))).convert('L')
-    arrToFind = scipy.misc.fromimage(imgToFind, flatten = True).astype(numpy.uint8)
+#    arrToFind = scipy.misc.fromimage(imgToFind, flatten = True).astype(numpy.uint8)
+    #arrToFind = arrToFind[:300,:220]
+#    arrToFind = arrToFind[:50,:50]
+
     #arrFindIn[arrFindIn < 100] = 0
     #arrFindIn[arrFindIn >= 100] = 255
 
