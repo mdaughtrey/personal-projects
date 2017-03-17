@@ -8,8 +8,20 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 //#define READY2
 
+// -4: PC2 Rewind
+// 11: PD6 Reset
+//  8: PB0 Pretension
+//  4: PB4 Next
+#define PC_REWIND 2
+#define PD_RESET 6
+#define PB_PRETENSION 0
+#define PB_NEXT 4
+u08 pbState = 0;
+u08 pcState = 0;
+u08 pdState = 0;
+
 //#define PB_CAMERABUSY 0
-#define PB_SHUTTERREADY 0
+//#define PB_SHUTTERREADY 0
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
 #define PB_SIGTRIPLE 5
@@ -18,7 +30,8 @@
 #define PC_OPTOINT 1 // PC1
 #define PC_SHUTTER 2
 
-#define PD_CAMERAPOWER 7
+//#define PD_CAMERAPOWER 7
+#define PD_SHUTTERREADY 7
 #define OPTOINT_TIMEOUT 3000
 
 #define MOTOR_PRETENSION_NEXT 40 
@@ -36,10 +49,13 @@
 #define LAMP_OFF PORTB &= ~_BV(PB_LAMP)
 #define LAMP_ON PORTB |= _BV(PB_LAMP)
 
-#define SHUTTER_READY PINB & _BV(PB_SHUTTERREADY)
+//#define SHUTTER_READY PINB & _BV(PB_SHUTTERREADY)
+#define SHUTTER_READY PIND & _BV(PD_SHUTTERREADY)
 #define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
-#define CAMERA_ON PORTD |= _BV(PD_CAMERAPOWER);
-#define CAMERA_OFF PORTD &= ~_BV(PD_CAMERAPOWER);
+//#define CAMERA_ON PORTD |= _BV(PD_CAMERAPOWER);
+//#define CAMERA_OFF PORTD &= ~_BV(PD_CAMERAPOWER);
+#define CAMERA_ON 
+#define CAMERA_OFF 
 #define SHUTTERINT_ON { PCMSK2 |= _BV(PCINT22); PCICR |= _BV(PCIE2); }
 #define SHUTTERINT_OFF { PCMSK2 &= ~_BV(PCINT22); PCICR &= ~_BV(PCIE2); }
 #define RESETSIG_TRIPLE { PORTB &= ~_BV(PB_SIGTRIPLE); }
@@ -106,6 +122,7 @@ u08 waitingFor(NONE);
 u08 lastCommand;
 u16 frameCount;
 u08 filmMode = FILM_NONE;
+u08 srState = 0;
 
 #ifdef USEFRAM
 Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
@@ -317,12 +334,14 @@ void setup ()
 { 
     Serial.begin(57600);
     Serial.println("Init Start");
-    PORTC |= _BV(PC_OPTOINT); // tie opt int sensor line hight
+    PORTC |= _BV(PC_OPTOINT) | _BV(PC_REWIND); // tie opt int sensor line hight
+    PORTB |= _BV(PB_PRETENSION) | _BV(PB_NEXT);
+    PORTD |= _BV(PD_RESET);
 
     analogWrite(PIN_MOTOR, MOTOR_OFF);
     PORTC |= _BV(PC_SHUTTER) | _BV(PC_TENSIONSENSOR);
-    PORTD |= _BV(PD_CAMERAPOWER);
-    DDRD |= _BV(PD_CAMERAPOWER);
+//    PORTD |= _BV(PD_CAMERAPOWER);
+//    DDRD |= _BV(PD_CAMERAPOWER);
     DDRB |= _BV(PB_LAMP) | _BV(PB_SIGTRIPLE);
     DDRC |= _BV(PC_SHUTTER);
     CAMERA_OFF;
@@ -348,10 +367,35 @@ void setup ()
 u08 lastReportedState(255);
 #endif // LOGSTATE
 
+bool buttonTest(u08 pins, u08 * state, u08 testBit)
+{
+    if (!(pins & _BV(testBit)))
+    {
+        if (*state & _BV(testBit))
+        { 
+            *state &= ~_BV(testBit);
+            return true;
+        }
+        return false;
+    }
+    *state |= _BV(testBit); 
+    return false;
+}
+
 void loop ()
 {
+    u08 sState = SHUTTER_READY;
+    if (srState != sState)
+    {
+        if (sState && 0 == lampTimeout) { lampOn(); }
+        if (!sState) { lampOff(); }
+        srState = sState;
+    }
+
+//    if (SHUTTER_READY) { lampOn(); }
+//    else { lampOff(); }
     stepperPoll();
-    lampCheck();
+    //lampCheck();
 
     switch (waitingFor)
     {
@@ -590,12 +634,13 @@ void loop ()
             break;
     }
 
-    if (!Serial.available())
-    {
-        return;
-    }
+    if (buttonTest(PINB, &pbState, PB_PRETENSION)) lastCommand = 't'; // Serial.println("Pretension");
+    else if (buttonTest(PINB, &pbState, PB_NEXT)) lastCommand = 'n'; // Serial.println("Next");
+    else if (buttonTest(PINC, &pcState, PC_REWIND)) lastCommand = 'r'; // Serial.println("Rewind");
+    else if (buttonTest(PIND, &pdState, PD_RESET)) lastCommand = ' '; // Serial.println("Reset");
+    else if (Serial.available()) lastCommand = Serial.read();
+    else return;
 
-    lastCommand = Serial.read();
     u16 ii;
     switch (lastCommand)
     {

@@ -46,7 +46,8 @@ TARGET=projector
 #
 # $Id$
 
-PORT=/dev/tty.usbserial-A601KW2O
+#PORT=/dev/tty.usbserial-A601KW2O
+PORT=/dev/ttyUSB0
 #PORT=/dev/tty.usbserial-A601KVL0
 
 ARDUINO = ../core/
