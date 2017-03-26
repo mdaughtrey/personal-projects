@@ -150,11 +150,7 @@ genyuvstream()
     fi
     ls $titleroot/title*.JPG | sort -n > $titleroot/titlelist.txt
 	options="-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub -vo yuv4mpeg" 
-<<<<<<< HEAD
     cropoptions="-vf scale=1920:1080"
-=======
-    cropoptions="-vf scale=800:600"
->>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
    	mplayer -lavdopts threads=`nproc` mf://@$titleroot/titlelist.txt $cropoptions ${options}:file=$titleroot/titles.yuv
 }
 
@@ -167,10 +163,4 @@ converttoavi()
     cat $titleroot/titles.yuv | yuvfps -v 0 -r 18:1 -v 1 | avconv -loglevel info -i - -vcodec rawvideo -y $titleroot/titles.avi
 }
 
-<<<<<<< HEAD
-#converttoavi
 gentitles
-=======
-converttoavi
->>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
-
