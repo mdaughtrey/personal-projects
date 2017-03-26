@@ -18,6 +18,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import cv2
 from cv2 import matchTemplate as cv2m
+<<<<<<< HEAD
 from collections import namedtuple
 from operator import mul
 
@@ -43,14 +44,30 @@ sprockets_dir = {True:'sprockets', False: None}[os.path.isdir('%s/sprockets' % o
 eroded_dir = {True:'eroded', False: None}[os.path.isdir('%s/eroded' % options.outputdir)]
 
 #arrToFind = None
+=======
+
+greyed_dir = {True:'greyed', False: None}[os.path.isdir('greyed')]
+bw_dir = {True:'bw', False: None}[os.path.isdir('bw')]
+corner_dir = {True:'corner', False: None}[os.path.isdir('corner')]
+sprockets_dir = {True:'sprockets', False: None}[os.path.isdir('sprockets')]
+eroded_dir = {True:'eroded', False: None}[os.path.isdir('eroded')]
+
+options = {}
+arrToFind = None
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 
 FrameHeightMm = 3.3
 FrameWidthMm = 4.5
 SprocketSuper8 = (1.14, .91) # H, W
 Sprocket8mm = (1.27, 1.83) # H, W
+<<<<<<< HEAD
 PxPerMm8mm = 454
 PxPerMmSuper8 = 398
 Info = namedtuple('Info', 'start height')
+=======
+#PxPerMm8mm = 380
+#PxPerMmSuper8 = 393
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(message)s')
 logger = logging.getLogger('autocrop')
@@ -58,6 +75,7 @@ fileHandler = RotatingFileHandler(filename='/tmp/autocrop_%u.log' % os.getpid(),
 fileHandler.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
+<<<<<<< HEAD
 #def whiteCount(filename):
 #    imp = PILImage.open(filename).convert('L')
 #    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
@@ -131,6 +149,26 @@ def findSuper8Sprocket3(image, filename):
     arrToFind = scipy.ones((100,100), numpy.uint8)
     matches = cv2m(image, arrToFind, cv2.TM_CCOEFF)
     (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches)
+=======
+def whiteCount(filename):
+    imp = PILImage.open(filename).convert('L')
+    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
+    (height, width) = im.shape
+
+    im[im < 100] = 0
+    im[im >= 100] = 255
+
+    whiteCount = numpy.count_nonzero(im)
+    index = whiteCount / (height * width)
+
+    print "%s: Total %u white %u index %f" % (filename, height * width, whiteCount, index)
+
+def findSuper8Sprocket3(image, filename):
+    matches = cv2m(image, arrToFind, cv2.TM_SQDIFF)
+    (minVal, maxVal, minLoc, maxLoc) = cv2.minMaxLoc(matches)
+    if minLoc[0] < maxLoc[0]:
+        return minLoc
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
     return maxLoc
 
 def findSuper8Sprocket2(image, filename):
@@ -185,7 +223,11 @@ def findSuper8Sprocket(image, filename):
             imaged.line((offset, row, offset + value, row), fill=96)
 
         logger.debug("Saved %s/%s" % ((sprockets_dir, os.path.basename(filename))))
+<<<<<<< HEAD
         image.save('%s/%s/%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)))
+=======
+        image.save('%s/%s' % (sprockets_dir, os.path.basename(filename)))
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 
     # candidateRows contain white areas that could be a sprocket
     candidateRows = {kk for kk, vv in fromRight.iteritems() if vv > 100}
@@ -218,10 +260,16 @@ def findSuper8Sprocket(image, filename):
 
 def processSuper8(filenames, outputpath):
     files = filenames.split(',')
+<<<<<<< HEAD
+=======
+    # Select the midrange image for figuring out the cropping
+    filename = files[1]
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
     if 3 != len(files):
         logger.error("Need three filenames")
         sys.exit(1)
 
+<<<<<<< HEAD
     # Select the brightest image for figuring out the cropping
     filename = files[1]
     imp = PILImage.open(filename).convert('L')
@@ -254,6 +302,55 @@ def processSuper8(filenames, outputpath):
 
     logger.debug("frame X %u Y %u W %u H %u" % (frameOriginX, frameOriginY, frameWidth, frameHeight))
 
+=======
+    if options.whitecount:
+        for file in filenames:
+            whiteCount(file)
+
+    ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
+    if [True, True, True] == ofiles:
+        logger.debug("Output files already exist for %s" % filenames)
+        return
+
+    imp = PILImage.open(filename).convert('L')
+    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
+    #(fcWidth, fcHeight) = im.shape
+    (fcHeight, fcWidth) = im.shape
+    #im = im[:,:400]
+    im = im[:,:600]
+    im1 = ndimage.grey_erosion(im, size=(25, 25))
+
+    im1[im1 < 100] = 0
+    im1[im1 >= 100] = 255
+    if options.debug and eroded_dir is not None:
+        scipy.misc.imsave('eroded/%s' % os.path.basename(filename), im1)
+
+    #pxPerMm = 369
+    pxPerMm = 378
+    im1Image = scipy.misc.toimage(im1)
+    #(spLeftX, spCenterY) = findSuper8Sprocket3(im1Image, filename)
+    (spLeftX, spCenterY) = findSuper8Sprocket3(im1, filename)
+    #pdb.set_trace()
+    spCenterY += (SprocketSuper8[0] * pxPerMm / 2 )
+    logger.debug( "%s leftX %u centerY %u" % (filename, spLeftX, spCenterY))
+    if (0, 0) == (spLeftX, spCenterY):
+        logger.error("Cannot process %s" % filename)
+        return
+
+    frameOriginX = int(spLeftX + ((.8 + .1) * pxPerMm))
+    frameOriginY = int(spCenterY - (2.015 * pxPerMm))
+
+    # FUDGE FACTOR for misaligned images
+    #frameOriginY -= (122  + (.455 * pxPerMm))
+    frameOriginY -= ((.465 * pxPerMm) - 200)
+#    frameOriginX -= 80
+
+    frameWidth = int(5.7 * pxPerMm)
+    frameHeight = int(4.11 * pxPerMm)
+
+    if frameWidth % 2 == 1:
+        frameWidth += 1
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
     # crop and save
     if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
         logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
@@ -261,6 +358,7 @@ def processSuper8(filenames, outputpath):
 
     if options.debug and bw_dir is not None:
         bwd = ImageDraw.Draw(imp)
+<<<<<<< HEAD
         bwd.line((0, spCenterY, 600, spCenterY), fill=0)
         bwd.line((spRightX, spCenterY - (2.015 * PxPerMmSuper8),
             spRightX, spCenterY + (2.015 * PxPerMmSuper8)), fill = 0)
@@ -268,6 +366,15 @@ def processSuper8(filenames, outputpath):
             frameOriginX + frameWidth,
             frameOriginY + frameHeight), fill=192)
         imp.save('%s/%s/%s' % (options.outputdir, bw_dir, os.path.basename(filename)))
+=======
+        bwd.line((spLeftX, spCenterY, fcWidth, spCenterY), fill=0)
+        bwd.line((spLeftX, spCenterY - (2.015 * pxPerMm),
+            spLeftX, spCenterY + (2.015 * pxPerMm)), fill = 0)
+        bwd.rectangle((frameOriginX, frameOriginY,
+            frameOriginX + frameWidth,
+            frameOriginY + frameHeight), fill=192)
+        imp.save('%s/%s' % (bw_dir, os.path.basename(filename)))
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 
     for iFile in files:
         try:
@@ -279,6 +386,42 @@ def processSuper8(filenames, outputpath):
         except:
             logger.error("Did not save %s/%s" % (outputpath, os.path.basename(iFile)))
 
+<<<<<<< HEAD
+=======
+#    print "%s -> %s" % (filenames, outputpath)
+#    for file in files:
+#        try:
+#            frame = PIL.Image.open(file)
+#            frame = frame.crop((int(frameOriginX), int(frameOriginY),
+#                int(frameOriginX + frameWidth),
+#                int(frameOriginY + frameHeight)))
+#            frame.save('%s/%s' % (outputpath, os.path.basename(file)))
+#        except:
+#            print "Did not save %s/%s" % (outputpath, os.path.basename(file))
+#
+
+#-    (top, bottom) = (0, 0)
+#-    (sfWidth, sfHeight) = image.size
+#-    midway = sfWidth * sfHeight / 2
+#-    sfSequence = list(image.getdata())
+#-
+#-    compTo = []
+#-    for jj in range(0, sfWidth):
+#-        compTo.append(0)
+#-
+#-    for top in xrange(midway, 0 , -sfWidth):
+#-        if sfSequence[top:top + sfWidth].count(0) > sfWidth / 2:
+#-            break
+#-#        if compTo == sfSequence[top:top + sfWidth]:
+#-
+#-    for bottom in xrange(midway, sfHeight * sfWidth, sfWidth):
+#-        if sfSequence[bottom:bottom + sfWidth].count(0) > sfWidth / 2:
+#-            break;
+#-#        if compTo == sfSequence[bottom:bottom + sfWidth]:
+#-
+#-
+
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 def find8mmSprocket(image, filename):
     (imX, imY) = image.size
     imgData = list(image.getdata())
@@ -310,7 +453,11 @@ def find8mmSprocket(image, filename):
             imaged.line((offset, row, offset + value, row), fill=96)
 
         logger.debug("Saved %s/%s" % ((sprockets_dir, os.path.basename(filename))))
+<<<<<<< HEAD
         image.save('%s/%s/%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)))
+=======
+        image.save('%s/%s' % (sprockets_dir, os.path.basename(filename)))
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 
     whiteRows = {kk for kk, vv in fromLeft.iteritems() if vv < (imX - 50)}
     whiteRanges = []
@@ -390,10 +537,16 @@ def find8mmSprocket(image, filename):
 
 def process8mm(filenames, outputpath):
     files = filenames.split(',')
+<<<<<<< HEAD
+=======
+    # Select the midrange image for figuring out the cropping
+    filename = files[1]
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
     if 3 != len(files):
         logger.error("Need three filenames")
         sys.exit(1)
 
+<<<<<<< HEAD
     # Select the brightest image for figuring out the cropping
     filename = files[0]
     imp = PILImage.open(filename).convert('L')
@@ -442,6 +595,65 @@ def process8mm(filenames, outputpath):
             frameOriginX + frameWidth,
             frameOriginY + frameHeight), fill=192)
         imp.save('%s/%s/%s' % (options.outputdir, bw_dir, os.path.basename(filename)))
+=======
+    ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
+    if [True, True, True] == ofiles:
+        logger.debug("Output files aready exist for %s" % filenames)
+        return
+
+    if options.whitecount:
+        for file in filenames:
+            whiteCount(file)
+
+    imp = PILImage.open(filename).convert('L')
+    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
+    #(fcWidth, fcHeight) = im.shape
+    (fcHeight, fcWidth) = im.shape
+    #im = im[:,:400]
+    im = im[:,:300]
+    im1 = ndimage.grey_erosion(im, size=(25, 25))
+
+    im1[im1 < 100] = 0
+    im1[im1 >= 100] = 255
+    if options.debug and eroded_dir is not None:
+        scipy.misc.imsave('eroded/%s' % os.path.basename(filename), im1)
+
+    im1Image = scipy.misc.toimage(im1)
+    (spLeftX, spCenterY) = find8mmSprocket(im1Image, filename)
+    spLeftX = 152
+    logger.debug( "%s leftX %u centerY %u" % (filename, spLeftX, spCenterY))
+    if (0, 0) == (spLeftX, spCenterY):
+        logger.error("Cannot process %s" % filename)
+        return
+
+    pxPerMm = 393
+    frameOriginX = int(spLeftX + (1.53 * pxPerMm))
+    frameOriginY = int(spCenterY - (1.69 * pxPerMm))
+
+    # FUDGE FACTOR for misaligned images
+    #frameOriginY -= (122  + (.455 * pxPerMm))
+#    frameOriginY -= ((.465 * pxPerMm))
+
+    frameWidth = int(4.57 * pxPerMm)
+    frameHeight = int(3.39 * pxPerMm)
+
+    if frameWidth % 2 == 1:
+        frameWidth += 1
+    # crop and save
+#    if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
+#        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
+#        return
+
+    if options.debug and bw_dir is not None:
+        bwd = ImageDraw.Draw(imp)
+        bwd.line((spLeftX, spCenterY, fcWidth, spCenterY), fill=0)
+        bwd.line((spLeftX, spCenterY - (1.64 * pxPerMm),
+            spLeftX, spCenterY + (1.64 * pxPerMm)), fill = 0)
+        bwd.rectangle((frameOriginX, frameOriginY,
+            frameOriginX + frameWidth,
+            frameOriginY + frameHeight), fill=192)
+        imp.save('%s/%s' % (bw_dir, os.path.basename(filename)))
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 
     for iFile in files:
         try:
@@ -454,6 +666,7 @@ def process8mm(filenames, outputpath):
             logger.error("Did not save %s/%s" % (outputpath, os.path.basename(iFile)))
 
 def main():
+<<<<<<< HEAD
 #    global options
 #    global arrToFind
 #    parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
@@ -468,15 +681,35 @@ def main():
 #
 #    (options, args) = parser.parse_args()
 #
+=======
+    global options
+    global arrToFind
+    parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
+    parser.add_option('-s', '--debug', dest='debug', help='Save intermediary images', action='store_true')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
+    parser.add_option('-w', '--whitecount', dest='whitecount', action='store_true', default=False)
+    parser.add_option('-i', '--input-dir', dest='inputdir')
+    parser.add_option('-o', '--output-dir', dest='outputdir')
+    parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, comma separated')
+    parser.add_option('-m','--mode', dest='mode', default='8mm')
+    parser.add_option('-l','--listfile', dest='listfile', help='file containing list of triplets')
+
+    (options, args) = parser.parse_args()
+
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
     if options.mode not in ('8mm', 'super8'):
         logger.error("Invalid sprocket option %s" % options.sprocket)
         sys.exit(1)
 
     imgToFind = PILImage.open('%s/tofind.jpg' % os.path.dirname(os.path.abspath(__file__))).convert('L')
+<<<<<<< HEAD
 #    arrToFind = scipy.misc.fromimage(imgToFind, flatten = True).astype(numpy.uint8)
     #arrToFind = arrToFind[:300,:220]
 #    arrToFind = arrToFind[:50,:50]
 
+=======
+    arrToFind = scipy.misc.fromimage(imgToFind, flatten = True).astype(numpy.uint8)
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
     #arrFindIn[arrFindIn < 100] = 0
     #arrFindIn[arrFindIn >= 100] = 255
 
