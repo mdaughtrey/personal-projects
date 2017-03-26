@@ -4,7 +4,11 @@ BASEDIR=~/Video
 
 showname="$@"
 #vendor='allmyvideos.net'
+<<<<<<< HEAD
 #vendor='openload.co'
+=======
+#endor='openload.co'
+>>>>>>> ca7881c543c89f69132bc2575b0985f545b72a22
 vendor='thevideo.me'
 
 if [[ "$showname" == "" || ! -f "$showname" ]]
