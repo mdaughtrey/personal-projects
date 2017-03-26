@@ -9,10 +9,11 @@ def trampoline(object):
     object._logger.debug("Worker")
     while object._wmrunning:
         object._workerManager()
-    object._logger.debug("workerManager ends")
+    object._logger.info("workerManager ends")
 
 class JobManager():
-    PrecropGeometry="2912x2200+200+0"
+    PrecropS8Geometry="2912x2200+200+0"
+    Precrop8mmGeometry="2828x1820+40+440"
     JobLimit = 4 
 #    WorkerManagerControl = False # True # 'Off'
     DisablePrecrop = False
@@ -32,14 +33,14 @@ class JobManager():
             try:
                 self._scheduledTasks.append(taskTable[task])
             except KeyError as ee:
-                logger.error("Unknown task [%s]" % task)
+                self._logger.error("Unknown task [%s]" % task)
 
     def __init__(self, logger, pstore, fileman, config, root):
         self._logger = logger
         self._pstore = pstore
         self._fileman = fileman
         self._workers = []
-        self._logger.debug("JobManager init")
+        self._logger.info("JobManager init")
         self._root = root
         self._generateTitles = False
         self._config = config
@@ -66,7 +67,7 @@ class JobManager():
         self._logger.debug("toBePrecropped %u items" % len(toBePrecropped))
         if toBePrecropped:
             for (rowid, container, filename) in toBePrecropped:
-                self._logger.debug("Container %s filename %s" % (container, filename))
+                self._logger.info("Container %s filename %s" % (container, filename))
                 jobargs = (self._config.project, container, filename)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmPrecrop(*jobargs)
@@ -150,7 +151,7 @@ class JobManager():
 
         freeWorkers = JobManager.JobLimit - len(self._workers)
         if 0 == freeWorkers:
-            self._logger.debug("No free workers")
+            self._logger.info("No free workers")
             time.sleep(1)
             return
 
@@ -161,17 +162,19 @@ class JobManager():
             time.sleep(5)
 
     def _vmTonefuse(self, project, container, file1, file2, file3):
-        self._logger.debug("Tonefuse %s %s %s %s %s" % (project, container, file1, file2, file3))
+        self._logger.info("Tonefuse %s %s %s %s %s" % (project, container, file1, file2, file3))
         sourceDir = os.path.abspath(self._fileman.getAutocropDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputfile = self._fileman.getTonefuseDir(project, container) + '/%s' % file1
         jobargs = ('enfuse', '--output', outputfile, source1, source2, source3)
-        self._logger.debug("Calling %s" % ' '.join(jobargs))
+        self._logger.info("Calling %s" % ' '.join(jobargs))
         try:
-            subprocess.check_call(jobargs)
-            self._logger.debug("Done %s %s %s" % (project, container, outputfile))
+            #subprocess.check_call(jobargs)
+            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
+            self._logger.info(output)
+            self._logger.info("Done %s %s %s" % (project, container, outputfile))
             self._pstore.markFused(project, container, file1, file2, file3)
             self._logger.debug("_wmTonefuse Done")
 
@@ -180,7 +183,7 @@ class JobManager():
             self._pstore.abortTonefuse(project, container, file1, file2, file3)
 
     def _vmAutocropShort(self, project, container, file1, file2, file3):
-        self._logger.debug("vmAutoCropShort %s %s %s %s %s" % (project, container, file1, file2, file3))
+        self._logger.info("vmAutoCropShort %s %s %s %s %s" % (project, container, file1, file2, file3))
         sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
         source2 = "%s/%s" % (sourceDir, file2)
@@ -193,7 +196,7 @@ class JobManager():
 
     def _vmAutocrop(self, project, container, file1, file2, file3):
 #        return self._vmAutocropShort(project,container, file1, file2, file3)
-        self._logger.debug("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
+        self._logger.info("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
         sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
         source2 = "%s/%s" % (sourceDir, file2)
@@ -205,8 +208,9 @@ class JobManager():
             '--output-dir', outputdir)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         try:
-            subprocess.check_call(jobargs)
-            self._logger.debug("Done %s %s %s" % (project, container, outputdir))
+            #subprocess.check_call(jobargs)
+            self._logger.debug(subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+            self._logger.info("Done %s %s %s" % (project, container, outputdir))
             self._pstore.markAutocropped(project, container, file1, file2, file3)
             self._logger.debug("_wmAutocrop Done")
 
@@ -215,7 +219,7 @@ class JobManager():
             self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmPrecropShort(self, project, container, filename):
-        self._logger.debug("Precrop short %s %s %s" % (project, container, filename))
+        self._logger.info("Precrop short %s %s %s" % (project, container, filename))
         sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
         open(targetfile, 'w').write(open(sourcefile).read())
@@ -223,38 +227,55 @@ class JobManager():
 
 
     def _vmPrecrop(self, project, container, filename):
-        self._logger.debug("Precrop %s %s %s" % (project, container, filename))
+        self._logger.info("Precrop %s %s %s" % (project, container, filename))
         sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
         jobargs = ('convert', sourcefile,
             #'-strip', '-flop', '-flip',
             '-strip', 
-            '-crop', JobManager.PrecropGeometry,
+            '-crop', {'8mm': JobManager.Precrop8mmGeometry,
+                'super8': JobManager.PrecropS8Geometry}[self._config.film],
             targetfile)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
-        retcode = 0
         if True == JobManager.DisablePrecrop:
             self._logger.debug("Precrop disabled")
         else:
-            retcode = subprocess.call(jobargs)
-        self._logger.debug("Done %s %s %s rc %d" % (project, container, filename, retcode))
-        if 0 == retcode:
-            self._pstore.markPrecropped(project, container, filename)
+            try:
+                #retcode = subprocess.call(jobargs)
+                self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+                self._logger.info("Done %s %s %s" % (project, container, filename))
+                self._pstore.markPrecropped(project, container, filename)
+
+            except subprocess.CalledProcessError as ee:
+                self._logger.error("precrop failed rc %d $s" % (ee.returncode, ee.output))
+
         self._logger.debug("_vmPrecrop Done")
-        return retcode
 
     def _vmGenTitle(self, project, root):
         jobargs = ('../gentitle.sh', '-p', project, '-r', root)
-        retcode = subprocess.call(jobargs)
-        return retcode
+#        retcode = subprocess.call(jobargs)
+        try:
+            self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+
+        except subprocess.CalledProcessError as ee:
+            self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
 
     def _vmGenContent(self, project, root, container):
         self._pstore.markChunkProcessing(project, container)
         jobargs = ('../gencontent.sh', '-p', project, '-r', root)
-        retcode = subprocess.call(jobargs)
-        if 0 == retcode:
+
+        try:
+            self._logger.info(jobargs)
+            output = subprocess.check_output(jobargs)
+            #subprocess.check_call(jobargs, stderr=subprocess.STDOUT)
+            #self._logger.debug(output)
             self._pstore.markChunkProcessed(project, container)
-        return retcode
+
+        except subprocess.CalledProcessError as ee:
+            self._logger.error("gencontent failed rc %d $s" % (ee.returncode, ee.output))
+        #retcode = subprocess.call(jobargs)
+        #if 0 == retcode:
+        #return retcode
 
     def _workerCleanup(self):
         self._logger.debug("Workers before cleanup: %d" % len(self._workers))
@@ -268,5 +289,9 @@ class JobManager():
 
     def genTitle(self):
         self._generateTitles = True
+
+    def uploadsDone(self, project):
+        self._pstore.setTask(project, ['pc','ac','tf','gc'])
+
 
 

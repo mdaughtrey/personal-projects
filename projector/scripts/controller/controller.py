@@ -23,7 +23,7 @@ parser.add_argument('--project', required = True, dest='project', help='set jobm
 parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
 config = parser.parse_args()
 
-ROOTOFALL='/media/sf_vmshared/scans/'
+ROOTOFALL='/media/sf_vm_externalhd/scans/'
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
@@ -57,9 +57,12 @@ signal.signal(signal.SIGINT, signal_handler)
 #
 # Upload a new raw file
 #
-@app.route('/upload', methods = ['PUT'])
+@app.route('/upload', methods = ['PUT','GET'])
 def upload():
     try:
+        if 'GET' == request.method:
+           jobman.uploadsDone(config.project) 
+           return json.dumps(['OK'])
         container, filename = pstore.getNextImageLocation(config.project)
         fileman.newFile(request.data, config.project, container, filename)
         pstore.newRawFile(config.project, container, filename)

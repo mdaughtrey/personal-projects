@@ -30,6 +30,7 @@ autolev_high= 235  # limit of autolevels high output
 CLeft=32  CTop=32  CRight=32  CBottom=32  #crop values after Depan and before final resizing 
 
 W=720  H=576  #final size after cropping 
+#W=1920  H=1080  #final size after cropping 
 
 bord_left=0  bord_top=0  bord_right=0  bord_bot=0  #720p= borders 150
 

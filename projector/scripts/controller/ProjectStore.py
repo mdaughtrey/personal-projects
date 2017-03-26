@@ -17,8 +17,8 @@ class ProjectStore():
 #        if False == os.path.isdir(dblocation):
 #            os.makedirs(dblocation)
 
-    def _initDb(self, projectname):
-        conn = sqlite3.connect(projectname)
+    def _initDb(self, project):
+        conn = sqlite3.connect(project)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
                     processing integer,
@@ -82,9 +82,9 @@ class ProjectStore():
             conn.commit()
             conn.close()
 
-    def _getPendingWork(self, projectname, statement):
+    def _getPendingWork(self, project, statement):
         with self._dbLock:
-            conn = self._openDb(projectname)
+            conn = self._openDb(project)
             cursor = conn.cursor()
             statements = ['PRAGMA temp_store=MEMORY;',
                     'BEGIN TRANSACTION;',
@@ -114,11 +114,11 @@ class ProjectStore():
             conn.commit()
             conn.close()
 
-    def toBePrecropped(self, projectname, limit):
+    def toBePrecropped(self, project, limit):
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
                  WHERE precrop IS NULL AND processing != 1 ORDER BY container,rawfile LIMIT %s;''' % limit
-        self._logger.debug(statement)
-        return self._getPendingWork(projectname, statement)
+        #self._logger.debug(statement)
+        return self._getPendingWork(project, statement)
 
     def markPrecropped(self, project, container, filename):
         self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
@@ -134,15 +134,17 @@ class ProjectStore():
             conn.close()
         return result[0][0]
 
-    def toBeAutocropped(self, projectname, limit):
+    def toBeAutocropped(self, project, limit):
         # don't offer any files unless all precropped is complete
-        if 0 != self.getRemaining(projectname, 'precrop'):
+        pcRemaining =  self.getRemaining(project, 'precrop')
+        if 0 != pcRemaining:
+            self._logger.debug("%s remaining precrops, autocrop not ready" % pcRemaining)
             return []
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
                  WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
                  ORDER BY container,precrop LIMIT %s;''' % limit
         #self._logger.debug(statement)
-        return self._getPendingWork(projectname, statement)
+        return self._getPendingWork(project, statement)
 
     def markAutocropped(self, project, container, file1, file2, file3):
         for ff in [file1, file2, file3]:
@@ -157,8 +159,11 @@ class ProjectStore():
 
     def toBeFused(self, project, limit):
         # don't offer any files unless all autocropped is complete
-        if 0 != self.getRemaining(project, 'autocrop'):
+        acRemaining =  self.getRemaining(project, 'autocrop')
+        if 0 != acRemaining:
+            self._logger.debug("%s remaining autocrops, tonefuse not ready" % acRemaining)
             return []
+
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,autocrop FROM picdata
                  WHERE autocrop IS NOT NULL AND fused IS NULL AND processing != 1
                  ORDER BY container,autocrop LIMIT %s;''' % limit
@@ -207,7 +212,7 @@ class ProjectStore():
             files = cursor.fetchall()
             conn.close()
 
-        self._logger.debug("len(files) %u" % len(files))
+        #self._logger.debug("len(files) %u" % len(files))
 
         if len(files) >= ProjectStore.FilesPerContainer:
             newContainer = int(containers[-1][0]) + 1
@@ -222,12 +227,13 @@ class ProjectStore():
         if False == os.path.isdir(newDir):
             os.makedirs(newDir)
         ProjectStore.mtxMakeDirs.release()
-        self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
+        #self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
         return "%03u" % int(newContainer), "%06u.JPG" % newFile
 
     def getVideoChunkStatus(self, project):
         # don't make any chunks available until all fusing is done
         if 0 != self.getRemaining(project, 'fused'):
+            logger.debug("Fused jobs remaining, not ready for video chunk")
             return [], []
         with self._dbLock:
             conn = self._openDb(project)
@@ -251,3 +257,8 @@ class ProjectStore():
     def markChunkProcessed(self, project, container):
         statement = "UPDATE videodata SET processing=0 where CONTAINER='%s'" % container
         self.simpleUpdate(project, statement)
+
+    def setTask(self, project, tasks):
+        self.simpleUpdate(project, 'DELETE FROM taskcontrol')
+        for task in tasks:
+            self.simpleUpdate(project, "INSERT INTO taskcontrol VALUES('%s')" % task)

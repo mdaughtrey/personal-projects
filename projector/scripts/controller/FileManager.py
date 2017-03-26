@@ -15,7 +15,10 @@ class FileManager():
         FileManager.mtxGetDir.acquire()
         if False == os.path.isdir(targetDir):
             self._logger.debug("Creating %s" % targetDir)
-            os.makedirs(targetDir)
+            try:
+                os.makedirs(targetDir)
+            except:
+                pass
         FileManager.mtxGetDir.release()
         return targetDir
 

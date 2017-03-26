@@ -48,7 +48,7 @@ FrameHeightMm = 3.3
 FrameWidthMm = 4.5
 SprocketSuper8 = (1.14, .91) # H, W
 Sprocket8mm = (1.27, 1.83) # H, W
-#PxPerMm8mm = 380
+PxPerMm8mm = 454
 PxPerMmSuper8 = 398
 Info = namedtuple('Info', 'start height')
 
@@ -222,47 +222,27 @@ def processSuper8(filenames, outputpath):
         logger.error("Need three filenames")
         sys.exit(1)
 
-#    if options.whitecount:
-#        for file in filenames:
-#            whiteCount(file)
-
     # Select the brightest image for figuring out the cropping
     filename = files[1]
-#    ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
-#    if [True, True, True] == ofiles:
-#        logger.debug("Output files already exist for %s" % filenames)
-#        return
-#    pdb.set_trace()
     imp = PILImage.open(filename).convert('L')
     flattened = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
     #(fcWidth, fcHeight) = im.shape
     (fcHeight, fcWidth) = flattened.shape
-    #im = im[:,:400]
     flattened = flattened[:,:350]
-#    flattened = flattened[700:,:350]
-#    flattened = flattened[:700,:]
     eroded = ndimage.grey_erosion(flattened, size=(25, 25))
 
     eroded[eroded < 128] = 0
     eroded[eroded >= 128] = 255
     eroded[:,-1] = 0
-#    pdb.set_trace()
     if options.debug and eroded_dir is not None:
         scipy.misc.imsave('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
 # super8 sprocket size 0.91W 1.14H centered
 # 8mm sprocket size 1.8W 1.23H between
-    #imEroded = scipy.misc.toimage(eroded)
-#    pdb.set_trace()
     ((rectH, rectW), (spBottomY, spRightX)) = findLargestRect(eroded, 255)
     
-   # (spBottomY, spRightX) = findSuper8Sprocket4(eroded)
     spCenterY = ((spBottomY - rectH / 2)) #  + 700) # * PxPerMmSuper8) + 700
-    #spCenterY = ((spBottomY - rectH / 2)) # * PxPerMmSuper8) + 700
     logger.debug("%s spRightX %u spCenterY %u" % (filename, spRightX, spCenterY))
-#    if (0, 0) == (spLeftX, spCenterY):
-#        logger.error("Cannot process %s" % filename)
-#        return
 
     frameWidth = int(5.82 * PxPerMmSuper8)
     if frameWidth % 2 == 1:
@@ -298,39 +278,6 @@ def processSuper8(filenames, outputpath):
             fullColor.save('%s/%s' % (outputpath, os.path.basename(iFile)))
         except:
             logger.error("Did not save %s/%s" % (outputpath, os.path.basename(iFile)))
-
-#    print "%s -> %s" % (filenames, outputpath)
-#    for file in files:
-#        try:
-#            frame = PIL.Image.open(file)
-#            frame = frame.crop((int(frameOriginX), int(frameOriginY),
-#                int(frameOriginX + frameWidth),
-#                int(frameOriginY + frameHeight)))
-#            frame.save('%s/%s' % (outputpath, os.path.basename(file)))
-#        except:
-#            print "Did not save %s/%s" % (outputpath, os.path.basename(file))
-#
-
-#-    (top, bottom) = (0, 0)
-#-    (sfWidth, sfHeight) = image.size
-#-    midway = sfWidth * sfHeight / 2
-#-    sfSequence = list(image.getdata())
-#-
-#-    compTo = []
-#-    for jj in range(0, sfWidth):
-#-        compTo.append(0)
-#-
-#-    for top in xrange(midway, 0 , -sfWidth):
-#-        if sfSequence[top:top + sfWidth].count(0) > sfWidth / 2:
-#-            break
-#-#        if compTo == sfSequence[top:top + sfWidth]:
-#-
-#-    for bottom in xrange(midway, sfHeight * sfWidth, sfWidth):
-#-        if sfSequence[bottom:bottom + sfWidth].count(0) > sfWidth / 2:
-#-            break;
-#-#        if compTo == sfSequence[bottom:bottom + sfWidth]:
-#-
-#-
 
 def find8mmSprocket(image, filename):
     (imX, imY) = image.size
@@ -443,65 +390,54 @@ def find8mmSprocket(image, filename):
 
 def process8mm(filenames, outputpath):
     files = filenames.split(',')
-    # Select the midrange image for figuring out the cropping
-    filename = files[1]
     if 3 != len(files):
         logger.error("Need three filenames")
         sys.exit(1)
 
-    ofiles = [os.path.isfile("%s/%s" % (outputpath, os.path.basename(xx))) for xx in files]
-    if [True, True, True] == ofiles:
-        logger.debug("Output files aready exist for %s" % filenames)
-        return
-
-#    if options.whitecount:
-#        for file in filenames:
-#            whiteCount(file)
-
+    # Select the brightest image for figuring out the cropping
+    filename = files[0]
     imp = PILImage.open(filename).convert('L')
-    im = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
+    flattened = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
     #(fcWidth, fcHeight) = im.shape
-    (fcHeight, fcWidth) = im.shape
-    #im = im[:,:400]
-    im = im[:,:300]
-    im1 = ndimage.grey_erosion(im, size=(25, 25))
+    (fcHeight, fcWidth) = flattened.shape
+    #flattened = flattened[:800,:800]
+    flattened = flattened[:1200,:1200]
+    eroded = ndimage.grey_erosion(flattened, size=(25, 25))
 
-    im1[im1 < 100] = 0
-    im1[im1 >= 100] = 255
+    eroded[eroded < 200] = 0
+    eroded[eroded >= 200] = 255
+    eroded[:,-1] = 0
     if options.debug and eroded_dir is not None:
-        scipy.misc.imsave('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), im1)
+        scipy.misc.imsave('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
-    im1Image = scipy.misc.toimage(im1)
-    (spLeftX, spCenterY) = find8mmSprocket(im1Image, filename)
-    spLeftX = 152
-    logger.debug( "%s leftX %u centerY %u" % (filename, spLeftX, spCenterY))
-    if (0, 0) == (spLeftX, spCenterY):
-        logger.error("Cannot process %s" % filename)
-        return
+# super8 sprocket size 0.91W 1.14H centered
+# 8mm sprocket size 1.8W 1.23H between
+#    pdb.set_trace()
+    ((rectH, rectW), (spBottomY, spRightX)) = findLargestRect(eroded, 255)
+    
+    spCenterY = int(((spBottomY - rectH / 2)) + (3.3 * PxPerMm8mm / 2)) #  + 700) # * PxPerMmSuper8) + 700
+    logger.debug("%s spRightX %u spCenterY %u" % (filename, spRightX, spCenterY))
 
-    pxPerMm = 393
-    frameOriginX = int(spLeftX + (1.53 * pxPerMm))
-    frameOriginY = int(spCenterY - (1.69 * pxPerMm))
-
-    # FUDGE FACTOR for misaligned images
-    #frameOriginY -= (122  + (.455 * pxPerMm))
-#    frameOriginY -= ((.465 * pxPerMm))
-
-    frameWidth = int(4.57 * pxPerMm)
-    frameHeight = int(3.39 * pxPerMm)
-
+    frameWidth = int(4.5 * PxPerMm8mm)
     if frameWidth % 2 == 1:
         frameWidth += 1
+    frameHeight = int(3.3 * PxPerMm8mm)
+
+    frameOriginX = int(spRightX) # int((spRightX - rectW) + ((0.91 + .05) * PxPerMm8mm))
+    frameOriginY = int(spCenterY - frameHeight/ 2)
+
+    logger.debug("frame X %u Y %u W %u H %u" % (frameOriginX, frameOriginY, frameWidth, frameHeight))
+
     # crop and save
-#    if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
-#        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
-#        return
+    if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
+        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
+        sys.exit(1)
 
     if options.debug and bw_dir is not None:
         bwd = ImageDraw.Draw(imp)
-        bwd.line((spLeftX, spCenterY, fcWidth, spCenterY), fill=0)
-        bwd.line((spLeftX, spCenterY - (1.64 * pxPerMm),
-            spLeftX, spCenterY + (1.64 * pxPerMm)), fill = 0)
+        bwd.line((0, spCenterY, 600, spCenterY), fill=0)
+        bwd.line((spRightX, spCenterY - (1.62 * PxPerMm8mm),
+            spRightX, spCenterY + (1.62 * PxPerMm8mm)), fill = 0)
         bwd.rectangle((frameOriginX, frameOriginY,
             frameOriginX + frameWidth,
             frameOriginY + frameHeight), fill=192)
