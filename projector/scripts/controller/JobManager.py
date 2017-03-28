@@ -44,38 +44,43 @@ class JobManager():
         self._root = root
         self._generateTitles = False
         self._config = config
-        self._scheduledTasks = [
-            self._schedulePrecrop,
-            self._scheduleAutocrop,
-            self._scheduleTonefuse,
-            self._scheduleGenTitle,
-            self._scheduleGenChunk]
+#        self._scheduledTasks = [
+#            self._schedulePrecrop,
+#            self._scheduleAutocrop,
+#            self._scheduleTonefuse,
+#            self._scheduleGenTitle,
+#            self._scheduleGenChunk]
 
-        if config.workers is not None:
-            self._scheduledTasks = []
-            taskTable = { 
-                "pc": self._schedulePrecrop,
-                "ac": self._scheduleAutocrop,
-                "tf": self._scheduleTonefuse,
-                "gt": self._scheduleGenTitle,
-                "gc": self._scheduleGenChunk}
-
-            for worker in config.workers:
-                try:
-                    self._scheduledTasks.append(taskTable[worker])
-                except KeyError as ee:
-                    logger.debug("Unknown workers parameter [%s]" % worker)
-                    sys.exit(1)
-
-
+#        if config.workers is not None:
+#            self._scheduledTasks = []
+#            taskTable = { 
+#                "pc": self._schedulePrecrop,
+#                "ac": self._scheduleAutocrop,
+#                "tf": self._scheduleTonefuse,
+#                "gt": self._scheduleGenTitle,
+#                "gc": self._scheduleGenChunk}
+#
+#            for worker in config.workers:
+#                try:
+#                    self._scheduledTasks.append(taskTable[worker])
+#                except KeyError as ee:
+#                    logger.debug("Unknown workers parameter [%s]" % worker)
+#                    sys.exit(1)
+#
+#
         if 'disable' == self._config.jobmode: # JobManager.WorkerManagerControl:
             return
         self._wmrunning = True
-        if 'proc' == mode: # JobManager.WorkerManagerControl:
-            self._thread = threading.Thread(target = worker, args = (self,))
+        if 'proc' == self._config.jobmode: # JobManager.WorkerManagerControl:
+            self._thread = threading.Thread(target = trampoline, args = (self,))
             self._thread.start()
-        elif 'inline' == mode:
+        elif 'inline' == self._config.jobmode:
             self._workerManager()
+#        if 'proc' == mode: # JobManager.WorkerManagerControl:
+#            self._thread = threading.Thread(target = worker, args = (self,))
+#            self._thread.start()
+#        elif 'inline' == mode:
+#            self._workerManager()
 
     def _schedulePrecrop(self, freeWorkers):
         scheduled = 0
