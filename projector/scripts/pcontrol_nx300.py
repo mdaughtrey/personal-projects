@@ -28,7 +28,7 @@ serPort = None
 wait = 1
 
 def killHandler(sig, frame):
-    #cameraOff(serPort)
+    cameraOff(serPort)
     sys.exit(1)
 
 signal.signal(signal.SIGUSR2, lambda sig, frame: code.interact())
@@ -182,28 +182,28 @@ def uploader():
 #    except:
 #        logger.error("HTTP upload fail") # , %s" % ee.message)
 
-#def keepAlive():
-##    if (time.clock() - lastKeepAlive) < 20.0:
-##        return
-##    global lastKeepAlive
-##    lastKeepAlive = time.clock()
-#    uheaders = {
-#    'Host': '%s' % CameraIP,
-#    'Connection': 'keep-alive',
-#    'Accept': '*/*',
-#    'X-Requested-With': 'XMLHttpRequest',
-#    'Accept-Encoding': 'gzip,deflate,sdch',
-#    'Accept-Language': 'en-US,en;q=0.8'
-#    }
-#
-#    hUrl = 'http://%s/api/v1/input/inject_keep_alive' % CameraIP
-#    logger.debug("KeepAlive")
-#    response = camSession.get(hUrl, timeout=CamTimeout, headers=uheaders)
-##    response = requests.get(url=hUrl, headers=uheaders)
-#    logger.debug("KeepAlive Done")
-#    if not response.ok:
-#        logger.error("KeepAlive request failed")
-#    
+def keepAlive():
+#    if (time.clock() - lastKeepAlive) < 20.0:
+#        return
+#    global lastKeepAlive
+#    lastKeepAlive = time.clock()
+    uheaders = {
+    'Host': '%s' % CameraIP,
+    'Connection': 'keep-alive',
+    'Accept': '*/*',
+    'X-Requested-With': 'XMLHttpRequest',
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Accept-Language': 'en-US,en;q=0.8'
+    }
+
+    hUrl = 'http://%s/api/v1/input/inject_keep_alive' % CameraIP
+    logger.debug("KeepAlive")
+    response = camSession.get(hUrl, timeout=CamTimeout, headers=uheaders)
+#    response = requests.get(url=hUrl, headers=uheaders)
+    logger.debug("KeepAlive Done")
+    if not response.ok:
+        logger.error("KeepAlive request failed")
+    
 def urlRetry(url, callback):
     retries = 3
     while retries:
@@ -284,42 +284,71 @@ def transferPictures():
 
     for image in images:
         ee = image.split('/')[-2:]
-        #keepAlive()
+        keepAlive()
         time.sleep(10)
         if False == transferPicture(ee[0], ee[1]):
             return False
     return True
 
 def doCycles(serial, numCycles):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+#    def waitCardOpsTelnet(telnet):
+#        logger.debug("Waiting on card ops telnet")
+#        telnet.write('/mnt/mmc/moncard.sh\n')
+#        rx = ''
+#        while True:
+#            rx += telnet.read_some()
+#            logger.debug("rx %s" % rx)
+#            if "Timeout" in rx:
+#                break
+#        logger.debug("moncard.sh returns %s" % rx)
+#        if "Wait " in rx:
+#            logger.error("Error waiting on SD card activity")
+#
+#    def waitCardOpsTcp():
+#        logger.debug("Waiting on card ops TCP")
+#        result = tcp("/mnt/mmc/moncard.sh", ['Wait', 'Timeout'])
+#        if 'Timeout' in result:
+#            return True
+#        return False
 
-    delay = 100
-    for ii in xrange(1, numCycles + 1): 
+    for ii in xrange(1, numCycles + 1): #, args.batch):
         logger.debug("Frame %u of %u" % (ii, args.cycles))
+        time.sleep(20)
+        keepAlive()
+        continue
 
+#        for bb in xrange(1, args.batch):
         if serialWaitFor(serial, '{OIT:'):
             logger.debug("OIT")
             sys.exit(0)
+        serial.write('200a')
+        if False == subclick(['down=Super_L','down=Super_R']):
+            return ii
 
-        #serial.write('%ua' % delay) # 350 too far
-#        serial.write('l')
-        logger.debug("Click 1")
-        sock.sendto("", (CameraIP, CameraPort))
-        time.sleep(1)
-        logger.debug("Click 2")
-        sock.sendto("", (CameraIP, CameraPort))
-        time.sleep(1)
-        logger.debug("Click 3")
-        sock.sendto("", (CameraIP, CameraPort))
-        time.sleep(4)
-#        serial.write('L')
+#        if False == transferPictures():
+#            return ii
+        now = time.clock() 
+        while True == serial.getCTS():
+            if (time.clock() - now) > 3.0:
+                logger.error("CTS loop timed out")
+                return ii
 
+        if False == subclick(['up=Super_L','up=Super_R']):
+            return ii
         serial.write('n')
-#        transferPictures()
-        time.sleep(4)
-        delay += 10
-        if delay > 250:
-            delay =100
+        transferPictures()
+        time.sleep(2)
+
+#        try:
+#            if False == (telnet):
+#                return ii
+#        except RuntimeError as ee:
+#            logger.error("RuntimeError %s" % str(ee))
+#            return ii
+
+#        if 1 != args.batch:
+#            logger.debug("Deleting mages")
+#            tcp("cmd rm %s/DCIM/*" % DCIMRoot)
 
     return ii
 
@@ -386,7 +415,6 @@ def uploadTitleFiles(filenames):
 # query router for camera IP
 #
 def getCameraIP():
-    return '192.168.0.24'
     uheaders = {
     'Host': '192.168.0.1',
     'Connection': 'keep-alive',
@@ -439,10 +467,10 @@ def waitForCamera():
 
     logger.debug("Camera ready")
 
-#def cameraOff(serPort):
-#    logger.debug("Closing %s" % SerialPort)
-#    serPort.write(b'TC')
-#    serPort.close()
+def cameraOff(serPort):
+    logger.debug("Closing %s" % SerialPort)
+    serPort.write(b'TC')
+    serPort.close()
 
 def main():
     logger.debug("Init")
@@ -468,6 +496,7 @@ def main():
     doneCycles = 0
     while True:
         global serPort
+        global serPort
         serPort = serial.Serial(SerialPort, 57600) # , timeout=1)
         logger.debug("Opening %s" % SerialPort)
         if serPort.isOpen():
@@ -478,11 +507,6 @@ def main():
         serPort.write(' ')
         #portWaitFor(serPort, '{State:Ready}')
         portWaitFor(serPort, 'Reset')
-
-#        while True:
-#            serPort.write('l')
-#            time.sleep(5)
-
         # Camera on, film type, autotension
         serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
         serPort.write('n')
@@ -494,18 +518,19 @@ def main():
 
         global CameraIP
         CameraIP = getCameraIP()
-#        waitForCamera()
+        waitForCamera()
+        
 
         doneCycles += doCycles(serPort, numCycles - doneCycles)
         if doneCycles >= numCycles:
             break
 
         logger.error("doCycles fails, restart camera")
-        #cameraOff(serPort)
+        cameraOff(serPort)
         time.sleep(5)
 
     logger.debug("Complete, shutting down")
-    #cameraOff(serPort)
+    cameraOff(serPort)
     return 0
 
 sys.exit(main())
