@@ -16,9 +16,9 @@
 #define PD_RESET 6
 #define PB_PRETENSION 0
 #define PB_NEXT 4
-u08 pbState = 0;
-u08 pcState = 0;
-u08 pdState = 0;
+u08 pbState = 0xff;
+u08 pcState = 0xff;
+u08 pdState = 0xff;
 
 //#define PB_CAMERABUSY 0
 //#define PB_SHUTTERREADY 0
@@ -54,12 +54,12 @@ u08 pdState = 0;
 #define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
 //#define CAMERA_ON PORTD |= _BV(PD_CAMERAPOWER);
 //#define CAMERA_OFF PORTD &= ~_BV(PD_CAMERAPOWER);
-#define CAMERA_ON 
-#define CAMERA_OFF 
+//#define CAMERA_ON 
+//#define CAMERA_OFF 
 #define SHUTTERINT_ON { PCMSK2 |= _BV(PCINT22); PCICR |= _BV(PCIE2); }
 #define SHUTTERINT_OFF { PCMSK2 &= ~_BV(PCINT22); PCICR &= ~_BV(PCIE2); }
-#define RESETSIG_TRIPLE { PORTB &= ~_BV(PB_SIGTRIPLE); }
-#define SETSIG_TRIPLE { PORTB |= _BV(PB_SIGTRIPLE); }
+//#define RESETSIG_TRIPLE { PORTB &= ~_BV(PB_SIGTRIPLE); }
+//#define SETSIG_TRIPLE { PORTB |= _BV(PB_SIGTRIPLE); }
 
 #ifdef USEFRAM
 #define FHEADER_ISR 0x5a
@@ -75,12 +75,12 @@ typedef enum
         SENSORSTART,        
         OPTOINT_CHANGED,    
         STOPONFRAMEZERO,    
-        SHUTTERLED1,
-        SHUTTERLED1A,
-        SHUTTERLED2,
-        SHUTTERLED2A,
-        SHUTTERLED3,
-        SHUTTERLED3A,
+        //SHUTTERLED1,
+        //SHUTTERLED1A,
+        //SHUTTERLED2,
+        //SHUTTERLED2A,
+        //SHUTTERLED3,
+        //SHUTTERLED3A,
         OPTOINT_HALF,       
         OPTOINT_FULL,       
         OPTOINT_REVERSE,    
@@ -95,11 +95,9 @@ typedef enum
     FILM_SUPER8
 } FilmMode;
 
-void incMotor();
-void decMotor();
-void setMotor(u08 set);
-
-void lampOn();
+//void incMotor();
+//void decMotor();
+void setMotor(u08 set); void lampOn();
 void lampOff();
 void lampCheck();
 void reset();
@@ -111,7 +109,7 @@ u08 verbose = 0;
 u08 motorPulse = 255;
 u08 pretension = MOTOR_PRETENSION_NEXT;
 //u08 servoSpeed = SERVO_NEXTFRAME_FAST;
-u32 lampTimeout = 0;
+//nu32 lampTimeout = 0;
 volatile u32 optoIntTimeout;
 u32 cameraBusyTimeout;
 u08 sensorValue;
@@ -199,26 +197,26 @@ void setMotor(u08 set)
 void lampOn()
 {
     LAMP_ON;
-    lampTimeout = millis();
+    //lampTimeout = millis();
 }
 
 void lampOff()
 {
     LAMP_OFF;
-    lampTimeout = 0;
+    //lampTimeout = 0;
 }
 
-void lampCheck()
-{
-    if (0 == lampTimeout)
-    {
-        return;
-    }
-    if ((millis() - lampTimeout) > LAMP_TIMEOUT_MS)
-    {
-        lampOff();
-    }
-}
+//void lampCheck()
+//{
+//    if (0 == lampTimeout)
+//    {
+//        return;
+//    }
+//    if ((millis() - lampTimeout) > LAMP_TIMEOUT_MS)
+//    {
+//        lampOff();
+//    }
+//}
 
 // 1 = made the transition to zero
 u08 decFrameCount()
@@ -312,7 +310,7 @@ void reset()
     stepperInit();
     lampOff();
     //SHUTTERINT_OFF;
-    CAMERA_OFF;
+    //CAMERA_OFF;
     //SHUTTER_CLOSE;
     setMotor(MOTOR_OFF);
     //motorRewind = MOTOR_OFF;
@@ -327,8 +325,8 @@ void reset()
 #endif // USEFRAM
 }
 
-u08 lampDefer = LAMPDEFER;
-u08 lampDuration = 0;
+//u08 lampDefer = LAMPDEFER;
+//u08 lampDuration = 0;
 
 void setup ()
 { 
@@ -344,7 +342,7 @@ void setup ()
 //    DDRD |= _BV(PD_CAMERAPOWER);
     DDRB |= _BV(PB_LAMP) | _BV(PB_SIGTRIPLE);
     DDRC |= _BV(PC_SHUTTER);
-    CAMERA_OFF;
+    //CAMERA_OFF;
     lampOff();
 
     stepperInit();
@@ -359,7 +357,7 @@ void setup ()
     iqTail = 0;
     iqHead = 0;
 #endif // USEFRAM
-    RESETSIG_TRIPLE;
+    //RESETSIG_TRIPLE;
     Serial.println("{State:Ready}");
 }
 
@@ -384,13 +382,13 @@ bool buttonTest(u08 pins, u08 * state, u08 testBit)
 
 void loop ()
 {
-    u08 sState = SHUTTER_READY;
-    if (srState != sState)
-    {
-        if (sState && 0 == lampTimeout) { lampOn(); }
-        if (!sState) { lampOff(); }
-        srState = sState;
-    }
+//    u08 sState = SHUTTER_READY;
+//    if (srState != sState)
+//    {
+//        if (sState && 0 == lampTimeout) { lampOn(); }
+//        if (!sState) { lampOff(); }
+//        srState = sState;
+//    }
 
 //    if (SHUTTER_READY) { lampOn(); }
 //    else { lampOff(); }
@@ -551,71 +549,71 @@ void loop ()
             waitingFor = OPTOINT_HALF;
             break;
 
-        case SHUTTERLED3A:
-            if (SHUTTER_READY)
-            {
-                break;
-            }
-            if (verbose) { Serial.println("SL3A"); }
-//            Serial.println("{TRIPLE:DONE}"); TRIPLE_COMPLETE
-            SETSIG_TRIPLE;
-            waitingFor = NONE;
-            break;
-
-        case SHUTTERLED3: 
-            if (SHUTTER_READY)
-            {
-                Serial.println("{TRIPLE:DONE}");
-                delay(lampDefer);
-                lampOn();
-                delay(30);
-                lampOff();
-                //waitingFor = SHUTTERLED3A;
-                SETSIG_TRIPLE;
-                if (verbose) { Serial.println("SETSIG_TRIPLE"); }
-                waitingFor = NONE;;
-            }
-            break;
-
-        case SHUTTERLED2A:
-            if (SHUTTER_READY)
-            {
-                break;
-            }
-            if (verbose) { Serial.println("SL2A"); }
-            waitingFor = SHUTTERLED3;
-            break;
-
-        case SHUTTERLED2: 
-            if (SHUTTER_READY)
-            {
-                delay(lampDefer);
-                lampOn();
-                delay(10);
-                lampOff();
-                waitingFor = SHUTTERLED2A;
-            }
-            break;
-
-        case SHUTTERLED1A:
-            if (SHUTTER_READY)
-            {
-                break;
-            }
-            if (verbose) { Serial.println("SL1A"); }
-            waitingFor = SHUTTERLED2;
-            break;
-
-        case SHUTTERLED1: 
-            if (SHUTTER_READY)
-            {
-                delay(lampDefer);
-                lampOn();
-                delay(2);
-                lampOff();
-                waitingFor = SHUTTERLED1A;
-            }
-            break;
+//        case SHUTTERLED3A:
+//            if (SHUTTER_READY)
+//            {
+//                break;
+//            }
+//            if (verbose) { Serial.println("SL3A"); }
+////            Serial.println("{TRIPLE:DONE}"); TRIPLE_COMPLETE
+//            //SETSIG_TRIPLE;
+//            waitingFor = NONE;
+//            break;
+//
+//        case SHUTTERLED3: 
+//            if (SHUTTER_READY)
+//            {
+//                Serial.println("{TRIPLE:DONE}");
+//                delay(lampDefer);
+//                lampOn();
+//                delay(30);
+//                lampOff();
+//                //waitingFor = SHUTTERLED3A;
+//                //SETSIG_TRIPLE;
+//                if (verbose) { Serial.println("SETSIG_TRIPLE"); }
+//                waitingFor = NONE;;
+//            }
+//            break;
+//
+//        case SHUTTERLED2A:
+//            if (SHUTTER_READY)
+//            {
+//                break;
+//            }
+//            if (verbose) { Serial.println("SL2A"); }
+//            waitingFor = SHUTTERLED3;
+//            break;
+//
+//        case SHUTTERLED2: 
+//            if (SHUTTER_READY)
+//            {
+//                delay(lampDefer);
+//                lampOn();
+//                delay(10);
+//                lampOff();
+//                waitingFor = SHUTTERLED2A;
+//            }
+//            break;
+//
+//        case SHUTTERLED1A:
+//            if (SHUTTER_READY)
+//            {
+//                break;
+//            }
+//            if (verbose) { Serial.println("SL1A"); }
+//            waitingFor = SHUTTERLED2;
+//            break;
+//
+//        case SHUTTERLED1: 
+//            if (SHUTTER_READY)
+//            {
+//                delay(lampDefer);
+//                lampOn();
+//                delay(2);
+//                lampOff();
+//                waitingFor = SHUTTERLED1A;
+//            }
+//            break;
 
        case STOPONFRAMEZERO:
             if (isOptoTransition())
@@ -644,13 +642,13 @@ void loop ()
     u16 ii;
     switch (lastCommand)
     {
-        case 's':
-            SETSIG_TRIPLE;
-            break;
+//        case 's':
+//            SETSIG_TRIPLE;
+//            break;
 
-        case 'S':
-            RESETSIG_TRIPLE;
-            break;
+//        case 'S':
+//            RESETSIG_TRIPLE;
+//            break;
 
 
         case 'd':
@@ -663,22 +661,22 @@ void loop ()
             Serial.println("{mode:super8}");
             break;
 
-        case 'c':
-            //SHUTTERINT_ON;
-            CAMERA_ON;
-            if (verbose)
-            {
-                Serial.println("Camera on");
-            }
-            break;
-
-        case 'C':
-            CAMERA_OFF;
-            if (verbose)
-            {
-                Serial.println("Camera off");
-            }
-            break;
+//        case 'c':
+//            //SHUTTERINT_ON;
+//            CAMERA_ON;
+//            if (verbose)
+//            {
+//                Serial.println("Camera on");
+//            }
+//            break;
+//
+//        case 'C':
+//            CAMERA_OFF;
+//            if (verbose)
+//            {
+//                Serial.println("Camera off");
+//            }
+//            break;
 
         case 'x':
             Serial.print("optoIntTimeout ");
@@ -699,8 +697,8 @@ void loop ()
             Serial.print((int)pretension);
             Serial.print("\r\nSense ");
             Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
-            Serial.print("\r\nLampDefer ");
-            Serial.print((int)lampDefer);
+//            Serial.print("\r\nLampDefer ");
+//            Serial.print((int)lampDefer);
             Serial.print("\r\n");
             break;
 
@@ -708,21 +706,21 @@ void loop ()
             reset();
             break;
 
-        case 'm': // lamp flash duration
-            if (parameter > 0)
-            {
-                lampDuration = parameter;
-                parameter = 0;
-            }
-            
+//        case 'm': // lamp flash duration
+//            if (parameter > 0)
+//            {
+//                lampDuration = parameter;
+//                parameter = 0;
+//            }
+//            
             break;
 
-        case 'a': // durations 2, 10, 30ms if (parameter > 0) //  && lampDuration > 0)
-            waitingFor = SHUTTERLED1;
-            lampDefer = parameter;
-            parameter = 0;
-            if (verbose) { Serial.println("RESETSIG_TRIPLE"); }
-            RESETSIG_TRIPLE;
+//        case 'a': // durations 2, 10, 30ms if (parameter > 0) //  && lampDuration > 0)
+//            waitingFor = SHUTTERLED1;
+//            lampDefer = parameter;
+//            parameter = 0;
+////            if (verbose) { Serial.println("RESETSIG_TRIPLE"); }
+//            RESETSIG_TRIPLE;
             break;
 
         case 'l':
