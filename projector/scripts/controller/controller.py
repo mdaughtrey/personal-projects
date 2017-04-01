@@ -6,22 +6,23 @@ import json
 from ProjectStore import ProjectStore
 from FileManager import FileManager
 from JobManager import JobManager
-from ControllerStore import ControllerStore
 from nx300 import NX300
 import logging
 import signal
 import sys
 import argparse
+import code
+
+signal.signal(signal.SIGUSR2, lambda sig, frame: code.interact())
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--jobmode', dest='jobmode', default='proc', 
     choices = ['proc', 'inline', 'disable'], help='background job mode')
 parser.add_argument('--project', required = True, dest='project', help='set jobman project name')
 parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
-parser.add_argument('--worker', dest='workers', action='append')
 config = parser.parse_args()
 
-ROOTOFALL='/media/sf_vmshared/scans/'
+ROOTOFALL='/media/sf_vm_externalhd/scans/'
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
@@ -34,15 +35,15 @@ logger.addHandler(fileHandler)
 logging.getLogger('ProjectStore').addHandler(fileHandler)
 logging.getLogger('FileManager').addHandler(fileHandler)
 logging.getLogger('JobManager').addHandler(fileHandler)
-logging.getLogger('ControllerStore').addHandler(fileHandler)
+#logging.getLogger('ControllerStore').addHandler(fileHandler)
 logging.getLogger('RemoteDev').addHandler(fileHandler)
 
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
 jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
-cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
-remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
+#cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
+#remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
 
 def signal_handler(signal, frame):
     logger.debug("Control C")
@@ -55,9 +56,12 @@ signal.signal(signal.SIGINT, signal_handler)
 #
 # Upload a new raw file
 #
-@app.route('/upload', methods = ['PUT'])
+@app.route('/upload', methods = ['PUT','GET'])
 def upload():
     try:
+        if 'GET' == request.method:
+           jobman.uploadsDone(config.project) 
+           return json.dumps(['OK'])
         container, filename = pstore.getNextImageLocation(config.project)
         fileman.newFile(request.data, config.project, container, filename)
         pstore.newRawFile(config.project, container, filename)

@@ -35,6 +35,7 @@ u08 pdState = 0xff;
 #define OPTOINT_TIMEOUT 3000
 
 #define MOTOR_PRETENSION_NEXT 40 
+#define MOTOR_PRETENSION_MAX 70 
 #define MOTOR_PRETENSION_FF 20
 #define MOTOR_REWIND_FAST 100 
 #define MOTOR_REWIND_SLOW 70 
@@ -75,6 +76,7 @@ typedef enum
         SENSORSTART,        
         OPTOINT_CHANGED,    
         STOPONFRAMEZERO,    
+        PRETENSION,
         //SHUTTERLED1,
         //SHUTTERLED1A,
         //SHUTTERLED2,
@@ -306,6 +308,7 @@ u08 isOptoTransition()
 
 void reset()
 {
+    u08 ii;
     Serial.println("Reset");
     stepperInit();
     lampOff();
@@ -323,6 +326,13 @@ void reset()
 #ifdef USEFRAM
     framIndex = 0;
 #endif // USEFRAM
+    for (ii = 0; ii < 5; ii++)
+    {
+        lampOn();
+        delay(80);
+        lampOff();
+        delay(80);
+    }
 }
 
 //u08 lampDefer = LAMPDEFER;
@@ -332,21 +342,15 @@ void setup ()
 { 
     Serial.begin(57600);
     Serial.println("Init Start");
+    lastCommand = 0;
     PORTC |= _BV(PC_OPTOINT) | _BV(PC_REWIND); // tie opt int sensor line hight
     PORTB |= _BV(PB_PRETENSION) | _BV(PB_NEXT);
     PORTD |= _BV(PD_RESET);
 
     analogWrite(PIN_MOTOR, MOTOR_OFF);
     PORTC |= _BV(PC_SHUTTER) | _BV(PC_TENSIONSENSOR);
-//    PORTD |= _BV(PD_CAMERAPOWER);
-//    DDRD |= _BV(PD_CAMERAPOWER);
     DDRB |= _BV(PB_LAMP) | _BV(PB_SIGTRIPLE);
     DDRC |= _BV(PC_SHUTTER);
-    //CAMERA_OFF;
-    lampOff();
-
-    stepperInit();
-    //shutterState = 0xaa;
 #ifdef USEFRAM
     //Serial.println("Init FRAM");
     if (fram.begin())
@@ -357,7 +361,7 @@ void setup ()
     iqTail = 0;
     iqHead = 0;
 #endif // USEFRAM
-    //RESETSIG_TRIPLE;
+    reset();
     Serial.println("{State:Ready}");
 }
 
@@ -382,6 +386,21 @@ bool buttonTest(u08 pins, u08 * state, u08 testBit)
 
 void loop ()
 {
+    int ii
+    for (ii = 0; ii < 5; ii++)
+    {
+        lampOn();
+        delay(30);
+        lampOff();
+        delay(30);
+    }
+    return;
+
+    Serial.print("\r\nlastCommand ");
+    Serial.print(lastCommand, 10);
+    Serial.print("\r\nwaitingFor ");
+    Serial.print(waitingFor, 10);
+
 //    u08 sState = SHUTTER_READY;
 //    if (srState != sState)
 //    {
@@ -549,6 +568,48 @@ void loop ()
             waitingFor = OPTOINT_HALF;
             break;
 
+        case PRETENSION:
+            if (MOTOR_PRETENSION_NEXT == pretension)
+            {
+                stepperStop();
+                pretension++;
+                break;
+            }
+            if (pretension < 70)
+            {
+                setMotor(10);
+                delay(PRETENSIONDELAY);
+                setMotor(70);
+                delay(PRETENSIONDELAY);
+                setMotor(10);
+                delay(PRETENSIONDELAY);
+                setMotor(pretension);
+                delay(PRETENSIONDELAY);
+                if (verbose)
+                {
+                    Serial.print("PT ");
+                    Serial.print(pretension, 10);
+                    Serial.print(" Sense ");
+                    Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
+                    Serial.print("\r\n");
+                }
+                if (PINC & _BV(PC_TENSIONSENSOR))
+                {
+                    waitingFor = NONE;
+                    Serial.print("{pt:");
+                    Serial.print(pretension, 10);
+                    Serial.println("}");
+                    break;
+                }
+                pretension += 10;
+            }
+            else
+            {
+                    Serial.print("{pt:");
+                    Serial.print(pretension, 10);
+            }
+            break;
+
 //        case SHUTTERLED3A:
 //            if (SHUTTER_READY)
 //            {
@@ -631,15 +692,43 @@ void loop ()
         default:
             break;
     }
-
-    if (buttonTest(PINB, &pbState, PB_PRETENSION)) lastCommand = 't'; // Serial.println("Pretension");
-    else if (buttonTest(PINB, &pbState, PB_NEXT)) lastCommand = 'n'; // Serial.println("Next");
-    else if (buttonTest(PINC, &pcState, PC_REWIND)) lastCommand = 'r'; // Serial.println("Rewind");
-    else if (buttonTest(PIND, &pdState, PD_RESET)) lastCommand = ' '; // Serial.println("Reset");
-    else if (Serial.available()) lastCommand = Serial.read();
+#if 0
+    if (buttonTest(PINB, &pbState, PB_PRETENSION))
+    {
+        waitingFor = PRETENSION;
+        pretension = MOTOR_PRETENSION_NEXT;
+        return;
+//        lastCommand = 't';
+    }
+    else
+        if (buttonTest(PINB, &pbState, PB_NEXT))
+    {
+        lastCommand = 'n'; 
+    }
+    else if (buttonTest(PINC, &pcState, PC_REWIND))
+    {
+        lastCommand = 'r'; 
+    }
+    else if (buttonTest(PIND, &pdState, PD_RESET))
+    {
+        lastCommand = ' ';
+    }
+    else if (Serial.available())
+    {
+        lastCommand = Serial.read();
+    }
     else return;
+#endif
+    if (!Serial.available())
+    {
+        return;
+    }
+    else
+    {
+        lastCommand = Serial.read();
+    }
 
-    u16 ii;
+    //u16 ii;
     switch (lastCommand)
     {
 //        case 's':
@@ -742,38 +831,10 @@ void loop ()
             break;
 
         case 't': // auto pretension
-            stepperStop();
-            {
-                pretension = 10;
-                while (pretension < 70)
-                {
-                    setMotor(10);
-                    delay(PRETENSIONDELAY);
-                    setMotor(70);
-                    delay(PRETENSIONDELAY);
-                    setMotor(10);
-                    delay(PRETENSIONDELAY);
-                    setMotor(pretension);
-                    delay(PRETENSIONDELAY);
-                    if (verbose)
-                    {
-                        Serial.print("PT ");
-                        Serial.print(pretension, 10);
-                        Serial.print(" Sense ");
-                        Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
-                        Serial.print("\r\n");
-                    }
-                    if (PINC & _BV(PC_TENSIONSENSOR))
-                    {
-                        break;
-                    }
-                    pretension += 10;
-                }
-                Serial.print("{pt:");
-                Serial.print(pretension, 10);
-                Serial.println("}");
-            }
+            pretension = MOTOR_PRETENSION_NEXT;
+            waitingFor = PRETENSION;
             break;
+
 
         case 'u': // untension
             stepperStop();
