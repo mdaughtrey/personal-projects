@@ -69,7 +69,7 @@ processyuv()
     #wine Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe $avsscript - > $imgroot/out.yuv
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
 #    export WINEDEBUG=trace+all
-    wine32 /mnt/imageinput/software/avs2yuv/avs2yuv.exe $avsscript - > $imgroot/out.yuv
+    wine /mnt/imageinput/software/avs2yuv/avs2yuv.exe $avsscript - > $imgroot/out.yuv
 }
 
 if [[ ! -f "$imgroot/out.yuv" ]]

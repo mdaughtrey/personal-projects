@@ -27,7 +27,7 @@ class JobManager():
             "pc": self._schedulePrecrop,
             "ac": self._scheduleAutocrop,
             "tf": self._scheduleTonefuse,
-            "gt": self._scheduleGenTitle,
+#            "gt": self._scheduleGenTitle,
             "gc": self._scheduleGenContent }
 
         for task in tasks:
@@ -43,7 +43,8 @@ class JobManager():
         self._workers = []
         self._logger.debug("JobManager init")
         self._root = root
-        self._generateTitles = False
+        self._genContent = False
+#        self._generateTitles = False
         self._config = config
 #        self._scheduledTasks = [
 #            self._schedulePrecrop,
@@ -135,19 +136,20 @@ class JobManager():
             del todo[:3]
         return scheduled
  
-    def _scheduleGenTitle(self, freeWorkers):
-        if False == self._generateTitles: return 0
-        if 'inline' == self._config.jobmode: 
-            self._vmGenTitle(self._config.project, self._root)
-            return 0
-        else:
-            self._workers.append(Process(target = self._vmGenTitle,
-                args = (self._config.project, self._root)))
-            self._workers[-1].start()
-        self._generateTitles = False
-        return 1    
+#    def _scheduleGenTitle(self, freeWorkers):
+##        if False == self._generateTitles: return 0
+#        if 'inline' == self._config.jobmode: 
+#            self._vmGenTitle(self._config.project, self._root)
+#            return 0
+#        else:
+#            self._workers.append(Process(target = self._vmGenTitle,
+#                args = (self._config.project, self._root)))
+#            self._workers[-1].start()
+#        self._generateTitles = False
+#        return 1    
 
     def _scheduleGenContent(self, freeWorkers):
+        if True == self._genContent: return 0
         chunks, processed = self._pstore.getVideoChunkStatus(self._config.project)
         todo = [ee.encode('ascii', 'ignore') for ee in chunks if ee not in processed]
         if 0 == len(todo):
@@ -158,6 +160,7 @@ class JobManager():
             self._workers.append(Process(target = self._vmGenContent,
                 args = (self._config.project, self._root, todo[0])))
             self._workers[-1].start()
+        self._genContent = True
         return 1    
 
     def shutdown(self):
@@ -270,14 +273,14 @@ class JobManager():
 
         self._logger.debug("_vmPrecrop Done")
 
-    def _vmGenTitle(self, project, root):
-        jobargs = ('../gentitle.sh', '-p', project, '-r', root)
-#        retcode = subprocess.call(jobargs)
-        try:
-            self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
-
-        except subprocess.CalledProcessError as ee:
-            self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
+#    def _vmGenTitle(self, project, root):
+#        jobargs = ('../gentitle.sh', '-p', project, '-r', root)
+##        retcode = subprocess.call(jobargs)
+#        try:
+#            self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+#
+#        except subprocess.CalledProcessError as ee:
+#            self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
 
     def _vmGenContent(self, project, root, container):
         self._pstore.markChunkProcessing(project, container)
@@ -285,8 +288,8 @@ class JobManager():
 
         try:
             self._logger.info(jobargs)
-            output = subprocess.check_output(jobargs)
-            #subprocess.check_call(jobargs, stderr=subprocess.STDOUT)
+            #output = subprocess.check_output(jobargs)
+            subprocess.check_call(jobargs, stderr=subprocess.STDOUT)
             #self._logger.debug(output)
             self._pstore.markChunkProcessed(project, container)
 
