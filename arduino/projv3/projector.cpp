@@ -386,21 +386,11 @@ bool buttonTest(u08 pins, u08 * state, u08 testBit)
 
 void loop ()
 {
-    int ii
-    for (ii = 0; ii < 5; ii++)
-    {
-        lampOn();
-        delay(30);
-        lampOff();
-        delay(30);
-    }
-    return;
-
-    Serial.print("\r\nlastCommand ");
-    Serial.print(lastCommand, 10);
-    Serial.print("\r\nwaitingFor ");
-    Serial.print(waitingFor, 10);
-
+//    Serial.print("\r\nlastCommand ");
+//    Serial.print(lastCommand, 10);
+//    Serial.print("\r\nwaitingFor ");
+//    Serial.print(waitingFor, 10);
+//
 //    u08 sState = SHUTTER_READY;
 //    if (srState != sState)
 //    {
@@ -692,7 +682,6 @@ void loop ()
         default:
             break;
     }
-#if 0
     if (buttonTest(PINB, &pbState, PB_PRETENSION))
     {
         waitingFor = PRETENSION;
@@ -718,15 +707,14 @@ void loop ()
         lastCommand = Serial.read();
     }
     else return;
-#endif
-    if (!Serial.available())
-    {
-        return;
-    }
-    else
-    {
-        lastCommand = Serial.read();
-    }
+//    if (!Serial.available())
+//    {
+//        return;
+//    }
+//    else
+//    {
+//        lastCommand = Serial.read();
+//    }
 
     //u16 ii;
     switch (lastCommand)
