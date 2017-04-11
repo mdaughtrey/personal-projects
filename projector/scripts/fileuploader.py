@@ -22,18 +22,14 @@ fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
 fileHandler.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
-ControllerIP = '192.168.0.31'
-ControllerPort = 5000
-
 ss = requests.Session()
-
 parser = argparse.ArgumentParser()
 parser.add_argument('--dir', dest='dir', help='image dir')
+parser.add_argument('--ip', dest='ip', help='controller ip')
+parser.add_argument('--port', dest='port', type=int, help='controller port')
 args = parser.parse_args()
 
-
 donedone = args.dir + "/done.done"
-
 
 def getFiles():
     for file in sorted(glob.glob("%s/??????.done" % args.dir)):
@@ -48,7 +44,7 @@ def uploader():
     uploaded = 0
     for jpg, done in getFiles():
        logger.debug("uploader gets %s" % jpg)
-       hargs = (ControllerIP, ControllerPort)
+       hargs = (args.ip, args.port)
        hUrl = 'http://%s:%u/upload' % hargs
        try:
            logger.debug(hUrl)
@@ -68,9 +64,8 @@ def uploader():
 if os.path.isfile(donedone):
     os.remove(donedone)
 while True:
-#    uploader()
     if 0 == uploader() and os.path.isfile(donedone):
-       hargs = (ControllerIP, ControllerPort)
+       hargs = (args.ip, args.port)
        hUrl = 'http://%s:%u/upload' % hargs
        try:
            logger.debug(hUrl)
