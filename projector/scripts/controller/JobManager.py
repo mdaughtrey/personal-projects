@@ -13,7 +13,7 @@ def trampoline(object):
 
 class JobManager():
 # width x height +x + y offset
-    PrecropS8Geometry="2912x2200+200+0"
+    PrecropS8Geometry="2912x2200+0+250"
     Precrop8mmGeometry="2868x1800+300+500"
     JobLimit = 4 
 #    WorkerManagerControl = False # True # 'Off'
