@@ -340,6 +340,7 @@ void reset()
 
 void setup ()
 { 
+    pinMode(13, OUTPUT);
     Serial.begin(57600);
     Serial.println("Init Start");
     lastCommand = 0;
@@ -386,6 +387,17 @@ bool buttonTest(u08 pins, u08 * state, u08 testBit)
 
 void loop ()
 {
+//    digitalWrite(13, 1);
+//    delay(50);
+//    digitalWrite(13, 0);
+//    delay(50);
+//    return;
+
+//    if (NONE != waitingFor)
+//    {
+//        Serial.print(waitingFor, 10);
+//        Serial.print(" ");
+//    }
 //    Serial.print("\r\nlastCommand ");
 //    Serial.print(lastCommand, 10);
 //    Serial.print("\r\nwaitingFor ");
@@ -687,10 +699,9 @@ void loop ()
         waitingFor = PRETENSION;
         pretension = MOTOR_PRETENSION_NEXT;
         return;
-//        lastCommand = 't';
     }
     else
-        if (buttonTest(PINB, &pbState, PB_NEXT))
+     if (buttonTest(PINB, &pbState, PB_NEXT))
     {
         lastCommand = 'n'; 
     }
@@ -702,7 +713,8 @@ void loop ()
     {
         lastCommand = ' ';
     }
-    else if (Serial.available())
+    else
+        if (Serial.available())
     {
         lastCommand = Serial.read();
     }
