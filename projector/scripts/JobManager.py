@@ -221,7 +221,7 @@ class JobManager():
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputdir = self._fileman.getAutocropDir(project, container)
-        jobargs = ('../autocrop.py', '-s', '--filenames',
+        jobargs = ('../autocrop2.py', '-s', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
             '--mode', self._config.film,
             '--output-dir', outputdir)
@@ -234,7 +234,7 @@ class JobManager():
             self._logger.debug("_wmAutocrop Done")
 
         except subprocess.CalledProcessError as ee:
-            self._logger.error("autocrop failed rc %d $s" % (ee.returncode, ee.output))
+            self._logger.error("autocrop2 failed rc %d $s" % (ee.returncode, ee.output))
             self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmPrecropShort(self, project, container, filename):

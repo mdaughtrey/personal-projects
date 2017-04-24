@@ -33,6 +33,9 @@ class FileManager():
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s" % (self._getdir(project, container, 'rawfile'), filename)
 
+    def getRawFileDir(self, project, container):
+        return self._getdir(project, container, 'rawfile')
+
     def getPrecropDir(self, project, container):
         return self._getdir(project, container, 'precrop')
 

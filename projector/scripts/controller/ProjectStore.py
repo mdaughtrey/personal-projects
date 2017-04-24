@@ -137,6 +137,7 @@ class ProjectStore():
     def toBeAutocropped(self, project, limit):
         # don't offer any files unless all precropped is complete
         pcRemaining =  self.getRemaining(project, 'precrop')
+        self._logger.debug("pcRemaining %s" % pcRemaining)
         if 0 != pcRemaining:
             self._logger.debug("%s remaining precrops, autocrop not ready" % pcRemaining)
             return []
