@@ -22,6 +22,7 @@ class JobManager():
 
     def schedulableTasks(self):
         tasks = self._pstore.taskList(self._config.project)
+        self._logger.debug("tasks %s" % tasks)
         self._scheduledTasks = []
         taskTable = { 
             "pc": self._schedulePrecrop,
@@ -101,15 +102,10 @@ class JobManager():
  
     def _scheduleAutocrop(self, freeWorkers):
         scheduled = 0
+        self._logger.debug("_scheduleAutocrop")
         todo = self._pstore.toBeAutocropped(self._config.project, freeWorkers * 3)
+        self._logger.debug("todo %s" % todo)
         while len(todo) >= 3:
-#            testargs = {todo[0][1]: 1}
-#            testargs[todo[1][1]] = 1
-#            testargs[todo[2][1]] = 1
-#            if len(testargs.keys()) > 1:
-#                self._logger.error("Mismatched container values")
-#                del todo[:3]
- 
             jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
  
             if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
@@ -168,8 +164,10 @@ class JobManager():
         map(lambda pp: pp.terminate(), self._workers)
 
     def _workerManager(self):
+        self._logger.debug("_workerManager")
         self._workerCleanup()
         self.schedulableTasks()
+        self._logger.debug("_workerManager")
 
         freeWorkers = JobManager.JobLimit - len(self._workers)
         if 0 == freeWorkers:
@@ -177,7 +175,9 @@ class JobManager():
             time.sleep(1)
             return
 
+        self._logger.debug("_scheduledTasks %s" % self._scheduledTasks)
         for task in self._scheduledTasks:
+            self._logger.debug("Task %s" % task)
             if freeWorkers: freeWorkers -= task(freeWorkers)
 
         if freeWorkers:
@@ -206,7 +206,7 @@ class JobManager():
 
     def _vmAutocropShort(self, project, container, file1, file2, file3):
         self._logger.info("vmAutoCropShort %s %s %s %s %s" % (project, container, file1, file2, file3))
-        sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
+        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
@@ -217,14 +217,15 @@ class JobManager():
         self._pstore.markAutocropped(project, container, file1, file2, file3)
 
     def _vmAutocrop(self, project, container, file1, file2, file3):
-#        return self._vmAutocropShort(project,container, file1, file2, file3)
+        #return self._vmAutocropShort(project,container, file1, file2, file3)
         self._logger.info("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
-        sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
+        #sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
+        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputdir = self._fileman.getAutocropDir(project, container)
-        jobargs = ('../autocrop.py', '-s', '--filenames',
+        jobargs = ('../autocrop2.py', '-s', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
             '--mode', self._config.film,
             '--output-dir', outputdir)
