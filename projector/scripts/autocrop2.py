@@ -4,7 +4,7 @@ import scipy
 from scipy import ndimage
 from scipy import signal
 from optparse import OptionParser
-from PIL import Image as PILImage, ImageDraw, ImageFilter
+from PIL import Image as PILImage, ImageDraw, ImageFilter, ImageFile
 import Image
 # import Image, ImageDraw, ImageFilter
 import sys
@@ -20,6 +20,8 @@ import cv2
 from cv2 import matchTemplate as cv2m
 from collections import namedtuple
 from operator import mul
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 options = {}
 
@@ -54,9 +56,9 @@ Info = namedtuple('Info', 'start height')
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(message)s')
 logger = logging.getLogger('autocrop')
-fileHandler = RotatingFileHandler(filename='/tmp/autocrop_%u.log' % os.getpid(), maxBytes=10e6, backupCount=2)
-fileHandler.setLevel(logging.DEBUG)
-logger.addHandler(fileHandler)
+#fileHandler = RotatingFileHandler(filename='/tmp/autocrop_%u.log' % os.getpid(), maxBytes=10e6, backupCount=2)
+#fileHandler.setLevel(logging.DEBUG)
+#logger.addHandler(fileHandler)
 
 #def whiteCount(filename):
 #    imp = PILImage.open(filename).convert('L')
@@ -328,6 +330,7 @@ def processSuper8(filenames, outputpath):
             fullColor.save('%s/%s' % (outputpath, os.path.basename(iFile)))
         except:
             logger.error("Did not save %s/%s" % (outputpath, os.path.basename(iFile)))
+            raise
 
 def find8mmSprocket(image, filename):
     (imX, imY) = image.size
