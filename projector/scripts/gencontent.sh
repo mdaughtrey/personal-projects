@@ -45,6 +45,7 @@ genyuvstream()
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$imgroot/contentlist.txt \
         -vf scale=$HRES:$VRES \
+        -vf-add rotate=1 \
     	-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub \
         -vo yuv4mpeg:file=$imgroot/content.yuv
 }

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCANBASE=/media/sf_vmshared/scans
+SCANBASE=/home/mattd/scans
 project=$1
 if [[ "$project" == "" ]]
 then
