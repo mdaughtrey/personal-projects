@@ -1,4 +1,5 @@
 #include <WProgram.h>
+
 #include <avrlibtypes.h>
 #include <stepper.h>
 #ifdef USEFRAM
@@ -6,7 +7,6 @@
 #include <Adafruit_FRAM_I2C-master/Adafruit_FRAM_I2C.h>
 #endif // USEFRAM
 #pragma GCC diagnostic ignored "-Wwrite-strings"
-//#define READY2
 
 // -4: PC2 Rewind
 // 11: PD6 Reset
@@ -20,19 +20,16 @@ u08 pbState = 0xff;
 u08 pcState = 0xff;
 u08 pdState = 0xff;
 
-//#define PB_CAMERABUSY 0
-//#define PB_SHUTTERREADY 0
 #define PB_LAMP 1
 #define PIN_MOTOR 10  // PB2
-#define PB_SIGTRIPLE 5
+//#define PB_SIGTRIPLE 5
 
 #define PC_TENSIONSENSOR 0 // PC0
-#define PC_OPTOINT 1 // PC1
-#define PC_SHUTTER 2
+#define PC_OPTOINT 1 // PC1 PCINT9
+//#define PC_SHUTTER 2
 
-//#define PD_CAMERAPOWER 7
-#define PD_SHUTTERREADY 7
-#define OPTOINT_TIMEOUT 3000
+//#define PD_SHUTTERREADY 7
+#define OPTOINT_TIMEOUT 10000
 
 #define MOTOR_PRETENSION_NEXT 40 
 #define MOTOR_PRETENSION_MAX 70 
@@ -42,52 +39,35 @@ u08 pdState = 0xff;
 #define MOTOR_OFF 0 
 #define PRETENSIONDELAY 200
 #define LAMPDEFER 0
-
-//#define CAMERABUSYTIMEOUT 1200
 #define LAMP_TIMEOUT_MS 3000
 #define NEXT_FRAME_TIMEOUT_MS 8000
 #define SENSORTHRESHOLD 200
 #define LAMP_OFF PORTB &= ~_BV(PB_LAMP)
 #define LAMP_ON PORTB |= _BV(PB_LAMP)
-
-//#define SHUTTER_READY PINB & _BV(PB_SHUTTERREADY)
-#define SHUTTER_READY PIND & _BV(PD_SHUTTERREADY)
+//#define SHUTTER_READY PIND & _BV(PD_SHUTTERREADY)
 #define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
-//#define CAMERA_ON PORTD |= _BV(PD_CAMERAPOWER);
-//#define CAMERA_OFF PORTD &= ~_BV(PD_CAMERAPOWER);
-//#define CAMERA_ON 
-//#define CAMERA_OFF 
-#define SHUTTERINT_ON { PCMSK2 |= _BV(PCINT22); PCICR |= _BV(PCIE2); }
-#define SHUTTERINT_OFF { PCMSK2 &= ~_BV(PCINT22); PCICR &= ~_BV(PCIE2); }
-//#define RESETSIG_TRIPLE { PORTB &= ~_BV(PB_SIGTRIPLE); }
-//#define SETSIG_TRIPLE { PORTB |= _BV(PB_SIGTRIPLE); }
+//#define SHUTTERINT_ON { PCMSK2 |= _BV(PCINT22); PCICR |= _BV(PCIE2); }
+//#define SHUTTERINT_OFF { PCMSK2 &= ~_BV(PCINT22); PCICR &= ~_BV(PCIE2); }
+#define OPTOINT_ON { PCMSK1 |= _BV(PCINT9; PCICR |= _BV(PCIE1); }
+#define OPTOINT_OFF { PCMSK1 &= ~_BV(PCINT9; PCICR &= ~_BV(PCIE1); }
 
 #ifdef USEFRAM
 #define FHEADER_ISR 0x5a
 #define FHEADER_STATE 0xa5
 #endif // USEFRAM
 
-//#define DELAYEDSTATE(dd, ss) { stateLoop = dd/10; stateSaved = ss; waitingFor = DELAYLOOP; }
-
 typedef enum
 { 
         NONE = 0,           
-        FRAMESTOP,          
+        //FRAMESTOP,          
         SENSORSTART,        
-        OPTOINT_CHANGED,    
+//        OPTOINT_CHANGED,    
         STOPONFRAMEZERO,    
         PRETENSION,
-        //SHUTTERLED1,
-        //SHUTTERLED1A,
-        //SHUTTERLED2,
-        //SHUTTERLED2A,
-        //SHUTTERLED3,
-        //SHUTTERLED3A,
         OPTOINT_HALF,       
         OPTOINT_FULL,       
-        OPTOINT_REVERSE,    
-        OPTOINT_FULL2
-//        WAITCAMERABUSY      
+//        OPTOINT_REVERSE,    
+//        OPTOINT_FULL2
 } WaitFor;
 
 typedef enum
@@ -97,12 +77,10 @@ typedef enum
     FILM_SUPER8
 } FilmMode;
 
-//void incMotor();
-//void decMotor();
 void setMotor(u08 set); void lampOn();
 void lampOff();
 void lampCheck();
-void reset();
+void init();
 
 u16 parameter = 0;
 volatile u08 intCount = 0;
@@ -110,24 +88,17 @@ volatile u08 lastIntCount = 0;
 u08 verbose = 0;
 u08 motorPulse = 255;
 u08 pretension = MOTOR_PRETENSION_NEXT;
-//u08 servoSpeed = SERVO_NEXTFRAME_FAST;
-//nu32 lampTimeout = 0;
 volatile u32 optoIntTimeout;
 u32 cameraBusyTimeout;
 u08 sensorValue;
-//u08 lastSensorValue(0);
 u08 waitingFor(NONE);
-//u08 stateLoop;
-//u08 stateSaved;
 u08 lastCommand;
-u16 frameCount;
 u08 filmMode = FILM_NONE;
-u08 srState = 0;
+u08 stepperDelay = 1;
 
 #ifdef USEFRAM
 Adafruit_FRAM_I2C fram = Adafruit_FRAM_I2C();
 u16 framIndex;
-//volatile u32 tmrNoOptoChange;
 
 typedef struct
 {
@@ -135,13 +106,16 @@ typedef struct
     u08 tail;
     u32 millis;
     u08 intCount;
-//    u08 shutterState;
     u08 waitingFor;
 } IntEntry;
 
 IntEntry intQueue[4];
 volatile u08 iqHead = 0;
 volatile u08 iqTail = 0;
+
+ISR(PCINT9_vect)
+{
+}
 
 void framWrite8(u08 value)
 {
@@ -186,10 +160,7 @@ u32 framRead32(u16 address)
 
     return result.asU32;
 }
-//-                    u16 fValue((fram.read8(ii) << 8) | fram.read8(ii+1));
-#endif // USEFRAM
-
-
+#endif // 0
 void setMotor(u08 set)
 {
     motorPulse = set;
@@ -199,43 +170,13 @@ void setMotor(u08 set)
 void lampOn()
 {
     LAMP_ON;
-    //lampTimeout = millis();
 }
 
 void lampOff()
 {
     LAMP_OFF;
-    //lampTimeout = 0;
 }
 
-//void lampCheck()
-//{
-//    if (0 == lampTimeout)
-//    {
-//        return;
-//    }
-//    if ((millis() - lampTimeout) > LAMP_TIMEOUT_MS)
-//    {
-//        lampOff();
-//    }
-//}
-
-// 1 = made the transition to zero
-u08 decFrameCount()
-{
-    if (0 == frameCount)
-    {
-        return 0;
-    }
-    frameCount--;
-    if (frameCount == 0)
-    {
-        stepperStop();
-        waitingFor = FRAMESTOP;
-        return 1;
-    }
-    return 0;
-}
 #define NOTRANSITION 0
 #define FULLFRAME 1
 #define HALFFRAME 2
@@ -267,18 +208,10 @@ u08 isOptoTransition()
     }
     if ((now - optoIntTimeout) > OPTOINT_TIMEOUT)
     {
-//        if (1 == verbose)
-//        {
-//            Serial.print("Opto int timeout ");
-//            Serial.print(optoIntTimeout);
-//            Serial.print(" vs ");
-//            Serial.println(now);
-//        }
-        // JSON
         Serial.print("{OIT:");
         Serial.print(now - optoIntTimeout, 10);
         Serial.println("}");
-        reset();
+        init();
         return NOTRANSITION;
     }
     if (FILM_SUPER8 == filmMode)
@@ -306,26 +239,20 @@ u08 isOptoTransition()
     return 0; // no transition
 }
 
-void reset()
+void init()
 {
     u08 ii;
-    Serial.println("Reset");
+//    Serial.println("Reset");
     stepperInit();
     lampOff();
-    //SHUTTERINT_OFF;
-    //CAMERA_OFF;
-    //SHUTTER_CLOSE;
     setMotor(MOTOR_OFF);
-    //motorRewind = MOTOR_OFF;
     parameter = 0;
     waitingFor = NONE;
     verbose = 0;
-    frameCount = 0;
-    //optoIntTimeout = 0;
-    //shutterState = 0;
 #ifdef USEFRAM
     framIndex = 0;
 #endif // USEFRAM
+    stepperDelay = 1;
     for (ii = 0; ii < 5; ii++)
     {
         lampOn();
@@ -334,9 +261,6 @@ void reset()
         delay(80);
     }
 }
-
-//u08 lampDefer = LAMPDEFER;
-//u08 lampDuration = 0;
 
 void setup ()
 { 
@@ -349,9 +273,11 @@ void setup ()
     PORTD |= _BV(PD_RESET);
 
     analogWrite(PIN_MOTOR, MOTOR_OFF);
-    PORTC |= _BV(PC_SHUTTER) | _BV(PC_TENSIONSENSOR);
-    DDRB |= _BV(PB_LAMP) | _BV(PB_SIGTRIPLE);
-    DDRC |= _BV(PC_SHUTTER);
+    //PORTC |= _BV(PC_SHUTTER) | _BV(PC_TENSIONSENSOR);
+    PORTC |= _BV(PC_TENSIONSENSOR);
+    //DDRB |= _BV(PB_LAMP) | _BV(PB_SIGTRIPLE);
+    DDRB |= _BV(PB_LAMP);
+//    DDRC |= _BV(PC_SHUTTER);
 #ifdef USEFRAM
     //Serial.println("Init FRAM");
     if (fram.begin())
@@ -362,7 +288,7 @@ void setup ()
     iqTail = 0;
     iqHead = 0;
 #endif // USEFRAM
-    reset();
+    init();
     Serial.println("{State:Ready}");
 }
 
@@ -387,107 +313,22 @@ bool buttonTest(u08 pins, u08 * state, u08 testBit)
 
 void loop ()
 {
-//    digitalWrite(13, 1);
-//    delay(50);
-//    digitalWrite(13, 0);
-//    delay(50);
-//    return;
-
-//    if (NONE != waitingFor)
-//    {
-//        Serial.print(waitingFor, 10);
-//        Serial.print(" ");
-//    }
-//    Serial.print("\r\nlastCommand ");
-//    Serial.print(lastCommand, 10);
-//    Serial.print("\r\nwaitingFor ");
-//    Serial.print(waitingFor, 10);
-//
-//    u08 sState = SHUTTER_READY;
-//    if (srState != sState)
-//    {
-//        if (sState && 0 == lampTimeout) { lampOn(); }
-//        if (!sState) { lampOff(); }
-//        srState = sState;
-//    }
-
-//    if (SHUTTER_READY) { lampOn(); }
-//    else { lampOff(); }
-    stepperPoll();
-    //lampCheck();
+    stepperPoll(stepperDelay);
 
     switch (waitingFor)
     {
         case NONE:
             break;
 
-        case FRAMESTOP:
-            if (2 == verbose)
-            {
-                Serial.println("FRAMESTOP");
-            }
-            stepperStop();
-            if (frameCount == 0)
-            {
-                setMotor(MOTOR_OFF);
-            }
-            if ('n' == lastCommand)
-            {
-                waitingFor = NONE;
-            }
-//            else
+//        case FRAMESTOP:
+//            stepperStop();
+//            if (1 == verbose)
 //            {
-//                //waitingFor = SHUTTEROPEN;
-//                cameraBusyTimeout = millis();
-//                waitingFor = WAITCAMERABUSY;
-//                Serial.print("{OIC:");
-//                Serial.print(millis() - optoIntTimeout, 10);
-//                Serial.println("}");
-//                if ((millis() - optoIntTimeout) < 750)
-//                {
-//                    stepperDelay(1);
-//                }
+//                Serial.println("FRAMESTOP");
 //            }
-            break;
-
-//        case WAITCAMERABUSY:
-//            if (2 == verbose)
+//            if ('n' == lastCommand)
 //            {
-//                Serial.println("WAITCAMERABUSY");
-//            }
-//            if (!(PINB & _BV(PB_CAMERABUSY)))
-//            {
-//                if (2 == verbose)
-//                {
-//                    Serial.println("Camera Busy");
-//                }
-//                cameraBusyTimeout = millis();
-//                break;
-//            }
-//
-//            if ((millis() - cameraBusyTimeout) < CAMERABUSYTIMEOUT)
-//            {
-//                if (2 == verbose)
-//                {
-//                    Serial.println("Camera Not Ready");
-//                }
-//                break;
-//            }
-//
-//            if (verbose)
-//            {
-//                Serial.println("Camera Ready");
-//            }
-//            if (0 == frameCount)
-//            {
-//                Serial.println("{Remaining:0}");
-////                Serial.print(frameCount, 10);
-////                Serial.println("}");
 //                waitingFor = NONE;
-//            }
-//            else
-//            {
-////                waitingFor = SHUTTEROPEN;
 //            }
 //            break;
             
@@ -498,6 +339,7 @@ void loop ()
             }
             if (HALFFRAME == isOptoTransition())
             {
+                //OPTOINT_ON;
                 waitingFor = OPTOINT_FULL;
             }
             break;
@@ -509,60 +351,59 @@ void loop ()
             }
             if (FULLFRAME == isOptoTransition())
             {
-                //setMotor(MOTOR_REWIND_SLOW);
-                setMotor(pretension);
-                waitingFor = FRAMESTOP;
+               // setMotor(pretension);
+                stepperStop();
+                if (1 == verbose)
+                {
+                    Serial.println("FRAMESTOP");
+                }
+                //waitingFor = FRAMESTOP;
+                waitingFor = NONE;
             }
             break;
 
-        case OPTOINT_REVERSE:
-            if (2 == verbose)
-            {
-                Serial.println("OPTOINT_REVERSE");
-            }
-            if (HALFFRAME == isOptoTransition())
-            {
-                setMotor(pretension);
-                waitingFor = OPTOINT_FULL2;
-            }
-            break;
+//        case OPTOINT_REVERSE:
+//            if (2 == verbose)
+//            {
+//                Serial.println("OPTOINT_REVERSE");
+//            }
+//            if (HALFFRAME == isOptoTransition())
+//            {
+//                setMotor(pretension);
+//                waitingFor = OPTOINT_FULL2;
+//            }
+//            break;
 
-        case OPTOINT_FULL2:
-            if (2 == verbose)
-            {
-                Serial.println("OPTOINT_FULL2");
-            }
-            if (FULLFRAME == isOptoTransition())
-            {
-                waitingFor = FRAMESTOP;
-            }
-            break;
+//        case OPTOINT_FULL2:
+//            if (2 == verbose)
+//            {
+//                Serial.println("OPTOINT_FULL2");
+//            }
+//            if (FULLFRAME == isOptoTransition())
+//            {
+//                waitingFor = FRAMESTOP;
+//            }
+//            break;
 
-        case OPTOINT_CHANGED:
-            if (2 == verbose)
-            {
-                Serial.println("OPTOINT_CHANGED");
-            }
-            switch (isOptoTransition())
-            {
-                case 1:
-                    optoIntTimeout = 0;
-//                    waitingFor = REVERSESEEK;
-                    waitingFor = OPTOINT_HALF;
-                    setMotor(MOTOR_REWIND_SLOW);
-                    //DELAYEDSTATE(1000, REVERSESEEK);
-                    break;
-            }
-            break;
+//        case OPTOINT_CHANGED:
+//            if (2 == verbose)
+//            {
+//                Serial.println("OPTOINT_CHANGED");
+//            }
+//            switch (isOptoTransition())
+//            {
+//                case 1:
+//                    optoIntTimeout = 0;
+//                    waitingFor = OPTOINT_HALF;
+//                    setMotor(MOTOR_REWIND_SLOW);
+//                    break;
+//            }
+//            break;
 
         case SENSORSTART:
             if (2 == verbose)
             {
                 Serial.println("SENSORSTART");
-            }
-            if (frameCount > 0)
-            {
-                setMotor(pretension);
             }
             stepperGo();
             SENSORVALUEINIT;
@@ -605,90 +446,16 @@ void loop ()
                 }
                 pretension += 10;
             }
-            else
-            {
-                    Serial.print("{pt:");
-                    Serial.print(pretension, 10);
-            }
             break;
-
-//        case SHUTTERLED3A:
-//            if (SHUTTER_READY)
-//            {
-//                break;
-//            }
-//            if (verbose) { Serial.println("SL3A"); }
-////            Serial.println("{TRIPLE:DONE}"); TRIPLE_COMPLETE
-//            //SETSIG_TRIPLE;
-//            waitingFor = NONE;
-//            break;
-//
-//        case SHUTTERLED3: 
-//            if (SHUTTER_READY)
-//            {
-//                Serial.println("{TRIPLE:DONE}");
-//                delay(lampDefer);
-//                lampOn();
-//                delay(30);
-//                lampOff();
-//                //waitingFor = SHUTTERLED3A;
-//                //SETSIG_TRIPLE;
-//                if (verbose) { Serial.println("SETSIG_TRIPLE"); }
-//                waitingFor = NONE;;
-//            }
-//            break;
-//
-//        case SHUTTERLED2A:
-//            if (SHUTTER_READY)
-//            {
-//                break;
-//            }
-//            if (verbose) { Serial.println("SL2A"); }
-//            waitingFor = SHUTTERLED3;
-//            break;
-//
-//        case SHUTTERLED2: 
-//            if (SHUTTER_READY)
-//            {
-//                delay(lampDefer);
-//                lampOn();
-//                delay(10);
-//                lampOff();
-//                waitingFor = SHUTTERLED2A;
-//            }
-//            break;
-//
-//        case SHUTTERLED1A:
-//            if (SHUTTER_READY)
-//            {
-//                break;
-//            }
-//            if (verbose) { Serial.println("SL1A"); }
-//            waitingFor = SHUTTERLED2;
-//            break;
-//
-//        case SHUTTERLED1: 
-//            if (SHUTTER_READY)
-//            {
-//                delay(lampDefer);
-//                lampOn();
-//                delay(2);
-//                lampOff();
-//                waitingFor = SHUTTERLED1A;
-//            }
-//            break;
 
        case STOPONFRAMEZERO:
             if (isOptoTransition())
             {
-                if (decFrameCount())
                 {
                     setMotor(MOTOR_OFF);
                     waitingFor = NONE;
                 }
             }
-//            Serial.print("SOFZ ");
-//            Serial.println(millis());
         break;
 
         default:
@@ -719,26 +486,15 @@ void loop ()
         lastCommand = Serial.read();
     }
     else return;
-//    if (!Serial.available())
-//    {
-//        return;
-//    }
-//    else
-//    {
-//        lastCommand = Serial.read();
-//    }
 
-    //u16 ii;
     switch (lastCommand)
     {
-//        case 's':
-//            SETSIG_TRIPLE;
-//            break;
-
-//        case 'S':
-//            RESETSIG_TRIPLE;
-//            break;
-
+        case 's':
+        if (parameter > 0)
+        {
+            stepperDelay = parameter;
+        }
+        break;
 
         case 'd':
             filmMode = FILM_8MM;
@@ -750,23 +506,6 @@ void loop ()
             Serial.println("{mode:super8}");
             break;
 
-//        case 'c':
-//            //SHUTTERINT_ON;
-//            CAMERA_ON;
-//            if (verbose)
-//            {
-//                Serial.println("Camera on");
-//            }
-//            break;
-//
-//        case 'C':
-//            CAMERA_OFF;
-//            if (verbose)
-//            {
-//                Serial.println("Camera off");
-//            }
-//            break;
-
         case 'x':
             Serial.print("optoIntTimeout ");
             Serial.print((int)optoIntTimeout);
@@ -776,8 +515,8 @@ void loop ()
             Serial.print((int)waitingFor);
             Serial.print("\r\nlastCommand ");
             Serial.print(lastCommand);
-            Serial.print("\r\nframeCount ");
-            Serial.print((int)frameCount);
+            Serial.print("\r\nstepperDelay ");
+            Serial.print((int)stepperDelay);
             Serial.print("\r\nfilmMode ");
             Serial.print((int)filmMode);
             Serial.print("\r\nparameter ");
@@ -786,30 +525,14 @@ void loop ()
             Serial.print((int)pretension);
             Serial.print("\r\nSense ");
             Serial.print(PINC & _BV(PC_TENSIONSENSOR) ? 1 : 0);
-//            Serial.print("\r\nLampDefer ");
-//            Serial.print((int)lampDefer);
             Serial.print("\r\n");
             break;
 
         case ' ':
-            reset();
+            DDRD |= _BV(PD_RESET);
+            PORTD &= ~_BV(PD_RESET);
             break;
 
-//        case 'm': // lamp flash duration
-//            if (parameter > 0)
-//            {
-//                lampDuration = parameter;
-//                parameter = 0;
-//            }
-//            
-            break;
-
-//        case 'a': // durations 2, 10, 30ms if (parameter > 0) //  && lampDuration > 0)
-//            waitingFor = SHUTTERLED1;
-//            lampDefer = parameter;
-//            parameter = 0;
-////            if (verbose) { Serial.println("RESETSIG_TRIPLE"); }
-//            RESETSIG_TRIPLE;
             break;
 
         case 'l':
@@ -822,15 +545,8 @@ void loop ()
             lampOff();
             break;
 
-        case 'o':
-            if (parameter > 0)
-            {
-                frameCount = parameter;
-                parameter = 0;
-            }
-            break;
-
         case 't': // auto pretension
+            optoIntTimeout = millis();
             pretension = MOTOR_PRETENSION_NEXT;
             waitingFor = PRETENSION;
             break;
@@ -842,25 +558,13 @@ void loop ()
             break;
 
         case 'f': // forward
-            if (frameCount)
-            {
-                SENSORVALUEINIT;
-            }
             setMotor(MOTOR_PRETENSION_FF);
             stepperGo();
-            if (frameCount)
-            {
-                waitingFor = STOPONFRAMEZERO;
-            }
             break;
 
         case 'r':
             SENSORVALUEINIT;
             setMotor(MOTOR_REWIND_FAST);
-            if (frameCount)
-            {
-                waitingFor = STOPONFRAMEZERO;
-            }
             break;
 
         case 'n': // next frame

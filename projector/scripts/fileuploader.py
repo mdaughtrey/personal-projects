@@ -78,5 +78,5 @@ while True:
 
     else:
         logger.debug("Sleeping");
-        time.sleep(10)
+        time.sleep(2)
 

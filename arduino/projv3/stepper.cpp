@@ -31,6 +31,14 @@
 //	COILA_PLUS_OFF;
 //	COILA_MINUS_ON;
 
+//     ~ ~
+// A B a b
+// 1 1 0 0
+// 1 0 0 1
+// 0 0 1 1
+// 0 1 1 0
+//#define FULLSTEP
+#ifdef FULLSTEP
 const unsigned char stepPortD[] = 
 {
     0x00, // idle
@@ -40,35 +48,42 @@ const unsigned char stepPortD[] =
 	0x18, // 0001 1000
     0x00 //idle
 };
+#else // FULLSTEP
+const unsigned char stepPortD[] =
+{
+    0x00, // 0000 0000
+    0x24, // 0010 0100
+    0x20, // 0010 0000
+    0x28, // 0010 1000
+    0x08, // 0000 1000
+    0x18, // 0001 1000
+    0x10, // 0001 0000
+    0x14, // 0001 0100
+    0x04, // 0000 0100
+    0x00  // 0000 0000
+};
+#endif // FULLSTEP
 
 u08 stepIndex;
 u32 lastMove;
-s08 stepDelay;
+//s08 stepDelay;
 
-void stepperDelay(s08 delta)
-{
-    stepDelay += delta;
-    if (stepDelay < 0)
-    {
-        stepDelay = 0;
-    }
-    if (stepDelay > 30)
-    {
-        stepDelay = 30;
-    }
-}
-
-void stepperPoll()
-{
-//    if (0 == stepIndex || 5 == stepIndex)
+//void stepperDelay(s08 delta)
+//{
+//    stepDelay += delta;
+//    if (stepDelay < 0)
 //    {
-//        if (millis() - lastMove < stepDelay)
-//        {
-//            return;
-//        }
+//        stepDelay = 0;
 //    }
+//    if (stepDelay > 30)
+//    {
+//        stepDelay = 30;
+//    }
+//}
 
-    if ((millis() - lastMove > 1) && stepIndex)
+void stepperPoll(u08 stepDelay)
+{
+    if ((millis() - lastMove > stepDelay) && stepIndex)
     {
         lastMove = millis();
         PORTD |= stepPortD[stepIndex];
@@ -76,7 +91,11 @@ void stepperPoll()
         stepIndex--;
         if (0 == stepIndex)
         {
+#ifdef FULLSTEP
             stepIndex = 4;
+#else // FULLSTEP
+            stepIndex = 8;
+#endif // FULLSTEP
         }
     }
 }
@@ -87,12 +106,16 @@ void stepperInit()
     PORTD &= ~0x3c; // set all bits low
     stepIndex = 0;
     lastMove = 0;
-    stepDelay = 1;
+//    stepDelay = 1;
 }
 
 void stepperGo()
 {
+#ifdef FULLSTEP
     stepIndex = 4;
+#else // FULLSTEP
+    stepIndex = 8;
+#endif // FULLSTEP
 }
 
 void stepperStop(void)
