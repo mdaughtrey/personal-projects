@@ -2,8 +2,8 @@
 #define INCLUDE_STEPPER
 
 void stepperInit(void);
-void stepperDelay(s08 delta);
-void stepperPoll();
+//void stepperDelay(s08 delta);
+void stepperPoll(u08 stepDelay);
 void stepperStop(void);
 void stepperGo();
 void coilAForward(void);
