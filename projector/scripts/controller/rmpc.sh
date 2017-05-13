@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCANBASE=/media/sf_vm_externalhd/scans
+SCANBASE=/mnt/exthd/scans
 project=$1
 container=$2
 filename=`printf '%06u.JPG' $3`
