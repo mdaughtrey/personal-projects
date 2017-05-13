@@ -22,6 +22,7 @@ from collections import namedtuple
 from operator import mul
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+XFudge = 110
 
 options = {}
 
@@ -243,11 +244,11 @@ def processSuper8(filenames, outputpath):
     eroded[eroded >= 128] = 255
     eroded[:,-1] = 0
     if options.debug and eroded_dir is not None:
-        scipy.misc.imsave('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
+        scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
     # find the horizontal extents of the sprocket
     # remove top and bottom 150
-    ((_, width), (_, rightx)) = findLargestRect(eroded[150:-150,:], 255)
+    ((_, width), (_, rightx)) = findLargestRect(eroded[260:,:], 255)
     sprocketX = xOffset + rightx - width
     sprocketW = width
 
@@ -259,15 +260,14 @@ def processSuper8(filenames, outputpath):
     sprocketCx = sprocketX + sprocketW / 2
     sprocketCy = sprocketY + sprocketH / 2
 
-
-    frameW = int(4.01 * PxPerMmSuper8)
+    frameW = int((4.01 + 0.6) * PxPerMmSuper8)
     if frameW % 2 == 1:
         frameW += 1
-    frameH = int(5.79 * PxPerMmSuper8)
+    frameH = int((5.79 + 0.2) * PxPerMmSuper8)
     if frameH % 2 == 1:
         frameH += 1
 
-    frameX = sprocketCx - frameW / 2
+    frameX = (sprocketCx - frameW / 2) + XFudge
     frameY = sprocketCy - (sprocketH / 2) - frameH
 
     frameY += 50
@@ -305,7 +305,7 @@ def processSuper8(filenames, outputpath):
         idraw.line(fline, fill=255, width=2)
         idraw.line([i + j for i, j in zip(fline, (1, 0, 1, 0))], fill=0, width=2)
 
-        sPlacement.save('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)))
+        sPlacement.save('%s/%s/2_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)))
     # crop and save
     if ((frameX + frameW) > fcWidth) or ((frameY + frameH) > fcHeight):
         logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameX + frameW, fcWidth, frameY + frameH, fcHeight))

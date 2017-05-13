@@ -190,7 +190,8 @@ class JobManager():
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputfile = self._fileman.getTonefuseDir(project, container) + '/%s' % file1
-        jobargs = ('enfuse', '--output', outputfile, source1, source2, source3)
+        jobargs = ('enfuse', '--hard-mask', '--saturation-weight=0.1',
+        '--output', outputfile, source1, source2, source3)
         self._logger.info("Calling %s" % ' '.join(jobargs))
         try:
             #subprocess.check_call(jobargs)
