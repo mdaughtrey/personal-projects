@@ -91,7 +91,8 @@ gentitles()
 			convert -background transparent \
 				-stroke yellow -strokewidth 2 \
 				-fill blue -font ${FONT} \
-				-size x${rowsize} label:"${line}" $titleroot/titleline_${linecount}.png
+				-size x${rowsize} label:"${line}" \
+                -rotate -90 $titleroot/titleline_${linecount}.png
 			((translateY+=rowsize+20))
 			echo -n " -page +$((translateX))+$((translateY)) $titleroot/titleline_${linecount}.png"
 			((linecount++))
