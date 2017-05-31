@@ -242,12 +242,15 @@ def processSuper8(filenames, outputpath):
     spCenterY = ((spBottomY - rectH / 2)) #  + 700) # * PxPerMmSuper8) + 700
     logger.debug("%s spRightX %u spCenterY %u" % (filename, spRightX, spCenterY))
 
+    #adjust
     frameWidth = int(5.82 * PxPerMmSuper8)
     if frameWidth % 2 == 1:
         frameWidth += 1
     frameHeight = int(4.11 * PxPerMmSuper8)
 
+    # adjust
     frameOriginX = int((spRightX - rectW) + ((0.91 + .05) * PxPerMmSuper8))
+
     frameOriginY = int(spCenterY - frameHeight/ 2)
 
     logger.debug("frame X %u Y %u W %u H %u" % (frameOriginX, frameOriginY, frameWidth, frameHeight))

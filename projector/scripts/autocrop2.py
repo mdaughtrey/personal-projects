@@ -22,7 +22,7 @@ from collections import namedtuple
 from operator import mul
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
-XFudge = 110
+XFudge = 225
 
 options = {}
 
@@ -273,7 +273,8 @@ def processSuper8(filenames, outputpath):
     frameY += 50
     frameX -= 120
     frameH -= 70
-    frameW += 70
+# adjust
+    frameW -= 100
 
     if options.debug and eroded_dir is not None:
         idraw = ImageDraw.Draw(sPlacement)
