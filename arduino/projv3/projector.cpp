@@ -12,7 +12,7 @@
 // 11: PD6 Reset
 //  8: PB0 Pretension
 //  4: PB4 Next
-#define PC_REWIND 2
+#define PC_REWIND 3
 #define PD_RESET 6
 #define PB_PRETENSION 0
 #define PB_NEXT 4
@@ -48,8 +48,8 @@ u08 pdState = 0xff;
 #define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
 //#define SHUTTERINT_ON { PCMSK2 |= _BV(PCINT22); PCICR |= _BV(PCIE2); }
 //#define SHUTTERINT_OFF { PCMSK2 &= ~_BV(PCINT22); PCICR &= ~_BV(PCIE2); }
-#define OPTOINT_ON { PCMSK1 |= _BV(PCINT9; PCICR |= _BV(PCIE1); }
-#define OPTOINT_OFF { PCMSK1 &= ~_BV(PCINT9; PCICR &= ~_BV(PCIE1); }
+//#define OPTOINT_ON { PCMSK1 |= _BV(PCINT9; PCICR |= _BV(PCIE1); }
+//#define OPTOINT_OFF { PCMSK1 &= ~_BV(PCINT9; PCICR &= ~_BV(PCIE1); }
 
 #ifdef USEFRAM
 #define FHEADER_ISR 0x5a
@@ -264,12 +264,12 @@ void init()
 
 void setup ()
 { 
-    pinMode(13, OUTPUT);
     Serial.begin(57600);
     Serial.println("Init Start");
     lastCommand = 0;
     PORTC |= _BV(PC_OPTOINT) | _BV(PC_REWIND); // tie opt int sensor line hight
     PORTB |= _BV(PB_PRETENSION) | _BV(PB_NEXT);
+    //PORTD |= _BV(PD_RESET);
     PORTD |= _BV(PD_RESET);
 
     analogWrite(PIN_MOTOR, MOTOR_OFF);
@@ -311,8 +311,17 @@ bool buttonTest(u08 pins, u08 * state, u08 testBit)
     return false;
 }
 
+u08 lastState = 0;
 void loop ()
 {
+//    if(!lastState)
+//    {
+//        if(PINC & _BV(PC_OPTOINT)) { Serial.print("0"); lastState = 1; }
+//    }
+//    else
+//    {
+//        if(!(PINC & _BV(PC_OPTOINT))) { Serial.print("1"); lastState = 0; }
+//    }
     stepperPoll(stepperDelay);
 
     switch (waitingFor)
@@ -439,12 +448,15 @@ void loop ()
                 if (PINC & _BV(PC_TENSIONSENSOR))
                 {
                     waitingFor = NONE;
+                    pretension /= 5;
+                    pretension *= 4;
+                    setMotor(pretension);
                     Serial.print("{pt:");
                     Serial.print(pretension, 10);
                     Serial.println("}");
                     break;
                 }
-                pretension += 10;
+                pretension += 4;
             }
             break;
 
@@ -468,20 +480,19 @@ void loop ()
         return;
     }
     else
-     if (buttonTest(PINB, &pbState, PB_NEXT))
+    if (buttonTest(PINB, &pbState, PB_NEXT))
     {
         lastCommand = 'n'; 
+    }
+    else if (buttonTest(PIND, &pdState, PD_RESET))
+    {
+        lastCommand = ' '; 
     }
     else if (buttonTest(PINC, &pcState, PC_REWIND))
     {
         lastCommand = 'r'; 
     }
-    else if (buttonTest(PIND, &pdState, PD_RESET))
-    {
-        lastCommand = ' ';
-    }
-    else
-        if (Serial.available())
+    else if (Serial.available())
     {
         lastCommand = Serial.read();
     }
@@ -529,6 +540,8 @@ void loop ()
             break;
 
         case ' ':
+            Serial.println("RESET");
+            PORTD |= _BV(PD_RESET);
             DDRD |= _BV(PD_RESET);
             PORTD &= ~_BV(PD_RESET);
             break;
@@ -543,6 +556,11 @@ void loop ()
         case 'L':
             //LAMP_OFF;
             lampOff();
+            break;
+
+        case 'T': // manual pretension
+            pretension = parameter;
+            setMotor(pretension);
             break;
 
         case 't': // auto pretension
