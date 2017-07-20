@@ -226,7 +226,7 @@ class JobManager():
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputdir = self._fileman.getAutocropDir(project, container)
-        jobargs = ('../autocrop2.py', '-s', '--filenames',
+        jobargs = ('../autocrop3.py', '-s', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
             '--mode', self._config.film,
             '--output-dir', outputdir)

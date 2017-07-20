@@ -1,6 +1,7 @@
 #!/bin/bash
 
-SCANBASE=/mnt/exthd/scans
+#SCANBASE=/mnt/exthd/scans
+SCANBASE=/home/mattd/scans
 project=$1
 container=$2
 filename=`printf '%06u.JPG' $3`
