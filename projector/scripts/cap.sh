@@ -1,19 +1,20 @@
 #!/bin/bash
-BIN=/home/mattd/userland/build/bin/raspistill
+BIN=/home/mattd/personal-projects/projector/userland/build/bin/raspistill
 SPOOLTYPE="SMALL"
 FILMTYPE="SUPER8"
 PREFRAMES=3
 let FRAMES=0
 #let FRAMES=4000
 SHUTTER=4000,10000,60000
-TARGETDIR=/tmp
+#TARGETDIR=/tmp
+TARGETDIR=/home/mattd/capture
 MAXINFLIGHT=30
 
 case $SPOOLTYPE in
     SMALL)
         tensionfile="./tension_small.txt"
         #read -a tensions <<<$(<./tension_small.txt)
-        let TOTALFRAMES=3500
+        let TOTALFRAMES=4000
         let PERCYCLE=500
         ;;
     LARGE)

@@ -201,8 +201,10 @@ typedef struct _CacheNode
 char targetDir[256];
 CacheNode * cacheList = 0;
 int callbackFrame = 0;
+//int buffersInFlight = 0;
 VCOS_MUTEX_T nodeMutex;
 VCOS_MUTEX_T writeMutex;
+//VCOS_MUTEX_T inFlight;;
 VCOS_SEMAPHORE_T sem_triple_complete; /// semaphore which is posted when we reach end of frame (indicates end of capture or fault)
 
 #ifdef SERIALFD
@@ -336,7 +338,7 @@ void logger(int line, char * fmt, ...)
 	char msgBuf[256];
 
 	vsprintf(msgBuf, fmt, args);
-	fprintf(stderr, "%s %u %s",timeBuf, line, msgBuf);
+	fprintf(stderr, "%u %s %u %s",getpid(), timeBuf, line, msgBuf);
 	va_end(args);
 }
 
@@ -356,72 +358,61 @@ static void setDone(int currentFile,
 
 static void writeCachedBuffers(const char * targetDir)
 {
- vcos_mutex_lock(&writeMutex);
-// LOGGER("writeCachedBuffers\n");
- LOGGER("writeCachedBuffers\n");
- static int firstTime = 1;
- int currentFrame = -1;
- vcos_mutex_lock(&nodeMutex);
- CacheNode * node = cacheList;
- cacheList = 0;
- vcos_mutex_unlock(&nodeMutex);
- //FILE * currentFile = NULL;
- int currentFile = -1;
- while (node)
- {
-    LOGGER("Node %08x nodeFrame %u currentFrame %u\n",
-	 node, node->frame, currentFrame);
-  if (node->frame != currentFrame && !firstTime)
-  {
-   char filename[128];
-   if (-1 != currentFile)
-   {
-	setDone(currentFile, currentFrame,targetDir);
-   }
-   currentFrame = node->frame;
-   sprintf(filename, "%s/%06u.jpg", targetDir, currentFrame);
-   LOGGER("Opening %s\n", filename);
-   //currentFile = fopen(filename, "w");
-   currentFile = open(filename, O_CREAT | O_WRONLY);
-   if (-1 == currentFile)
-   {
-    LOGGER("Error opening %s!\n", filename);
-    exit(1);
-   }
-  }
-  if (-1 != currentFile)
-  {
-    //  char filename[128];
-	  LOGGER("Write to currentfile\n");
-      //   LOGGER("data %08x length %08x fp %08x\n",
-      //       node->data, node->length, currentFile);
-      //fwrite(node->data, 1, node->length, currentFile);
-      write(currentFile, node->data, node->length);
-   //   sprintf(filename, "%s/%06u.done", targetDir, currentFrame);
-      //FILE * donefile = fopen(filename,"w");
-//      int donefile = open(filename, O_CREAT | O_WRONLY);
-      //fwrite(filename, 1, strlen(filename), donefile);
- //     write(donefile, filename, strlen(filename));
-      //fclose(donefile);
-  //    close(donefile);
-  }
-  free(node->data);
-  CacheNode * tmp = node;
-  node = node->next;
-  free(tmp);
-    LOGGER("Node at loop end %08x\n", node);
- }
-	setDone(currentFile, currentFrame,targetDir);
+    vcos_mutex_lock(&writeMutex);
+    // LOGGER("writeCachedBuffers\n");
+    LOGGER("writeCachedBuffers\n");
+    static int firstTime = 1;
+    int currentFrame = -1;
+    vcos_mutex_lock(&nodeMutex);
+    CacheNode * node = cacheList;
+    cacheList = 0;
+    vcos_mutex_unlock(&nodeMutex);
+    //FILE * currentFile = NULL;
+    int currentFile = -1;
+    while (node)
+    {
+        LOGGER("Nodeframe %u currentFrame %u\n",
+                node->frame, currentFrame);
+        if (node->frame != currentFrame && !firstTime)
+        {
+            char filename[128];
+            if (-1 != currentFile)
+            {
+                setDone(currentFile, currentFrame,targetDir);
+            }
+            currentFrame = node->frame;
+            sprintf(filename, "%s/%06u.jpg", targetDir, currentFrame);
+            LOGGER("New file %s\n", filename);
+            //currentFile = fopen(filename, "w");
+            currentFile = open(filename, O_CREAT | O_WRONLY);
+            if (-1 == currentFile)
+            {
+                LOGGER("Error opening %s!\n", filename);
+                exit(1);
+            }
+        }
+        if (-1 != currentFile)
+        {
+            LOGGER("Writing %u to currentfile\n", node->length);
+            write(currentFile, node->data, node->length);
+        }
+        free(node->data);
+        CacheNode * tmp = node;
+        node = node->next;
+        free(tmp);
+        LOGGER("Node at loop end %08x\n", node);
+    }
+    setDone(currentFile, currentFrame,targetDir);
 
- if (-1 != currentFile)
- {
-  //fclose(currentFile);
-  close(currentFile);
- }
- cacheList = 0;
- firstTime = 0;
+    if (-1 != currentFile)
+    {
+        //fclose(currentFile);
+        close(currentFile);
+    }
+    cacheList = 0;
+    firstTime = 0;
     LOGGER("writeCachedBuffers end\n");
- vcos_mutex_unlock(&writeMutex);
+    vcos_mutex_unlock(&writeMutex);
 }
 
 static void set_sensor_defaults(RASPISTILL_STATE *state)
@@ -1117,10 +1108,14 @@ static void returnMmalBuffer(MMAL_PORT_T *port)
     if (new_buffer)
     {
         status = mmal_port_send_buffer(port, new_buffer);
-    }
-    if (!new_buffer || status != MMAL_SUCCESS)
-    {
-        LOGGER("Unable to return a buffer to the encoder port\n");
+        if (!new_buffer || status != MMAL_SUCCESS)
+        {
+            LOGGER("Unable to return a buffer to the encoder port\n");
+        }
+
+//        vcos_mutex_lock(&inFlight);
+//        buffersInFlight++;
+//        vcos_mutex_unlock(&inFlight);
     }
 }
 
@@ -1152,68 +1147,77 @@ static void maxInFlightCheck(int maxMif)
     }
 }
 
+static void cached_buffer_callback3(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer)
+{
+    PORT_USERDATA *pData = (PORT_USERDATA *)port->userdata;
+    LOGGER("cached_buffer_callback frame %u cyclesLeft %u buffer %08x\n",
+        callbackFrame, 
+        pData->pstate->cyclesLeft,
+        buffer);
+    char filename[128];
+    int outfile;
+
+//    maxInFlightCheck(pData->pstate->maxInFlight);
+
+//    sprintf(filename, "%s/%06u.jpg", targetDir, callbackFrame);
+//    LOGGER("Appending to %s\n", filename);
+//    vcos_mutex_lock(&writeMutex);
+//    outfile = open(filename, O_CREAT | O_WRONLY | O_APPEND);
+//    mmal_buffer_header_mem_lock(buffer);
+//    write(outfile, buffer->data, buffer->length);
+//    mmal_buffer_header_mem_unlock(buffer);
+//    close(outfile);
+//    vcos_mutex_unlock(&writeMutex);
+
+//    if (buffer->flags & (MMAL_BUFFER_HEADER_FLAG_FRAME_END
+//                | MMAL_BUFFER_HEADER_FLAG_TRANSMISSION_FAILED))
+//    {
+//        callbackFrame++;
+//        LOGGER("Post sem_image_complete\n");
+//        vcos_semaphore_post(&(pData->sem_image_complete));
+//        if (callbackFrame && (0 == (callbackFrame % 3)))
+//        {
+//            LOGGER("Posting sem_triple_complete\n");
+//            vcos_semaphore_post(&sem_triple_complete);
+//        }
+//    }
+    mmal_buffer_header_release(buffer);
+    returnMmalBuffer(port);
+}
+
 static void cached_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer)
 {
     PORT_USERDATA *pData = (PORT_USERDATA *)port->userdata;
-    LOGGER("cached_buffer_callback frame %u cyclesLeft %u\n", callbackFrame, 
-            pData->pstate->cyclesLeft);
-    char filename[128];
-    int outfile;
-    int status;
-
-    sprintf(filename, "%s/%06u.jpg", targetDir, callbackFrame);
-    LOGGER("Opening %s\n", filename);
-    vcos_mutex_lock(&writeMutex);
-    outfile = open(filename, O_CREAT | O_WRONLY | O_APPEND);
-    mmal_buffer_header_mem_lock(buffer);
-    write(outfile, buffer->data, buffer->length);
-    mmal_buffer_header_mem_unlock(buffer);
-    close(outfile);
-    vcos_mutex_unlock(&writeMutex);
-
-    returnMmalBuffer(port);
-
-    if (buffer->flags & (MMAL_BUFFER_HEADER_FLAG_FRAME_END
-                | MMAL_BUFFER_HEADER_FLAG_TRANSMISSION_FAILED))
-    {
-        LOGGER("Post sem_image_complete\n");
-        vcos_semaphore_post(&(pData->sem_image_complete));
-        callbackFrame++;
-    }
-    mmal_buffer_header_release(buffer);
-}
-
-static void cached_buffer_callback2(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buffer)
-{
-    PORT_USERDATA *pData = (PORT_USERDATA *)port->userdata;
     CacheNode * node = NULL;
-    LOGGER("cached_buffer_callback frame %u cyclesLeft %u\n", callbackFrame, 
-        pData->pstate->cyclesLeft);
-    //LOGGER("cacheList %08x\n", cacheList);
+    LOGGER("cached_buffer_callback frame %u cyclesLeft %u\n",
+        callbackFrame, pData->pstate->cyclesLeft);
     int complete = 0;
-    //LOGGER("pData %08x\n", pData);
 
     if (buffer->flags & (MMAL_BUFFER_HEADER_FLAG_FRAME_END
                 | MMAL_BUFFER_HEADER_FLAG_TRANSMISSION_FAILED))
     {
         complete = 1;
     }
-    if (pData && pData->pstate->cyclesLeft && (0 == pData->pstate->preframes))
+    if (pData && pData->pstate->cyclesLeft && (0 == pData->pstate->preframes)
+        && buffer->length)
     {
         node = (CacheNode *)malloc(sizeof(CacheNode));
         memset(node, 0, sizeof(CacheNode));
 
         node->data = malloc(buffer->length);
         mmal_buffer_header_mem_lock(buffer);
-        //LOGGER("Buffer length %u complete %u\n", buffer->length, complete);
         memcpy(node->data, buffer->data, buffer->length);
         node->length = buffer->length;
         mmal_buffer_header_mem_unlock(buffer);
         node->frame = callbackFrame;
+        LOGGER("Queued %u bytes\n", node->length);
     }
 
     // release buffer back to the pool
     mmal_buffer_header_release(buffer);
+//    vcos_mutex_lock(&inFlight);
+//    buffersInFlight--;
+//    vcos_mutex_unlock(&inFlight);
     returnMmalBuffer(port);
     if (node)
     {
@@ -1241,6 +1245,7 @@ static void cached_buffer_callback2(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buf
         return;
     }
     callbackFrame++;
+    LOGGER("Posting sem_image_complete\n");
     vcos_semaphore_post(&(pData->sem_image_complete));
 
 
@@ -1251,41 +1256,14 @@ static void cached_buffer_callback2(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buf
 //        return;
     }
     maxInFlightCheck(pData->pstate->maxInFlight);
-    //
-    // Before we return control check that we aren't
-    // exceeding maximum allowable number of images in the
-    // upload directory
-    //
-//    while (1)
-//    {
-//        int mif = 0;
-//        DIR * dir;
-//        struct dirent * iter;
-//        //dir = opendir(pData->pstate->targetDir);
-//        dir = opendir(targetDir);
-//        while ((iter = readdir(dir)) != NULL)
-//        {
-//            if ((10 == strlen(iter->d_name)) && (0 == strncmp(".jpg", iter->d_name + 6, 4)))
-//            {
-//                mif++;
-//            }
-//        }
-//        closedir(dir);
-//        fprintf(stderr,"Found %u images waiting for upload\r\n", mif);
-//        if (mif < pData->pstate->maxInFlight)
-//        {
-//            break;
-//        }
-//        fprintf(stderr,"%u images waiting for upload, sleeping for 10 secs\r\n", mif);
-//        vcos_sleep(10000);
-//    }
 
     if (callbackFrame && (0 == (callbackFrame % 3)))
     {
-        vcos_semaphore_post(&sem_triple_complete);
         //vcos_semaphore_post(&(pData->sem_triple_complete));
         //writeCachedBuffers(pData->pstate->targetDir);
         writeCachedBuffers(targetDir);
+        LOGGER("Posting sem_triple_complete\n");
+        vcos_semaphore_post(&sem_triple_complete);
     }
 }
 
@@ -1993,13 +1971,14 @@ static int wait_for_next_frame(RASPISTILL_STATE *state, int *frame)
    switch (state->frameNextMethod)
    {
     case FRAME_NEXT_CYCLE:
+     state->cyclesLeft--;
+     LOGGER("cyclesLeft is now %d\n", state->cyclesLeft);
      if (0 == state->cyclesLeft)
      {
       return 0;
      }
    vcos_sleep(30);
      LOGGER("cyclesLeft %u\n", state->cyclesLeft);
-     state->cyclesLeft--;
   return 1;
    
    case FRAME_NEXT_SINGLE :
@@ -2291,6 +2270,7 @@ int main(int argc, const char **argv)
     vcos_log_register("RaspiStill", VCOS_LOG_CATEGORY);
     vcos_mutex_create(&nodeMutex, "nodeMutex");
     vcos_mutex_create(&writeMutex, "writeMutex");
+//    vcos_mutex_create(&inFlight, "inFlight");
 
     signal(SIGINT, signal_handler);
 
@@ -2608,14 +2588,23 @@ error:
        write(serialFd, &ch, 1);
 #endif // SERIALFD
     }
+//            LOGGER("Closing down, waiting on sem_image_complete\n");
+//            vcos_semaphore_wait(&callback_data.sem_image_complete);
+//            LOGGER("Closing down, waiting on sem_triple_complete\n");
+//            vcos_semaphore_wait(&sem_triple_complete);
 
-//        while (cacheList)
-//        {
-//       	LOGGER("Closing down, waiting on cache list clear\n");
-//            LOGGER("cacheList %08x@%u\n", cacheList, __LINE__);
-//            writeCachedBuffers(targetDir);
-//            vcos_sleep(2000);
-//        }
+//    vcos_sleep(10000);
+//    while (buffersInFlight)
+//    {
+//        LOGGER("buffersInFlight %u\n", buffersInFlight);
+//        vcos_sleep(2000);
+//    }
+    while (cacheList)
+    {
+        LOGGER("cacheList %08x@%u\n", cacheList, __LINE__);
+        writeCachedBuffers(targetDir);
+        vcos_sleep(2000);
+    }
     mmal_status_to_int(status);
 
 
@@ -2669,6 +2658,7 @@ error:
     }
     vcos_mutex_delete(&nodeMutex);
     vcos_mutex_delete(&writeMutex);
+//    vcos_mutex_delete(&inFlight);
     
     return exit_code;
 }
