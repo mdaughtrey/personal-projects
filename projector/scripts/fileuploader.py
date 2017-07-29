@@ -53,7 +53,7 @@ def uploader():
            logger.debug("Uploaded %s" % hUrl)
            logger.debug("removing %s" % jpg)
            os.remove(done)
-           os.remove(jpg)
+#           os.remove(jpg)
            uploaded += 1
 
        except Exception as ee:
