@@ -361,7 +361,7 @@ static void writeCachedBuffers(const char * targetDir)
     vcos_mutex_lock(&writeMutex);
     // LOGGER("writeCachedBuffers\n");
     LOGGER("writeCachedBuffers\n");
-    static int firstTime = 1;
+    //static int firstTime = 1;
     int currentFrame = -1;
     vcos_mutex_lock(&nodeMutex);
     CacheNode * node = cacheList;
@@ -371,9 +371,10 @@ static void writeCachedBuffers(const char * targetDir)
     int currentFile = -1;
     while (node)
     {
-        LOGGER("Nodeframe %u currentFrame %u\n",
+        LOGGER("Nodeframe %u currentFrame %d\n",
                 node->frame, currentFrame);
-        if (node->frame != currentFrame && !firstTime)
+        //if (node->frame != currentFrame && !firstTime)
+        if (node->frame != currentFrame)
         {
             char filename[128];
             if (-1 != currentFile)
@@ -410,7 +411,7 @@ static void writeCachedBuffers(const char * targetDir)
         close(currentFile);
     }
     cacheList = 0;
-    firstTime = 0;
+    //firstTime = 0;
     LOGGER("writeCachedBuffers end\n");
     vcos_mutex_unlock(&writeMutex);
 }
@@ -671,10 +672,10 @@ static int parse_cmdline(int argc, const char **argv, RASPISTILL_STATE *state)
    break;
 
    case CommandPreframe:
-    if (sscanf(argv[i + 1], "%u", &state->preframes) == 1)
-    {
-   i++;
-  }
+   if (sscanf(argv[i + 1], "%u", &state->preframes) == 1)
+   {
+       i++;
+   }
     break;
 
    case CommandTriple:
@@ -1198,8 +1199,9 @@ static void cached_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
     {
         complete = 1;
     }
-    if (pData && pData->pstate->cyclesLeft && (0 == pData->pstate->preframes)
-        && buffer->length)
+    LOGGER("preframes %d\n", pData->pstate->preframes);
+    //if (pData && pData->pstate->cyclesLeft && (0 == pData->pstate->preframes)
+    if (pData && (0 == pData->pstate->preframes) && buffer->length)
     {
         node = (CacheNode *)malloc(sizeof(CacheNode));
         memset(node, 0, sizeof(CacheNode));
@@ -1248,10 +1250,9 @@ static void cached_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
     LOGGER("Posting sem_image_complete\n");
     vcos_semaphore_post(&(pData->sem_image_complete));
 
-
     if (pData->pstate->preframes)
     {
-        LOGGER("preframes is %u\n", pData->pstate->preframes);
+//        LOGGER("preframes is %u\n", pData->pstate->preframes);
         pData->pstate->preframes--;
 //        return;
     }
@@ -1259,8 +1260,6 @@ static void cached_buffer_callback(MMAL_PORT_T *port, MMAL_BUFFER_HEADER_T *buff
 
     if (callbackFrame && (0 == (callbackFrame % 3)))
     {
-        //vcos_semaphore_post(&(pData->sem_triple_complete));
-        //writeCachedBuffers(pData->pstate->targetDir);
         writeCachedBuffers(targetDir);
         LOGGER("Posting sem_triple_complete\n");
         vcos_semaphore_post(&sem_triple_complete);
