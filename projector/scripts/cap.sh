@@ -2,13 +2,14 @@
 BIN=/home/mattd/personal-projects/projector/userland/build/bin/raspistill
 SPOOLTYPE="SMALL"
 FILMTYPE="SUPER8"
-PREFRAMES=3
+PREFRAMES=1
 let FRAMES=0
 #let FRAMES=4000
 SHUTTER=4000,10000,60000
-#TARGETDIR=/tmp
-TARGETDIR=/home/mattd/capture
-MAXINFLIGHT=30
+TARGETDIR=/tmp
+#TARGETDIR=/home/mattd/capture
+#MAXINFLIGHT=30
+MAXINFLIGHT=3000
 
 case $SPOOLTYPE in
     SMALL)

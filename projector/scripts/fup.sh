@@ -2,5 +2,5 @@
 
 CONTROLLER=192.168.0.42
 
-./fileuploader.py --ip $CONTROLLER --port 5000 --dir /home/mattd/capture
-#./fileuploader.py --ip $CONTROLLER --port 5000 --dir /tmp
+#./fileuploader.py --ip $CONTROLLER --port 5000 --dir /home/mattd/capture
+./fileuploader.py --ip $CONTROLLER --port 5000 --dir /tmp
