@@ -24,7 +24,7 @@ class FileManager():
     def newFile(self, fileData, project, container, filename):
         targetDir = self._getdir(project, container, 'rawfile')
         targetFile = "%s/%s" % (targetDir, filename)
-        self._logger.debug("Saving to %s" % targetFile)
+        self._logger.debug("Saving %u to %s" % (len(fileData), targetFile))
         try:
             open(targetFile, 'w').write(fileData)
         except ee:
