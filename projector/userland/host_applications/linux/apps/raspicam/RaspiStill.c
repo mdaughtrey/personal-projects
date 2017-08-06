@@ -356,6 +356,18 @@ static void setDone(int currentFile,
     LOGGER("Closed and done %06u\n", currentFrame);
 }
 
+static void writeExitCode(int ec)
+{
+	char filename[256];
+	char code[8];
+    int file;
+    sprintf(filename, "%s/exit.code", targetDir);
+    sprintf(code, "%u", ec);
+    file = open(filename, O_CREAT | O_WRONLY);
+    write(file, code, strlen(code));
+    close(file);
+}
+
 static void writeCachedBuffers(const char * targetDir)
 {
     vcos_mutex_lock(&writeMutex);
@@ -2206,8 +2218,16 @@ int getLatestJpg(RASPISTILL_STATE * state)
  return maxIndex;
 }
 
-void serialWait(int fd, const char * waitFor)
+enum {
+    FRAMESTOP = 0,
+    READY,
+    OIT
+};
+
+int serialWait(int fd)
 {
+    const char * waitFors[] = { "FRAMESTOP", "{State:Ready}", "{OIT:" };
+
     char received[32];
     fd_set fds;
     struct timeval tv;
@@ -2215,7 +2235,7 @@ void serialWait(int fd, const char * waitFor)
 
     memset(received, 0, 32);
 
-    LOGGER("serialWait %s\n", waitFor);
+    LOGGER("serialWait\n");
     while (1)
     {
         FD_ZERO(&fds);
@@ -2229,16 +2249,21 @@ void serialWait(int fd, const char * waitFor)
 
         if (1 == retval)
         {
+            int ii;
             char buffer[32];
             int bytes;
             bytes = read(fd, buffer, 32);
             buffer[bytes] = 0;
             strcat(received, buffer);
             LOGGER("Received is %s\n", received);
-            if (strstr(received, waitFor))
+            for (ii = 0; ii < 3; ii++)
             {
-                LOGGER("Matched\n");
-                return;
+                LOGGER("Looking for %s in %s\n", waitFors[ii], received);
+                if (strstr(received, waitFors[ii]))
+                {
+                    LOGGER("Matched %s\n", waitFors[ii]);
+                    return ii;
+                }
             }
         }
     }
@@ -2253,6 +2278,7 @@ int main(int argc, const char **argv)
     // Our main data storage vessel..
     RASPISTILL_STATE state = { 0 };
     int exit_code = EX_OK;
+    char ch;
 
     MMAL_STATUS_T status = MMAL_SUCCESS;
     MMAL_PORT_T *camera_preview_port = NULL;
@@ -2318,11 +2344,14 @@ int main(int argc, const char **argv)
         LOGGER("Error TCSETS2 - %s\n", strerror(errNo));
         exit(1);
     }
-    {
-    char ch = ' ';
+    ch = ' ';
     write(serialFd, &ch, 1);
     //serialWait(serialFd, "{State:Ready}");
-    serialWait(serialFd, "{State:Ready}");
+    LOGGER("Calling serialWait\n");
+    int rc = serialWait(serialFd);
+    if (READY != rc)
+    {
+        LOGGER("Waiting for READY, got  %u\n", rc);
     }
     write(serialFd, state.projInit, strlen(state.projInit));
     vcos_sleep(5000);
@@ -2435,7 +2464,6 @@ int main(int argc, const char **argv)
 //            LOGGER("Lamp On\n");
 //            vcos_sleep(5000);
 #endif // SERIALFD
-
             while (keep_looping)
             {
                 keep_looping = wait_for_next_frame(&state, &frame);
@@ -2449,27 +2477,28 @@ int main(int argc, const char **argv)
                         state.encoder_component->output[0], MMAL_PARAMETER_EXIF_DISABLE, 1);
                 LOGGER("state.triple[0] %08x\n", state.triple[0]);
                 LOGGER("callbackFrame %u\n", callbackFrame);
-#ifdef SERIALFD
-                char buffer[32];
-                memset(buffer, 0, 32);
-                int readnum = read(serialFd, buffer, 31);
-                LOGGER("read %u bytes from %u\n", readnum, serialFd);
-                if (readnum > 0)
-                {
-                    LOGGER("buffer %s\n", buffer);
-                    if (strstr(buffer, "{OIT:"))
-                    {
-                        printf("Next Timeout, exiting\n");
-                        while (cacheList)
-                        {
-                            LOGGER("cacheList %08x@%u\n", cacheList, __LINE__);
-                            LOGGER("Sleeping...\n");
-                            vcos_sleep(2000);
-                        }
-                        return 1;
-                    }
-                }
-#endif // SERIALFD
+//#ifdef SERIALFD
+//                char buffer[32];
+//                memset(buffer, 0, 32);
+//                int readnum = read(serialFd, buffer, 31);
+//                LOGGER("read %u bytes from %u\n", readnum, serialFd);
+//                if (readnum > 0)
+//                {
+//                    LOGGER("buffer %s\n", buffer);
+//                    if (strstr(buffer, "{OIT:"))
+//                    {
+//                        printf("Next Timeout, exiting\n");
+//                        while (cacheList)
+//                        {
+//                            LOGGER("cacheList %08x@%u\n", cacheList, __LINE__);
+//                            writeCachedBuffers(targetDir);
+//                            LOGGER("Sleeping...\n");
+//                            vcos_sleep(2000);
+//                        }
+//                        return 1;
+//                    }
+//                }
+//#endif // SERIALFD
                 if (state.triple[0])
                 {
                     LOGGER("state.tripleIndex %u\n", state.tripleIndex);
@@ -2533,7 +2562,16 @@ int main(int argc, const char **argv)
 #ifdef SERIALFD
                         char ch = 'n';
                         write(serialFd, &ch, 1);
-                        serialWait(serialFd, "FRAMESTOP");
+                        LOGGER("Calling serialWait\n");
+                        int rc = serialWait(serialFd);
+                        if (FRAMESTOP != rc)
+                        {
+                            LOGGER("Expected FRAMESTOP, got %d\n", rc);
+                            exit_code = 1;
+                            keep_looping = 0;
+                            continue;
+                            return 1;
+                        }
 #endif // SERIALFD
                     }
                     // Wait for capture to complete
@@ -2553,6 +2591,25 @@ int main(int argc, const char **argv)
                         char ch = 'n';
                         write(serialFd, &ch, 1);
                         LOGGER("Next frame\n");
+                        LOGGER("Calling serialWait\n");
+                        int rc = serialWait(serialFd);
+                        switch (rc)
+                        {
+                            case FRAMESTOP: break;
+                            case OIT:
+                                LOGGER("Next Timeout, exiting\n");
+                                while (cacheList)
+                                {    
+                                    LOGGER("cacheList %08x@%u\n", cacheList, __LINE__);
+                                    writeCachedBuffers(targetDir);
+                                    LOGGER("Sleeping...\n");
+                                    vcos_sleep(2000);
+                                }    
+                                keep_looping = 0;
+                                exit_code = 1;
+                                continue;
+                                return 1;
+                        }
                         vcos_sleep(2000);
                     }
 #endif //SERIALFD
@@ -2579,7 +2636,6 @@ int main(int argc, const char **argv)
             mmal_status_to_int(status);
             fprintf(stderr,"%s: Failed to connect camera to preview", __func__);
         }
-
 error:
     {
 #ifdef SERIALFD
@@ -2645,7 +2701,8 @@ error:
     if (status != MMAL_SUCCESS)
         raspicamcontrol_check_configuration(128);
 #ifdef SERIALFD
-    char ch = 'L';
+    //char ch = 'L';
+    ch = 'L';
     write(serialFd, &ch, 1);
 #endif // SERIALFD
     while (cacheList)
@@ -2659,6 +2716,8 @@ error:
     vcos_mutex_delete(&writeMutex);
 //    vcos_mutex_delete(&inFlight);
     
+    LOGGER("exit_code %d\n", exit_code);
+    writeExitCode(exit_code);
     return exit_code;
 }
 
