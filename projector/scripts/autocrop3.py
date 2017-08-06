@@ -263,7 +263,8 @@ def processSuper8(filenames, outputpath):
 
     rangeDict = {}
     for range in whitePixels(eroded[-1], 200, 400):
-        rangeDict[abs(int(numpy.mean(range)) - (fcWidth/2))] = range
+        if eroded.shape[1] > (range[0] + 300):
+            rangeDict[abs(int(numpy.mean(range)) - (fcWidth/2))] = range
 
     useRange = rangeDict[sorted(rangeDict.keys())[0]]
 
@@ -279,8 +280,8 @@ def processSuper8(filenames, outputpath):
     sprocketCx = useRange[0] + maxloc[1] + (SprocketSuper8.w / 2)
     sprocketCy = fcHeight - 135 - 135 + maxloc[0] + (SprocketSuper8.h / 2)
 
-    frameX = (sprocketCx - FrameSuper8.w / 2)
-    frameY = sprocketCy - (SprocketSuper8.h / 2) - FrameSuper8.h - 75
+    frameX = (sprocketCx - FrameSuper8.w / 2) - 10
+    frameY = sprocketCy - (SprocketSuper8.h / 2) - FrameSuper8.h - 145
 
     frameH = FrameSuper8.h + 100 + 85
     frameW = FrameSuper8.w + 150
