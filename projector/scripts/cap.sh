@@ -8,8 +8,8 @@ let FRAMES=0
 SHUTTER=4000,10000,60000
 TARGETDIR=/tmp
 #TARGETDIR=/home/mattd/capture
-#MAXINFLIGHT=30
-MAXINFLIGHT=3000
+MAXINFLIGHT=30
+#MAXINFLIGHT=3000
 
 case $SPOOLTYPE in
     SMALL)
@@ -46,7 +46,8 @@ do
     let THISFRAMES=$((tcount*3))
     PINIT2="${PINIT}-${STEPPERDELAY}s-${tension}T"
     ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((THISFRAMES+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a log.txt
-    rc=$?
+    rc=`cat ${TARGETDIR}/exit.code`
+    echo rc is $rc
     ((FRAMES+=tcount))
     echo $FRAMES of $TOTALFRAMES
     if [[ "0" != "$rc" ]]
