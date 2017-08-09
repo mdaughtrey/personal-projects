@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT=testS8001
+PROJECT=003
 
 
 #./controller.py --jobmode proc --project blister --film super8 #--worker pc --worker ac  # --worker tf --worker gc

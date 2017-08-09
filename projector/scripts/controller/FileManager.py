@@ -45,6 +45,9 @@ class FileManager():
     def getTonefuseDir(self, project, container):
         return self._getdir(project, container, 'fused')
 
+    def getAdjFile(self, project):
+        return "%s/%s/frameadj.txt" % (self._fileRoot, project)
+
     def newTitleFile(self, fileStream, project, titlepage):
         targetDir = "%s/%s/" % (self._fileRoot, project)
         if False == os.path.isdir(targetDir):

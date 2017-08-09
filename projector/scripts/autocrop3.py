@@ -36,6 +36,7 @@ parser.add_option('-o', '--output-dir', dest='outputdir')
 parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, comma separated')
 parser.add_option('-m','--mode', dest='mode', default='8mm')
 parser.add_option('-l','--listfile', dest='listfile', help='file containing list of triplets')
+parser.add_option('-a','--adjfile', dest='adjfile', help='frame adjustmentfile (x,y,w,h)')
 
 (options, args) = parser.parse_args()
 
@@ -280,11 +281,21 @@ def processSuper8(filenames, outputpath):
     sprocketCx = useRange[0] + maxloc[1] + (SprocketSuper8.w / 2)
     sprocketCy = fcHeight - 135 - 135 + maxloc[0] + (SprocketSuper8.h / 2)
 
-    frameX = (sprocketCx - FrameSuper8.w / 2) - 10
-    frameY = sprocketCy - (SprocketSuper8.h / 2) - FrameSuper8.h - 145
+    (xAdj, yAdj, wAdj, hAdj) = (0, 0, 0, 0)
+    if options.adjfile:
+        try:
+            (xAdj, yAdj, wAdj, hAdj) = [int(xx) for xx in open(options.adjfile).read().rstrip().split(',')]
+        except:
+            logger.debug("%s file not found", options.adjfile)
+            pass
 
-    frameH = FrameSuper8.h + 100 + 85
-    frameW = FrameSuper8.w + 150
+    logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
+
+    frameX = (sprocketCx - FrameSuper8.w / 2) + xAdj
+    frameY = sprocketCy - (SprocketSuper8.h / 2) - FrameSuper8.h + yAdj 
+
+    frameH = FrameSuper8.h + hAdj
+    frameW = FrameSuper8.w + wAdj
 
     if options.debug and eroded_dir is not None:
         idraw = ImageDraw.Draw(sPlacement)
