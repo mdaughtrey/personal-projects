@@ -12,7 +12,6 @@ def trampoline(object):
     object._logger.info("workerManager ends")
 
 class JobManager():
-# width x height +x + y offset
     PrecropS8Geometry="2912x2200+0+250"
     Precrop8mmGeometry="2868x1800+300+500"
     JobLimit = 4 
@@ -229,7 +228,8 @@ class JobManager():
         jobargs = ('../autocrop3.py', '-s', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
             '--mode', self._config.film,
-            '--output-dir', outputdir)
+            '--output-dir', outputdir,
+            '--adjfile', self._fileman.getAdjFile(project))
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         try:
             #subprocess.check_call(jobargs)
