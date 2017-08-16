@@ -4,6 +4,7 @@ MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SEM=sem
 VRES=576
 HRES=720
+SOFTWARE=${HOME}/scans/software/
 
 while getopts "p:r:h" OPT
 do
@@ -70,7 +71,8 @@ processyuv()
     #wine Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe $avsscript - > $imgroot/out.yuv
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
 #    export WINEDEBUG=trace+all
-    wine /mnt/imageinput/software/avs2yuv/avs2yuv.exe $avsscript - > $imgroot/out.yuv
+    #wine /mnt/imageinput/software/avs2yuv/avs2yuv.exe $avsscript - > $imgroot/out.yuv
+    wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $imgroot/out.yuv
 }
 
 if [[ ! -f "$imgroot/out.yuv" ]]

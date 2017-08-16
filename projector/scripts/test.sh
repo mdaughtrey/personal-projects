@@ -1,8 +1,4 @@
 #!/bin/bash
 
-FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
-SEM="sem --will-cite"
-convert -background transparent -stroke yellow -strokewidth 2 \
--fill blue -font $FONT -size x200 \
-'label:Sample Title' \
-/media/sf_vmshared/scans//blister/title/titleline_0.png
+#convert -page +0+154 /home/mattd/scans/nk//005/title/titleline_0.png -page +0+308 /home/mattd/scans/nk//005/title/titleline_1.png -page +0+462 /home/mattd/scans/nk//005/title/titleline_2.png -background transparent -layers merge /mnt/imageinput/titletext0.png
+convert -page +154 /home/mattd/scans/nk//005/title/titleline_0.png -page +308 /home/mattd/scans/nk//005/title/titleline_1.png -page +462 /home/mattd/scans/nk//005/title/titleline_2.png -background transparent -layers merge /mnt/imageinput/titletext0.png
