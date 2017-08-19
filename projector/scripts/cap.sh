@@ -1,11 +1,11 @@
 #!/bin/bash
 BIN=/home/mattd/personal-projects/projector/userland/build/bin/raspistill
-SPOOLTYPE="SMALL"
-FILMTYPE="SUPER8"
+SPOOLTYPE="LARGE"
+FILMTYPE="8MM"
 PREFRAMES=1
 let FRAMES=0
 #let FRAMES=4000
-SHUTTER=4000,10000,60000
+SHUTTER=4000,10000,55000
 TARGETDIR=/tmp
 #TARGETDIR=/home/mattd/capture
 MAXINFLIGHT=30
@@ -16,11 +16,17 @@ case $SPOOLTYPE in
         tensionfile="./tension_small.txt"
         #read -a tensions <<<$(<./tension_small.txt)
         let TOTALFRAMES=4000
-        let PERCYCLE=500
+#        let PERCYCLE=500
+        ;;
+    MID)
+        tensionfile="./tension_mid.txt"
+        let TOTALFRAMES=20000
+#        let PERCYCLE=500
         ;;
     LARGE)
-        let TOTALFRAMES=3500
-        let PERCYCLE=500
+        tensionfile="./tension_large.txt"
+        let TOTALFRAMES=30000
+#        let PERCYCLE=500
         ;;
 esac
 
@@ -37,15 +43,15 @@ esac
 ((PREFRAMES*=3))
 #((PERCYCLE*=3))
 
-echo PREFRAMES $PREFRAMES PERCYCLE $PERCYCLE
-rm log.txt
+#echo PREFRAMES $PREFRAMES PERCYCLE $PERCYCLE
+rm cap.log
 
 cat $tensionfile | while read tension tcount
 do
     echo tension $tension count $tcount
     let THISFRAMES=$((tcount*3))
     PINIT2="${PINIT}-${STEPPERDELAY}s-${tension}T"
-    ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((THISFRAMES+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a log.txt
+    ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((THISFRAMES+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a cap.log
     rc=`cat ${TARGETDIR}/exit.code`
     echo rc is $rc
     ((FRAMES+=tcount))
@@ -76,7 +82,7 @@ do
 PINIT2="${PINIT}-${STEPPERDELAY}s-${TENSION}T"
 
 
-echo ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((PERCYCLE+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a log.txt
+echo ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((PERCYCLE+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a cap.log
 rc=$?
 if (($TOTALFRAMES-$FRAMES > $PERCYCLE))
 then
@@ -90,3 +96,4 @@ fi
 ((FRAMES+=PERCYCLE))
 done
 touch $TARGETDIR/done.done
+touch exit.code
