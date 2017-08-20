@@ -1,7 +1,9 @@
 #!/bin/bash
 
 declare -ix TITLE_STREAM_FRAMES=200
-FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
+#FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
+SOFTWARE=${HOME}/scans/software/
+FONT=${SOFTWARE}/fonts/DroidSerif-BoldItalic.ttf
 SEM=sem
 
 while getopts "p:r:" OPT
@@ -94,7 +96,8 @@ gentitles()
 				-size x${rowsize} label:"${line}" \
                 -rotate -90 $titleroot/titleline_${linecount}.png
 			((translateY+=rowsize+20))
-			echo -n " -page +$((translateX))+$((translateY)) $titleroot/titleline_${linecount}.png"
+			#echo -n " -page +$((translateX))+$((translateY)) $titleroot/titleline_${linecount}.png"
+			echo -n " -page +$((translateY)) $titleroot/titleline_${linecount}.png"
 			((linecount++))
 		done) 
 
