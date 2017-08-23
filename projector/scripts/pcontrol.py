@@ -82,18 +82,18 @@ def getNextUploadFile():
 
 def markUploaded(filename):
     with dbLock:
-        logger.debug("conn")
+        #logger.debug("conn")
         conn = sqlite3.connect(dbName)
-        logger.debug("cur")
+        #logger.debug("cur")
         cur = conn.cursor()
-        logger.debug("exec")
+        #logger.debug("exec")
         cur.execute("DELETE FROM pending WHERE filename='%s'" % filename)
-        logger.debug("commit")
+        #logger.debug("commit")
         conn.commit()
-        logger.debug("done")
+        #logger.debug("done")
     
 def uploader():
-    logger.debug("uploader")
+#    logger.debug("uploader")
     while True:
         filename = getNextUploadFile()
         if filename is None:

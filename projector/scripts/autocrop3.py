@@ -49,11 +49,11 @@ eroded_dir = {True:'eroded', False: None}[os.path.isdir('%s/eroded' % options.ou
 
 #arrToFind = None
 
-FrameHeightMm = 3.3
-FrameWidthMm = 4.5
+#FrameHeightMm = 3.3
+#FrameWidthMm = 4.5
 #SprocketSuper8 = (1.14, .91) # H, W
-Sprocket8mm = (1.27, 1.83) # H, W
-PxPerMm8mm = 454
+#Sprocket8mm = (1.27, 1.83) # H, W
+PxPerMm8mm = 391
 PxPerMmSuper8 = 360
 Info = namedtuple('Info', 'start height')
 # 
@@ -62,6 +62,11 @@ SprocketSuper8 = type('obj', (object,), {'h': roundIt(1.14 * PxPerMmSuper8),
     'w': roundIt(.91 * PxPerMmSuper8)})
 FrameSuper8 = type('obj', (object,), {'h': roundIt(5.46 * PxPerMmSuper8),
     'w': roundIt(4.01 * PxPerMmSuper8)})
+
+Sprocket8mm = type('obj', (object,), {'h': roundIt(1.83 * PxPerMm8mm),
+    'w': roundIt(1.27 * PxPerMm8mm)})
+Frame8mm = type('obj', (object,), {'h': roundIt(4.37 * PxPerMm8mm),
+    'w': roundIt(3.28 * PxPerMm8mm)})
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(message)s')
 logger = logging.getLogger('autocrop')
@@ -472,63 +477,109 @@ def process8mm(filenames, outputpath):
         logger.error("Need three filenames")
         sys.exit(1)
 
-    # Select the brightest image for figuring out the cropping
+    erodedHeight = 550
     filename = files[0]
     imp = PILImage.open(filename).convert('L')
     flattened = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
-    #(fcWidth, fcHeight) = im.shape
+    if options.debug and eroded_dir is not None:
+        sPlacement = imp
     (fcHeight, fcWidth) = flattened.shape
-    #flattened = flattened[:800,:800]
-    flattened = flattened[:1200,:1200]
+    xOffset = 600
+    yOffset = fcHeight - erodedHeight
+    flattened = flattened[yOffset:,:]
     eroded = ndimage.grey_erosion(flattened, size=(25, 25))
 
-    eroded[eroded < 200] = 0
-    eroded[eroded >= 200] = 255
-    eroded[:,-1] = 0
+    eroded[eroded < 128] = 0
+    eroded[eroded >= 128] = 1 
     if options.debug and eroded_dir is not None:
-        scipy.misc.imsave('%s/%s/%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
+        scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
-# super8 sprocket size 0.91W 1.14H centered
-# 8mm sprocket size 1.8W 1.23H between
-    ((rectH, rectW), (spBottomY, spRightX)) = findLargestRect(eroded, 255)
-    
-    spCenterY = int(((spBottomY - rectH / 2)) + (3.3 * PxPerMm8mm / 2)) #  + 700) # * PxPerMmSuper8) + 700
-    logger.debug("%s spRightX %u spCenterY %u" % (filename, spRightX, spCenterY))
+    rangeDict = {}
+    for range in whitePixels(eroded[-1], 200, 400):
+        if eroded.shape[1] > (range[0] + 300):
+            rangeDict[abs(int(numpy.mean(range)) - (fcWidth/2))] = range
 
-    frameWidth = int(4.5 * PxPerMm8mm)
-    if frameWidth % 2 == 1:
-        frameWidth += 1
-    frameHeight = int(3.3 * PxPerMm8mm)
+    useRanges = [rangeDict[key] for key in sorted(rangeDict.keys())[:2]]
+    useRange = [(useRanges[0][0] + useRanges[1][0])/2, (useRanges[0][1] + useRanges[1][1])/2 ]
 
-    frameOriginX = int(spRightX) # int((spRightX - rectW) + ((0.91 + .05) * PxPerMm8mm))
-    frameOriginY = int(spCenterY - frameHeight/ 2)
+    # find the horizontal extents of the sprocket
+    # remove top and bottom 150
+    lookFor = numpy.ones([erodedHeight,Sprocket8mm.w], dtype=numpy.uint8)
+    methods = [cv2.TM_CCOEFF,cv2.TM_CCOEFF_NORMED,cv2.TM_CCORR,cv2.TM_CCORR_NORMED,
+        cv2.TM_SQDIFF,cv2.TM_SQDIFF_NORMED]
 
-    logger.debug("frame X %u Y %u W %u H %u" % (frameOriginX, frameOriginY, frameWidth, frameHeight))
+    #res = cv2.matchTemplate(eroded[:,useRanges[0][0]:sum(useRanges[0])], lookFor, methods[2])
+    res = cv2.matchTemplate(eroded[:,useRanges[1][0]:sum(useRanges[1])], lookFor, methods[2])
+    (minval, maxval, minloc, maxloc) = cv2.minMaxLoc(res)
 
+    sprocketCx = (sum(useRanges[0]) + useRanges[1][0])/2 # (Sprocket8mm.w / 2)
+    sprocketCy = fcHeight - erodedHeight +  maxloc[0] + (Sprocket8mm.h / 2)
+
+    (xAdj, yAdj, wAdj, hAdj) = (0, 0, 0, 0)
+    if options.adjfile:
+        try:
+            (xAdj, yAdj, wAdj, hAdj) = [int(xx) for xx in open(options.adjfile).read().rstrip().split(',')]
+        except:
+            logger.debug("%s file not found", options.adjfile)
+            pass
+
+    logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
+
+    frameX = (sprocketCx - Frame8mm.w / 2) + xAdj
+    frameY = sprocketCy - (Sprocket8mm.h / 2) - Frame8mm.h + yAdj 
+
+    frameH = Frame8mm.h + hAdj
+    frameW = Frame8mm.w + wAdj
+
+    if options.debug and eroded_dir is not None:
+        idraw = ImageDraw.Draw(sPlacement)
+        line1 = (sprocketCx - Sprocket8mm.w/2, sprocketCy - Sprocket8mm.h/2,
+                 sprocketCx + Sprocket8mm.w/2, sprocketCy + Sprocket8mm.h/2)
+            
+        line2 = (sprocketCx + Sprocket8mm.w/2, sprocketCy - Sprocket8mm.h/2,
+                 sprocketCx - Sprocket8mm.w/2, sprocketCy + Sprocket8mm.h/2)
+            
+        idraw.line(line1, fill=255, width=2)
+        idraw.line(line2, fill=255, width=2)
+        idraw.line([i + j for i, j in zip(line1, (0, 1, 0, 1))], fill=0, width=2)
+        idraw.line([i + j for i, j in zip(line2, (0, 1, 0, 1))], fill=0, width=2)
+
+        # top horizontal
+        fline = (frameX, frameY, frameX + frameW, frameY)
+        idraw.line(fline, fill=255, width=2)
+        idraw.line([i + j for i, j in zip(fline, (0, 1, 0, 1))], fill=0, width=2)
+
+        # bottom horizontal
+        fline = (frameX, frameY + frameH, frameX + frameW, frameY + frameH)
+        idraw.line(fline, fill=255, width=2)
+        idraw.line([i + j for i, j in zip(fline, (0, 1, 0, 1))], fill=0, width=2)
+
+        # left vertical
+        fline = (frameX, frameY, frameX, frameY + frameH)
+        idraw.line(fline, fill=255, width=2)
+        idraw.line([i + j for i, j in zip(fline, (1, 0, 1, 0))], fill=0, width=2)
+
+        # right vertical
+        fline = (frameX + frameW, frameY, frameX + frameW, frameY + frameH)
+        idraw.line(fline, fill=255, width=2)
+        idraw.line([i + j for i, j in zip(fline, (1, 0, 1, 0))], fill=0, width=2)
+
+        sPlacement.save('%s/%s/2_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)))
     # crop and save
-    if ((frameOriginX + frameWidth) > fcWidth) or ((frameOriginY + frameHeight) > fcHeight):
-        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameOriginX + frameWidth, fcWidth, frameOriginY + frameHeight, fcHeight))
+    if ((frameX + frameW) > fcWidth) or ((frameY + frameH) > fcHeight):
+        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameX + frameW, fcWidth, frameY + frameH, fcHeight))
         sys.exit(1)
-
-#    if options.debug and bw_dir is not None:
-#        bwd = ImageDraw.Draw(imp)
-#        bwd.line((0, spCenterY, 600, spCenterY), fill=0)
-#        bwd.line((spRightX, spCenterY - (1.62 * PxPerMm8mm),
-#            spRightX, spCenterY + (1.62 * PxPerMm8mm)), fill = 0)
-#        bwd.rectangle((frameOriginX, frameOriginY,
-#            frameOriginX + frameWidth,
-#            frameOriginY + frameHeight), fill=192)
-#        imp.save('%s/%s/%s' % (options.outputdir, bw_dir, os.path.basename(filename)))
 
     for iFile in files:
         try:
             fullColor = PILImage.open(iFile)
-            fullColor = fullColor.crop((int(frameOriginX), int(frameOriginY),
-                 int(frameOriginX + frameWidth),
-                 int(frameOriginY + frameHeight)))
+            fullColor = fullColor.crop((int(frameX), int(frameY),
+                 int(frameX + frameW),
+                 int(frameY + frameH)))
             fullColor.save('%s/%s' % (outputpath, os.path.basename(iFile)))
         except:
             logger.error("Did not save %s/%s" % (outputpath, os.path.basename(iFile)))
+            raise
 
 def main():
     if options.mode not in ('8mm', 'super8'):
