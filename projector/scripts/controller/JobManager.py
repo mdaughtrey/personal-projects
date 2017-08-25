@@ -6,25 +6,25 @@ import subprocess
 import time
 
 def trampoline(object):
-    object._logger.debug("Worker")
+    #object._logger.debug("Worker")
     while object._wmrunning:
         object._workerManager()
-    object._logger.info("workerManager ends")
+    #object._logger.info("workerManager ends")
 
 class JobManager():
     PrecropS8Geometry="2912x2200+0+250"
     Precrop8mmGeometry="2868x1800+300+500"
     JobLimit = 4 
 #    WorkerManagerControl = False # True # 'Off'
-    DisablePrecrop = False
+    DisablePrecrop = True
     DisableAutocrop = False
 
     def schedulableTasks(self):
         tasks = self._pstore.taskList(self._config.project)
-        self._logger.debug("tasks %s" % tasks)
+        #self._logger.debug("tasks %s" % tasks)
         self._scheduledTasks = []
         taskTable = { 
-            "pc": self._schedulePrecrop,
+#            "pc": self._schedulePrecrop,
             "ac": self._scheduleAutocrop,
             "tf": self._scheduleTonefuse,
 #            "gt": self._scheduleGenTitle,
@@ -163,10 +163,10 @@ class JobManager():
         map(lambda pp: pp.terminate(), self._workers)
 
     def _workerManager(self):
-        self._logger.debug("_workerManager")
+        #self._logger.debug("_workerManager")
         self._workerCleanup()
         self.schedulableTasks()
-        self._logger.debug("_workerManager")
+        #self._logger.debug("_workerManager")
 
         freeWorkers = JobManager.JobLimit - len(self._workers)
         if 0 == freeWorkers:
@@ -174,9 +174,9 @@ class JobManager():
             time.sleep(1)
             return
 
-        self._logger.debug("_scheduledTasks %s" % self._scheduledTasks)
+        #self._logger.debug("_scheduledTasks %s" % self._scheduledTasks)
         for task in self._scheduledTasks:
-            self._logger.debug("Task %s" % task)
+#            self._logger.debug("Task %s" % task)
             if freeWorkers: freeWorkers -= task(freeWorkers)
 
         if freeWorkers:
@@ -302,9 +302,9 @@ class JobManager():
         #return retcode
 
     def _workerCleanup(self):
-        self._logger.debug("Workers before cleanup: %d" % len(self._workers))
+        #self._logger.debug("Workers before cleanup: %d" % len(self._workers))
         self._workers = [xx for xx in self._workers if xx.is_alive()]
-        self._logger.debug("Workers after cleanup: %d" % len(self._workers))
+        #self._logger.debug("Workers after cleanup: %d" % len(self._workers))
 
     def quiescent(self):
         if len(self._workers):
@@ -315,4 +315,5 @@ class JobManager():
         self._generateTitles = True
 
     def uploadsDone(self, project):
-        self._pstore.setTask(project, ['pc','ac','tf','gc'])
+        self._pstore.setTask(project, ['ac','tf','gc'])
+        #self._pstore.setTask(project, ['pc','ac','tf','gc'])

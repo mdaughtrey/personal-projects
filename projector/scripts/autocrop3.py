@@ -270,7 +270,7 @@ def processSuper8(filenames, outputpath):
     rangeDict = {}
     for range in whitePixels(eroded[-1], 200, 400):
         if eroded.shape[1] > (range[0] + 300):
-            rangeDict[abs(int(numpy.mean(range)) - (fcWidth/2))] = range
+            rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
 
     useRange = rangeDict[sorted(rangeDict.keys())[0]]
 
