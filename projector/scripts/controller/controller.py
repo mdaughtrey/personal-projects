@@ -23,7 +23,7 @@ parser.add_argument('--film', required = True, dest='film', choices=['8mm','supe
 config = parser.parse_args()
 
 #ROOTOFALL='/mnt/exthd/scans/nk'
-ROOTOFALL='/home/mattd/scans/nk'
+ROOTOFALL='/home/mattd/scans/sensortest'
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
