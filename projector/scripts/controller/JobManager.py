@@ -101,7 +101,7 @@ class JobManager():
  
     def _scheduleAutocrop(self, freeWorkers):
         scheduled = 0
-        self._logger.debug("_scheduleAutocrop")
+        #self._logger.debug("_scheduleAutocrop")
         todo = self._pstore.toBeAutocropped(self._config.project, freeWorkers * 3)
         self._logger.debug("todo %s" % todo)
         while len(todo) >= 3:
@@ -239,7 +239,9 @@ class JobManager():
             self._logger.debug("_wmAutocrop Done")
 
         except subprocess.CalledProcessError as ee:
-            self._logger.error("autocrop failed rc %d $s" % (ee.returncode, ee.output))
+	    print ee.returncode
+	    print ee.output
+            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
             self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmPrecropShort(self, project, container, filename):

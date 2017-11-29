@@ -149,6 +149,9 @@ class ProjectStore():
 #        return self._getPendingWork(project, statement)
 
     def markAutocropped(self, project, container, file1, file2, file3):
+	self.markPrecropped(project, container, file1)
+	self.markPrecropped(project, container, file2)
+	self.markPrecropped(project, container, file3)
         for ff in [file1, file2, file3]:
             self.simpleUpdate(project, "UPDATE picdata set autocrop='%s' WHERE container='%s' and rawfile='%s'"
             % (ff, container, ff))
