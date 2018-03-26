@@ -58,6 +58,19 @@ void lightIt(u16 ltime, u08 duty)
   }
 }
 
+void allon()
+{
+  u08 row, col;
+  for (row = 0; row < 3; row++)
+  {
+    for (col = 0; col < 3; col++)
+    {
+      digitalWrite(rotArray[row][col],LOW );
+    }
+  }
+
+}
+
 // the setup function runs once when you press reset or power the board
 u08 pnum;
 void setup() {
@@ -66,6 +79,7 @@ void setup() {
   pinMode(17, OUTPUT);
   pnum = 0;
   randomSeed(analogRead(0));
+  //allon();
 }
 
 void rotate(u08 count)
