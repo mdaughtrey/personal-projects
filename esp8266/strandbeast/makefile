@@ -1,13 +1,18 @@
 PIO=platformio
-ESP_NONOS=esp8266-nonos-sdk
-ESP_RTOS=esp8266-rtos-sdk
+PORT=/dev/cu.SLAB_USBtoUART
 
 all:
 	${PIO} run
+	make u
+	make s
 
-show:
-	$(PIO) show $(ESP_NONOS)
-	$(PIO) show $(ESP_RTOS)
+build:
+	${PIO} run > build.log
 
-up:
-	sudo pio run -t upload --upload-port /dev/ttyS1 -v
+init:
+	$(PIO) 
+u:
+	sudo pio run -t upload --upload-port $(PORT) -v 
+
+s:
+	screen $(PORT) 9600
