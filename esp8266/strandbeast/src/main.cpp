@@ -14,6 +14,8 @@
 Adafruit_FRAM_I2C fram     = Adafruit_FRAM_I2C();
 #endif // FRAM
 #define I2CDEV
+//#define I2CDEV_FRAM
+#define I2CDEV_PWM
 #ifdef I2CDEV
 #include "I2Cdev.h"
 I2Cdev i2c = I2Cdev();
@@ -41,10 +43,14 @@ void apCallback(WiFiManager * wmgr)
 
 void handleRoot()
 {
-    String text = String("<HTML><BODY>Success\r\n");
+    String text;
     Serial.println("web server root");
 #ifdef WIFI
-    Serial.println(webServer.args());
+//    Serial.println(webServer.args());
+    String theArgs = String("Args ");
+    theArgs = theArgs + "reg1: " + webServer.arg("reg0") + "\r\n";
+    theArgs = theArgs + "reg1: " + webServer.arg("reg1") + "\r\n";
+    Serial.println(theArgs);
 #endif // WIFI
     //rpm = webServer.arg(0).toInt();
 #ifdef BRZO
@@ -56,7 +62,7 @@ void handleRoot()
     //brzo_i2c_ACK_polling(2);
     Serial.println(brzo_i2c_end_transaction());
 #endif // BRZO
-#ifdef I2CDEV
+#ifdef I2CDEV_FRAM
     Wire.begin(4,5);
 //    Wire.setClock(100000);
     Wire.beginTransmission(0x50);
@@ -66,8 +72,8 @@ void handleRoot()
     Wire.endTransmission();
 
     Wire.beginTransmission(0x50);
-    Wire.write(0); // addr high
-    Wire.write(0); // addr how
+    Wire.write(atoi(webServer.arg("reg0)")); // addr high
+    Wire.write(atoi(webServer.arg("reg1)")); // addr high
     Wire.endTransmission();
 //
 //    Serial.print("requestFrom ");
@@ -76,9 +82,34 @@ void handleRoot()
     text.concat("\r\n");
 //    Serial.print("buffer 0 ");
 //    Serial.println(Wire.read());
-
 #endif // I2CDEV
+#ifdef I2CDEV_PWM
+    Serial.println("I2CDEV_PWM");
+    Wire.begin(4,5);
+    Wire.beginTransmission(0x5a);
+    Wire.write(0); // reg
+    int reg0(atoi(webServer.arg("reg0").c_str())); 
+    int reg1(atoi(webServer.arg("reg1").c_str())); 
+    Serial.print("reg0: ");
+    Serial.println(reg0);
+    Serial.print("reg1: ");
+    Serial.println(reg1);
+    Wire.write(reg0);
+    Wire.write(reg1);
+    Wire.endTransmission();
+
+    Wire.beginTransmission(0x5a);
+    Wire.write(0); // addr high
+    Wire.endTransmission();
+    text = " requestfrom: " + Wire.requestFrom(0x5a, (uint8_t)2);
+    text = text + Wire.read() + " " + Wire.read();
+    Serial.print("text so far ");
+    Serial.println(text);
+//    text.concat(Wire.read());
+#endif //  I2CDEV_PWM
+
     Serial.println("I2C done");
+    Serial.println(text);
 #ifdef FRAM
     uint16_t manu;
     uint16_t prod;
@@ -92,8 +123,7 @@ void handleRoot()
     Serial.print("FRAM read ");
     Serial.println(fram.read8(0));
 #endif // FRAM
-    text.concat("</BODY></HTML>");
-    webServer.send(200, "text/html", text);
+    webServer.send(200, "text/html", "<HTML><BODY>Success</BODY></HTML>");
 }
 
 void saveWifiConfig()
