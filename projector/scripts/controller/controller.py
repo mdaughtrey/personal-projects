@@ -22,7 +22,7 @@ parser.add_argument('--project', required = True, dest='project', help='set jobm
 parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
 config = parser.parse_args()
 
-ROOTOFALL='/media/sf_vm_externalhd/scans/'
+ROOTOFALL='/home/mattd/scans/'
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)

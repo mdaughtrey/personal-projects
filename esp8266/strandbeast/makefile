@@ -1,0 +1,18 @@
+PIO=platformio
+PORT=/dev/cu.SLAB_USBtoUART
+
+all:
+	${PIO} run
+	make u
+	make s
+
+build:
+	${PIO} run > build.log
+
+init:
+	$(PIO) 
+u:
+	sudo pio run -t upload --upload-port $(PORT) -v 
+
+s:
+	screen $(PORT) 9600
