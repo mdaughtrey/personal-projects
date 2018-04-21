@@ -1,4 +1,4 @@
 #!/bin/bash
 
-gcc -o dcraw -O4 dcraw.c -lm -ljasper -ljpeg -llcms2 -DNO_JASPEr
+gcc -o dcraw -O4 dcraw.c -lm -ljasper -ljpeg -llcms2 
 
