@@ -6,25 +6,25 @@ import subprocess
 import time
 
 def trampoline(object):
-    object._logger.debug("Worker")
+    #object._logger.debug("Worker")
     while object._wmrunning:
         object._workerManager()
-    object._logger.info("workerManager ends")
+    #object._logger.info("workerManager ends")
 
 class JobManager():
-# width x height +x + y offset
-    PrecropS8Geometry="2912x2200+200+0"
+    PrecropS8Geometry="2912x2200+0+250"
     Precrop8mmGeometry="2868x1800+300+500"
     JobLimit = 4 
 #    WorkerManagerControl = False # True # 'Off'
-    DisablePrecrop = False
+    DisablePrecrop = True
     DisableAutocrop = False
 
     def schedulableTasks(self):
         tasks = self._pstore.taskList(self._config.project)
+        #self._logger.debug("tasks %s" % tasks)
         self._scheduledTasks = []
         taskTable = { 
-            "pc": self._schedulePrecrop,
+#            "pc": self._schedulePrecrop,
             "ac": self._scheduleAutocrop,
             "tf": self._scheduleTonefuse,
 #            "gt": self._scheduleGenTitle,
@@ -101,15 +101,10 @@ class JobManager():
  
     def _scheduleAutocrop(self, freeWorkers):
         scheduled = 0
+        #self._logger.debug("_scheduleAutocrop")
         todo = self._pstore.toBeAutocropped(self._config.project, freeWorkers * 3)
+        self._logger.debug("todo %s" % todo)
         while len(todo) >= 3:
-#            testargs = {todo[0][1]: 1}
-#            testargs[todo[1][1]] = 1
-#            testargs[todo[2][1]] = 1
-#            if len(testargs.keys()) > 1:
-#                self._logger.error("Mismatched container values")
-#                del todo[:3]
- 
             jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
  
             if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
@@ -168,8 +163,10 @@ class JobManager():
         map(lambda pp: pp.terminate(), self._workers)
 
     def _workerManager(self):
+        #self._logger.debug("_workerManager")
         self._workerCleanup()
         self.schedulableTasks()
+        #self._logger.debug("_workerManager")
 
         freeWorkers = JobManager.JobLimit - len(self._workers)
         if 0 == freeWorkers:
@@ -177,7 +174,9 @@ class JobManager():
             time.sleep(1)
             return
 
+        #self._logger.debug("_scheduledTasks %s" % self._scheduledTasks)
         for task in self._scheduledTasks:
+#            self._logger.debug("Task %s" % task)
             if freeWorkers: freeWorkers -= task(freeWorkers)
 
         if freeWorkers:
@@ -190,7 +189,8 @@ class JobManager():
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputfile = self._fileman.getTonefuseDir(project, container) + '/%s' % file1
-        jobargs = ('enfuse', '--output', outputfile, source1, source2, source3)
+        jobargs = ('enfuse', '--hard-mask', '--saturation-weight=0.1',
+        '--output', outputfile, source1, source2, source3)
         self._logger.info("Calling %s" % ' '.join(jobargs))
         try:
             #subprocess.check_call(jobargs)
@@ -206,7 +206,7 @@ class JobManager():
 
     def _vmAutocropShort(self, project, container, file1, file2, file3):
         self._logger.info("vmAutoCropShort %s %s %s %s %s" % (project, container, file1, file2, file3))
-        sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
+        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
@@ -217,17 +217,19 @@ class JobManager():
         self._pstore.markAutocropped(project, container, file1, file2, file3)
 
     def _vmAutocrop(self, project, container, file1, file2, file3):
-#        return self._vmAutocropShort(project,container, file1, file2, file3)
+        #return self._vmAutocropShort(project,container, file1, file2, file3)
         self._logger.info("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
-        sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
+        #sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
+        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
         source1 = "%s/%s" % (sourceDir, file1)
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputdir = self._fileman.getAutocropDir(project, container)
-        jobargs = ('../autocrop.py', '-s', '--filenames',
+        jobargs = ('../autocrop3.py', '-s', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
             '--mode', self._config.film,
-            '--output-dir', outputdir)
+            '--output-dir', outputdir,
+            '--adjfile', self._fileman.getAdjFile(project))
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         try:
             #subprocess.check_call(jobargs)
@@ -237,7 +239,9 @@ class JobManager():
             self._logger.debug("_wmAutocrop Done")
 
         except subprocess.CalledProcessError as ee:
-            self._logger.error("autocrop failed rc %d $s" % (ee.returncode, ee.output))
+	    print ee.returncode
+	    print ee.output
+            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
             self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmPrecropShort(self, project, container, filename):
@@ -300,9 +304,9 @@ class JobManager():
         #return retcode
 
     def _workerCleanup(self):
-        self._logger.debug("Workers before cleanup: %d" % len(self._workers))
+        #self._logger.debug("Workers before cleanup: %d" % len(self._workers))
         self._workers = [xx for xx in self._workers if xx.is_alive()]
-        self._logger.debug("Workers after cleanup: %d" % len(self._workers))
+        #self._logger.debug("Workers after cleanup: %d" % len(self._workers))
 
     def quiescent(self):
         if len(self._workers):
@@ -313,4 +317,5 @@ class JobManager():
         self._generateTitles = True
 
     def uploadsDone(self, project):
-        self._pstore.setTask(project, ['pc','ac','tf','gc'])
+        self._pstore.setTask(project, ['ac','tf','gc'])
+        #self._pstore.setTask(project, ['pc','ac','tf','gc'])

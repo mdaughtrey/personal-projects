@@ -6,10 +6,10 @@ import subprocess
 import time
 
 def trampoline(object):
-    object._logger.debug("Worker")
+#    object._logger.debug("Worker")
     while object._wmrunning:
         object._workerManager()
-    object._logger.info("workerManager ends")
+#    object._logger.info("workerManager ends")
 
 class JobManager():
 # width x height +x + y offset
@@ -170,7 +170,7 @@ class JobManager():
 
         freeWorkers = JobManager.JobLimit - len(self._workers)
         if 0 == freeWorkers:
-            self._logger.info("No free workers")
+#            self._logger.info("No free workers")
             time.sleep(1)
             return
 
@@ -221,7 +221,7 @@ class JobManager():
         source2 = "%s/%s" % (sourceDir, file2)
         source3 = "%s/%s" % (sourceDir, file3)
         outputdir = self._fileman.getAutocropDir(project, container)
-        jobargs = ('../autocrop.py', '-s', '--filenames',
+        jobargs = ('../autocrop2.py', '-s', '--filenames',
             '%s,%s,%s' % (source1, source2, source3),
             '--mode', self._config.film,
             '--output-dir', outputdir)
@@ -231,10 +231,10 @@ class JobManager():
             self._logger.debug(subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
             self._logger.info("Done %s %s %s" % (project, container, outputdir))
             self._pstore.markAutocropped(project, container, file1, file2, file3)
-            self._logger.debug("_wmAutocrop Done")
+            #self._logger.debug("_wmAutocrop Done")
 
         except subprocess.CalledProcessError as ee:
-            self._logger.error("autocrop failed rc %d $s" % (ee.returncode, ee.output))
+            self._logger.error("autocrop2 failed rc %d $s" % (ee.returncode, ee.output))
             self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmPrecropShort(self, project, container, filename):
@@ -297,9 +297,9 @@ class JobManager():
         #return retcode
 
     def _workerCleanup(self):
-        self._logger.debug("Workers before cleanup: %d" % len(self._workers))
+#        self._logger.debug("Workers before cleanup: %d" % len(self._workers))
         self._workers = [xx for xx in self._workers if xx.is_alive()]
-        self._logger.debug("Workers after cleanup: %d" % len(self._workers))
+#        self._logger.debug("Workers after cleanup: %d" % len(self._workers))
 
     def quiescent(self):
         if len(self._workers):
