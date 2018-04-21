@@ -58,5 +58,15 @@ class FileManager():
         open(target, 'w').write(fileStream)
         return ['OK']
 
+    def newReferenceFile(self, fileStream, project, urlArgs):
+	pdb.set_trace()
+        targetDir = "%s/%s/" % (self._fileRoot, project)
+	targetFile = "%s/reference%c.raw" % (targetDir, urlArgs['refindex'])
+        try:
+            open(targetFile, 'w').write(fileStream)
+        except ee:
+            logger.error("Write to %s failed, %s" % (targetFile, ee.message))
+	return['OK']
+
     def deleteProject(self, projectname):
         return 'TODO'
