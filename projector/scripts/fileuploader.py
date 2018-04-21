@@ -32,6 +32,10 @@ args = parser.parse_args()
 donedone = args.dir + "/done.done"
 
 def getFiles():
+    for file in sorted(glob.glob("%s/reference?.done" % args.dir)):
+        if os.path.isfile(file.replace('done', 'raw.bz2')):
+            yield (file.replace("done", "raw.bz2"), file)
+
     for file in sorted(glob.glob("%s/??????.done" % args.dir)):
         if os.path.isfile(file.replace('done', 'jpg')):
             yield (file.replace("done", "jpg"), file)
@@ -42,27 +46,41 @@ def markDone(filename):
 def uploader():
     logger.debug("Uploader Starts")
     uploaded = 0
-    for jpg, done in getFiles():
-       logger.debug("uploader gets %s" % jpg)
-       hargs = (args.ip, args.port)
-       hUrl = 'http://%s:%u/upload' % hargs
-       try:
-           logger.debug(hUrl)
-           response = ss.put(url=hUrl, data=open(jpg).read(),
-               headers={'Content-Type': 'application/octet-stream'})
-           logger.debug("Uploaded %s" % hUrl)
-           logger.debug("removing %s" % jpg)
-           os.remove(done)
-           os.remove(jpg)
-           uploaded += 1
+    for image, done in getFiles():
+        logger.debug("uploader gets %s" % image)
+        hargs = (args.ip, args.port)
+        splits = image.split('/')
+        reference = False
+        if splits[2][:9] == 'reference':
+            reference = True
+            hUrl = 'http://%s:%u/reference' % hargs
+        else:
+            hUrl = 'http://%s:%u/upload' % hargs
 
-       except Exception as ee:
-           logger.error("HTTP upload fail %s" % str(ee))
-    logger.debug("Uploaded %u files" % uploaded)
+        try:
+            logger.debug(hUrl)
+            if reference:
+                response = ss.put(url=hUrl, data=open(image).read(),
+                    params = {'refindex': splits[2][9]},
+                    headers={'Content-Type': 'application/octet-stream'})
+            else:
+                response = ss.put(url=hUrl, data=open(image).read(),
+                    headers={'Content-Type': 'application/octet-stream'})
+
+            logger.debug("Uploaded %s" % hUrl)
+            logger.debug("removing %s" % image)
+#            os.remove(done)
+#            os.remove(image)
+            uploaded += 1
+
+        except Exception as ee:
+            logger.error("HTTP upload fail %s" % str(ee))
+            logger.debug("Uploaded %u files" % uploaded)
     return uploaded
 
 if os.path.isfile(donedone):
     os.remove(donedone)
+
 while True:
     if 0 == uploader() and os.path.isfile(donedone):
        hargs = (args.ip, args.port)
