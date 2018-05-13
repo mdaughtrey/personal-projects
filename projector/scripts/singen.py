@@ -6,7 +6,7 @@ import sys
 
 TENSION_START = 40
 TENSION_END = 20
-FRAMES = 4000
+FRAMES = 5000
 
 tensions = []
 for frame in xrange(0, FRAMES):

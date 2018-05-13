@@ -135,18 +135,23 @@ class ProjectStore():
         return result[0][0]
 
     def toBeAutocropped(self, project, limit):
+	return self.toBePrecropped(project, limit)
         # don't offer any files unless all precropped is complete
-        pcRemaining =  self.getRemaining(project, 'precrop')
-        if 0 != pcRemaining:
-            self._logger.debug("%s remaining precrops, autocrop not ready" % pcRemaining)
-            return []
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
-                 WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
-                 ORDER BY container,precrop LIMIT %s;''' % limit
-        #self._logger.debug(statement)
-        return self._getPendingWork(project, statement)
+#        pcRemaining =  self.getRemaining(project, 'precrop')
+#        self._logger.debug("pcRemaining %s" % pcRemaining)
+#        if 0 != pcRemaining:
+#            self._logger.debug("%s remaining precrops, autocrop not ready" % pcRemaining)
+#            return []
+#        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
+#                 WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
+#                 ORDER BY container,precrop LIMIT %s;''' % limit
+#        #self._logger.debug(statement)
+#        return self._getPendingWork(project, statement)
 
     def markAutocropped(self, project, container, file1, file2, file3):
+	self.markPrecropped(project, container, file1)
+	self.markPrecropped(project, container, file2)
+	self.markPrecropped(project, container, file3)
         for ff in [file1, file2, file3]:
             self.simpleUpdate(project, "UPDATE picdata set autocrop='%s' WHERE container='%s' and rawfile='%s'"
             % (ff, container, ff))

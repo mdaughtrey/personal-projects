@@ -156,7 +156,7 @@ typedef struct
    int datetime;        /// Use DateTime instead of frame#
    int timestamp;       /// Use timestamp instead of frame#
    int restart_interval;      /// JPEG restart interval. 0 for none.
-   int triple[3];       /// exposure values for triple
+   int triple[4];       /// exposure values for triple
    int tripleIndex;
    int cyclesLeft;
    int preframes;
@@ -1404,6 +1404,15 @@ static MMAL_STATUS_T create_camera_component(RASPISTILL_STATE *state)
    if (status != MMAL_SUCCESS)
    {
    fprintf(stderr,"Could not set sensor mode : error %d", status);
+   goto error;
+   }
+
+// disable lens shading
+   status = mmal_port_parameter_set_uint32(camera->control, MMAL_PARAMETER_CAMERA_ISP_BLOCK_OVERRIDE, ~0x08);
+
+   if (status != MMAL_SUCCESS)
+   {
+   fprintf(stderr,"Could not disable lens shading : error %d", status);
    goto error;
    }
 

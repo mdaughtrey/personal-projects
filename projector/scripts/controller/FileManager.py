@@ -24,7 +24,7 @@ class FileManager():
     def newFile(self, fileData, project, container, filename):
         targetDir = self._getdir(project, container, 'rawfile')
         targetFile = "%s/%s" % (targetDir, filename)
-        self._logger.debug("Saving to %s" % targetFile)
+        self._logger.debug("Saving %u to %s" % (len(fileData), targetFile))
         try:
             open(targetFile, 'w').write(fileData)
         except ee:
@@ -32,6 +32,9 @@ class FileManager():
         
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s" % (self._getdir(project, container, 'rawfile'), filename)
+
+    def getRawFileDir(self, project, container):
+        return self._getdir(project, container, 'rawfile')
 
     def getPrecropDir(self, project, container):
         return self._getdir(project, container, 'precrop')
@@ -41,6 +44,9 @@ class FileManager():
 
     def getTonefuseDir(self, project, container):
         return self._getdir(project, container, 'fused')
+
+    def getAdjFile(self, project):
+        return "%s/%s/frameadj.txt" % (self._fileRoot, project)
 
     def newTitleFile(self, fileStream, project, titlepage):
         targetDir = "%s/%s/" % (self._fileRoot, project)
