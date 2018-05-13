@@ -1,26 +1,29 @@
 #!/bin/bash
+set -o xtrace
+exec > >(tee cap.log)  2>&1
 BIN=/home/mattd/personal-projects/projector/userland/build/bin/raspistill
 SPOOLTYPE="SMALL"
 FILMTYPE="SUPER8"
 PREFRAMES=1
 let FRAMES=0
-#let FRAMES=4000
-SHUTTER=4000,10000,60000
+SHUTTER=40000,80000,1200000
 TARGETDIR=/tmp
-#TARGETDIR=/home/mattd/capture
 MAXINFLIGHT=30
-#MAXINFLIGHT=3000
 
+cap()
+{
 case $SPOOLTYPE in
     SMALL)
         tensionfile="./tension_small.txt"
-        #read -a tensions <<<$(<./tension_small.txt)
-        let TOTALFRAMES=4000
-        let PERCYCLE=500
+        let TOTALFRAMES=5000
+        ;;
+    MID)
+        tensionfile="./tension_mid.txt"
+        let TOTALFRAMES=20000
         ;;
     LARGE)
-        let TOTALFRAMES=3500
-        let PERCYCLE=500
+        tensionfile="./tension_large.txt"
+        let TOTALFRAMES=30000
         ;;
 esac
 
@@ -33,19 +36,15 @@ case $FILMTYPE in
         ;;
 esac
 
-#((TOTALFRAMES*=3))
 ((PREFRAMES*=3))
-#((PERCYCLE*=3))
 
-echo PREFRAMES $PREFRAMES PERCYCLE $PERCYCLE
-rm log.txt
-
+let count=0
 cat $tensionfile | while read tension tcount
 do
     echo tension $tension count $tcount
     let THISFRAMES=$((tcount*3))
     PINIT2="${PINIT}-${STEPPERDELAY}s-${tension}T"
-    ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((THISFRAMES+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a log.txt
+    ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((THISFRAMES+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ss 400 -awb off --exposure off --ISO 100 -v -tr $SHUTTER 2>&1 | tee -a cap.log
     rc=`cat ${TARGETDIR}/exit.code`
     echo rc is $rc
     ((FRAMES+=tcount))
@@ -65,18 +64,16 @@ do
 done
 exit 0
 
-#let TENSTEP=$(((STARTTENSION-ENDTENSION)/FRAMESTEP))
 let TENSION=$((STARTTENSION+TENSTEP))
-#TENSTEP=${bc<<<"scale=2;($STARTTENSION-$ENDTENSION)/($TOTALFRAMES/$PERCYCLE)"}
 TENSTEP=${bc<<<"scale=2;${STARTTENSION}-${ENDTENSION}"}
-FRAMESTEP=$(bc <<<"scale=2; $TOTALFRAMES/$PERCYCLE"}
+FRAMESTEP=$(bc <<<"scale=2; $TOTALFRAMES/$PERCYCLE")
 while (($FRAMES < $TOTALFRAMES))
 do
 ((STEPPERDELAY=1+(FRAMES/PERCYCLE)))
 PINIT2="${PINIT}-${STEPPERDELAY}s-${TENSION}T"
 
 
-echo ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((PERCYCLE+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a log.txt
+echo ${BIN} --targetdir $TARGETDIR -mif $MAXINFLIGHT --cycle $((PERCYCLE+PREFRAMES)) -pi $PINIT2 -pf $PREFRAMES -o - -e jpg -t 2 -ISO 400 -ss 100 -w 3280 -h 2464 -awb sun -v -tr $SHUTTER 2>&1 | tee -a cap.log
 rc=$?
 if (($TOTALFRAMES-$FRAMES > $PERCYCLE))
 then
@@ -90,3 +87,27 @@ fi
 ((FRAMES+=PERCYCLE))
 done
 touch $TARGETDIR/done.done
+touch exit.code
+}
+
+reference()
+{
+    OUTDIR=/tmp
+    for type in raw ppm done bz2; do
+        rm ${OUTDIR}/*.${type}
+    done
+    camera_i2c
+    raspiraw --mode 0 --header --i2c 0 --expus 40000 --fps 1 -t 250 -sr 1 -o ${OUTDIR}/reference0.raw
+    raspiraw --mode 0 --header --i2c 0 --expus 80000 --fps 1 -t 500 -sr 1 -o ${OUTDIR}/reference1.raw
+    raspiraw --mode 0 --header --i2c 0 --expus 1200000 --fps 1 -t 2000 -sr 1 -o ${OUTDIR}/reference2.raw
+    for ii in 0 1 2; do
+        bzip2 ${OUTDIR}/reference${ii}.raw
+        touch ${OUTDIR}/reference${ii}.done
+    done
+}
+
+case "$1" in 
+    cap) cap ;;
+    ref) reference ;;
+    *) echo cap/ref; exit 1;;
+esac
