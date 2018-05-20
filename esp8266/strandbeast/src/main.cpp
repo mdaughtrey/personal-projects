@@ -1,7 +1,7 @@
 #include "Wire.h"
 #include "Arduino.h"
 //#include "CheapStepper.h"
-#define WIFI
+//#define WIFI
 #ifdef WIFI
 #include "ESP8266WiFi.h"
 #include "DNSServer.h"
@@ -14,9 +14,11 @@
 Adafruit_FRAM_I2C fram     = Adafruit_FRAM_I2C();
 #endif // FRAM
 #define I2CDEV
+//#define I2CDEV_FRAM
+//#define I2CDEV_PWM
+#define I2CDEV_LOOP
 #ifdef I2CDEV
 #include "I2Cdev.h"
-I2Cdev i2c = I2Cdev();
 #endif // I2CDEV
 //#define BRZO
 #ifdef BRZO
@@ -41,10 +43,14 @@ void apCallback(WiFiManager * wmgr)
 
 void handleRoot()
 {
-    String text = String("<HTML><BODY>Success\r\n");
+    String text = String();
     Serial.println("web server root");
 #ifdef WIFI
-    Serial.println(webServer.args());
+//    Serial.println(webServer.args());
+    String theArgs = String("Args ");
+    theArgs = theArgs + "reg1: " + webServer.arg("reg0") + "\r\n";
+    theArgs = theArgs + "reg1: " + webServer.arg("reg1") + "\r\n";
+    Serial.println(theArgs);
 #endif // WIFI
     //rpm = webServer.arg(0).toInt();
 #ifdef BRZO
@@ -56,7 +62,7 @@ void handleRoot()
     //brzo_i2c_ACK_polling(2);
     Serial.println(brzo_i2c_end_transaction());
 #endif // BRZO
-#ifdef I2CDEV
+#ifdef I2CDEV_FRAM
     Wire.begin(4,5);
 //    Wire.setClock(100000);
     Wire.beginTransmission(0x50);
@@ -65,20 +71,80 @@ void handleRoot()
     Wire.write(201);
     Wire.endTransmission();
 
-    Wire.beginTransmission(0x50);
-    Wire.write(0); // addr high
-    Wire.write(0); // addr how
-    Wire.endTransmission();
+//    Wire.beginTransmission(0x50);
+//    Wire.write(atoi(webServer.arg("reg0)")); // addr high
+//    Wire.write(atoi(webServer.arg("reg1)")); // addr high
+//    Wire.endTransmission();
 //
-//    Serial.print("requestFrom ");
+    Serial.print("requestFrom ");
     Wire.requestFrom(0x50, (uint8_t)1);
-    text.concat(Wire.read());
-    text.concat("\r\n");
+//    text.concat(Wire.read());
+//    text.concat("\r\n");
 //    Serial.print("buffer 0 ");
-//    Serial.println(Wire.read());
-
+    Serial.println(Wire.read());
 #endif // I2CDEV
+#ifdef I2CDEV_PWM
+    Serial.println("I2CDEV_PWM");
+    int reg0(atoi(webServer.arg("reg0").c_str())); 
+    int reg1(atoi(webServer.arg("reg1").c_str())); 
+//    buffer[0] = 0;
+    buffer[0] = reg0;
+    buffer[1] = reg1;
+    Wire.begin(4,5);
+    uint8_t ii;
+    for (ii = 0; ii < 2; ii++)
+    {
+        Serial.print("buffer ");
+        Serial.print(ii);
+        Serial.print(" = ");
+        Serial.println(buffer[ii]);
+    }
+    I2Cdev::writeBytes(0x5a, 0, 2, buffer);
+//    buffer[0] = 11;
+//    buffer[1] = 22;
+//    I2Cdev::readByte(0x5a, 0, 1, &buffer[0]);
+//    I2Cdev::readByte(0x5a, 1, 1, &buffer[1]);
+//    for (ii = 0; ii < 2; ii++)
+//    {
+//        Serial.print("buffer ");
+//        Serial.print(ii);
+//        Serial.print(" = ");
+//        Serial.println(buffer[ii]);
+//    }
+    Wire.beginTransmission(0x5a);
+//    Wire.write(0); // reg
+//    Wire.write(0x55);
+//    Wire.write(0xaa);
+//    Wire.write(buffer, 3);
+    Wire.endTransmission();
+//    Wire.write(0); // reg
+//    Serial.print("reg0: ");
+//    Serial.println(reg0);
+//    Serial.print("reg1: ");
+//    Serial.println(reg1);
+//    Wire.write(reg0);
+//    Wire.write(reg1);
+//    Wire.endTransmission();
+
+//    Wire.beginTransmission(0x5a);
+//    Wire.write(0); // addr high
+//    Wire.endTransmission();
+//    Serial.print(F("requestfrom: "));
+//    Serial.print(Wire.requestFrom(0x5a, (uint8_t)1));
+//    Serial.print(F(" reg0 "));
+//    Serial.print(Wire.read());
+//
+//    Wire.beginTransmission(0x5a);
+//    Wire.write(1); // addr high
+//    Wire.endTransmission();
+//    Serial.print(Wire.requestFrom(0x5a, (uint8_t)1));
+//    Serial.print(F(" reg1 "));
+//    Serial.println(Wire.read());
+//    text.concat(Wire.read());
+#endif //  I2CDEV_PWM
+
     Serial.println("I2C done");
+    Serial.println(text);
 #ifdef FRAM
     uint16_t manu;
     uint16_t prod;
@@ -92,8 +158,9 @@ void handleRoot()
     Serial.print("FRAM read ");
     Serial.println(fram.read8(0));
 #endif // FRAM
-    text.concat("</BODY></HTML>");
-    webServer.send(200, "text/html", text);
+#ifdef WIFI
+    webServer.send(200, "text/html", "<HTML><BODY>Success</BODY></HTML>");
+#endif // WIFI
 }
 
 void saveWifiConfig()
@@ -125,7 +192,7 @@ void setup()
     brzo_i2c_setup(14, 16, 2000);
 #endif // BRZO
 #ifdef I2CDEV
-    I2Cdev();
+//    I2Cdev();
 #endif // I2CDEV
 #ifdef PINTEST
     pinMode(14, OUTPUT);
@@ -133,6 +200,9 @@ void setup()
     pinMode(16, OUTPUT);
     digitalWrite(16, HIGH);
 #endif // PINTEST
+#ifdef I2CDEV_LOOP
+    Wire.begin(4,5);
+#endif // I2CDEV_LOOP
 }
 
 void loop()
@@ -153,4 +223,8 @@ void loop()
 //        cw = !cw;
 //        stepper.newMoveTo(cw, 2048);
 //    }
+#ifdef I2CDEV_LOOP
+    I2Cdev::writeBytes(0x5a, 0, 2, buffer);
+    delay(5000);
+#endif // I2CDEV_LOOP
 }

@@ -13,8 +13,8 @@ const unsigned char I2C_SLAVE_ADDRESS = 0x5a;
 
 volatile uint8_t i2c_regs[] =
 {
-    0xaa, 
-    0x55
+    0x00, 
+    0x00
 };
 // Tracks the current register pointer position
 volatile byte reg_position;
@@ -27,8 +27,6 @@ const byte reg_size = sizeof(i2c_regs);
 #ifdef TW
 void requestEvent()
 {  
-//    OCR1A = 255;
-//    OCR1B = 255;
     TinyWireS.send(i2c_regs[reg_position]);
     // Increment the reg position on each read, and loop back to zero
     reg_position++;
@@ -40,22 +38,17 @@ void requestEvent()
 
 void receiveEvent(uint8_t howMany)
 {
-//    OCR1A = 0;
-//    OCR1B = 0;
     if (howMany < 1)
     {
         // Sanity-check
         return;
     }
-//    OCR1A = 20;
-//    OCR1B = 20;
+
     if (howMany > TWI_RX_BUFFER_SIZE)
     {
         // Also insane number
         return;
     }
-//    OCR1A = 30;
-//    OCR1B = 30;
 
     reg_position = TinyWireS.receive();
     howMany--;
@@ -64,8 +57,6 @@ void receiveEvent(uint8_t howMany)
         // This write was only to set the buffer for next read
         return;
     }
-//    OCR1A = 40;
-//    OCR1B = 40;
     while(howMany--)
     {
         i2c_regs[reg_position] = TinyWireS.receive();
@@ -75,25 +66,21 @@ void receiveEvent(uint8_t howMany)
             reg_position = 0;
         }
     }
-//    OCR1A = 50;
-//    OCR1B = 50;
-//    OCR1A = i2c_regs[0];
- //   OCR1B = i2c_regs[1];
+    OCR1A = i2c_regs[0];
+    OCR1B = i2c_regs[1];
 }
 #endif // TW
 
 void setup()
 {
-    //PORTB |= _BV(0) | _BV(2);
-    //DDRB |= 5;
-    // PWM
+    // Bump up the clock to 8MHz
     CLKPR = _BV(CLKPCE);
     CLKPR = 0;
-//    DDRB |= _BV(4) | _BV(1);;
-//    TCCR1 = _BV(PWM1A) | _BV(COM1A1) | _BV(CS10);
-//    GTCCR = _BV(PWM1B) | _BV(COM1B1); 
-//    OCR1A = 128;
-//    OCR1B = 128;
+    DDRB |= _BV(4) | _BV(1);;
+    TCCR1 = _BV(PWM1A) | _BV(COM1A1) | _BV(CS10);
+    GTCCR = _BV(PWM1B) | _BV(COM1B1); 
+    OCR1A = i2c_regs[0];
+    OCR1B = i2c_regs[1];
 
 #ifdef TW
     // 2Wire
@@ -105,17 +92,8 @@ void setup()
 
 void loop()
 {
-//    PORTB |= 5;
-//    delay(10);
-//    PORTB &= ~5;
-//    delay(10);
 #ifdef TW
     TinyWireS_stop_check();
 #endif // TW
-//    pwma++;
-//    pwmb++;
-//    OCR1A = pwma;
-//    OCR1B = pwmb;
-//    delay(100);
 }
 
