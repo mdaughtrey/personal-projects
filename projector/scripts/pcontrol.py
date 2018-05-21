@@ -329,7 +329,7 @@ def main():
     serPort.open()
     portWaitFor(serPort, '{State:Ready}')
     # Camera on, film type, autotension
-    serPort.write(b'c%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
+    serPort.write(b'd%st' % {'8mm': 'd', 's8': 'D'}[args.filmtype]) 
 #    portWaitFor(serPort, '{mode:8mm}')
 
     if False == args.simulate:

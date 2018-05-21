@@ -27,6 +27,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--dir', dest='dir', help='image dir')
 parser.add_argument('--ip', dest='ip', help='controller ip')
 parser.add_argument('--port', dest='port', type=int, help='controller port')
+parser.add_argument('--justupload', dest='justupload', action='store_true', default='false')
 args = parser.parse_args()
 
 donedone = args.dir + "/done.done"
