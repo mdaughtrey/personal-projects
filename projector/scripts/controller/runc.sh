@@ -10,6 +10,5 @@ ROOTOFALL=/home/mattd/scans/
 
 #fi
 
-#./controller.py --jobmode proc --project blister --film super8 #--worker pc --worker ac  # --worker tf --worker gc
-#./controller.py --jobmode proc --project $PROJECT --film super8
-./controller.py --jobmode proc --project $PROJECT --film $TYPE --saveroot $ROOTOFALL
+#./controller.py --jobmode proc --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
+./controller.py --jobmode inline --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
