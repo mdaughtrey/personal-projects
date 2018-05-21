@@ -9,6 +9,8 @@ let FRAMES=0
 SHUTTER=40000,80000,1200000
 TARGETDIR=/tmp
 MAXINFLIGHT=30
+SERIAL_PORT="/dev/ttyUSB0"
+SERIAL_SPEED=57600
 
 cap()
 {
@@ -106,8 +108,14 @@ reference()
     done
 }
 
+raw()
+{
+    ./cap.py --serial-port $SERIAL_PORT --serial-speed $SERIAL_SPEED
+}
+
 case "$1" in 
     cap) cap ;;
     ref) reference ;;
+    raw) raw ;;
     *) echo cap/ref; exit 1;;
 esac
