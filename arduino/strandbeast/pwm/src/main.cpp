@@ -68,11 +68,27 @@ void receiveEvent(uint8_t howMany)
 
 void setup()
 {
-    TCCR0A |=  3<<COM0B0 | 3<<WGM00;
-    TCCR0B |= 0<<WGM02 | 3<<CS00;
+    //TCCR0A |= 3<<COM0B0 | 3<<WGM00;
+    //TCCR0A |= _BV(COM0B1) | _BV(COM0B0) | _BV(WGM01) | _BV(WGM00);
+    // TCNT0 Fast PWM
+    TCCR0A |= _BV(COM0B1) | _BV(COM0B0) | _BV(WGM02) | _BV(WGM01) | _BV(WGM00);;
+//    TCCR0B |= 0<<WGM02 | 3<<CS00;
+    //TCCR0B |= _BV(CS00) | _BV(WGM01) | _BV(WGM00);
+    TCCR0B  = _BV(CS00); // | _BV(WGM02);
     GTCCR |= 1<<PWM1B | 3<<COM1B0;
-    TCCR1 |= 3<<COM1A0 | 7 << CS10;
+    //TCCR1 |= 3<<COM1A0 | 7 << CS10;
+    TCCR1 |= 3<<COM1A0 | 0 << CS10;
+//    PLLCSR |= _BV(PLLE) | _BV(PCKE);
+
+//    TCCR0A |= _BV(COM0B0) | _BV(WGM00) | _BV(WGM01);
+////    TCCR0B |= 0<<WGM02 | 3<<CS00;
+////    0000 0001
+//    TCCR0B = 1;
+//    //GTCCR |= _BV(PWM1B) | _BV(COM1B0);
+//    TCCR1 |= _BV(COM1A0) | _BV(CS10);
     DDRB |= _BV(1) | _BV(4);
+    OCR0B = 0x00;
+    OCR1B = 0x00;
 
     // 2Wire
     TinyWireS.begin(I2C_SLAVE_ADDRESS);
@@ -83,5 +99,8 @@ void setup()
 void loop()
 {
     TinyWireS_stop_check();
+//    OCR0B++;
+//    OCR1B++;
+//    tws_delay(400);
 }
 
