@@ -9,61 +9,88 @@
 #define TWI_RX_BUFFER_SIZE ( 16 )
 #endif
 
-volatile uint8_t i2c_regs[] =
-{
-    0, 0
-};
+//volatile uint8_t i2c_regs[] =
+//{
+//    0, 0
+//};
 // Tracks the current register pointer position
-volatile uint8_t reg_position = 0;
-const uint8_t reg_size = sizeof(i2c_regs);
+//volatile uint8_t reg_position = 0;
+//kconst uint8_t reg_size = sizeof(i2c_regs);
 
 /**
  * This is called for each read request we receive, never put more than one byte of data (with TinyWireS.send) to the 
  * send-buffer when using this callback
  */
-void requestEvent()
-{  
-    TinyWireS.send(i2c_regs[reg_position]);
-    // Increment the reg position on each read, and loop back to zero
-    reg_position++;
-    if (reg_position >= reg_size)
-    {
-        reg_position = 0;
-    }
-}
+//void requestEvent()
+//{  
+//    TinyWireS.send(i2c_regs[reg_position]);
+//    // Increment the reg position on each read, and loop back to zero
+//    reg_position++;
+//    if (reg_position >= reg_size)
+//    {
+//        reg_position = 0;
+//    }
+//}
 
 void receiveEvent(uint8_t howMany)
 {
-    if (howMany < 1)
+    if (howMany == 2)
     {
-        // Sanity-check
-        return;
-    }
-
-    if (howMany > TWI_RX_BUFFER_SIZE)
-    {
-        // Also insane number
-        return;
-    }
-
-    reg_position = TinyWireS.receive();
-    howMany--;
-    if (!howMany)
-    {
-        // This write was only to set the buffer for next read
-        return;
-    }
-    while(howMany--)
-    {
-        i2c_regs[reg_position] = TinyWireS.receive();
-        reg_position++;
-        if (reg_position >= reg_size)
+        // PWM 0
+        uint8_t val = TinyWireS.receive();
+        if ((0 == val) & OCR0B)
         {
-            reg_position = 0;
+            // turn pwm 0b off, pin high output
+            TCCR0A &= ~(_BV(COM0B1) | _BV(COM0B0));
+            DDRB |= _BV(1);
+            PORTB |= _BV(1);
         }
+        else if (val & (0 == OCR0B))
+        {
+            // turn pwm 0b on
+            TCCR0A |= _BV(COM0B1) | _BV(COM0B0);
+        }
+        OCR0B = val;
+
+        // PWM 1
+        val = TinyWireS.receive();
+//        if ((0 == val) & OCR1B)
+//        {
+//            // turn pwm 1b off, pin high output
+//            GTCCR &= ~_BV(PWM1B);
+//            PORTB |= _BV(4);
+//        }
+//        else if (val & (0 == OCR1B))
+//        {
+//            // turn pwm 1b on
+//            GTCCR &= _BV(PWM1B);
+//        }
+        OCR1B = val;
     }
-    OCR0B = i2c_regs[0];
-    OCR1B = i2c_regs[1];
+
+//    if (howMany > TWI_RX_BUFFER_SIZE)
+//    {
+//        // Also insane number
+//        return;
+//    }
+
+//    howMany--;
+//    if (!howMany)
+//    {
+//        // This write was only to set the buffer for next read
+//        return;
+//    }
+//    while(howMany--)
+//    {
+//        i2c_regs[reg_position] = TinyWireS.receive();
+//        reg_position++;
+//        if (reg_position >= reg_size)
+//        {
+//            reg_position = 0;
+//        }
+//    }
+//    OCR0B = i2c_regs[0];
+//    OCR1B = i2c_regs[1];
 }
 
 void setup()
@@ -87,13 +114,13 @@ void setup()
 //    //GTCCR |= _BV(PWM1B) | _BV(COM1B0);
 //    TCCR1 |= _BV(COM1A0) | _BV(CS10);
     DDRB |= _BV(1) | _BV(4);
-    OCR0B = 0x00;
-    OCR1B = 0x00;
+    OCR0B = 0xff;
+    OCR1B = 0xff;
 
     // 2Wire
     TinyWireS.begin(I2C_SLAVE_ADDRESS);
     TinyWireS.onReceive(receiveEvent);
-    TinyWireS.onRequest(requestEvent);
+//    TinyWireS.onRequest(requestEvent);
 }
 
 void loop()
