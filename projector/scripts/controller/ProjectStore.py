@@ -19,7 +19,7 @@ class ProjectStore():
 #            os.makedirs(dblocation)
 
     def _initDb(self, project):
-        pdb.set_trace()
+#        pdb.set_trace()
         conn = sqlite3.connect(project)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
@@ -125,7 +125,7 @@ class ProjectStore():
 
     def markPrecropped(self, project, container, filename):
         self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
-                % (filename, container, filename))
+                % (filename.replace(".RAW",".JPG"), container, filename))
 
     def getRemaining(self, project, ptype):
         statement = '''SELECT COUNT(*) FROM picdata WHERE %s = NULL;''' % ptype
