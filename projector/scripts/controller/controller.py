@@ -59,6 +59,8 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
+# DEBUG
+#jobman.uploadsDone(config.project) 
 
 #
 # Upload a new raw file

@@ -71,9 +71,9 @@ class FileManager():
             logger.error("Write to %s failed, %s" % (targetFile, ee.message))
 	return['OK']
 
-    def refToBeProcessed(self, project):
-        targetDir = "%s/%s/" % (self._fileRoot, project)
-        pass
+#    def rawToBeProcessed(self, project):
+#        targetDir = "%s/%s/" % (self._fileRoot, project)
+#        pass
 
     def deleteProject(self, projectname):
         return 'TODO'

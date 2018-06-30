@@ -5,6 +5,9 @@ import threading
 import subprocess
 import time
 from JobManager import JobManager
+import numpy
+import imageio
+from PIL import Image
 
 def trampoline(object):
     #object._logger.debug("Worker")
@@ -24,9 +27,9 @@ class JobManagerRaw(JobManager):
         tasks = self._pstore.taskList(self._config.project)
         #self._logger.debug("tasks %s" % tasks)
         self._scheduledTasks = []
-        JobManager.taskTable = { 
-            "rf": self._scheduleProcessRaw,
-#            "pc": self._schedulePrecrop,
+        JobManagerRaw.taskTable = { 
+#            "rf": self._scheduleProcessRaw,
+            "pc": self._schedulePrecrop,
 #            "ac": self._scheduleAutocrop,
 #            "tf": self._scheduleTonefuse,
 #            "gt": self._scheduleGenTitle,
@@ -35,7 +38,7 @@ class JobManagerRaw(JobManager):
 
         for task in tasks:
             try:
-                self._scheduledTasks.append(taskTable[task])
+                self._scheduledTasks.append(JobManagerRaw.taskTable[task])
             except KeyError as ee:
                 self._logger.error("Unknown task [%s]" % task)
 
@@ -45,37 +48,39 @@ class JobManagerRaw(JobManager):
 #        if 'disable' == self._config.jobmode: # JobManager.WorkerManagerControl:
 #            return
 #        self._wmrunning = True
-#        if 'proc' == self._config.jobmode: # JobManager.WorkerManagerControl:
+        if 'proc' == self._config.jobmode: # JobManager.WorkerManagerControl:
+            pass
 #            self._thread = threading.Thread(target = trampoline, args = (self,))
 #            self._thread.start()
-#        elif 'inline' == self._config.jobmode:
-#            self._workerManager()
+        elif 'inline' == self._config.jobmode:
+            self._workerManager()
 ##        if 'proc' == mode: # JobManager.WorkerManagerControl:
 ##            self._thread = threading.Thread(target = worker, args = (self,))
 ##            self._thread.start()
 ##        elif 'inline' == mode:
 ##            self._workerManager()
 
-    def _scheduleProcessRaw(self, project, freeWorkers):
-        self._logger.debug("scheduleProcessRaw")
-        scheduled = 0
-        todo = self._fileman.refToBeProcessed(project)
-        targetDir = "%s/%s/" % (self._fileRoot, project)
-
-#    def _schedulePrecrop(self, freeWorkers):
+#    def _scheduleProcessRaw(self, freeWorkers):
+#        self._logger.debug("scheduleProcessRaw")
 #        scheduled = 0
-#        toBePrecropped = self._pstore.toBePrecropped(self._config.project, freeWorkers)
-#        if toBePrecropped:
-#            for (rowid, container, filename) in toBePrecropped:
-#                self._logger.debug("Container %s filename %s" % (container, filename))
-#                jobargs = (self._config.project, container, filename)
-#                if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
-#                    self._vmPrecrop(*jobargs)
-#                else:
-#                    self._workers.append(Process(target = self._vmPrecrop, args = jobargs))
-#                    self._workers[-1].start()
-#                scheduled += 1
-#        return scheduled
+#        pdb.set_trace()
+#        todo = self._pstore.rawToBeProcessed(self._config.project)
+#        targetDir = "%s/%s/" % (self._fileRoot, project)
+
+    def _schedulePrecrop(self, freeWorkers):
+        scheduled = 0
+        toBePrecropped = self._pstore.toBePrecropped(self._config.project, freeWorkers)
+        if toBePrecropped:
+            for (rowid, container, filename) in toBePrecropped:
+                self._logger.debug("Container %s filename %s" % (container, filename))
+                jobargs = (self._config.project, container, filename)
+                if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
+                    self._vmPrecrop(*jobargs)
+                else:
+                    self._workers.append(Process(target = self._vmPrecrop, args = jobargs))
+                    self._workers[-1].start()
+                scheduled += 1
+        return scheduled
 # 
 #    def _scheduleProcessRaw(self, freeWorkers):
 #        scheduled = 0
@@ -145,25 +150,25 @@ class JobManagerRaw(JobManager):
 #        self._wmrunning = False
 #        map(lambda pp: pp.terminate(), self._workers)
 #
-#    def _workerManager(self):
-#        #self._logger.debug("_workerManager")
-#        self._workerCleanup()
-#        self.schedulableTasks()
-#        #self._logger.debug("_workerManager")
-#
-#        freeWorkers = JobManager.JobLimit - len(self._workers)
-#        if 0 == freeWorkers:
-#            self._logger.info("No free workers")
-#            time.sleep(1)
-#            return
-#
-#        #self._logger.debug("_scheduledTasks %s" % self._scheduledTasks)
-#        for task in self._scheduledTasks:
-##            self._logger.debug("Task %s" % task)
-#            if freeWorkers: freeWorkers -= task(freeWorkers)
-#
-#        if freeWorkers:
-#            time.sleep(5)
+    def _workerManager(self):
+        #self._logger.debug("_workerManager")
+        self._workerCleanup()
+        self.schedulableTasks()
+       #self._logger.debug("_workerManager")
+
+        freeWorkers = JobManager.JobLimit - len(self._workers)
+        if 0 == freeWorkers:
+            self._logger.info("No free workers")
+            time.sleep(1)
+            return
+
+        #self._logger.debug("_scheduledTasks %s" % self._scheduledTasks)
+        for task in self._scheduledTasks:
+            self._logger.debug("Task %s" % task)
+            if freeWorkers: freeWorkers -= task(freeWorkers)
+
+        if freeWorkers:
+            time.sleep(5)
 #
 #    def _vmTonefuse(self, project, container, file1, file2, file3):
 #        self._logger.info("Tonefuse %s %s %s %s %s" % (project, container, file1, file2, file3))
@@ -226,13 +231,24 @@ class JobManagerRaw(JobManager):
 #	    print ee.output
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
-#
-#   def _vmPrecropShort(self, project, container, filename):
-#        self._logger.info("Precrop short %s %s %s" % (project, container, filename))
-#        sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
-#        targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
-#        open(targetfile, 'w').write(open(sourcefile).read())
-#        self._pstore.markPrecropped(project, container, filename)
+
+    def _vmPrecrop(self, project, container, filename):
+        self._logger.info("_vmPrecrop short %s %s %s" % (project, container, filename))
+        sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
+        targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
+
+#        pdb.set_trace() 
+        jobargs = ('/home/mattd/personal-projects/projector/raspiraw/dcraw/dcraw', sourcefile)
+        retcode = subprocess.call(jobargs)
+        sourcefile = sourcefile.replace('.RAW','.ppm')
+        refFile = imageio.imread("%s/reference0.bmp" % self._config.saveroot)
+        rgbRef = numpy.full(refFile.shape, 255, dtype=numpy.uint8)
+        delta = rgbRef - refFile
+        source = imageio.imread(sourcefile)
+        rgbsource = numpy.full(source.shape, 255, dtype=numpy.uint8)
+        adjust = source - delta
+        imageio.imwrite(targetfile.replace(".RAW", ".JPG"), adjust)
+        self._pstore.markPrecropped(project, container, filename)
 #
 #
 #    def _vmPrecrop(self, project, container, filename):
@@ -300,7 +316,6 @@ class JobManagerRaw(JobManager):
 #        self._generateTitles = True
 #
     def uploadsDone(self, project):
-        pdb.set_trace()
-        self._pstore.setTask(project, ['rf'])
+        self._pstore.setTask(project, ['pc'])
         #self._pstore.setTask(project, ['ac','tf','gc'])
         #self._pstore.setTask(project, ['pc','ac','tf','gc'])
