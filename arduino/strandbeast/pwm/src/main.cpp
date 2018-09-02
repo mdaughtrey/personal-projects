@@ -3,7 +3,7 @@
 
 #include <TinyWireS.h>
 
-#define I2C_SLAVE_ADDRESS 0x5a
+#define I2C_SLAVE_ADDRESS 0x5b
 
 #ifndef TWI_RX_BUFFER_SIZE
 #define TWI_RX_BUFFER_SIZE ( 16 )
@@ -34,26 +34,29 @@
 
 void receiveEvent(uint8_t howMany)
 {
+    OCR0B = 0x7f;
+    OCR1B = 0x7f;
     if (howMany == 2)
     {
         // PWM 0
-        uint8_t val = TinyWireS.receive();
-        if ((0 == val) & OCR0B)
-        {
-            // turn pwm 0b off, pin high output
-            TCCR0A &= ~(_BV(COM0B1) | _BV(COM0B0));
-            DDRB |= _BV(1);
-            PORTB |= _BV(1);
-        }
-        else if (val & (0 == OCR0B))
-        {
-            // turn pwm 0b on
-            TCCR0A |= _BV(COM0B1) | _BV(COM0B0);
-        }
-        OCR0B = val;
+//        uint8_t val = TinyWireS.receive();
+//        if ((0 == val) & OCR0B)
+//        {
+//            // turn pwm 0b off, pin high output
+//            TCCR0A &= ~(_BV(COM0B1) | _BV(COM0B0));
+//            DDRB |= _BV(1);
+//            PORTB |= _BV(1);
+//        }
+//        else if (val & (0 == OCR0B))
+//        {
+//            // turn pwm 0b on
+//            TCCR0A |= _BV(COM0B1) | _BV(COM0B0);
+//        }
+//        OCR0B = val;
+        OCR0B = TinyWireS.receive();
 
         // PWM 1
-        val = TinyWireS.receive();
+//        val = TinyWireS.receive();
 //        if ((0 == val) & OCR1B)
 //        {
 //            // turn pwm 1b off, pin high output
@@ -65,7 +68,11 @@ void receiveEvent(uint8_t howMany)
 //            // turn pwm 1b on
 //            GTCCR &= _BV(PWM1B);
 //        }
-        OCR1B = val;
+        OCR1B = TinyWireS.receive();
+    }
+    else while(howMany--)
+    {
+        TinyWireS.receive();
     }
 
 //    if (howMany > TWI_RX_BUFFER_SIZE)
@@ -114,6 +121,8 @@ void setup()
 //    //GTCCR |= _BV(PWM1B) | _BV(COM1B0);
 //    TCCR1 |= _BV(COM1A0) | _BV(CS10);
     DDRB |= _BV(1) | _BV(4);
+    //OCR0B = 0x7f;
+    //OCR1B = 0x10;
     OCR0B = 0xff;
     OCR1B = 0xff;
 
