@@ -6,6 +6,7 @@ import json
 from ProjectStore import ProjectStore
 from FileManager import FileManager
 from JobManager import JobManager
+from JobManagerRaw import JobManagerRaw
 from nx300 import NX300
 import logging
 import signal
@@ -20,10 +21,12 @@ parser.add_argument('--jobmode', dest='jobmode', default='proc',
     choices = ['proc', 'inline', 'disable'], help='background job mode')
 parser.add_argument('--project', required = True, dest='project', help='set jobman project name')
 parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
+parser.add_argument('--saveroot', required = True, dest='saveroot', help="root dir to save to")
+parser.add_argument('--raw', required = True, dest='raw', default='False', action='store_true', help="process RAW files")
 config = parser.parse_args()
 
 #ROOTOFALL='/mnt/exthd/scans/nk'
-ROOTOFALL='/home/mattd/scans/sensortest'
+ROOTOFALL=config.saveroot #'/home/mattd/scans/sensortest'
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
@@ -40,9 +43,12 @@ logging.getLogger('JobManager').addHandler(fileHandler)
 logging.getLogger('RemoteDev').addHandler(fileHandler)
 
 app = Flask(__name__)
-pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL)
-fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
-jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
+pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL + config.project, config)
+fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL + config.project)
+if config.raw:
+    jobman = JobManagerRaw(logging.getLogger('JobManagerRaw'), pstore, fileman, config, ROOTOFALL)
+else:
+    jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
 #cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
 #remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
 
@@ -53,6 +59,8 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 signal.signal(signal.SIGINT, signal_handler)
+# DEBUG
+#jobman.uploadsDone(config.project) 
 
 #
 # Upload a new raw file
@@ -76,6 +84,15 @@ def upload():
 def titlefile():
     try:
         return json.dumps(fileman.newTitleFile(request.data, config.project, request.config['page']))
+    except:
+        return json.dumps(['ERROR'])
+#
+# Upload reference files
+#
+@app.route("/reference", methods=['PUT'])
+def referenceFile():
+    try:
+        return json.dumps(fileman.newReferenceFile(request.data, config.project, request.args))
     except:
         return json.dumps(['ERROR'])
 

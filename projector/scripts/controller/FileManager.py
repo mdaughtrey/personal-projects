@@ -1,6 +1,7 @@
 import os
 import pdb
 from threading import Lock
+import subprocess
 
 class FileManager():
     mtxGetDir = Lock()
@@ -57,6 +58,22 @@ class FileManager():
         self._logger.debug("Saving to %s" % target)
         open(target, 'w').write(fileStream)
         return ['OK']
+
+    def newReferenceFile(self, fileStream, project, urlArgs):
+        targetDir = "%s/%s/" % (self._fileRoot, project)
+        targetFile = "%s/reference%c.raw.bz2" % (targetDir, urlArgs['refindex'])
+#	    targetFile = "%s/reference%c.raw" % (targetDir, urlArgs['refindex'])
+        try:
+            open(targetFile, 'w').write(fileStream)
+#	        jobargs = ('bzip2', '-d', sourceFile, "> %s/%s" % (targetDir, targetFile))
+#            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
+        except ee:
+            logger.error("Write to %s failed, %s" % (targetFile, ee.message))
+	return['OK']
+
+#    def rawToBeProcessed(self, project):
+#        targetDir = "%s/%s/" % (self._fileRoot, project)
+#        pass
 
     def deleteProject(self, projectname):
         return 'TODO'

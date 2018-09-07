@@ -7,17 +7,19 @@ import mutex
 class ProjectStore():
     FilesPerContainer = 999
     mtxMakeDirs = threading.Lock()
-    def __init__(self, logger, dblocation = './', overwrite = False):
+    def __init__(self, logger, dblocation, config): #overwrite = False):
         self._dbroot = dblocation
 #        self._conn = None
-        self._overwrite = overwrite
+#        self._overwrite = overwrite
         self._logger = logger
         self._logger.debug("ProjectStore init")
         self._dbLock = threading.Lock()
+        self._config = config
 #        if False == os.path.isdir(dblocation):
 #            os.makedirs(dblocation)
 
     def _initDb(self, project):
+#        pdb.set_trace()
         conn = sqlite3.connect(project)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
@@ -51,8 +53,9 @@ class ProjectStore():
         project += 'db'
         dblocation = "%s/%s" % (os.path.abspath(self._dbroot), project)
         if True == os.path.isfile(dblocation):
-            if True == self._overwrite:
-                os.remove(self._dbroot)
+            pass
+#            if True == self._overwrite:
+#                os.remove(self._dbroot)
         else:
             self._initDb(dblocation)
 
@@ -122,7 +125,7 @@ class ProjectStore():
 
     def markPrecropped(self, project, container, filename):
         self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
-                % (filename, container, filename))
+                % (filename.replace(".RAW",".JPG"), container, filename))
 
     def getRemaining(self, project, ptype):
         statement = '''SELECT COUNT(*) FROM picdata WHERE %s = NULL;''' % ptype
@@ -209,7 +212,10 @@ class ProjectStore():
                 if False == os.path.isdir(contDir):
                     os.makedirs(contDir)
                 ProjectStore.mtxMakeDirs.release()
-                return "100", "000000.JPG"
+                if self._config.raw:
+                    return "100", "000000.RAW"
+                else:
+                    return "100", "000000.JPG"
 
             containers.sort()
             cursor = conn.cursor()
@@ -233,7 +239,10 @@ class ProjectStore():
             os.makedirs(newDir)
         ProjectStore.mtxMakeDirs.release()
         #self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
-        return "%03u" % int(newContainer), "%06u.JPG" % newFile
+        if self._config.raw:
+            return "%03u" % int(newContainer), "%06u.RAW" % newFile
+        else:
+            return "%03u" % int(newContainer), "%06u.JPG" % newFile
 
     def getVideoChunkStatus(self, project):
         # don't make any chunks available until all fusing is done
@@ -267,3 +276,4 @@ class ProjectStore():
         self.simpleUpdate(project, 'DELETE FROM taskcontrol')
         for task in tasks:
             self.simpleUpdate(project, "INSERT INTO taskcontrol VALUES('%s')" % task)
+            
