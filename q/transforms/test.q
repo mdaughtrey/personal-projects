@@ -1,2 +1,2 @@
-aa:{ bb: 1;
-     0N!cc: 2; dd: cc }
+ff:{[a;b;c;d] show d,c,b,a;}
+aa: ((1;2);(3;4));
