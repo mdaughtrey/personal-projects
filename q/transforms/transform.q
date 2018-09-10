@@ -2,8 +2,8 @@ show "init 0";
 \l bres.q
 .renderW: 30
 .renderH: 30
-.canvasW: 10000
-.canvasH: 10000
+.canvasW: .renderW
+.canvasH: .renderH
 .scaleW: .renderW%.canvasW
 .scaleH: .renderH%.canvasH
 
@@ -14,11 +14,14 @@ show "init 0";
 translate: {[x;y;obj] obj[`p]: obj[`p]+\:(x;y); :obj }
 scale: {[x;y;obj] obj[`p]: obj[`p]*\:(x;y); :obj }
 scale2: {[x;y;obj] obj[`p]: obj[`p]*\:(x;y); :obj }
-/rotate2:{[x;y;r] r%:57.2958; s:sin r; c:cos r; :((x*c)-(x*s);(y*s)+(y*c)); }   
-rotate2:{[r;obj] r%:57.2958;  / s:sin r; c:cos r;
-    .d ("r2 pre ";obj[`p]);
-    obj[`p]: @[obj[`p];::;{[x;y;c;s]:((x*c)-(x*s);(y*s)+(y*c))}[;;cos r;sin r] .];
-    .d ("r2 post ";obj[`p]);
+
+rotate2:{[k;r;obj]
+    obj[k]+:r;
+    .d ("rotating ";obj[k];" degs");
+    r: obj[k]%57.2958;  
+    .d ("r2 pre ";obj[`re]);
+    obj[`re]: @[obj[`re];::;{[x;y;c;s]:((x*c)-(y*s);(x*s)+(y*c))}[;;cos r;sin r] .];
+    .d ("r2 post ";obj[`re]);
     :obj; }   
 
 / Behaviours
@@ -43,35 +46,41 @@ bhBounce:{[obj]
 / obj.p = points
 / obj.v = vector (position, direction)
 / obj.s = scale
-/ obj.r = rotation
+/ obj.r = rotation 
 / obj.b = behaviors
-square2d: {[w;h;b] :(`p`v`s`r`b)!(((0;0);(0;h);(w;h);(w;0));
+/ obj.re = rendered points
+square2d: {[w;h;b] dd:(`p`v`s`r`b)!(((0;0);(0;h);(w;h);(w;0));
     (`x`y!1 1);
     (`x`y!0.0 0.0);
-    (`x`y!0.0 0.0);
+    0.0;
     b);
+    dd[`re]: dd[`p];
+    :dd
     }
 
 show "init 1";
  triangle2d: {[w;h;t] :(`p`v`s`r`b)!(((0;0);(w%2;h);(w;0));
     (`x`y!1 1);
     (`x`y!0.0 0.0);
-    (`x`y!0.0 0.0);
+    0.0;
     t);
     }
 show "init 1a";
-point2d: {[x;y;t] :(`p`v`s`r`b)!(((x;y));
+point2d: {[x;y;t] :(`p`v`s`r`b)!(enlist(x;y);
     (`x`y!1 1);
     (`x`y!0.0 0.0);
-    (`x`y!0.0 0.0);
+    0.0;
     t);
     }
 
 
 
 show "init 4";
-bres0:{[obj] p:distinct floor 0.5+obj[`p]*\:(.scaleH;.scaleW);
-    :raze (last p)bres':p; }
+bres0:{[obj] p:distinct floor 0.5+obj[`re]*\:(.scaleH;.scaleW);
+    .d ("bres0 ";obj[`re]);
+    res:raze (last p)bres':p;
+    .d ("bres0 returns ";res);
+    :res}
 
 render:{[p] 
     / naive clip
@@ -84,6 +93,7 @@ outhtml: {{(" " sv string x),"<br>"} each .out}
 show "init 6";
 / Pipeline
 dopipe: {[obj]
+    obj[`re]:obj[`p];
     .d ("dopipe obj ";obj);
     res: first {:x[y]}[;obj] each obj[`b];
     .d ("dopipe res ";res);
@@ -99,11 +109,11 @@ persist:{[objs]  .objs: objs; :objs}
 
 d: {render distinct raze bres0 each persist dopipe each .objs; }
 
-/.objs: enlist triangle2d[4000;2000;enlist rotate2[1;]];
-.objs: enlist point2d[10;10;enlist rotate2[5;]];
+/.objs: enlist triangle2d[15;10;enlist rotate2[`r;5;]];
+.objs: enlist point2d[15;0;enlist rotate2[`r;5;]];
 
 \p 5042
-.z.wo:{`requestor set x; system "t 2000";}
+.z.wo:{`requestor set x; system "t 300";}
 .z.ts:{ d[]; neg[requestor] -8!outhtml[];}
 
 show "init"

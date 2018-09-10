@@ -40,7 +40,7 @@ bresl:{[x0;y0;x1;y1]
     }
 
 bres:{[v0;v1] / bres
-    if[v0~v1;:()];
+    if[v0~v1;:enlist v0];
 
     x0:v0[0];
     y0:v0[1];
@@ -53,7 +53,6 @@ bres:{[v0;v1] / bres
     res:$[abs[y1-y0]<abs[x1-x0];
         $[x0>x1; bresl[x1;y1;x0;y0]; bresl[x0;y0;x1;y1]];
         $[y0>y1; bresh[x1;y1;x0;y0]; bresh[x0;y0;x1;y1]]];
-    show ("bres returns ";res);
     :res
     }
 
@@ -61,7 +60,7 @@ v:((0;0);(10;5);(20;0));
 
 t:{:(last v)bresa':v;}
 
-bres0:{[obj] :(last obj[`p])bres':obj[`p];}
+/bres0:{[obj] :(last obj[`p])bres':obj[`p];}
 
 show "bres init done"
 /u: {a:11;b:3;
