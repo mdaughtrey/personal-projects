@@ -22,22 +22,18 @@ show "init 0";
 / obj.re = rendered points
 / obj.sc = scratchpad (dict)
 .objs: flip (`l`p`v`s`r`b`re`sc)!()
+/.sc: flip(`o`k`v)!()
+.sc:()!()
 
 .debug:1
 .d:{[x]$[.debug;show x;:0];}
 
 .out: (.renderW;.renderH) # "."
-translate: {[o;x;y]
-    k: `translate;
-/    show "translate";
-    if[o[`sc;k]~(); o[`sc;k]:`x`y!0 0];
-/    o[`sc;k]:`x`y!0 0;
-    o[`sc;k;`x`y]+:(x;y);
-/    show ("translate ";x;" y ";y);
+translate: {[o;k;x;y]
     .d ("tx pre ";o[`re]);
     o[`re]:o[`re]+\:(x;y);
     .d ("tx post ";o[`re]);
-    .d ("translate ";o[`re]);
+    $[o[`l] in .sc[`l]; .sc[o[`l];k]+:(x;y); .sc[o[`l]]:(enlist k)!enlist `x`y!(x;y)];
     :o }
 
 scale: {[x;y;obj] obj[`re]: obj[`re]*\:(x;y); :obj }
@@ -45,14 +41,14 @@ scale2: {[x;y;obj] obj[`re]: obj[`re]*\:(x;y); :obj }
 noop:{[o] break; :o }
 
 rotate2:{[o;k;r]
-    o[k]+:r;
-    .d ("rotating ";r;" degs");
-    r: o[k]%57.2958;  
-    .d ("r2 pre ";o[`re]);
-    o[`re]: @[o[`re];::;{[x;y;c;s]:((x*c)-(y*s);(x*s)+(y*c))}[;;cos r;sin r] .];
-    .d ("r2 post ";o[`re]);
-    :o
-    }   
+/    $[ii: .sc`sc]; o[`sc;k]+:r; o[`sc;k]:(enlist `r)!(enlist r)];
+/    .d ("rotating ";r;" degs");
+/    r: o[`sc;k]%57.2958;  
+/    .d ("r2 pre ";o[`re]);
+/    o[`re]: @[o[`re];::;{[x;y;c;s]:((x*c)-(y*s);(x*s)+(y*c))}[;;cos r;sin o[`sc;k]] .];
+/    .d ("r2 post ";o[`re]);
+    :o }   
+
 /wrotate2:{[l;k;r;o] show ("wrapped ";l;" ";o[`re]); res: rotate2[k;r;o]; show ("end wrap ";l;" ";res[`re]); :res; }
 
 / Behaviours
@@ -96,9 +92,9 @@ point2d: {[x;y;b] :(`p`v`s`r`b`sc)!(enlist(x;y);
 /save: {[o] show ("save ";o); }
 
 show "init 4";
-bres0:{[obj]
-    p:distinct floor 0.5+obj[`re]*\:(.scaleH;.scaleW);
-    .d ("bres0 ";obj[`re]);
+bres0:{[re]
+    p:distinct floor 0.5+re*\:(.scaleH;.scaleW);
+    .d ("bres0 ";re);
     res:raze (last p)bres':p;
     .d ("bres0 returns ";res);
     :res}
@@ -107,7 +103,9 @@ render:{[p]
     / naive clip
     p: p[where(p[;0] in til .renderW)&(p[;1] in til .renderH)];
     / render (0;0) is top left so flip the points vertically
-    p:.[p;(::;1);{.renderH-x+1}];
+    .d ("render pre invert ";p);
+    p:.[p;(::;0);{.renderH-x+1}];
+    .d ("render post invert ";p);
     .out: (.renderW;.renderH)#".";
     .[`.out;;:;"@"] each p;
     }
@@ -122,7 +120,7 @@ dopipe: {[o]
     p:('[;])over o[`b];
     o: p[o];
     .objs[.objs[`l]?o[`l]]: o;
-    :o }
+    :o[`re] }
 
 /persist:{[objs] .objs: objs; :objs}
 
@@ -130,7 +128,7 @@ dopipe: {[o]
 /    }
 
 /d: {render distinct raze bres0 each dopipe each .objs[`l]; }
-d: { .xx: dopipe each .objs; }
+d: { render distinct bres0 raze dopipe each .objs}
 
 b0:{x*2}
 b1:{x+1}
@@ -138,11 +136,12 @@ p: ('[;]) over (b0;b1)
 
 show "init 7";
 /.objs[`asquare]: enlist square2d[1000;2000;enlist rotate2[;`r;5]];
-square2d[`asquare;1000;2000;(translate[;1000;1000]; rotate2[;`r;5])]
+square2d[`asquare;1000;2000;(translate[;`tx;1000;1000]; rotate2[;`rotate;5])]
 show "init 8";
 
 \p 5042
-.z.wo:{`requestor set x; system "t 3000";}
+.z.wo:{`requestor set x; system "t 200";}
 .z.ts:{ d[]; neg[requestor] -8!outhtml[];}
 
+\C 10 10
 show "init"
