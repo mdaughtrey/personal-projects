@@ -37,12 +37,12 @@ translate: {[o;k;x;y]
         .sc[l]:(enlist k)!enlist (`x`y)!(0;0)];
     if[not k in key .sc[l];
         .sc[l]:(enlist k)!enlist (`x`y)!(0;0)];
-    .d ("sc pre tx ";.sc);
+/    .d ("sc pre tx ";.sc);
     .sc[l;k;`x`y]+:(x;y);
-    .d ("sc post tx ";.sc);
-    .d ("tx pre ";o[`re]);
+/    .d ("sc post tx ";.sc);
+/    .d ("tx pre ";o[`re]);
     o[`re]:o[`re]+\:(.sc[l;k;`x`y]);
-    .d ("tx post ";o[`re]);
+/    .d ("tx post ";o[`re]);
     :o }
 show "init 0c";
 
@@ -54,10 +54,10 @@ noop:{[o] break; :o }
 
 rotate2:{[o;k;r]
     l:o[`l];
-    .d ("rotate2 ";r);
-    .d ("r2 pre ";o[`re]);
-    .d (".sc #1 in rotate2 is ";-3!.sc);
-    .d ("count key ";count key .sc);
+/    .d ("rotate2 ";r);
+/    .d ("r2 pre ";o[`re]);
+/    .d (".sc #1 in rotate2 is ";-3!.sc);
+/    .d ("count key ";count key .sc);
     if[0~count key .sc;
         .sc[l]:(enlist k)!(enlist (enlist `r)!(enlist 0))];
     if[not k in key .sc[l];
@@ -65,11 +65,9 @@ rotate2:{[o;k;r]
     .sc[l;k;`r]+:r;
     r: .sc[l;k;`r]%57.2958;  
     o[`re]: {[x;y;c;s]:((x*c)-(y*s);(x*s)+(y*c))}[;;cos r;sin r]./:o[`re];
-    .d ("total r ";r);
-    .d ("r2 post ";o[`re]);
+/    .d ("total r ";r);
+/    .d ("r2 post ";o[`re]);
     :o }   
-
-/wrotate2:{[l;k;r;o] .d ("wrapped ";l;" ";o[`re]); res: rotate2[k;r;o]; .d ("end wrap ";l;" ";res[`re]); :res; }
 
 / Behaviours
 bhBounce:{[obj]
@@ -109,8 +107,6 @@ point2d: {[x;y;b] :(`p`v`s`r`b`sc)!(enlist(x;y);
     ()!());
     }
 
-/save: {[o] show ("save ";o); }
-
 .d "init 4";
 bres0:{[re]
     p:distinct floor 0.5+re*\:(.scaleH;.scaleW);
@@ -141,11 +137,6 @@ dopipe: {[o]
     .objs[.objs[`l]?o[`l]]: o;
     :o[`re] }
 
-/persist:{[objs] .objs: objs; :objs}
-
-/.p.rotate:{[obj]
-/    }
-
 /d: {render distinct raze bres0 each dopipe each .objs[`l]; }
 d: { render distinct bres0 raze dopipe each .objs}
 
@@ -157,7 +148,6 @@ p: ('[;]) over (b0;b1)
 /.objs[`asquare]: enlist square2d[1000;2000;enlist rotate2[;`r;5]];
 .d (".sc in main is ";-3!.sc);
 square2d[`asquare;2000;4000;(translate[;`tx;10;10]; rotate2[;`rotate;5])]
-/square2d[`asquare;1000;2000;enlist rotate2[;`rotate;5]]
 .d "init 8";
 
 \p 5042
@@ -166,5 +156,3 @@ square2d[`asquare;2000;4000;(translate[;`tx;10;10]; rotate2[;`rotate;5])]
 
 \C 10 10
 .d "init"
-/aa:{:(".sc 1 in ff is ";.sc;" l ";1;" k ";2;" r ";3);}
-/aa:{"sc 1 in ff is ";}
