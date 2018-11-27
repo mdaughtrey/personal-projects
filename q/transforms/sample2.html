@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+<script src="./c.js"></script>
+<script>
+var serverurl = "//localhost:5042/",
+    c = connect(),
+    ws;
+function connect() {
+    if ("WebSocket" in window) {
+        console.log("function connect");
+        ws = new WebSocket("ws:" + serverurl);
+        ws.binaryType="arraybuffer";
+        ws.onopen=function(e){
+            console.log("ws.onopen");
+        };
+        ws.onclose=function(e){
+            console.log("ws.onclose");
+        };
+        ws.onmessage=function(e){
+            console.log("ws.onmessage ");
+            sayN(deserialize(e.data));
+        };
+        ws.onerror=function(e) {window.alert("WS Error") };
+    } else alert("WebSockets not supported on your browser.");
+}
+function toQ(x) { ws.send(serialize({ payload: x })); }
+function sayN(n) {
+    document.getElementById('answer').textContent = n;
+}
+</script>
+</head>
+<body>
+    <h1 style='font-size:200px' id='answer'></h1>
+</body>
+</html>

@@ -3,11 +3,9 @@ PORT=/dev/cu.SLAB_USBtoUART
 
 all:
 	${PIO} run
-	make u
-	make s
 
 build:
-	${PIO} run > build.log
+	${PIO} run > build.log 2>&1
 
 init:
 	$(PIO) 
@@ -15,4 +13,4 @@ u:
 	sudo pio run -t upload --upload-port $(PORT) -v 
 
 s:
-	screen $(PORT) 9600
+	screen $(PORT) 115200
