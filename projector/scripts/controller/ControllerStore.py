@@ -128,9 +128,11 @@ class ControllerStore():
             conn.commit()
             conn.close()
 
+
+
     def toBePrecropped(self, projectname, limit = 10):
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
-                 WHERE precrop IS NULL AND processing != 1 ORDER BY rawfile LIMIT %s;''' % limit
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,converted FROM picdata
+                 WHERE precrop IS NULL AND processing != 1 ORDER BY converted LIMIT %s;''' % limit
         self._logger.debug(statement)
         return self._getPendingWork(projectname, statement)
 
