@@ -60,13 +60,16 @@ class FileManager():
         return ['OK']
 
     def newReferenceFile(self, fileStream, project, urlArgs):
-        targetDir = "%s/%s/" % (self._fileRoot, project)
-        targetFile = "%s/reference%c.raw.bz2" % (targetDir, urlArgs['refindex'])
-#	    targetFile = "%s/reference%c.raw" % (targetDir, urlArgs['refindex'])
+        targetDir = self._fileRoot
+        #targetFile = "%s/reference%c.raw" % (targetDir, urlArgs['refindex'])
+        targetFile = "/media/sf_vmshared/reference%s.raw" % urlArgs['refindex']
+        self._logger.debug("Saving to %s" % targetFile)
         try:
             open(targetFile, 'w').write(fileStream)
+            jobargs = ('/home/mattd/personal-projects/projector/dcraw/dcraw', targetFile)
 #	        jobargs = ('bzip2', '-d', sourceFile, "> %s/%s" % (targetDir, targetFile))
-#            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
+            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
+            self.logger.debug("output is %s" % output)
         except ee:
             logger.error("Write to %s failed, %s" % (targetFile, ee.message))
 	return['OK']

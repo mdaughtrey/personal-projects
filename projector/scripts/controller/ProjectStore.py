@@ -26,6 +26,7 @@ class ProjectStore():
                     processing integer,
                     rawfile TEXT,
                     container TEXT,
+                    converted TEXT,
                     precrop TEXT,
                     autocrop TEXT,
                     fused TEXT,
@@ -116,6 +117,12 @@ class ProjectStore():
             cursor.execute(statement)
             conn.commit()
             conn.close()
+
+    def toBeConverted(self, projectname, limit=10):
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
+                 WHERE converted IS NULL AND processing != 1 ORDER BY rawfile LIMIT %s;''' % limit
+        self._logger.debug(statement)
+        return self._getPendingWork(projectname, statement)
 
     def toBePrecropped(self, project, limit):
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata

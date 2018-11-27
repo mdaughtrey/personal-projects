@@ -28,7 +28,7 @@ class JobManagerRaw(JobManager):
         #self._logger.debug("tasks %s" % tasks)
         self._scheduledTasks = []
         JobManagerRaw.taskTable = { 
-#            "rf": self._scheduleProcessRaw,
+            "rf": self._scheduleProcessRaw,
             "pc": self._schedulePrecrop,
 #            "ac": self._scheduleAutocrop,
 #            "tf": self._scheduleTonefuse,
@@ -60,12 +60,23 @@ class JobManagerRaw(JobManager):
 ##        elif 'inline' == mode:
 ##            self._workerManager()
 
-#    def _scheduleProcessRaw(self, freeWorkers):
-#        self._logger.debug("scheduleProcessRaw")
-#        scheduled = 0
-#        pdb.set_trace()
-#        todo = self._pstore.rawToBeProcessed(self._config.project)
-#        targetDir = "%s/%s/" % (self._fileRoot, project)
+    def _scheduleProcessRaw(self, freeWorkers):
+        self._logger.debug("scheduleProcessRaw")
+        scheduled = 0
+        pdb.set_trace()
+        todo = self._pstore.toBeConverted(self._config.project)
+        if todo:
+            for (rowid, container, filename) in todo:
+            	self._logger.debug("Container %s filename %s" % (container, filename))
+                self._logger.debug("Container %s filename %s" % (container, filename))
+                jobargs = (self._config.project, container, filename)
+                if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
+                    self._vmConvert(*jobargs)
+                else:
+                    self._workers.append(Process(target = self._vmConvert, args = jobargs))
+                    self._workers[-1].start()
+                scheduled += 1
+        return scheduled
 
     def _schedulePrecrop(self, freeWorkers):
         scheduled = 0
@@ -81,11 +92,6 @@ class JobManagerRaw(JobManager):
                     self._workers[-1].start()
                 scheduled += 1
         return scheduled
-# 
-#    def _scheduleProcessRaw(self, freeWorkers):
-#        scheduled = 0
-#        todo = self._pstore.rawToBeProcessed(self._config.project, freeWorkers * 3)
-#        return scheduled
 #
 #    def _scheduleAutocrop(self, freeWorkers):
 #        scheduled = 0
@@ -232,6 +238,9 @@ class JobManagerRaw(JobManager):
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
+    def _vmConvert(self, project, container, filename):
+	    pass
+
     def _vmPrecrop(self, project, container, filename):
         self._logger.info("_vmPrecrop short %s %s %s" % (project, container, filename))
         sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
@@ -316,6 +325,6 @@ class JobManagerRaw(JobManager):
 #        self._generateTitles = True
 #
     def uploadsDone(self, project):
-        self._pstore.setTask(project, ['pc'])
+        self._pstore.setTask(project, ['rf'])
         #self._pstore.setTask(project, ['ac','tf','gc'])
         #self._pstore.setTask(project, ['pc','ac','tf','gc'])
