@@ -25,6 +25,7 @@ class ProjectStore():
         cur.execute('''CREATE TABLE picdata (
                     processing integer,
                     rawfile TEXT,
+                    tag TEXT,
                     container TEXT,
                     converted TEXT,
                     precrop TEXT,
@@ -39,7 +40,7 @@ class ProjectStore():
         cur.execute('''CREATE TABLE taskcontrol (
             task TEXT
             )''')
-        cur.execute('''CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container)''')
+        cur.execute('''CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container,tag)''')
 
         conn.commit()
         conn.close()
@@ -76,8 +77,8 @@ class ProjectStore():
 
             return False
 
-    def newRawFile(self, project,container, filename):
-        insert = "(processing, rawfile,container) values(0, '%s','%s')" % (filename, container)
+    def newRawFile(self, project,container, filename, tag):
+        insert = "(processing, rawfile,container,tag) values(0, '%s','%s','%s')" % (filename, container, tag)
         statement = "INSERT OR REPLACE INTO picdata %s" % insert
         with self._dbLock:
             conn = self._openDb(project)
@@ -129,6 +130,10 @@ class ProjectStore():
                  WHERE precrop IS NULL AND processing != 1 ORDER BY container,rawfile LIMIT %s;''' % limit
         #self._logger.debug(statement)
         return self._getPendingWork(project, statement)
+
+    def markConverted(self, project, container, filename):
+        self.simpleUpdate(project, "UPDATE picdata SET converted='%s',processing=0 WHERE container='%s' and rawfile='%s'"
+                % (filename.replace(".RAW",".JPG"), container, filename))
 
     def markPrecropped(self, project, container, filename):
         self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
@@ -206,38 +211,47 @@ class ProjectStore():
             conn.close()
         return [ee[0] for ee in tlist]
 
-    def getNextImageLocation(self, project):
+    def getNextImageLocation(self, project, tag):
         with self._dbLock:
             # Find the most recent container
             conn = self._openDb(project)
             cursor = conn.cursor()
             cursor.execute("SELECT DISTINCT(container) FROM picdata")
             containers = cursor.fetchall()
+            pdb.set_trace()
             if 0 == len(containers): # New project
                 contDir = "%s/%s/100" % (self._dbroot, project)
                 ProjectStore.mtxMakeDirs.acquire()
                 if False == os.path.isdir(contDir):
                     os.makedirs(contDir)
                 ProjectStore.mtxMakeDirs.release()
-                if self._config.raw:
-                    return "100", "000000.RAW"
-                else:
-                    return "100", "000000.JPG"
-
-            containers.sort()
-            cursor = conn.cursor()
-            cursor.execute("SELECT rawfile FROM picdata WHERE container='%s'" % containers[-1])
-            files = cursor.fetchall()
+                containers=['100']
+                files=[('',)]
+                newFile=''
+#                pdb.set_trace()
+#                if self._config.raw:
+#                    return "100", "000000"
+#                else:
+#                    return "100", "000000.JPG"
+            else:
+                containers.sort()
+                cursor = conn.cursor()
+                cursor.execute("SELECT rawfile FROM picdata WHERE container='%s'" % containers[-1])
+                files = cursor.fetchall()
+                files.sort()
+#            data.sort(key=lambda tup:tup[0])
             conn.close()
 
         #self._logger.debug("len(files) %u" % len(files))
 
         if len(files) >= ProjectStore.FilesPerContainer:
             newContainer = int(containers[-1][0]) + 1
-            newFile = 0
+            newFile='000000'
         else:
-            files.sort()
-            newFile = int(files[-1][0].split('.')[0]) + 1
+            offset = 0
+            if tag == "a":
+                offset = int(not files[0][0] == '')
+            newFile = int(files[-1][0].split('.')[0]) + offset
             newContainer = int(containers[-1][0])
 
         newDir = "%s/%s/%u" % (self._dbroot, project, newContainer)
@@ -247,7 +261,7 @@ class ProjectStore():
         ProjectStore.mtxMakeDirs.release()
         #self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
         if self._config.raw:
-            return "%03u" % int(newContainer), "%06u.RAW" % newFile
+            return "%03u" % int(newContainer), "%06u" % newFile
         else:
             return "%03u" % int(newContainer), "%06u.JPG" % newFile
 

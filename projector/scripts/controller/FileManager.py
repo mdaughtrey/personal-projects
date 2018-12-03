@@ -22,9 +22,9 @@ class FileManager():
         FileManager.mtxGetDir.release()
         return targetDir
 
-    def newFile(self, fileData, project, container, filename):
+    def newFile(self, fileData, project, container, filename, tag):
         targetDir = self._getdir(project, container, 'rawfile')
-        targetFile = "%s/%s" % (targetDir, filename)
+        targetFile = "%s/%s%s.RAW" % (targetDir, filename, tag)
         self._logger.debug("Saving %u to %s" % (len(fileData), targetFile))
         try:
             open(targetFile, 'w').write(fileData)
@@ -33,6 +33,12 @@ class FileManager():
         
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s" % (self._getdir(project, container, 'rawfile'), filename)
+
+    def getConvertedLocation(self, project, container, filename):
+        return "%s/%s" % (self._getdir(project, container, 'converted'), filename)
+
+    def getConvertedDir(self, project, container):
+        return self._getdir(project, container, 'converted')
 
     def getRawFileDir(self, project, container):
         return self._getdir(project, container, 'rawfile')

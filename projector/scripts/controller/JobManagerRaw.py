@@ -1,6 +1,7 @@
 import os
 import pdb
 from multiprocessing import Process
+from shutil import copyfile
 import threading
 import subprocess
 import time
@@ -63,12 +64,10 @@ class JobManagerRaw(JobManager):
     def _scheduleProcessRaw(self, freeWorkers):
         self._logger.debug("scheduleProcessRaw")
         scheduled = 0
-        pdb.set_trace()
         todo = self._pstore.toBeConverted(self._config.project)
         if todo:
             for (rowid, container, filename) in todo:
             	self._logger.debug("Container %s filename %s" % (container, filename))
-                self._logger.debug("Container %s filename %s" % (container, filename))
                 jobargs = (self._config.project, container, filename)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmConvert(*jobargs)
@@ -239,7 +238,29 @@ class JobManagerRaw(JobManager):
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmConvert(self, project, container, filename):
-	    pass
+#        pdb.set_trace()
+        source = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
+        raw = os.path.abspath(self._fileman.getConvertedDir(project, container) + "/%s" % filename)
+        ppm = raw.replace('.RAW','.ppm')
+        jpg = raw.replace('.RAW','.JPG')
+        self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
+        if False == os.path.isfile(jpg):
+            copyfile(source, raw)
+            jobargs = ('/home/mattd/personal-projects/projector/dcraw/dcraw', raw)
+            retcode = subprocess.call(jobargs)
+            self._logger.info("dcraw returns %u" % retcode)
+            if retcode:
+                self._logger.error("dcraw fail")
+                return
+            jobargs = ('convert', ppm, jpg)
+            retcode = subprocess.call(jobargs)
+            self._logger.info("convert returns %u" % retcode)
+            if retcode:
+                self._logger.error("convert fail")
+                return
+            os.remove(raw)
+            os.remove(ppm)
+        self._pstore.markConverted(project, container, filename)
 
     def _vmPrecrop(self, project, container, filename):
         self._logger.info("_vmPrecrop short %s %s %s" % (project, container, filename))
@@ -325,6 +346,7 @@ class JobManagerRaw(JobManager):
 #        self._generateTitles = True
 #
     def uploadsDone(self, project):
-        self._pstore.setTask(project, ['rf'])
+        pass
+        #self._pstore.setTask(project, ['rf'])
         #self._pstore.setTask(project, ['ac','tf','gc'])
         #self._pstore.setTask(project, ['pc','ac','tf','gc'])
