@@ -65,15 +65,17 @@ signal.signal(signal.SIGINT, signal_handler)
 #
 # Upload a new raw file
 #
-@app.route('/upload', methods = ['PUT','GET'])
-def upload():
+@app.route('/upload/<tag>', methods = ['PUT','GET'])
+def upload(tag):
     try:
         if 'GET' == request.method:
            jobman.uploadsDone(config.project) 
            return json.dumps(['OK'])
-        container, filename = pstore.getNextImageLocation(config.project)
-        fileman.newFile(request.data, config.project, container, filename)
-        pstore.newRawFile(config.project, container, filename)
+#        pdb.set_trace()
+        container, filename = pstore.getNextImageLocation(config.project, tag)
+        logger.debug("Container %s Filename %s" % (container, filename))
+        fileman.newFile(request.data, config.project, container, filename, tag)
+        pstore.newRawFile(config.project, container, filename, tag)
         return json.dumps(['OK'])
 
     except KeyError as ee:
