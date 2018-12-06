@@ -66,9 +66,9 @@ class JobManagerRaw(JobManager):
         scheduled = 0
         todo = self._pstore.toBeConverted(self._config.project)
         if todo:
-            for (rowid, container, filename) in todo:
+            for (rowid, container, filename,tag) in todo:
             	self._logger.debug("Container %s filename %s" % (container, filename))
-                jobargs = (self._config.project, container, filename)
+                jobargs = (self._config.project, container, filename, tag)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmConvert(*jobargs)
                 else:
@@ -237,12 +237,14 @@ class JobManagerRaw(JobManager):
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
-    def _vmConvert(self, project, container, filename):
+    def _vmConvert(self, project, container, filename, tag):
 #        pdb.set_trace()
         source = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         raw = os.path.abspath(self._fileman.getConvertedDir(project, container) + "/%s" % filename)
-        ppm = raw.replace('.RAW','.ppm')
-        jpg = raw.replace('.RAW','.JPG')
+        ppm = raw + "%s.ppm" % tag
+        jpg = raw + "%s.jpg" % tag
+        raw = raw + "%s.RAW" % tag
+        source += "%s.RAW" % tag
         self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
         if False == os.path.isfile(jpg):
             copyfile(source, raw)
