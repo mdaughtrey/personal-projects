@@ -120,8 +120,8 @@ class ProjectStore():
             conn.close()
 
     def toBeConverted(self, projectname, limit=10):
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
-                 WHERE converted IS NULL AND processing != 1 ORDER BY rawfile LIMIT %s;''' % limit
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile,tag FROM picdata
+                 WHERE converted IS NULL AND processing != 1 ORDER BY rawfile,tag LIMIT %s;''' % limit
         self._logger.debug(statement)
         return self._getPendingWork(projectname, statement)
 
@@ -218,7 +218,7 @@ class ProjectStore():
             cursor = conn.cursor()
             cursor.execute("SELECT DISTINCT(container) FROM picdata")
             containers = cursor.fetchall()
-            pdb.set_trace()
+#            pdb.set_trace()
             if 0 == len(containers): # New project
                 contDir = "%s/%s/100" % (self._dbroot, project)
                 ProjectStore.mtxMakeDirs.acquire()
@@ -227,7 +227,6 @@ class ProjectStore():
                 ProjectStore.mtxMakeDirs.release()
                 containers=['100']
                 files=[('',)]
-                newFile=''
 #                pdb.set_trace()
 #                if self._config.raw:
 #                    return "100", "000000"
@@ -250,8 +249,13 @@ class ProjectStore():
         else:
             offset = 0
             if tag == "a":
-                offset = int(not files[0][0] == '')
-            newFile = int(files[-1][0].split('.')[0]) + offset
+                if files[-1][0] == '':
+                    newFile = 0
+                else:
+                    offset = int(not files[0][0] == '')
+                    newFile = int(files[-1][0]) + offset
+            else:
+                newFile = int(files[-1][0].split('.')[0]) + offset
             newContainer = int(containers[-1][0])
 
         newDir = "%s/%s/%u" % (self._dbroot, project, newContainer)
