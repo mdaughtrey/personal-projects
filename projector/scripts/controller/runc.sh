@@ -1,9 +1,9 @@
 #!/bin/bash
 
-PROJECT=blankref
+PROJECT=test
 #TYPE=8mm
 TYPE=super8
-ROOTOFALL=/home/mattd/scans/
+ROOTOFALL=/media/sf_vproj/scans/
 #if[[! -d "$ROOTOFALL" ]]
 #then
 	mkdir -p $ROOTOFALL/$PROJECT

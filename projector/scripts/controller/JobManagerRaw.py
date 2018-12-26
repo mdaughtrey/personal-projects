@@ -19,7 +19,7 @@ def trampoline(object):
 class JobManagerRaw(JobManager):
 #    PrecropS8Geometry="2912x2200+0+250"
 #    Precrop8mmGeometry="2868x1800+300+500"
-#    JobLimit = 4 
+    JobLimit = 9 
 ##    WorkerManagerControl = False # True # 'Off'
 #    DisablePrecrop = True
 #    DisableAutocrop = False
@@ -31,7 +31,7 @@ class JobManagerRaw(JobManager):
         JobManagerRaw.taskTable = { 
             "rf": self._scheduleProcessRaw,
             "pc": self._schedulePrecrop,
-#            "ac": self._scheduleAutocrop,
+            "ac": self._scheduleAutocrop,
 #            "tf": self._scheduleTonefuse,
 #            "gt": self._scheduleGenTitle,
 #            "gc": self._scheduleGenContent 
@@ -54,7 +54,8 @@ class JobManagerRaw(JobManager):
 #            self._thread = threading.Thread(target = trampoline, args = (self,))
 #            self._thread.start()
         elif 'inline' == self._config.jobmode:
-            self._workerManager()
+            while True:
+                self._workerManager()
 ##        if 'proc' == mode: # JobManager.WorkerManagerControl:
 ##            self._thread = threading.Thread(target = worker, args = (self,))
 ##            self._thread.start()
@@ -65,10 +66,12 @@ class JobManagerRaw(JobManager):
         self._logger.debug("scheduleProcessRaw")
         scheduled = 0
         todo = self._pstore.toBeConverted(self._config.project)
+        self._logger.debug('toBeConverted %s' % str(todo))
         if todo:
             for (rowid, container, filename,tag) in todo:
             	self._logger.debug("Container %s filename %s" % (container, filename))
-                jobargs = (self._config.project, container, filename, tag)
+                jobargs = (self._config.project, container, filename, tag, rowid)
+                self._logger.info("Calling %s" % str(jobargs))
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmConvert(*jobargs)
                 else:
@@ -80,10 +83,12 @@ class JobManagerRaw(JobManager):
     def _schedulePrecrop(self, freeWorkers):
         scheduled = 0
         toBePrecropped = self._pstore.toBePrecropped(self._config.project, freeWorkers)
+        self._logger.debug('toBePrecropped %s' % str(toBePrecropped))
+#        pdb.set_trace()
         if toBePrecropped:
-            for (rowid, container, filename) in toBePrecropped:
+            for (rowid, container, filename, tag) in toBePrecropped:
                 self._logger.debug("Container %s filename %s" % (container, filename))
-                jobargs = (self._config.project, container, filename)
+                jobargs = (self._config.project, container, filename, tag, rowid)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmPrecrop(*jobargs)
                 else:
@@ -91,24 +96,29 @@ class JobManagerRaw(JobManager):
                     self._workers[-1].start()
                 scheduled += 1
         return scheduled
-#
-#    def _scheduleAutocrop(self, freeWorkers):
-#        scheduled = 0
-#        #self._logger.debug("_scheduleAutocrop")
-#        todo = self._pstore.toBeAutocropped(self._config.project, freeWorkers * 3)
-#        self._logger.debug("todo %s" % todo)
-#        while len(todo) >= 3:
-#            jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
-# 
-#            if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
-#                self._vmAutocrop(*jobargs)
+
+    def _scheduleAutocrop(self, freeWorkers):
+        scheduled = 0
+        pdb.set_trace()
+        toBeAutocropped = self._pstore.toBeAutocropped(self._config.project, JobManagerRaw.JobLimit*3)
+        self._logger.debug('toBeAutocropped untrimmed %s' % str(toBeAutocropped))
+        if toBeAutocropped:
+            toBeAutocropped = filter(lambda x: not x[0]%3, zip(range(len(toBeAutocropped)), toBeAutocropped))
+            self._logger.debug('toBeAutocropped1 %s' % str(toBeAutocropped))
+            toBeAutocropped = zip(*toBeAutocropped[::-1])[1]
+            self._logger.debug('toBeAutocropped2 %s' % str(toBeAutocropped))
+            pdb.set_trace()
+            for (rowid, container, filename) in toBeAutocropped:
+                jobargs = (self._config.project, rowid, container, filename)
+                if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
+                    self._vmAutocrop(*jobargs)
 #            else:
 #                self._workers.append(Process(target = self._vmAutocrop, args = jobargs))
 #                self._workers[-1].start()
 #                scheduled += 1
 #            del todo[:3]
-#        return scheduled
-#
+        return scheduled
+
 #    def _scheduleTonefuse(self, freeWorkers):
 #        scheduled = 0
 #        todo = self._pstore.toBeFused(self._config.project, freeWorkers * 3)
@@ -209,36 +219,29 @@ class JobManagerRaw(JobManager):
 #        open("%s/%s" % (outputdir, file3),'w').write(open(source3).read())
 #        self._pstore.markAutocropped(project, container, file1, file2, file3)
 #
-#    def _vmAutocrop(self, project, container, file1, file2, file3):
-#        #return self._vmAutocropShort(project,container, file1, file2, file3)
-#        self._logger.info("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
-#        #sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
-#        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
-#        source1 = "%s/%s" % (sourceDir, file1)
-#        source2 = "%s/%s" % (sourceDir, file2)
-#        source3 = "%s/%s" % (sourceDir, file3)
-#        outputdir = self._fileman.getAutocropDir(project, container)
-#        jobargs = ('../autocrop3.py', '-s', '--filenames',
-#            '%s,%s,%s' % (source1, source2, source3),
-#            '--mode', self._config.film,
-#            '--output-dir', outputdir,
+    def _vmAutocrop(self, project, rowid, container, filename):
+        self._logger.info("Autocrop %s %s %s %s" % (project, rowid, container, filename))
+        source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
+        dest = os.path.abspath(self._fileman.getAutocropDir(project, container))
+        jobargs = ('../autocrop3.py', '-s', '--filenames',
+            '%s,%s,%s' % (source + filename + 'a.jpg',source + filename + 'b.jpg',source + filename + 'c.jpg'),
+            '--mode', self._config.film,
+            '--output-dir', dest)
 #            '--adjfile', self._fileman.getAdjFile(project))
-#        self._logger.debug("Calling %s" % ' '.join(jobargs))
-#        try:
+        self._logger.debug("Calling %s" % str(jobargs))
+        try:
 #            #subprocess.check_call(jobargs)
-#            self._logger.debug(subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
-#            self._logger.info("Done %s %s %s" % (project, container, outputdir))
+            self._logger.debug(subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+            self._logger.info("Done %s %s %s" % (project, container, outputdir))
 #            self._pstore.markAutocropped(project, container, file1, file2, file3)
 #            self._logger.debug("_wmAutocrop Done")
 #
-#        except subprocess.CalledProcessError as ee:
-#	    print ee.returncode
-#	    print ee.output
+        except subprocess.CalledProcessError as ee:
+	        print ee.output
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
-    def _vmConvert(self, project, container, filename, tag):
-#        pdb.set_trace()
+    def _vmConvert(self, project, container, filename, tag, rowid):
         source = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         raw = os.path.abspath(self._fileman.getConvertedDir(project, container) + "/%s" % filename)
         ppm = raw + "%s.ppm" % tag
@@ -246,67 +249,69 @@ class JobManagerRaw(JobManager):
         raw = raw + "%s.RAW" % tag
         source += "%s.RAW" % tag
         self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
-        if False == os.path.isfile(jpg):
-            copyfile(source, raw)
-            jobargs = ('/home/mattd/personal-projects/projector/dcraw/dcraw', raw)
-            retcode = subprocess.call(jobargs)
-            self._logger.info("dcraw returns %u" % retcode)
-            if retcode:
-                self._logger.error("dcraw fail")
-                return
-            jobargs = ('convert', ppm, jpg)
-            retcode = subprocess.call(jobargs)
-            self._logger.info("convert returns %u" % retcode)
-            if retcode:
-                self._logger.error("convert fail")
-                return
-            os.remove(raw)
-            os.remove(ppm)
-        self._pstore.markConverted(project, container, filename)
-
-    def _vmPrecrop(self, project, container, filename):
-        self._logger.info("_vmPrecrop short %s %s %s" % (project, container, filename))
-        sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
-        targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
-
-#        pdb.set_trace() 
-        jobargs = ('/home/mattd/personal-projects/projector/raspiraw/dcraw/dcraw', sourcefile)
+        #if False == os.path.isfile(jpg):
+        copyfile(source, raw)
+        jobargs = ('/home/mattd/personal-projects/projector/dcraw/dcraw', raw)
+        self._logger.debug("Calling %s" % ' '.join(jobargs))
         retcode = subprocess.call(jobargs)
-        sourcefile = sourcefile.replace('.RAW','.ppm')
-        refFile = imageio.imread("%s/reference0.bmp" % self._config.saveroot)
-        rgbRef = numpy.full(refFile.shape, 255, dtype=numpy.uint8)
-        delta = rgbRef - refFile
-        source = imageio.imread(sourcefile)
-        rgbsource = numpy.full(source.shape, 255, dtype=numpy.uint8)
-        adjust = source - delta
-        imageio.imwrite(targetfile.replace(".RAW", ".JPG"), adjust)
-        self._pstore.markPrecropped(project, container, filename)
-#
-#
+        self._logger.info("dcraw returns %u" % retcode)
+        if retcode:
+            self._logger.error("dcraw fail")
+            return
+        jobargs = ('convert', ppm, jpg)
+        retcode = subprocess.call(jobargs)
+        self._logger.info("convert returns %u" % retcode)
+        if retcode:
+            self._logger.error("convert fail")
+            return
+        os.remove(raw)
+        os.remove(ppm)
+        self._pstore.markConverted(project, filename, tag, rowid)
+
 #    def _vmPrecrop(self, project, container, filename):
-#        self._logger.info("Precrop %s %s %s" % (project, container, filename))
+#        self._logger.info("_vmPrecrop short %s %s %s" % (project, container, filename))
 #        sourcefile = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
 #        targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename)
-#        jobargs = ('convert', sourcefile,
-#            #'-strip', '-flop', '-flip',
-#            '-strip', 
-#            '-crop', {'8mm': JobManager.Precrop8mmGeometry,
-#                'super8': JobManager.PrecropS8Geometry}[self._config.film],
-#            targetfile)
-#        self._logger.debug("Calling %s" % ' '.join(jobargs))
-#        if True == JobManager.DisablePrecrop:
-#            self._logger.debug("Precrop disabled")
-#        else:
-#            try:
-#                #retcode = subprocess.call(jobargs)
-#                self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
-#                self._logger.info("Done %s %s %s" % (project, container, filename))
-#                self._pstore.markPrecropped(project, container, filename)
 #
-#            except subprocess.CalledProcessError as ee:
-#                self._logger.error("precrop failed rc %d $s" % (ee.returncode, ee.output))
-#
-#        self._logger.debug("_vmPrecrop Done")
+##        pdb.set_trace() 
+#        jobargs = ('/home/mattd/personal-projects/projector/raspiraw/dcraw/dcraw', sourcefile)
+#        retcode = subprocess.call(jobargs)
+#        sourcefile = sourcefile.replace('.RAW','.ppm')
+#        refFile = imageio.imread("%s/reference0.bmp" % self._config.saveroot)
+#        rgbRef = numpy.full(refFile.shape, 255, dtype=numpy.uint8)
+#        delta = rgbRef - refFile
+#        source = imageio.imread(sourcefile)
+#        rgbsource = numpy.full(source.shape, 255, dtype=numpy.uint8)
+#        adjust = source - delta
+#        imageio.imwrite(targetfile.replace(".RAW", ".JPG"), adjust)
+#        self._pstore.markPrecropped(project, container, filename)
+##
+
+    def _vmPrecrop(self, project, container, filename, tag, rowid):
+        self._logger.info("Precrop %s %s %s" % (project, container, filename))
+        sourcefile = os.path.abspath(self._fileman.getConvertedLocation(project, container, filename)) + tag + '.jpg'
+        targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename) + tag + '.jpg'
+        jobargs = ('convert', sourcefile,
+            #'-strip', '-flop', '-flip',
+            '-strip', 
+            '-crop', {'8mm': JobManager.Precrop8mmGeometry,
+                'super8': JobManager.PrecropS8Geometry}[self._config.film],
+            targetfile)
+        self._logger.debug("Calling %s" % ' '.join(jobargs))
+#        pdb.set_trace()
+        if True == JobManager.DisablePrecrop:
+            self._logger.debug("Precrop disabled")
+        else:
+            try:
+                #retcode = subprocess.call(jobargs)
+                self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+                self._logger.info("Done %s %s %s" % (project, container, filename))
+                self._pstore.markPrecropped(project, filename, tag, rowid)
+
+            except subprocess.CalledProcessError as ee:
+                self._logger.error("precrop failed rc %d $s" % (ee.returncode, ee.output))
+
+        self._logger.debug("_vmPrecrop Done")
 #
 ##    def _vmGenTitle(self, project, root):
 ##        jobargs = ('../gentitle.sh', '-p', project, '-r', root)

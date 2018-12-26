@@ -28,9 +28,13 @@ class ProjectStore():
                     tag TEXT,
                     container TEXT,
                     converted TEXT,
+                    convertedtag TEXT,
                     precrop TEXT,
+                    precroptag TEST,
                     autocrop TEXT,
+                    autocroptag TEXT,
                     fused TEXT,
+                    fusedtag TEXT,
                     titleframe TEXT
                     )''')
         cur.execute('''CREATE TABLE videodata (
@@ -121,23 +125,27 @@ class ProjectStore():
 
     def toBeConverted(self, projectname, limit=10):
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile,tag FROM picdata
-                 WHERE converted IS NULL AND processing != 1 ORDER BY rawfile,tag LIMIT %s;''' % limit
+                 WHERE converted IS NULL and convertedtag IS NULL AND processing != 1 ORDER BY rawfile,tag LIMIT %s;''' % limit
         self._logger.debug(statement)
         return self._getPendingWork(projectname, statement)
 
     def toBePrecropped(self, project, limit):
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
-                 WHERE precrop IS NULL AND processing != 1 ORDER BY container,rawfile LIMIT %s;''' % limit
-        #self._logger.debug(statement)
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,converted,tag FROM picdata
+                 WHERE precrop IS NULL and precroptag IS NULL AND processing != 1 ORDER BY converted,tag LIMIT %s;''' % limit
         return self._getPendingWork(project, statement)
 
-    def markConverted(self, project, container, filename):
-        self.simpleUpdate(project, "UPDATE picdata SET converted='%s',processing=0 WHERE container='%s' and rawfile='%s'"
-                % (filename.replace(".RAW",".JPG"), container, filename))
+    def toBeAutocropped(self, project, limit):
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
+            WHERE autocrop IS NULL AND processing != 1 ORDER BY autocrop,autocroptag LIMIT %s;''' % limit
+        return self._getPendingWork(project, statement)
 
-    def markPrecropped(self, project, container, filename):
-        self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
-                % (filename.replace(".RAW",".JPG"), container, filename))
+    def markConverted(self, project, filename, tag, rowid):
+        self.simpleUpdate(project, "UPDATE picdata SET converted='%s',processing=0,convertedtag='%s' WHERE rowid=%u"
+                % (filename.replace(".RAW",".JPG"), tag, rowid))
+
+    def markPrecropped(self, project, filename, tag, rowid):
+        self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0,precroptag='%s' WHERE rowid=%u"
+                % (filename.replace(".RAW",".JPG"), tag, rowid))
 
     def getRemaining(self, project, ptype):
         statement = '''SELECT COUNT(*) FROM picdata WHERE %s = NULL;''' % ptype
@@ -149,30 +157,9 @@ class ProjectStore():
             conn.close()
         return result[0][0]
 
-    def toBeAutocropped(self, project, limit):
-	return self.toBePrecropped(project, limit)
-        # don't offer any files unless all precropped is complete
-#        pcRemaining =  self.getRemaining(project, 'precrop')
-#        self._logger.debug("pcRemaining %s" % pcRemaining)
-#        if 0 != pcRemaining:
-#            self._logger.debug("%s remaining precrops, autocrop not ready" % pcRemaining)
-#            return []
-#        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
-#                 WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
-#                 ORDER BY container,precrop LIMIT %s;''' % limit
-#        #self._logger.debug(statement)
-#        return self._getPendingWork(project, statement)
-
-    def markAutocropped(self, project, container, file1, file2, file3):
-	self.markPrecropped(project, container, file1)
-	self.markPrecropped(project, container, file2)
-	self.markPrecropped(project, container, file3)
-        for ff in [file1, file2, file3]:
-            self.simpleUpdate(project, "UPDATE picdata set autocrop='%s' WHERE container='%s' and rawfile='%s'"
-            % (ff, container, ff))
-
-        self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and rawfile in ('%s','%s','%s')"
-                % (container, file1, file2, file3))
+    def markAutocropped(self, project, filename, tag, rowid):
+        self.simpleUpdate(project, "UPDATE picdata set autocrop='%s',autocroptag='%s' WHERE rowid IS %u"
+            % (filename, tag, rowid))
 
     def abortAutocrop(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortAutocrop")
@@ -220,12 +207,12 @@ class ProjectStore():
             containers = cursor.fetchall()
 #            pdb.set_trace()
             if 0 == len(containers): # New project
-                contDir = "%s/%s/100" % (self._dbroot, project)
+                contDir = "%s/%s/1" % (self._dbroot, project)
                 ProjectStore.mtxMakeDirs.acquire()
                 if False == os.path.isdir(contDir):
                     os.makedirs(contDir)
                 ProjectStore.mtxMakeDirs.release()
-                containers=['100']
+                containers=['1']
                 files=[('',)]
 #                pdb.set_trace()
 #                if self._config.raw:

@@ -25,8 +25,7 @@ parser.add_argument('--saveroot', required = True, dest='saveroot', help="root d
 parser.add_argument('--raw', required = True, dest='raw', default='False', action='store_true', help="process RAW files")
 config = parser.parse_args()
 
-#ROOTOFALL='/mnt/exthd/scans/nk'
-ROOTOFALL=config.saveroot #'/home/mattd/scans/sensortest'
+ROOTOFALL=config.saveroot 
 
 logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
@@ -44,9 +43,9 @@ logging.getLogger('RemoteDev').addHandler(fileHandler)
 
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL + config.project, config)
-fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL + config.project)
+fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
 if config.raw:
-    jobman = JobManagerRaw(logging.getLogger('JobManagerRaw'), pstore, fileman, config, ROOTOFALL)
+    jobman = JobManagerRaw(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
 else:
     jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
 #cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)

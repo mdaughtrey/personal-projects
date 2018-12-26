@@ -12,11 +12,11 @@ def trampoline(object):
     #object._logger.info("workerManager ends")
 
 class JobManager():
-    PrecropS8Geometry="2912x2200+0+250"
+    PrecropS8Geometry="1546x2223+950+150"
     Precrop8mmGeometry="2868x1800+300+500"
     JobLimit = 4 
 #    WorkerManagerControl = False # True # 'Off'
-    DisablePrecrop = True
+    DisablePrecrop = False
     DisableAutocrop = False
 
     def schedulableTasks(self):
