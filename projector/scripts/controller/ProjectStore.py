@@ -157,9 +157,10 @@ class ProjectStore():
             conn.close()
         return result[0][0]
 
-    def markAutocropped(self, project, filename, tag, rowid):
-        self.simpleUpdate(project, "UPDATE picdata set autocrop='%s',autocroptag='%s' WHERE rowid IS %u"
-            % (filename, tag, rowid))
+    def markAutocropped(self, project, filename, rowid):
+        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='a' WHERE rowid IS %u" % (filename, rowid))
+        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='b' WHERE rowid IS %u" % (filename, rowid + 1))
+        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='c' WHERE rowid IS %u" % (filename, rowid + 2))
 
     def abortAutocrop(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortAutocrop")
@@ -171,16 +172,16 @@ class ProjectStore():
             self._logger.debug("%s remaining autocrops, tonefuse not ready" % acRemaining)
             return []
 
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,autocrop FROM picdata
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,autocrop,autocroptag FROM picdata
                  WHERE autocrop IS NOT NULL AND fused IS NULL AND processing != 1
                  ORDER BY container,autocrop LIMIT %s;''' % limit
         #self._logger.debug(statement)
         return self._getPendingWork(project, statement)
 
     def markFused(self, project, container, file1, file2, file3):
-        for ff in [file1, file2, file3]:
-            self.simpleUpdate(project, "UPDATE picdata set fused='%s' WHERE container='%s' and autocrop='%s'"
-            % (file1, container, ff))
+        for (file, tag) in zip([file1, file2, file3], ["a","b","c"]):
+            self.simpleUpdate(project, "UPDATE picdata set fused='%s',fusedtag='%s' WHERE container='%s' and autocrop='%s'"
+            % (file, tag, container, file))
 
         self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and autocrop in ('%s','%s','%s')"
                 % (container, file1, file2, file3))

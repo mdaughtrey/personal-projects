@@ -93,8 +93,8 @@ def whitePixels(data, minlen, maxlen):
     idx = 0
     for kk, gg in groupby(data, lambda x: x):
         count = sum(1 for _ in gg)
-        #if 255 == kk:
-        if 1 == kk:
+        #if 1 == kk:
+        if 255 == kk:
             whites.append([idx, count])
         idx += count
     return whites
@@ -262,12 +262,14 @@ def processSuper8(filenames, outputpath):
     flattened = flattened[yOffset:,:]
     eroded = ndimage.grey_erosion(flattened, size=(25, 25))
 
-    eroded[eroded < 128] = 0
-    eroded[eroded >= 128] = 1 
+    ethreshold = 128 
+    eroded[eroded < ethreshold] = 0
+    eroded[eroded >= ethreshold] = 255
     if options.debug and eroded_dir is not None:
         scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
     rangeDict = {}
+#    pdb.set_trace()
     for range in whitePixels(eroded[-1], 200, 400):
         if eroded.shape[1] > (range[0] + 300):
             rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
@@ -290,15 +292,12 @@ def processSuper8(filenames, outputpath):
     if options.adjfile:
         try:
             (xAdj, yAdj, wAdj, hAdj) = [int(xx) for xx in open(options.adjfile).read().rstrip().split(',')]
+            logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
         except:
             logger.debug("%s file not found", options.adjfile)
-            pass
-
-    logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
 
     frameX = (sprocketCx - FrameSuper8.w / 2) + xAdj
     frameY = sprocketCy - (SprocketSuper8.h / 2) - FrameSuper8.h + yAdj 
-
     frameH = FrameSuper8.h + hAdj
     frameW = FrameSuper8.w + wAdj
 
