@@ -32,9 +32,9 @@ class JobManagerRaw(JobManager):
             "rf": self._scheduleProcessRaw,
             "pc": self._schedulePrecrop,
             "ac": self._scheduleAutocrop,
-#            "tf": self._scheduleTonefuse,
-#            "gt": self._scheduleGenTitle,
-#            "gc": self._scheduleGenContent 
+            "tf": self._scheduleTonefuse,
+            "gt": self._scheduleGenTitle,
+            "gc": self._scheduleGenContent 
             }
 
         for task in tasks:
@@ -99,7 +99,6 @@ class JobManagerRaw(JobManager):
 
     def _scheduleAutocrop(self, freeWorkers):
         scheduled = 0
-        pdb.set_trace()
         toBeAutocropped = self._pstore.toBeAutocropped(self._config.project, JobManagerRaw.JobLimit*3)
         self._logger.debug('toBeAutocropped untrimmed %s' % str(toBeAutocropped))
         if toBeAutocropped:
@@ -107,7 +106,6 @@ class JobManagerRaw(JobManager):
             self._logger.debug('toBeAutocropped1 %s' % str(toBeAutocropped))
             toBeAutocropped = zip(*toBeAutocropped[::-1])[1]
             self._logger.debug('toBeAutocropped2 %s' % str(toBeAutocropped))
-            pdb.set_trace()
             for (rowid, container, filename) in toBeAutocropped:
                 jobargs = (self._config.project, rowid, container, filename)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
@@ -119,32 +117,33 @@ class JobManagerRaw(JobManager):
 #            del todo[:3]
         return scheduled
 
-#    def _scheduleTonefuse(self, freeWorkers):
-#        scheduled = 0
-#        todo = self._pstore.toBeFused(self._config.project, freeWorkers * 3)
-#        while len(todo) >= 3:
-#            jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
-# 
-#            if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
-#                self._vmTonefuse(*jobargs)
-#            else:
-#                self._workers.append(Process(target = self._vmTonefuse, args = jobargs))
-#                self._workers[-1].start()
-#                scheduled += 1
-#            del todo[:3]
-#        return scheduled
-# 
-##    def _scheduleGenTitle(self, freeWorkers):
-###        if False == self._generateTitles: return 0
-##        if 'inline' == self._config.jobmode: 
-##            self._vmGenTitle(self._config.project, self._root)
-##            return 0
-##        else:
-##            self._workers.append(Process(target = self._vmGenTitle,
-##                args = (self._config.project, self._root)))
-##            self._workers[-1].start()
-##        self._generateTitles = False
-##        return 1    
+    def _scheduleTonefuse(self, freeWorkers):
+        scheduled = 0
+        todo = self._pstore.toBeFused(self._config.project, freeWorkers * 3)
+        while len(todo) >= 3:
+            jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
+ 
+            if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
+                self._vmTonefuse(*jobargs)
+            else:
+                self._workers.append(Process(target = self._vmTonefuse, args = jobargs))
+                self._workers[-1].start()
+                scheduled += 1
+            del todo[:3]
+        return scheduled
+ 
+    def _scheduleGenTitle(self, freeWorkers):
+        pdb.set_trace()
+        if False == self._generateTitles: return 0
+        if 'inline' == self._config.jobmode: 
+            self._vmGenTitle(self._config.project, self._root)
+            return 0
+        else:
+            self._workers.append(Process(target = self._vmGenTitle,
+                args = (self._config.project, self._root)))
+            self._workers[-1].start()
+        self._generateTitles = False
+        return 1    
 #
 #    def _scheduleGenContent(self, freeWorkers):
 #        if True == self._genContent: return 0
@@ -232,9 +231,9 @@ class JobManagerRaw(JobManager):
         try:
 #            #subprocess.check_call(jobargs)
             self._logger.debug(subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
-            self._logger.info("Done %s %s %s" % (project, container, outputdir))
-#            self._pstore.markAutocropped(project, container, file1, file2, file3)
-#            self._logger.debug("_wmAutocrop Done")
+#            self._logger.info("Done %s %s %s" % (project, container, outputdir))
+            self._pstore.markAutocropped(project, filename, rowid)
+            self._logger.debug("_wmAutocrop Done")
 #
         except subprocess.CalledProcessError as ee:
 	        print ee.output
@@ -312,16 +311,17 @@ class JobManagerRaw(JobManager):
                 self._logger.error("precrop failed rc %d $s" % (ee.returncode, ee.output))
 
         self._logger.debug("_vmPrecrop Done")
-#
-##    def _vmGenTitle(self, project, root):
-##        jobargs = ('../gentitle.sh', '-p', project, '-r', root)
-###        retcode = subprocess.call(jobargs)
-##        try:
-##            self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
-##
-##        except subprocess.CalledProcessError as ee:
-##            self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
-#
+
+    def _vmGenTitle(self, project, root):
+        jobargs = ('../gentitle.sh', '-p', project, '-r', root)
+        self._logger.debug("Calling %s" % ' '.join(jobargs))
+        retcode = subprocess.call(jobargs)
+        try:
+            self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+
+        except subprocess.CalledProcessError as ee:
+            self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
+
 #    def _vmGenContent(self, project, root, container):
 #        self._pstore.markChunkProcessing(project, container)
 #        jobargs = ('../gencontent.sh', '-p', project, '-r', root)

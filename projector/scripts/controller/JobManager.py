@@ -12,7 +12,7 @@ def trampoline(object):
     #object._logger.info("workerManager ends")
 
 class JobManager():
-    PrecropS8Geometry="1546x2223+950+150"
+    PrecropS8Geometry="1546x2165+950+50"
     Precrop8mmGeometry="2868x1800+300+500"
     JobLimit = 4 
 #    WorkerManagerControl = False # True # 'Off'
@@ -28,7 +28,8 @@ class JobManager():
             "ac": self._scheduleAutocrop,
             "tf": self._scheduleTonefuse,
 #            "gt": self._scheduleGenTitle,
-            "gc": self._scheduleGenContent }
+#            "gc": self._scheduleGenContent
+            }
 
         for task in tasks:
             try:
@@ -44,7 +45,7 @@ class JobManager():
         self._logger.debug("JobManager init")
         self._root = root
         self._genContent = False
-#        self._generateTitles = False
+        self._generateTitles = True
         self._config = config
 #        self._scheduledTasks = [
 #            self._schedulePrecrop,
@@ -185,10 +186,10 @@ class JobManager():
     def _vmTonefuse(self, project, container, file1, file2, file3):
         self._logger.info("Tonefuse %s %s %s %s %s" % (project, container, file1, file2, file3))
         sourceDir = os.path.abspath(self._fileman.getAutocropDir(project, container))
-        source1 = "%s/%s" % (sourceDir, file1)
-        source2 = "%s/%s" % (sourceDir, file2)
-        source3 = "%s/%s" % (sourceDir, file3)
-        outputfile = self._fileman.getTonefuseDir(project, container) + '/%s' % file1
+        source1 = "%s/%sa.jpg" % (sourceDir, file1)
+        source2 = "%s/%sb.jpg" % (sourceDir, file2)
+        source3 = "%s/%sc.jpg" % (sourceDir, file3)
+        outputfile = self._fileman.getTonefuseDir(project, container) + '/%s.jpg' % file1
         jobargs = ('enfuse', '--hard-mask', '--saturation-weight=0.1',
         '--output', outputfile, source1, source2, source3)
         self._logger.info("Calling %s" % ' '.join(jobargs))
@@ -201,6 +202,7 @@ class JobManager():
             self._logger.debug("_wmTonefuse Done")
 
         except subprocess.CalledProcessError as ee:
+            pdb.set_trace()
             self._logger.error("Tonefuse failed rc %d $s" % (ee.returncode, ee.output))
             self._pstore.abortTonefuse(project, container, file1, file2, file3)
 
@@ -279,7 +281,9 @@ class JobManager():
 
 #    def _vmGenTitle(self, project, root):
 #        jobargs = ('../gentitle.sh', '-p', project, '-r', root)
-##        retcode = subprocess.call(jobargs)
+#        self._logger.debug("Calling %s" % ' '.join(jobargs))
+#        return
+#        retcode = subprocess.call(jobargs)
 #        try:
 #            self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
 #
