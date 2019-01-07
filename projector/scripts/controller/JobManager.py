@@ -44,7 +44,7 @@ class JobManager():
         self._workers = []
         self._logger.debug("JobManager init")
         self._root = root
-        self._genContent = False
+        self._genContent = True
         self._generateTitles = True
         self._config = config
 #        self._scheduledTasks = [
@@ -145,7 +145,7 @@ class JobManager():
 #        return 1    
 
     def _scheduleGenContent(self, freeWorkers):
-        if True == self._genContent: return 0
+        if False == self._genContent: return 0
         chunks, processed = self._pstore.getVideoChunkStatus(self._config.project)
         todo = [ee.encode('ascii', 'ignore') for ee in chunks if ee not in processed]
         if 0 == len(todo):
@@ -292,10 +292,10 @@ class JobManager():
 
     def _vmGenContent(self, project, root, container):
         self._pstore.markChunkProcessing(project, container)
-        jobargs = ('../gencontent.sh', '-p', project, '-r', root)
+        jobargs = ('../gencontent.sh', '-p', project, '-r', root, '-c', container)
+        self._logger.info("Calling %s" % ' '.join(jobargs))
 
         try:
-            self._logger.info(jobargs)
             #output = subprocess.check_output(jobargs)
             subprocess.check_call(jobargs, stderr=subprocess.STDOUT)
             #self._logger.debug(output)
