@@ -14,7 +14,7 @@ def trampoline(object):
 class JobManager():
     PrecropS8Geometry="1546x2165+950+50"
     Precrop8mmGeometry="2868x1800+300+500"
-    JobLimit = 4 
+    JobLimit = 9
 #    WorkerManagerControl = False # True # 'Off'
     DisablePrecrop = False
     DisableAutocrop = False
@@ -100,37 +100,37 @@ class JobManager():
                 scheduled += 1
         return scheduled
  
-    def _scheduleAutocrop(self, freeWorkers):
-        scheduled = 0
-        #self._logger.debug("_scheduleAutocrop")
-        todo = self._pstore.toBeAutocropped(self._config.project, freeWorkers * 3)
-        self._logger.debug("todo %s" % todo)
-        while len(todo) >= 3:
-            jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
- 
-            if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
-                self._vmAutocrop(*jobargs)
-            else:
-                self._workers.append(Process(target = self._vmAutocrop, args = jobargs))
-                self._workers[-1].start()
-                scheduled += 1
-            del todo[:3]
-        return scheduled
+#    def _scheduleAutocrop(self, freeWorkers):
+#        scheduled = 0
+#        #self._logger.debug("_scheduleAutocrop")
+#        todo = self._pstore.toBeAutocropped(self._config.project, freeWorkers * 3)
+#        self._logger.debug("todo %s" % todo)
+#        while len(todo) >= 3:
+#            jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
+# 
+#            if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
+#                self._vmAutocrop(*jobargs)
+#            else:
+#                self._workers.append(Process(target = self._vmAutocrop, args = jobargs))
+#                self._workers[-1].start()
+#                scheduled += 1
+#            del todo[:3]
+#        return scheduled
 
-    def _scheduleTonefuse(self, freeWorkers):
-        scheduled = 0
-        todo = self._pstore.toBeFused(self._config.project, freeWorkers * 3)
-        while len(todo) >= 3:
-            jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
- 
-            if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
-                self._vmTonefuse(*jobargs)
-            else:
-                self._workers.append(Process(target = self._vmTonefuse, args = jobargs))
-                self._workers[-1].start()
-                scheduled += 1
-            del todo[:3]
-        return scheduled
+#    def _scheduleTonefuse(self, freeWorkers):
+#        scheduled = 0
+#        todo = self._pstore.toBeFused(self._config.project, freeWorkers * 3)
+#        while len(todo) >= 3:
+#            jobargs = (self._config.project, todo[0][1], todo[0][2], todo[1][2], todo[2][2])
+# 
+#            if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
+#                self._vmTonefuse(*jobargs)
+#            else:
+#                self._workers.append(Process(target = self._vmTonefuse, args = jobargs))
+#                self._workers[-1].start()
+#                scheduled += 1
+#            del todo[:3]
+#        return scheduled
  
 #    def _scheduleGenTitle(self, freeWorkers):
 ##        if False == self._generateTitles: return 0
@@ -183,68 +183,67 @@ class JobManager():
         if freeWorkers:
             time.sleep(5)
 
-    def _vmTonefuse(self, project, container, file1, file2, file3):
-        self._logger.info("Tonefuse %s %s %s %s %s" % (project, container, file1, file2, file3))
-        sourceDir = os.path.abspath(self._fileman.getAutocropDir(project, container))
-        source1 = "%s/%sa.jpg" % (sourceDir, file1)
-        source2 = "%s/%sb.jpg" % (sourceDir, file2)
-        source3 = "%s/%sc.jpg" % (sourceDir, file3)
-        outputfile = self._fileman.getTonefuseDir(project, container) + '/%s.jpg' % file1
-        jobargs = ('enfuse', '--hard-mask', '--saturation-weight=0.1',
-        '--output', outputfile, source1, source2, source3)
-        self._logger.info("Calling %s" % ' '.join(jobargs))
-        try:
-            #subprocess.check_call(jobargs)
-            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
-            self._logger.info(output)
-            self._logger.info("Done %s %s %s" % (project, container, outputfile))
-            self._pstore.markFused(project, container, file1, file2, file3)
-            self._logger.debug("_wmTonefuse Done")
+#    def _vmTonefuse(self, project, container, file1, file2, file3):
+#        self._logger.info("Tonefuse %s %s %s %s %s" % (project, container, file1, file2, file3))
+#        sourceDir = os.path.abspath(self._fileman.getAutocropDir(project, container))
+#        source1 = "%s/%sa.jpg" % (sourceDir, file1)
+#        source2 = "%s/%sb.jpg" % (sourceDir, file2)
+#        source3 = "%s/%sc.jpg" % (sourceDir, file3)
+#        outputfile = self._fileman.getTonefuseDir(project, container) + '/%s.jpg' % file1
+#        jobargs = ('enfuse', '--hard-mask', '--saturation-weight=0.1',
+#        '--output', outputfile, source1, source2, source3)
+#        self._logger.info("Calling %s" % ' '.join(jobargs))
+#        try:
+#            #subprocess.check_call(jobargs)
+#            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
+#            self._logger.info(output)
+#            self._logger.info("Done %s %s %s" % (project, container, outputfile))
+#            self._pstore.markFused(project, container, file1, file2, file3)
+#            self._logger.debug("_wmTonefuse Done")
+#
+#        except subprocess.CalledProcessError as ee:
+#            self._logger.error("Tonefuse failed rc %d $s" % (ee.returncode, ee.output))
+#            self._pstore.abortTonefuse(project, container, file1, file2, file3)
 
-        except subprocess.CalledProcessError as ee:
-            pdb.set_trace()
-            self._logger.error("Tonefuse failed rc %d $s" % (ee.returncode, ee.output))
-            self._pstore.abortTonefuse(project, container, file1, file2, file3)
-
-    def _vmAutocropShort(self, project, container, file1, file2, file3):
-        self._logger.info("vmAutoCropShort %s %s %s %s %s" % (project, container, file1, file2, file3))
-        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
-        source1 = "%s/%s" % (sourceDir, file1)
-        source2 = "%s/%s" % (sourceDir, file2)
-        source3 = "%s/%s" % (sourceDir, file3)
-        outputdir = self._fileman.getAutocropDir(project, container)
-        open("%s/%s" % (outputdir, file1),'w').write(open(source1).read())
-        open("%s/%s" % (outputdir, file2),'w').write(open(source2).read())
-        open("%s/%s" % (outputdir, file3),'w').write(open(source3).read())
-        self._pstore.markAutocropped(project, container, file1, file2, file3)
-
-    def _vmAutocrop(self, project, container, file1, file2, file3):
-        #return self._vmAutocropShort(project,container, file1, file2, file3)
-        self._logger.info("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
-        #sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
-        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
-        source1 = "%s/%s" % (sourceDir, file1)
-        source2 = "%s/%s" % (sourceDir, file2)
-        source3 = "%s/%s" % (sourceDir, file3)
-        outputdir = self._fileman.getAutocropDir(project, container)
-        jobargs = ('../autocrop3.py', '-s', '--filenames',
-            '%s,%s,%s' % (source1, source2, source3),
-            '--mode', self._config.film,
-            '--output-dir', outputdir,
-            '--adjfile', self._fileman.getAdjFile(project))
-        self._logger.debug("Calling %s" % ' '.join(jobargs))
-        try:
-            #subprocess.check_call(jobargs)
-            self._logger.debug(subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
-            self._logger.info("Done %s %s %s" % (project, container, outputdir))
-            self._pstore.markAutocropped(project, container, file1, file2, file3)
-            self._logger.debug("_wmAutocrop Done")
-
-        except subprocess.CalledProcessError as ee:
-	    print ee.returncode
-	    print ee.output
-            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
-            self._pstore.abortAutocrop(project, container, file1, file2, file3)
+#    def _vmAutocropShort(self, project, container, file1, file2, file3):
+#        self._logger.info("vmAutoCropShort %s %s %s %s %s" % (project, container, file1, file2, file3))
+#        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
+#        source1 = "%s/%s" % (sourceDir, file1)
+#        source2 = "%s/%s" % (sourceDir, file2)
+#        source3 = "%s/%s" % (sourceDir, file3)
+#        outputdir = self._fileman.getAutocropDir(project, container)
+#        open("%s/%s" % (outputdir, file1),'w').write(open(source1).read())
+#        open("%s/%s" % (outputdir, file2),'w').write(open(source2).read())
+#        open("%s/%s" % (outputdir, file3),'w').write(open(source3).read())
+#        self._pstore.markAutocropped(project, container, file1, file2, file3)
+#
+#    def _vmAutocrop(self, project, container, file1, file2, file3):
+#        #return self._vmAutocropShort(project,container, file1, file2, file3)
+#        self._logger.info("Autocrop %s %s %s %s %s" % (project, container, file1, file2, file3))
+#        #sourceDir = os.path.abspath(self._fileman.getPrecropDir(project, container))
+#        sourceDir = os.path.abspath(self._fileman.getRawFileDir(project, container))
+#        source1 = "%s/%s" % (sourceDir, file1)
+#        source2 = "%s/%s" % (sourceDir, file2)
+#        source3 = "%s/%s" % (sourceDir, file3)
+#        outputdir = self._fileman.getAutocropDir(project, container)
+#        jobargs = ('../autocrop3.py', '-s', '--filenames',
+#            '%s,%s,%s' % (source1, source2, source3),
+#            '--mode', self._config.film,
+#            '--output-dir', outputdir,
+#            '--adjfile', self._fileman.getAdjFile(project))
+#        self._logger.debug("Calling %s" % ' '.join(jobargs))
+#        try:
+#            #subprocess.check_call(jobargs)
+#            self._logger.debug(subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+#            self._logger.info("Done %s %s %s" % (project, container, outputdir))
+#            self._pstore.markAutocropped(project, container, file1, file2, file3)
+#            self._logger.debug("_wmAutocrop Done")
+#
+#        except subprocess.CalledProcessError as ee:
+#	    print ee.returncode
+#	    print ee.output
+#            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
+#            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmPrecropShort(self, project, container, filename):
         self._logger.info("Precrop short %s %s %s" % (project, container, filename))

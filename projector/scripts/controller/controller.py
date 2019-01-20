@@ -7,7 +7,7 @@ from ProjectStore import ProjectStore
 from FileManager import FileManager
 from JobManager import JobManager
 from JobManagerRaw import JobManagerRaw
-from nx300 import NX300
+#from nx300 import NX300
 import logging
 import signal
 import sys
@@ -18,7 +18,7 @@ signal.signal(signal.SIGUSR2, lambda sig, frame: code.interact())
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--jobmode', dest='jobmode', default='proc', 
-    choices = ['proc', 'inline', 'disable'], help='background job mode')
+    choices = ['proc', 'inline', 'disable', 'uploadonly'], help='background job mode')
 parser.add_argument('--project', required = True, dest='project', help='set jobman project name')
 parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
 parser.add_argument('--saveroot', required = True, dest='saveroot', help="root dir to save to")
@@ -27,7 +27,7 @@ config = parser.parse_args()
 
 ROOTOFALL=config.saveroot 
 
-logFormat='%(asctime)s %(levelname)s %(name)s %(lineno)s %(message)s'
+logFormat='%(asctime)s %(process)d %(levelname)s %(name)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=logFormat)
 logger = logging.getLogger('Controller')
 fileHandler = logging.FileHandler('controller.log')
@@ -37,17 +37,22 @@ fileHandler.setFormatter(formatter)
 logger.addHandler(fileHandler)
 logging.getLogger('ProjectStore').addHandler(fileHandler)
 logging.getLogger('FileManager').addHandler(fileHandler)
-logging.getLogger('JobManager').addHandler(fileHandler)
+if config.raw:
+    logging.getLogger('JobManagerRaw').addHandler(fileHandler)
+else:
+    logging.getLogger('JobManager').addHandler(fileHandler)
 #logging.getLogger('ControllerStore').addHandler(fileHandler)
 logging.getLogger('RemoteDev').addHandler(fileHandler)
 
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL + config.project, config)
 fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
-if config.raw:
-    jobman = JobManagerRaw(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
-else:
-    jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
+
+if 'uploadonly' != config.jobmode:
+    if config.raw:
+        jobman = JobManagerRaw(logging.getLogger('JobManagerRaw'), pstore, fileman, config, ROOTOFALL)
+    else:
+        jobman = JobManager(logging.getLogger('JobManager'), pstore, fileman, config, ROOTOFALL)
 #cstore = ControllerStore(logging.getLogger('ControllerStore'), ROOTOFALL)
 #remotedev = NX300(logging.getLogger('RemoteDev'), fileman)
 
