@@ -259,19 +259,24 @@ def processSuper8(filenames, outputpath):
     (fcHeight, fcWidth) = flattened.shape
     xOffset = 600
     yOffset = fcHeight - 135
+    #yOffset = 0 # fcHeight - 135
     flattened = flattened[yOffset:,:]
     eroded = ndimage.grey_erosion(flattened, size=(25, 25))
 
-    ethreshold = 128 
+    # get the darkest and lightest values, their midpoint is the threshold
+    darkest = ndimage.minimum(eroded)
+    lightest = ndimage.maximum(eroded)
+
+    ethreshold = darkest + (lightest - darkest)/2
     eroded[eroded < ethreshold] = 0
     eroded[eroded >= ethreshold] = 255
     if options.debug and eroded_dir is not None:
         scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
     rangeDict = {}
-#    pdb.set_trace()
     for range in whitePixels(eroded[-1], 200, 400):
         if eroded.shape[1] > (range[0] + 300):
+            logger.debug('Candidate sprocket range %s' % range)
             rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
 
     useRange = rangeDict[sorted(rangeDict.keys())[0]]

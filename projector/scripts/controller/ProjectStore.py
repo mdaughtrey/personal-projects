@@ -231,9 +231,12 @@ class ProjectStore():
 
         #self._logger.debug("len(files) %u" % len(files))
 
-        if len(files) >= ProjectStore.FilesPerContainer:
+        if [('',)] == files:
+            newContainer = 1
+            newFile = 0
+        elif len(files) >= ProjectStore.FilesPerContainer:
             newContainer = int(containers[-1][0]) + 1
-            newFile='000000'
+            newFile=0
         else:
             offset = 0
             if tag == "a":
@@ -246,16 +249,16 @@ class ProjectStore():
                 newFile = int(files[-1][0].split('.')[0]) + offset
             newContainer = int(containers[-1][0])
 
-        newDir = "%s/%s/%u" % (self._dbroot, project, newContainer)
+        newDir = "%s/%03u" % (self._dbroot, newContainer)
         ProjectStore.mtxMakeDirs.acquire()
         if False == os.path.isdir(newDir):
             os.makedirs(newDir)
         ProjectStore.mtxMakeDirs.release()
         #self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
         if self._config.raw:
-            return "%03u" % int(newContainer), "%06u" % newFile
+            return "%03u" % newContainer, "%06u" % newFile
         else:
-            return "%03u" % int(newContainer), "%06u.JPG" % newFile
+            return "%03u" % newContainer, "%06u.JPG" % newFile
 
     def getVideoChunkStatus(self, project):
         # don't make any chunks available until all fusing is done

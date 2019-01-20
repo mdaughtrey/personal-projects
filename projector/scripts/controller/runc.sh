@@ -10,5 +10,7 @@ ROOTOFALL=/media/sf_vproj/scans/
 
 #fi
 
-#./controller.py --jobmode proc --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
-./controller.py --jobmode inline --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
+#JOBMODE=inline
+JOBMODE=proc
+./controller.py --jobmode $JOBMODE --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
+#./controller.py --jobmode uploadonly --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
