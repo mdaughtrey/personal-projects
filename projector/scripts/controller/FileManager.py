@@ -1,6 +1,7 @@
 import os
 import pdb
 from threading import Lock
+import subprocess
 
 class FileManager():
     mtxGetDir = Lock()
@@ -21,9 +22,9 @@ class FileManager():
         FileManager.mtxGetDir.release()
         return targetDir
 
-    def newFile(self, fileData, project, container, filename):
+    def newFile(self, fileData, project, container, filename, tag):
         targetDir = self._getdir(project, container, 'rawfile')
-        targetFile = "%s/%s" % (targetDir, filename)
+        targetFile = "%s/%s%s.RAW" % (targetDir, filename, tag)
         self._logger.debug("Saving %u to %s" % (len(fileData), targetFile))
         try:
             open(targetFile, 'w').write(fileData)
@@ -32,6 +33,12 @@ class FileManager():
         
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s" % (self._getdir(project, container, 'rawfile'), filename)
+
+    def getConvertedLocation(self, project, container, filename):
+        return "%s/%s" % (self._getdir(project, container, 'converted'), filename)
+
+    def getConvertedDir(self, project, container):
+        return self._getdir(project, container, 'converted')
 
     def getRawFileDir(self, project, container):
         return self._getdir(project, container, 'rawfile')
@@ -57,6 +64,25 @@ class FileManager():
         self._logger.debug("Saving to %s" % target)
         open(target, 'w').write(fileStream)
         return ['OK']
+
+    def newReferenceFile(self, fileStream, project, urlArgs):
+        targetDir = self._fileRoot
+        #targetFile = "%s/reference%c.raw" % (targetDir, urlArgs['refindex'])
+        targetFile = "/media/sf_vmshared/reference%s.raw" % urlArgs['refindex']
+        self._logger.debug("Saving to %s" % targetFile)
+        try:
+            open(targetFile, 'w').write(fileStream)
+            jobargs = ('/home/mattd/personal-projects/projector/dcraw/dcraw', targetFile)
+#	        jobargs = ('bzip2', '-d', sourceFile, "> %s/%s" % (targetDir, targetFile))
+            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
+            self.logger.debug("output is %s" % output)
+        except ee:
+            logger.error("Write to %s failed, %s" % (targetFile, ee.message))
+	return['OK']
+
+#    def rawToBeProcessed(self, project):
+#        targetDir = "%s/%s/" % (self._fileRoot, project)
+#        pass
 
     def deleteProject(self, projectname):
         return 'TODO'
