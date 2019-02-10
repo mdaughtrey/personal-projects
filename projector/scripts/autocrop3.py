@@ -93,8 +93,8 @@ def whitePixels(data, minlen, maxlen):
     idx = 0
     for kk, gg in groupby(data, lambda x: x):
         count = sum(1 for _ in gg)
-        #if 255 == kk:
-        if 1 == kk:
+        #if 1 == kk:
+        if 255 == kk:
             whites.append([idx, count])
         idx += count
     return whites
@@ -259,17 +259,24 @@ def processSuper8(filenames, outputpath):
     (fcHeight, fcWidth) = flattened.shape
     xOffset = 600
     yOffset = fcHeight - 135
+    #yOffset = 0 # fcHeight - 135
     flattened = flattened[yOffset:,:]
     eroded = ndimage.grey_erosion(flattened, size=(25, 25))
 
-    eroded[eroded < 128] = 0
-    eroded[eroded >= 128] = 1 
+    # get the darkest and lightest values, their midpoint is the threshold
+    darkest = ndimage.minimum(eroded)
+    lightest = ndimage.maximum(eroded)
+
+    ethreshold = darkest + (lightest - darkest)/2
+    eroded[eroded < ethreshold] = 0
+    eroded[eroded >= ethreshold] = 255
     if options.debug and eroded_dir is not None:
         scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
     rangeDict = {}
     for range in whitePixels(eroded[-1], 200, 400):
         if eroded.shape[1] > (range[0] + 300):
+            logger.debug('Candidate sprocket range %s' % range)
             rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
 
     useRange = rangeDict[sorted(rangeDict.keys())[0]]
@@ -290,15 +297,12 @@ def processSuper8(filenames, outputpath):
     if options.adjfile:
         try:
             (xAdj, yAdj, wAdj, hAdj) = [int(xx) for xx in open(options.adjfile).read().rstrip().split(',')]
+            logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
         except:
             logger.debug("%s file not found", options.adjfile)
-            pass
-
-    logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
 
     frameX = (sprocketCx - FrameSuper8.w / 2) + xAdj
     frameY = sprocketCy - (SprocketSuper8.h / 2) - FrameSuper8.h + yAdj 
-
     frameH = FrameSuper8.h + hAdj
     frameW = FrameSuper8.w + wAdj
 

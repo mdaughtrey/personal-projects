@@ -1,9 +1,16 @@
 #!/bin/bash
 
-PROJECT=001
+PROJECT=test
 #TYPE=8mm
 TYPE=super8
+ROOTOFALL=/media/sf_vproj/scans/
+#if[[! -d "$ROOTOFALL" ]]
+#then
+	mkdir -p $ROOTOFALL/$PROJECT
 
-#./controller.py --jobmode proc --project blister --film super8 #--worker pc --worker ac  # --worker tf --worker gc
-#./controller.py --jobmode proc --project $PROJECT --film super8
-./controller.py --jobmode proc --project $PROJECT --film $TYPE
+#fi
+
+#JOBMODE=inline
+JOBMODE=proc
+./controller.py --jobmode $JOBMODE --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
+#./controller.py --jobmode uploadonly --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw

@@ -7,26 +7,34 @@ import mutex
 class ProjectStore():
     FilesPerContainer = 999
     mtxMakeDirs = threading.Lock()
-    def __init__(self, logger, dblocation = './', overwrite = False):
+    def __init__(self, logger, dblocation, config): #overwrite = False):
         self._dbroot = dblocation
 #        self._conn = None
-        self._overwrite = overwrite
+#        self._overwrite = overwrite
         self._logger = logger
         self._logger.debug("ProjectStore init")
         self._dbLock = threading.Lock()
+        self._config = config
 #        if False == os.path.isdir(dblocation):
 #            os.makedirs(dblocation)
 
     def _initDb(self, project):
+#        pdb.set_trace()
         conn = sqlite3.connect(project)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
                     processing integer,
                     rawfile TEXT,
+                    tag TEXT,
                     container TEXT,
+                    converted TEXT,
+                    convertedtag TEXT,
                     precrop TEXT,
+                    precroptag TEST,
                     autocrop TEXT,
+                    autocroptag TEXT,
                     fused TEXT,
+                    fusedtag TEXT,
                     titleframe TEXT
                     )''')
         cur.execute('''CREATE TABLE videodata (
@@ -36,7 +44,7 @@ class ProjectStore():
         cur.execute('''CREATE TABLE taskcontrol (
             task TEXT
             )''')
-        cur.execute('''CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container)''')
+        cur.execute('''CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container,tag)''')
 
         conn.commit()
         conn.close()
@@ -51,8 +59,9 @@ class ProjectStore():
         project += 'db'
         dblocation = "%s/%s" % (os.path.abspath(self._dbroot), project)
         if True == os.path.isfile(dblocation):
-            if True == self._overwrite:
-                os.remove(self._dbroot)
+            pass
+#            if True == self._overwrite:
+#                os.remove(self._dbroot)
         else:
             self._initDb(dblocation)
 
@@ -72,8 +81,8 @@ class ProjectStore():
 
             return False
 
-    def newRawFile(self, project,container, filename):
-        insert = "(processing, rawfile,container) values(0, '%s','%s')" % (filename, container)
+    def newRawFile(self, project,container, filename, tag):
+        insert = "(processing, rawfile,container,tag) values(0, '%s','%s','%s')" % (filename, container, tag)
         statement = "INSERT OR REPLACE INTO picdata %s" % insert
         with self._dbLock:
             conn = self._openDb(project)
@@ -114,15 +123,29 @@ class ProjectStore():
             conn.commit()
             conn.close()
 
+    def toBeConverted(self, projectname, limit=10):
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile,tag FROM picdata
+                 WHERE converted IS NULL and convertedtag IS NULL AND processing != 1 ORDER BY rawfile,tag LIMIT %s;''' % limit
+        self._logger.debug(statement)
+        return self._getPendingWork(projectname, statement)
+
     def toBePrecropped(self, project, limit):
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
-                 WHERE precrop IS NULL AND processing != 1 ORDER BY container,rawfile LIMIT %s;''' % limit
-        #self._logger.debug(statement)
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,converted,tag FROM picdata
+                 WHERE precrop IS NULL and precroptag IS NULL AND processing != 1 ORDER BY converted,tag LIMIT %s;''' % limit
         return self._getPendingWork(project, statement)
 
-    def markPrecropped(self, project, container, filename):
-        self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0 WHERE container='%s' and rawfile='%s'"
-                % (filename, container, filename))
+    def toBeAutocropped(self, project, limit):
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
+            WHERE autocrop IS NULL AND processing != 1 ORDER BY autocrop,autocroptag LIMIT %s;''' % limit
+        return self._getPendingWork(project, statement)
+
+    def markConverted(self, project, filename, tag, rowid):
+        self.simpleUpdate(project, "UPDATE picdata SET converted='%s',processing=0,convertedtag='%s' WHERE rowid=%u"
+                % (filename.replace(".RAW",".JPG"), tag, rowid))
+
+    def markPrecropped(self, project, filename, tag, rowid):
+        self.simpleUpdate(project, "UPDATE picdata SET precrop='%s',processing=0,precroptag='%s' WHERE rowid=%u"
+                % (filename.replace(".RAW",".JPG"), tag, rowid))
 
     def getRemaining(self, project, ptype):
         statement = '''SELECT COUNT(*) FROM picdata WHERE %s = NULL;''' % ptype
@@ -134,30 +157,10 @@ class ProjectStore():
             conn.close()
         return result[0][0]
 
-    def toBeAutocropped(self, project, limit):
-	return self.toBePrecropped(project, limit)
-        # don't offer any files unless all precropped is complete
-#        pcRemaining =  self.getRemaining(project, 'precrop')
-#        self._logger.debug("pcRemaining %s" % pcRemaining)
-#        if 0 != pcRemaining:
-#            self._logger.debug("%s remaining precrops, autocrop not ready" % pcRemaining)
-#            return []
-#        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
-#                 WHERE precrop IS NOT NULL AND autocrop IS NULL AND processing != 1
-#                 ORDER BY container,precrop LIMIT %s;''' % limit
-#        #self._logger.debug(statement)
-#        return self._getPendingWork(project, statement)
-
-    def markAutocropped(self, project, container, file1, file2, file3):
-	self.markPrecropped(project, container, file1)
-	self.markPrecropped(project, container, file2)
-	self.markPrecropped(project, container, file3)
-        for ff in [file1, file2, file3]:
-            self.simpleUpdate(project, "UPDATE picdata set autocrop='%s' WHERE container='%s' and rawfile='%s'"
-            % (ff, container, ff))
-
-        self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and rawfile in ('%s','%s','%s')"
-                % (container, file1, file2, file3))
+    def markAutocropped(self, project, filename, rowid):
+        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='a' WHERE rowid IS %u" % (filename, rowid))
+        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='b' WHERE rowid IS %u" % (filename, rowid + 1))
+        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='c' WHERE rowid IS %u" % (filename, rowid + 2))
 
     def abortAutocrop(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortAutocrop")
@@ -169,16 +172,16 @@ class ProjectStore():
             self._logger.debug("%s remaining autocrops, tonefuse not ready" % acRemaining)
             return []
 
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,autocrop FROM picdata
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,autocrop,autocroptag FROM picdata
                  WHERE autocrop IS NOT NULL AND fused IS NULL AND processing != 1
                  ORDER BY container,autocrop LIMIT %s;''' % limit
         #self._logger.debug(statement)
         return self._getPendingWork(project, statement)
 
     def markFused(self, project, container, file1, file2, file3):
-        for ff in [file1, file2, file3]:
-            self.simpleUpdate(project, "UPDATE picdata set fused='%s' WHERE container='%s' and autocrop='%s'"
-            % (file1, container, ff))
+        for (file, tag) in zip([file1, file2, file3], ["a","b","c"]):
+            self.simpleUpdate(project, "UPDATE picdata set fused='%s',fusedtag='%s' WHERE container='%s' and autocrop='%s'"
+            % (file, tag, container, file))
 
         self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and autocrop in ('%s','%s','%s')"
                 % (container, file1, file2, file3))
@@ -196,44 +199,66 @@ class ProjectStore():
             conn.close()
         return [ee[0] for ee in tlist]
 
-    def getNextImageLocation(self, project):
+    def getNextImageLocation(self, project, tag):
         with self._dbLock:
             # Find the most recent container
             conn = self._openDb(project)
             cursor = conn.cursor()
             cursor.execute("SELECT DISTINCT(container) FROM picdata")
             containers = cursor.fetchall()
+#            pdb.set_trace()
             if 0 == len(containers): # New project
-                contDir = "%s/%s/100" % (self._dbroot, project)
+                contDir = "%s/%s/1" % (self._dbroot, project)
                 ProjectStore.mtxMakeDirs.acquire()
                 if False == os.path.isdir(contDir):
                     os.makedirs(contDir)
                 ProjectStore.mtxMakeDirs.release()
-                return "100", "000000.JPG"
-
-            containers.sort()
-            cursor = conn.cursor()
-            cursor.execute("SELECT rawfile FROM picdata WHERE container='%s'" % containers[-1])
-            files = cursor.fetchall()
+                containers=['1']
+                files=[('',)]
+#                pdb.set_trace()
+#                if self._config.raw:
+#                    return "100", "000000"
+#                else:
+#                    return "100", "000000.JPG"
+            else:
+                containers.sort()
+                cursor = conn.cursor()
+                cursor.execute("SELECT rawfile FROM picdata WHERE container='%s'" % containers[-1])
+                files = cursor.fetchall()
+                files.sort()
+#            data.sort(key=lambda tup:tup[0])
             conn.close()
 
         #self._logger.debug("len(files) %u" % len(files))
 
-        if len(files) >= ProjectStore.FilesPerContainer:
-            newContainer = int(containers[-1][0]) + 1
+        if [('',)] == files:
+            newContainer = 1
             newFile = 0
+        elif len(files) >= ProjectStore.FilesPerContainer:
+            newContainer = int(containers[-1][0]) + 1
+            newFile=0
         else:
-            files.sort()
-            newFile = int(files[-1][0].split('.')[0]) + 1
+            offset = 0
+            if tag == "a":
+                if files[-1][0] == '':
+                    newFile = 0
+                else:
+                    offset = int(not files[0][0] == '')
+                    newFile = int(files[-1][0]) + offset
+            else:
+                newFile = int(files[-1][0].split('.')[0]) + offset
             newContainer = int(containers[-1][0])
 
-        newDir = "%s/%s/%u" % (self._dbroot, project, newContainer)
+        newDir = "%s/%03u" % (self._dbroot, newContainer)
         ProjectStore.mtxMakeDirs.acquire()
         if False == os.path.isdir(newDir):
             os.makedirs(newDir)
         ProjectStore.mtxMakeDirs.release()
         #self._logger.debug("newContainer %u newFile %u" % (newContainer, newFile))
-        return "%03u" % int(newContainer), "%06u.JPG" % newFile
+        if self._config.raw:
+            return "%03u" % newContainer, "%06u" % newFile
+        else:
+            return "%03u" % newContainer, "%06u.JPG" % newFile
 
     def getVideoChunkStatus(self, project):
         # don't make any chunks available until all fusing is done
@@ -267,3 +292,4 @@ class ProjectStore():
         self.simpleUpdate(project, 'DELETE FROM taskcontrol')
         for task in tasks:
             self.simpleUpdate(project, "INSERT INTO taskcontrol VALUES('%s')" % task)
+            
