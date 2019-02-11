@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# 57 -W no white balance
 
 import imageio
 import numpy as np
@@ -8,6 +9,7 @@ import serial
 import subprocess
 
 DCRAW='/home/mattd/personal-projects/projector/dcraw/dcraw'
+SerialPort="/dev/ttyUSB0"
 
 def portWaitFor(port, text):
     accum = b''
@@ -32,24 +34,27 @@ def init():
 
 def takeapic(exposure):
     runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus %u " % exposure,
-                "--fps 1 -t 1000 -sr 1 -o /mnt/extfd/exp.raw")
+                "--fps 1 -t 1000 -sr 1 -o /mnt/extfd/exp_nw%u.raw" % exposure)
     retcode = subprocess.call(''.join(runargs), shell=True, stderr=None)
     if retcode:
         print("raspiraw retcode %u" % retcode)
         sys.exit(1)
 
 #    pdb.set_trace()
-    retcode = subprocess.call((DCRAW + ' -W /mnt/extfd/exp.raw'), shell=True, stderr=None)
+    retcode = subprocess.call((DCRAW + ' -W  /mnt/extfd/exp_nw%u.raw' % exposure), shell=True, stderr=None)
+#    retcode = subprocess.call((DCRAW + ' -W -T /mnt/extfd/exp%u.raw' % exposure), shell=True, stderr=None)
     if retcode:
         print("dcraw retcode %u" % retcode)
         sys.exit(1)
 
-    thefile = np.array(imageio.imread('/mnt/extfd/exp.ppm'), np.uint8)
-    return np.max(thefile)
+    thefile = np.array(imageio.imread('/mnt/extfd/exp_nw%u.ppm' % exposure), np.uint8)
+    max = np.max(thefile)
+    print("exposure %u max %u" % (exposure, max))
+    return max
 
 
 def main():
-    exposure = 400000;
+    exposure = 200;
     delta = exposure/2
     cwd = os.getcwd()
     os.chdir('/home/mattd/personal-projects/projector/raspiraw')
@@ -80,4 +85,5 @@ def main():
     print("Final exposure %u" % exposure)
 
 
+init()
 main()

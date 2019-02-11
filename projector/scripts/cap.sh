@@ -6,12 +6,12 @@ SPOOLTYPE="SMALL"
 FILMTYPE="SUPER8"
 PREFRAMES=1
 let FRAMES=0
-SHUTTER=40000,80000,1200000
+SHUTTER=2,500,970
 TARGETDIR=/tmp
 MAXINFLIGHT=30
 SERIAL_PORT="/dev/ttyUSB0"
 SERIAL_SPEED=57600
-pushd /home/mattd/personal-projects/projector/raspiraw# 
+pushd /home/mattd/personal-projects/projector/raspiraw
 camera_i2c
 popd
 
@@ -95,6 +95,7 @@ touch $TARGETDIR/done.done
 touch exit.code
 }
 
+#for xx in `seq 1000 1000 3000000`; do
 reference()
 {
     #OUTDIR=/tmp
@@ -102,7 +103,7 @@ reference()
     for type in raw ppm done bz2; do
         rm ${OUTDIR}/*.${type}
     done
-    for xx in `seq 10000 10000 3000000`; do
+    for xx in `seq 2000 100 4000`; do
         raspiraw --mode 0 --header --i2c 0 --expus $xx --fps 1 -t 250 -sr 1 -o ${OUTDIR}/reference${xx}.raw
         touch ${OUTDIR}/reference${xx}.done
     done
@@ -118,7 +119,7 @@ reference()
 
 raw()
 {
-    ./cap.py --serial-port $SERIAL_PORT --serial-speed $SERIAL_SPEED
+    ./rawcap.py --serial-port $SERIAL_PORT --serial-speed $SERIAL_SPEED
 }
 
 case "$1" in 
