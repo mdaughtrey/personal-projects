@@ -41,8 +41,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--frames', dest='frames', type=int, default=-1, help='frames to capture')
 parser.add_argument('--dev', dest='dev', help='image device')
 parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
-parser.add_argument('--nofilm', dest='nofilm', action='store_true', default='false', help='run with no film loaded')
-parser.add_argument('--noled', dest='noled', action='store_true', default='false', help='run with no LED')
+parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
+parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
 config = parser.parse_args()
 
 def sig(signum, frame):
@@ -79,7 +79,7 @@ def init():
     serPort.open()
     serPort.write(b' ')
     portWaitFor(serPort, b'{State:Ready}')
-    if 'false' == config.noled:
+    if False == config.noled:
         serPort.write(b'l')
 #    serPort.write(b'c%st' % {'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]) 
     serPort.write("vc{0}t".format({'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]).encode('utf-8')) 
