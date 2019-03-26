@@ -128,9 +128,11 @@ class ControllerStore():
             conn.commit()
             conn.close()
 
+
+
     def toBePrecropped(self, projectname, limit = 10):
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile FROM picdata
-                 WHERE precrop IS NULL AND processing != 1 ORDER BY rawfile LIMIT %s;''' % limit
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,converted FROM picdata
+                 WHERE precrop IS NULL AND processing != 1 ORDER BY converted LIMIT %s;''' % limit
         self._logger.debug(statement)
         return self._getPendingWork(projectname, statement)
 
@@ -163,13 +165,13 @@ class ControllerStore():
         self._logger.debug(statement)
         return self._getPendingWork(project, statement)
 
-    def markFused(self, project, container, file1, file2, file3):
-        for ff in [file1, file2, file3]:
-            self.simpleUpdate(project, "UPDATE picdata set fused='%s' WHERE container='%s' and autocrop='%s'"
-            % (file1, container, ff))
-
-        self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and autocrop in ('%s','%s','%s')"
-                % (container, file1, file2, file3))
+#    def markFused(self, project, container, file1, file2, file3):
+#        for (file, tag) in zip([file1, file2, file3],["a", "b", "c"]):
+#            self.simpleUpdate(project, "UPDATE picdata set fused='%s',fusedtag='%s' WHERE container='%s' and autocrop='%s'"
+#            % (file, tag, container, ff))
+#
+#        self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and autocrop in ('%s','%s','%s')"
+#                % (container, file1, file2, file3))
 
     def abortTonefuse(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortTonefuse")

@@ -6,11 +6,14 @@ SPOOLTYPE="SMALL"
 FILMTYPE="SUPER8"
 PREFRAMES=1
 let FRAMES=0
-SHUTTER=40000,80000,1200000
+SHUTTER=2,500,970
 TARGETDIR=/tmp
 MAXINFLIGHT=30
 SERIAL_PORT="/dev/ttyUSB0"
 SERIAL_SPEED=57600
+pushd /home/mattd/personal-projects/projector/raspiraw
+camera_i2c
+popd
 
 cap()
 {
@@ -92,25 +95,31 @@ touch $TARGETDIR/done.done
 touch exit.code
 }
 
+#for xx in `seq 1000 1000 3000000`; do
 reference()
 {
-    OUTDIR=/tmp
+    #OUTDIR=/tmp
+    OUTDIR=/home/mattd/capture
     for type in raw ppm done bz2; do
         rm ${OUTDIR}/*.${type}
     done
-    camera_i2c
-    raspiraw --mode 0 --header --i2c 0 --expus 40000 --fps 1 -t 250 -sr 1 -o ${OUTDIR}/reference0.raw
-    raspiraw --mode 0 --header --i2c 0 --expus 80000 --fps 1 -t 500 -sr 1 -o ${OUTDIR}/reference1.raw
-    raspiraw --mode 0 --header --i2c 0 --expus 1200000 --fps 1 -t 2000 -sr 1 -o ${OUTDIR}/reference2.raw
-    for ii in 0 1 2; do
-        bzip2 ${OUTDIR}/reference${ii}.raw
-        touch ${OUTDIR}/reference${ii}.done
+    for xx in `seq 2000 100 4000`; do
+        raspiraw --mode 0 --header --i2c 0 --expus $xx --fps 1 -t 250 -sr 1 -o ${OUTDIR}/reference${xx}.raw
+        touch ${OUTDIR}/reference${xx}.done
     done
+
+#    raspiraw --mode 0 --header --i2c 0 --expus 1000 --fps 1 -t 250 -sr 1 -o ${OUTDIR}/reference0.raw
+#    raspiraw --mode 0 --header --i2c 0 --expus 10000 --fps 1 -t 500 -sr 1 -o ${OUTDIR}/reference1.raw
+#    raspiraw --mode 0 --header --i2c 0 --expus 100000 --fps 1 -t 2000 -sr 1 -o ${OUTDIR}/reference2.raw
+#    for ii in 0 1 2; do
+#        bzip2 ${OUTDIR}/reference${ii}.raw
+#        touch ${OUTDIR}/reference${ii}.done
+#    done
 }
 
 raw()
 {
-    ./cap.py --serial-port $SERIAL_PORT --serial-speed $SERIAL_SPEED
+    ./rawcap.py --serial-port $SERIAL_PORT --serial-speed $SERIAL_SPEED
 }
 
 case "$1" in 

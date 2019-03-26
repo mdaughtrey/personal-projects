@@ -4,13 +4,14 @@ MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SEM=sem
 VRES=576
 HRES=720
-SOFTWARE=${HOME}/scans/software/
+SOFTWARE=/media/sf_vproj/scans/software/
 
-while getopts "p:r:h" OPT
+while getopts "c:p:r:h" OPT
 do
     case $OPT in
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
+        c) container=$OPTARG ;;
         h) HRES=1920; VRES=1080 ;;
         *) echo What?; exit 1 ;;
     esac
@@ -20,7 +21,7 @@ export imgroot=$fileroot/$project/
 #export projroot=$fileroot/$project
 export titleroot=$imgroot/title
 
-if [[ "" == $project || "" == $fileroot ]]
+if [[ "" == $project || "" == $fileroot || "" == $container ]]
 then
     echo Some parameter is missing
     exit 1
@@ -38,7 +39,7 @@ getImages()
 
 genyuvstream()
 {
-    $MYDIR/gentitle.sh -p $project -r $fileroot
+#    $MYDIR/gentitle.sh -p $project -r $fileroot
     ls $titleroot/title*.JPG | sort -n > $imgroot/contentlist.txt
 #    cp $imgroot/title/titlelist.txt $imgroot/contentlist.txt
     getImages >> $imgroot/contentlist.txt
@@ -48,20 +49,21 @@ genyuvstream()
         -vf scale=$HRES:$VRES \
         -vf-add rotate=1 \
     	-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub \
-        -vo yuv4mpeg:file=$imgroot/content.yuv
+        -vo yuv4mpeg:file=$imgroot/${container}.yuv
 }
 
 processyuv()
 {
-    if [[ ! -f "$imgroot/content.yuv" ]]
+    if [[ ! -f "$imgroot/${container}.yuv" ]]
     then
         genyuvstream
     fi
-    if [[ ! -f "$imgroot/content.avi" ]]
+    if [[ ! -f "$imgroot/${container}.avi" ]]
     then
-        cat $imgroot/content.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
-            avconv -loglevel info -i - -vcodec rawvideo -y $imgroot/content.avi
+        cat $imgroot/${container}.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
+            avconv -loglevel info -i - -vcodec rawvideo -y $imgroot/${container}.avi
     fi
+    exit 0
 	
     avsscript=/tmp/interpolate.avs
     echo "film=\"${imgroot}/content.avi\"" > $avsscript
