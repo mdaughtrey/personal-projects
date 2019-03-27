@@ -78,7 +78,7 @@ class FileManager():
             self.logger.debug("output is %s" % output)
         except ee:
             logger.error("Write to %s failed, %s" % (targetFile, ee.message))
-	return['OK']
+        return['OK']
 
 #    def rawToBeProcessed(self, project):
 #        targetDir = "%s/%s/" % (self._fileRoot, project)
