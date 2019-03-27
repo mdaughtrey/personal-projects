@@ -2,7 +2,7 @@
 
 declare -ix TITLE_STREAM_FRAMES=200
 #FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
-SOFTWARE=${HOME}/scans/software/
+SOFTWARE=/media/sf_vproj/scans/software/
 FONT=${SOFTWARE}/fonts/DroidSerif-BoldItalic.ttf
 SEM=sem
 
@@ -27,10 +27,11 @@ fi
 getFirstImage()
 {
     IFS=\|
-    select="select container,fused from picdata where fused is not NULL order by container,fused limit 1"
-    sqlite3 -list $fileroot/${project}db "$select" | while read container filename
+    #select="select container,fused from picdata where fused is not NULL order by container,fused limit 1"
+    select="select container,fused from picdata where rowid=1"
+    sqlite3 -list $fileroot//${project}/${project}db "$select" | while read container filename tag
     do
-        echo $fileroot/$project/$container/fused/$filename
+        echo $fileroot/$project/$container/fused/${filename}".jpg"
     done
 }
 
