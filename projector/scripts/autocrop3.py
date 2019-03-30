@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import scipy
 from scipy import ndimage
@@ -218,7 +218,7 @@ def findSuper8Sprocket(image, filename):
     # candidateRows contain white areas that could be a sprocket
     candidateRows = {kk for kk, vv in fromRight.iteritems() if vv > 100}
     candidateRanges = []
-    for kk, gg in groupby(enumerate(candidateRows), lambda (i,x): i - x):
+    for kk, gg in groupby(enumerate(candidateRows), lambda i,x: i - x):
         group = map(itemgetter(1), gg)
         candidateRanges.append((group[0], group[-1]))
 
@@ -401,13 +401,13 @@ def find8mmSprocket(image, filename):
 
     whiteRows = {kk for kk, vv in fromLeft.iteritems() if vv < (imX - 50)}
     whiteRanges = []
-    for kk, gg in groupby(enumerate(whiteRows), lambda (i,x): i - x):
+    for kk, gg in groupby(enumerate(whiteRows), lambda i,x: i - x):
         group = map(itemgetter(1), gg)
         whiteRanges.append((group[0], group[-1]))
 
     blackRows = {kk for kk, vv in fromLeft.iteritems() if vv > (imX - 50)}
     blackRanges = []
-    for kk, gg in groupby(enumerate(blackRows), lambda (i,x): i - x):
+    for kk, gg in groupby(enumerate(blackRows), lambda i,x: i - x):
         group = map(itemgetter(1), gg)
         blackRanges.append((group[0], group[-1]))
 
