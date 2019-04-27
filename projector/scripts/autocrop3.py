@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import scipy
 from scipy import ndimage
 from scipy import signal
 from optparse import OptionParser
 from PIL import Image as PILImage, ImageDraw, ImageFilter, ImageFile
-import Image
+#import Image
 # import Image, ImageDraw, ImageFilter
 import sys
 import os
@@ -187,7 +187,7 @@ def findSuper8Sprocket(image, filename):
     imgData = list(image.getdata())
     # Scan each row from the left looking for white, store in fromLeft
     # Then continue to scan for black, store in leftExtent
-    for ii in xrange(0, imX * imY - imX, imX):
+    for ii in range(0, imX * imY - imX, imX):
         row = ii / imX
         try:
             fromLeft[row] = imgData[ii:ii + imX].index(255)
@@ -218,7 +218,7 @@ def findSuper8Sprocket(image, filename):
     # candidateRows contain white areas that could be a sprocket
     candidateRows = {kk for kk, vv in fromRight.iteritems() if vv > 100}
     candidateRanges = []
-    for kk, gg in groupby(enumerate(candidateRows), lambda (i,x): i - x):
+    for kk, gg in groupby(enumerate(candidateRows), lambda i,x: i - x):
         group = map(itemgetter(1), gg)
         candidateRanges.append((group[0], group[-1]))
 
@@ -373,7 +373,7 @@ def find8mmSprocket(image, filename):
     fromRight = {}
     # Scan each row from the left looking for white, store in fromLeft
     # Then continue to scan for black, store in leftExtent
-    for ii in xrange(0, imX * imY - imX, imX):
+    for ii in range(0, imX * imY - imX, imX):
         row = ii / imX
         try:
             fromLeft[row] = imgData[ii:ii + imX].index(255)
@@ -401,13 +401,13 @@ def find8mmSprocket(image, filename):
 
     whiteRows = {kk for kk, vv in fromLeft.iteritems() if vv < (imX - 50)}
     whiteRanges = []
-    for kk, gg in groupby(enumerate(whiteRows), lambda (i,x): i - x):
+    for kk, gg in groupby(enumerate(whiteRows), lambda i,x: i - x):
         group = map(itemgetter(1), gg)
         whiteRanges.append((group[0], group[-1]))
 
     blackRows = {kk for kk, vv in fromLeft.iteritems() if vv > (imX - 50)}
     blackRanges = []
-    for kk, gg in groupby(enumerate(blackRows), lambda (i,x): i - x):
+    for kk, gg in groupby(enumerate(blackRows), lambda i,x: i - x):
         group = map(itemgetter(1), gg)
         blackRanges.append((group[0], group[-1]))
 
@@ -441,8 +441,8 @@ def find8mmSprocket(image, filename):
     topRow = 0
     bottomRow = 0
     leftExtentRow = 0
-    for ii in xrange(0, numCandidates):
-        for jj in xrange(0, numCandidates):
+    for ii in range(0, numCandidates):
+        for jj in range(0, numCandidates):
             if ii == jj:
                 continue
             avg1 = sum(candidateRanges[ii]) / 2
@@ -611,7 +611,7 @@ def main():
         return
 
     files = sorted(glob('%s/*.JPG' % options.inputdir))
-    for ii in xrange(0, len(files) - 3, 3):
+    for ii in range(0, len(files) - 3, 3):
         triple = ','.join(files[ii:ii+3])
         if options.debug:
             logger.debug("Autocropping %s" % triple)
