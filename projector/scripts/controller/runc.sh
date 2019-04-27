@@ -18,15 +18,11 @@ run()
     #./controller.py --jobmode uploadonly --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
 }
 
-setmode()
-{
-    mode=$1
-    db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
-    sqlite3 $db "delete from taskcontrol; insert into taskcontrol (task) values('"${mode}"');"
-}
+#setmode()
+#{
+#    mode=$1
+#    db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
+#    sqlite3 $db "delete from taskcontrol; insert into taskcontrol (task) values('"${mode}"');"
+#}
 
-case "$1" in
-    run) run ;;
-    mode) setmode $2 ;;
-    *) echo What? ;;
-esac
+run
