@@ -27,7 +27,7 @@ class FileManager():
         targetFile = "%s/%s%s.RAW" % (targetDir, filename, tag)
         self._logger.debug("Saving %u to %s" % (len(fileData), targetFile))
         try:
-            open(targetFile, 'w').write(fileData)
+            open(targetFile, 'wb').write(fileData)
         except ee:
             logger.error("Write to %s failed, %s" % (targetFile, ee.message))
         

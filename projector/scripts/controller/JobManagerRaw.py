@@ -252,7 +252,7 @@ class JobManagerRaw(JobManager):
         self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
         #if False == os.path.isfile(jpg):
         copyfile(source, raw)
-        jobargs = ('/home/mattd/personal-projects/projector/dcraw/dcraw', raw)
+        jobargs = ('/personal-projects/projector/raspiraw/dcraw', raw)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         retcode = subprocess.call(jobargs)
         self._logger.info("dcraw returns %u" % retcode)
