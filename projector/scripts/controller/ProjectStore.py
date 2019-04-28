@@ -9,6 +9,7 @@ class ProjectStore():
     mtxMakeDirs = threading.Lock()
     def __init__(self, logger, dblocation, config): #overwrite = False):
         self._dbroot = dblocation
+        pdb.set_trace()
 #        self._conn = None
 #        self._overwrite = overwrite
         self._logger = logger
@@ -19,7 +20,7 @@ class ProjectStore():
 #            os.makedirs(dblocation)
 
     def _initDb(self, project):
-#        pdb.set_trace()
+        pdb.set_trace()
         conn = sqlite3.connect(project)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
@@ -50,6 +51,7 @@ class ProjectStore():
         conn.close()
 
     def _openDb(self, project):
+        pdb.set_trace()
         '''
         if False == os.path.isdir(self._dbroot):
             os.makedirs(self._dbroot)
