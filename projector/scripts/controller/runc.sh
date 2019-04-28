@@ -22,7 +22,25 @@ setmode()
 {
     mode=$1
     db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
-    sqlite3 $db "delete from taskcontrol; insert into taskcontrol (task) values('"${mode}"');"
+    if [ "" = "${mode}" ]; then
+      echo "rf: self._scheduleProcessRaw"
+      echo "pc: self._schedulePrecrop"
+      echo "ac: self._scheduleAutocrop"
+      echo "tf: self._scheduleTonefuse"
+      echo "gt: self._scheduleGenTitle"
+      echo "gc: self._scheduleGenContent"
+    fi
+    if [ "init" == "${mode}" ]; then
+        rm -rf ${ROOTOFALL}/${PROJECT}
+        return
+    fi
+    if [ "del" = "${mode}" ]; then
+        rm $db
+        return
+    fi
+    if [ -f "${db}" ]; then
+        sqlite3 $db "delete from taskcontrol; insert into taskcontrol (task) values('"${mode}"');"
+    fi
 }
 
 case "$1" in 
