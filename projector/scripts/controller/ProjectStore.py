@@ -5,11 +5,11 @@ import threading
 #import mutex
 
 class ProjectStore():
+    psdebug = False
     FilesPerContainer = 999
     mtxMakeDirs = threading.Lock()
     def __init__(self, logger, dblocation, config): #overwrite = False):
         self._dbroot = dblocation
-        pdb.set_trace()
 #        self._conn = None
 #        self._overwrite = overwrite
         self._logger = logger
@@ -51,13 +51,13 @@ class ProjectStore():
         conn.close()
 
     def _openDb(self, project):
-        pdb.set_trace()
         '''
         if False == os.path.isdir(self._dbroot):
             os.makedirs(self._dbroot)
             self._initDb(project)
         else:
             '''
+        if ProjectStore.psdebug: pdb.set_trace()
         project += 'db'
         dblocation = "%s/%s" % (os.path.abspath(self._dbroot), project)
         if True == os.path.isfile(dblocation):
