@@ -21,7 +21,7 @@ PREFRAMES=1
 FRAMES=0
 #SHUTTER=[40000,80000,1200000]
 
-SHUTTER=[6, 57, 57*4]
+SHUTTER=[200, 500, 1000]
 #SHUTTER=[10,150,600]
 TARGETDIR='/tmp'
 MAXINFLIGHT=30
@@ -82,8 +82,8 @@ def init():
     if False == config.noled:
         serPort.write(b'l')
 #    serPort.write(b'c%st' % {'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]) 
-    serPort.write("vc{0}t".format({'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]).encode('utf-8')) 
-    portWaitFor(serPort, b'{pt:')
+    serPort.write("vc{0}20T".format({'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]).encode('utf-8')) 
+#    portWaitFor(serPort, b'{pt:')
     return serPort
 
 def stop(port):
@@ -99,9 +99,14 @@ def frame(port, num):
             return 
     for ss,tag in zip(SHUTTER, ['a','b','c']):
 #    for ss in range(1, 100000, 1000):
+
         logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
-        runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
-                "--fps 1 -t 100 -sr 1 -o {:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag))
+        #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
+        #        "--fps 1 -t 100 -sr 1 -o {:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag))
+        args1 = ''.join(["/usr/local/bin/raspiraw2 --mode 0 --header --i2c 0 --expus {0} ".format(ss), 
+            " --fps 1 -sp /dev/ttyUSB0 -sd 57600 -lu 100 -t 100 -sr 1 -o ",
+            "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
+        runargs = (args1)
         #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
         #        "--fps 1 -t 250 -sr 1 -w 640 -h 480 -o {:s}/{:06d}.raw".format(OUTPUTDIR, num))
         logger.debug(''.join(runargs))
