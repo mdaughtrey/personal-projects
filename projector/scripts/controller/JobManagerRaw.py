@@ -7,7 +7,7 @@ import subprocess
 import time
 from JobManager import JobManager
 import numpy
-import imageio
+#import imageio
 from PIL import Image
 
 def trampoline(object):
@@ -68,7 +68,7 @@ class JobManagerRaw(JobManager):
         self._logger.debug('toBeConverted %s' % str(todo))
         if todo:
             for (rowid, container, filename,tag) in todo:
-            	self._logger.debug("Container %s filename %s" % (container, filename))
+                self._logger.debug("Container %s filename %s" % (container, filename))
                 jobargs = (self._config.project, container, filename, tag, rowid)
                 self._logger.info("Calling %s" % str(jobargs))
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
@@ -238,7 +238,7 @@ class JobManagerRaw(JobManager):
             self._logger.debug("_wmAutocrop Done")
 #
         except subprocess.CalledProcessError as ee:
-	        print ee.output
+            print(ee.output)
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
@@ -252,7 +252,7 @@ class JobManagerRaw(JobManager):
         self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
         #if False == os.path.isfile(jpg):
         copyfile(source, raw)
-        jobargs = ('/home/mattd/personal-projects/projector/dcraw/dcraw', raw)
+        jobargs = ('/personal-projects/projector/raspiraw/dcraw/dcraw', raw)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
         retcode = subprocess.call(jobargs)
         self._logger.info("dcraw returns %u" % retcode)
