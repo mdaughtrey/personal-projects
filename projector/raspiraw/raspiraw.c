@@ -1011,10 +1011,11 @@ int main(int argc, char** argv) {
             vcos_log_error("Cannot initialize serial port");
             return -1;
         }
-        if (waitfor(serialPort, " ", 5))
-        {
-            return -1;
-        }
+//        write(serialPort, " ", 1);
+//        if (waitfor(serialPort, "{State:Ready}", 5))
+//        {
+//            return -1;
+//        }
     }
 
 	if (cfg.mode >= 0 && cfg.mode < sensor->num_modes)
@@ -1418,9 +1419,6 @@ int main(int argc, char** argv) {
 			goto pool_destroy;
 		}
 		running = 1;
-        write(serialPort, "L", 1);
-        usleep(cfg.ledus);
-        write(serialPort, "l", 1);
         
 		for(i = 0; i<output->buffer_num; i++)
 		{
@@ -1513,6 +1511,9 @@ int main(int argc, char** argv) {
 	}
 
 	start_camera_streaming(sensor, sensor_mode);
+    write(serialPort, "l", 1);
+    usleep(cfg.ledus);
+    write(serialPort, "L", 1);
 
 	vcos_sleep(cfg.timeout);
 	running = 0;
