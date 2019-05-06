@@ -35,6 +35,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <termio.h>
+#include <errno.h>
+#include <unistd.h>
+#include <time.h>
 
 //#include <linux/i2c.h>
 #include <linux/i2c-dev.h>
@@ -62,6 +66,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static char i2c_device_name[I2C_DEVICE_NAME_LEN];
 
 struct brcm_raw_header *brcm_header = NULL;
+int serialPort = -1;
 
 enum bayer_order {
 	//Carefully ordered so that an hflip is ^1,
@@ -180,6 +185,9 @@ enum {
 	CommandWriteHeaderG,
 	CommandWriteTimestamps,
 	CommandWriteEmpty,
+    CommandSerialPort,
+    CommandSerialSpeed,
+    CommandLedUs
 };
 
 static COMMAND_LIST cmdline_commands[] =
@@ -211,6 +219,9 @@ static COMMAND_LIST cmdline_commands[] =
 	{ CommandWriteHeaderG,	"-headerg",	"hdg","Sets filename to write the .pgm header to", 0 },
 	{ CommandWriteTimestamps,"-tstamps",	"ts", "Sets filename to write timestamps to", 0 },
 	{ CommandWriteEmpty,	"-empty",	"emp","Write empty output files", 0 },
+    { CommandSerialPort, "-serport", "sp", "Set serial port string", 1 },
+    { CommandSerialSpeed, "-serspeed", "sd", "Set serial port speed", 1 },
+    { CommandLedUs, "-ledus", "lu", "Set LED ontime (us)", 1 }
 };
 
 static int cmdline_commands_size = sizeof(cmdline_commands) / sizeof(cmdline_commands[0]);
@@ -250,6 +261,9 @@ typedef struct {
 	char *write_headerg;
 	char *write_timestamps;
 	int write_empty;
+    char serialport[128];
+    int serialspeed;
+    int ledus;
         PTS_NODE_T ptsa;
         PTS_NODE_T ptso;
 } RASPIRAW_PARAMS_T;
@@ -816,6 +830,21 @@ static int parse_cmdline(int argc, char **argv, RASPIRAW_PARAMS_T *cfg)
 				cfg->write_empty = 1;
 				break;
 
+            case CommandSerialPort:
+                strcpy(cfg->serialport, argv[i + 1]);
+                i++;
+                break;
+
+            case CommandSerialSpeed:
+                cfg->serialspeed =  atoi(argv[i + 1]);
+                i++;
+                break;
+
+            case CommandLedUs:
+                cfg->ledus = atol(argv[i + 1]);
+                i++;
+                break;
+
 			default:
 				valid = 0;
 				break;
@@ -842,6 +871,72 @@ enum operation {
 };
 
 void modReg(struct mode_def *mode, uint16_t reg, int startBit, int endBit, int value, enum operation op);
+
+int waitfor(int port, const char * target, int timeout)
+//int initSerial(RASPIRAW_PARAMS_T * cfg, const char * target, int timeout)
+{
+    char buffer[64];
+    char accum[64];
+    time_t start = time(NULL);
+    while(!strstr(accum, target))
+    {
+        int nr = read(port, buffer, sizeof(buffer));
+        if (nr > 0)
+        {
+            strncat(accum, buffer, nr);
+            printf("accum is %s\n", accum);
+        }
+        if ((time(NULL) - start) > timeout)
+        {
+            vcos_log_error("Timed out waiting for %s", target);
+            return 1;
+        }
+    }
+    //printf("received %s\n", accum);
+    return 0;
+}
+
+int initSerial(RASPIRAW_PARAMS_T * cfg)
+{
+    int port = open(cfg->serialport, O_RDWR | O_NONBLOCK | O_NDELAY);
+    if (port < -1)
+    {
+        vcos_log_error("port open failed");
+        return -1;
+    }
+//    printf("port is %d\n", port);
+
+    struct termios tty;
+    memset(&tty, 0, sizeof(tty));
+
+    cfsetospeed(&tty, cfg->serialspeed);
+    cfsetispeed(&tty, cfg->serialspeed);
+
+    tty.c_cflag     &=  ~PARENB;        // Make 8n1
+    tty.c_cflag     &=  ~CSTOPB;
+    tty.c_cflag     &=  ~CSIZE;
+    tty.c_cflag     |=  CS8;
+    tty.c_cflag     &=  ~CRTSCTS;       // no flow control
+    tty.c_lflag     =   0;          // no signaling chars, no echo, no canonical processing
+    tty.c_oflag     =   0;                  // no remapping, no delays
+    tty.c_cc[VMIN]      =   0;                  // read doesn't block
+    tty.c_cc[VTIME]     =   5;                  // 0.5 seconds read timeout
+
+    tty.c_cflag     |=  CREAD | CLOCAL;     // turn on READ & ignore ctrl lines
+    tty.c_iflag     &=  ~(IXON | IXOFF | IXANY);// turn off s/w flow ctrl
+    tty.c_lflag     &=  ~(ICANON | ECHO | ECHOE | ISIG); // make raw
+    tty.c_oflag     &=  ~OPOST;              // make raw
+
+    /* Flush Port, then applies attributes */
+    tcflush(port, TCIFLUSH );
+
+    if (tcsetattr(port, TCSANOW, &tty) != 0)
+    {
+        vcos_log_error("tcsetattr failed errno %d %s\n", errno, strerror(errno));
+        return -1;
+    }
+    return port;
+}
 
 int main(int argc, char** argv) {
 	RASPIRAW_PARAMS_T cfg = {
@@ -873,6 +968,9 @@ int main(int argc, char** argv) {
 		.write_empty = 0,
 		.ptsa = NULL,
 		.ptso = NULL,
+        .serialport = "", 
+        .serialspeed = 0,
+        .ledus = 0
 	};
 	uint32_t encoding;
 	const struct sensor_def *sensor;
@@ -904,6 +1002,21 @@ int main(int argc, char** argv) {
 		vcos_log_error("No sensor found. Aborting");
 		return -1;
 	}
+
+    if (cfg.serialport && cfg.serialspeed && cfg.ledus)
+    {
+        serialPort = initSerial(&cfg);
+        if (serialPort < 0)
+        {
+            vcos_log_error("Cannot initialize serial port");
+            return -1;
+        }
+//        write(serialPort, " ", 1);
+//        if (waitfor(serialPort, "{State:Ready}", 5))
+//        {
+//            return -1;
+//        }
+    }
 
 	if (cfg.mode >= 0 && cfg.mode < sensor->num_modes)
 	{
@@ -1306,6 +1419,7 @@ int main(int argc, char** argv) {
 			goto pool_destroy;
 		}
 		running = 1;
+        
 		for(i = 0; i<output->buffer_num; i++)
 		{
 			MMAL_BUFFER_HEADER_T *buffer = mmal_queue_get(pool->queue);
@@ -1397,6 +1511,9 @@ int main(int argc, char** argv) {
 	}
 
 	start_camera_streaming(sensor, sensor_mode);
+    write(serialPort, "l", 1);
+    usleep(cfg.ledus);
+    write(serialPort, "L", 1);
 
 	vcos_sleep(cfg.timeout);
 	running = 0;
