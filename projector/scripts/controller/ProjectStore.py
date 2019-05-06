@@ -2,9 +2,10 @@ import sqlite3
 import os
 import pdb
 import threading
-import mutex
+#import mutex
 
 class ProjectStore():
+    psdebug = False
     FilesPerContainer = 999
     mtxMakeDirs = threading.Lock()
     def __init__(self, logger, dblocation, config): #overwrite = False):
@@ -56,6 +57,7 @@ class ProjectStore():
             self._initDb(project)
         else:
             '''
+        if ProjectStore.psdebug: pdb.set_trace()
         project += 'db'
         dblocation = "%s/%s" % (os.path.abspath(self._dbroot), project)
         if True == os.path.isfile(dblocation):
