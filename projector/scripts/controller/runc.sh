@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT=test2
+PROJECT=test
 #TYPE=8mm
 TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/

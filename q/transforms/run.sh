@@ -1,3 +1,3 @@
 #!/bin/bash
 
-rlwrap q -p 40000 main.q 
+rlwrap /mnt/c/q/w32/q.exe `pwd`/transform.q 
