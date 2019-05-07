@@ -114,7 +114,13 @@ def frame(port, num):
         #args1 = ''.join([BIN, " --mode 0 --header --i2c 0 --expus {0}",format(ss),
         #    " --fps 1 --serport /dev/ttyUSB0 --serspeed 57600 --ledus {0} -t 1000 -sr 1 -o ".format(ss),
         #    "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
+        #-w, --width     : Set current mode width
+        #-h, --height    : Set current mode height
+        #-lt, --left     : Set current mode left
+        #-tp, --top      : Set current mode top
+
         args1 = ''.join([BIN, " --mode 0 --header --i2c 0 --expus {0}".format(ss),
+            " --left 804 --top 225  "
             " --fps 1 -t 1000 -sr 1 -o ",
             "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
         runargs = (args1)
