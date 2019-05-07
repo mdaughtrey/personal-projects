@@ -120,7 +120,7 @@ def frame(port, num):
         #-tp, --top      : Set current mode top
 
         args1 = ''.join([BIN, " --mode 0 --header --i2c 0 --expus {0}".format(ss),
-            " --left 804 --top 225  "
+            " --left 804 --top 225  ",
             " --fps 1 -t 1000 -sr 1 -o ",
             "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
         runargs = (args1)
