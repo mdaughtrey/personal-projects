@@ -31,6 +31,17 @@ OUTPUTDIR="/mnt/extfd"
 #OUTPUTDIR="/home/mattd/capture"
 port = 0
 
+Geometry = {'geo0':' --mode 0', 
+    'geo1':' --left 804 --top 225 --mode 0', 
+    'geo2':' --mode 1', 
+    'geo3':' --mode 2', 
+    'geo4':' --mode 3', 
+    'geo5':' --mode 4', 
+    'geo6':' --mode 5', 
+    'geo7':' --mode 6', 
+    'geo8':' --mode 7', 
+}
+
 FormatString='%(asctime)s %(levelname)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=FormatString)
 logger = logging.getLogger('rawcap')
@@ -119,9 +130,8 @@ def frame(port, num):
         #-lt, --left     : Set current mode left
         #-tp, --top      : Set current mode top
 
-        args1 = ''.join([BIN, " --mode 0 --header --i2c 0 --expus {0}".format(ss),
-            " --left 804 --top 225  ",
-            " --fps 1 -t 1000 -sr 1 -o ",
+        args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
+            Geometry['geo8'], " --fps 1 -t 1000 -sr 1 -o ",
             "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
         runargs = (args1)
         #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
