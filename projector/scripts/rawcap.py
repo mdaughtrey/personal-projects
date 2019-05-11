@@ -14,20 +14,33 @@ import os
 from glob import glob, iglob
 import argparse
 
-BIN='/home/mattd/personal-projects/projector/userland/build/bin/raspistill'
+BIN='/usr/local/bin/raspiraw'
 SPOOLTYPE="SMALL"
 FILMTYPE="SUPER8"
 PREFRAMES=1
 FRAMES=0
 #SHUTTER=[40000,80000,1200000]
 
-SHUTTER=[6, 57, 57*4]
-#SHUTTER=[10,150,600]
+SHUTTER=[100,500,800]
+#SHUTTER=[5e5, 1e6, 2e6]
+#SHUTTER=[20000, 50000, 200000]
 TARGETDIR='/tmp'
 MAXINFLIGHT=30
 SerialPort="/dev/ttyUSB0"
 OUTPUTDIR="/mnt/extfd"
 #OUTPUTDIR="/home/mattd/capture"
+port = 0
+
+Geometry = {'geo0':' --mode 0', 
+    'geo1':' --left 804 --top 225 --mode 0', 
+    'geo2':' --mode 1', 
+    'geo3':' --mode 2', 
+    'geo4':' --mode 3', 
+    'geo5':' --mode 4', 
+    'geo6':' --mode 5', 
+    'geo7':' --mode 6', 
+    'geo8':' --mode 7', 
+}
 
 FormatString='%(asctime)s %(levelname)s %(lineno)s %(message)s'
 logging.basicConfig(level = logging.DEBUG, format=FormatString)
@@ -45,9 +58,14 @@ parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=Fals
 parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
 config = parser.parse_args()
 
-def sig(signum, frame):
-    print("Sig handler")
-signal.signal(signal.SIGTERM, sig)
+def signal_handler(signal, frame):
+    port.write(b' ')
+    portWaitFor(port, b'{State:Ready}')
+    port.close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
 
 def portWaitFor(port, text):
     accum = b''
@@ -82,8 +100,8 @@ def init():
     if False == config.noled:
         serPort.write(b'l')
 #    serPort.write(b'c%st' % {'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]) 
-    serPort.write("vc{0}t".format({'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]).encode('utf-8')) 
-    portWaitFor(serPort, b'{pt:')
+    serPort.write("vc{0}10T".format({'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]).encode('utf-8')) 
+#    portWaitFor(serPort, b'{pt:')
     return serPort
 
 def stop(port):
@@ -99,9 +117,23 @@ def frame(port, num):
             return 
     for ss,tag in zip(SHUTTER, ['a','b','c']):
 #    for ss in range(1, 100000, 1000):
+
         logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
-        runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
-                "--fps 1 -t 100 -sr 1 -o {:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag))
+        #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
+        #        "--fps 1 -t 100 -sr 1 -o {:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag))
+        #args1 = ''.join(["/usr/local/bin/raspiraw2 --mode 0 --header --i2c 0 --expus {0} ".format(ss), 
+        #args1 = ''.join([BIN, " --mode 0 --header --i2c 0 --expus {0}",format(ss),
+        #    " --fps 1 --serport /dev/ttyUSB0 --serspeed 57600 --ledus {0} -t 1000 -sr 1 -o ".format(ss),
+        #    "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
+        #-w, --width     : Set current mode width
+        #-h, --height    : Set current mode height
+        #-lt, --left     : Set current mode left
+        #-tp, --top      : Set current mode top
+
+        args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
+            Geometry['geo8'], " --fps 1 -t 1000 -sr 1 -o ",
+            "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
+        runargs = (args1)
         #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
         #        "--fps 1 -t 250 -sr 1 -w 640 -h 480 -o {:s}/{:06d}.raw".format(OUTPUTDIR, num))
         logger.debug(''.join(runargs))
@@ -119,6 +151,7 @@ def main():
     else:
         frameNum = 0
     logger.debug("Starting at frame {0}".format(frameNum))
+    global port
     port = init()
     frameCount = 0
     for frameCount in range(0, config.frames):
