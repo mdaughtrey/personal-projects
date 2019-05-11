@@ -20,7 +20,6 @@ class ProjectStore():
 #            os.makedirs(dblocation)
 
     def _initDb(self, project):
-        pdb.set_trace()
         conn = sqlite3.connect(project)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
