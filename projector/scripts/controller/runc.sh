@@ -1,10 +1,6 @@
 #!/bin/bash
 
-<<<<<<< HEAD
-PROJECT=geo8
-=======
-PROJECT=test
->>>>>>> 2c48f5d9468bbf961faa2cdf4b67f319b5d7f16b
+PROJECT=geo6_2
 #TYPE=8mm
 TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
