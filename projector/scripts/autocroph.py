@@ -285,7 +285,7 @@ def processSuper8(filenames, outputpath):
         range = range[0]
 #        logger.debug('%u < %u < %u' % (int(SprocketSuper8.w*0.95), range[1], int(SprocketSuper8.w*1.05)))
 #        if int(SprocketSuper8.w*0.95) < range[1] < int(SprocketSuper8.w*1.05):
-         rangeDict[range[1]] = range[0]
+        rangeDict[range[1]] = range[0]
 #            logger.debug('Candidate sprocket range %s' % range)
             #rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
 
