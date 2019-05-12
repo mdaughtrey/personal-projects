@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-# autocrop for rotated images
 
 import scipy
 from scipy import ndimage
@@ -29,7 +28,7 @@ XFudge = 225
 options = {}
 
 parser = OptionParser('autocrop.py [-v] -i inputdir -o outputdir')
-parser.add_option('-s', '--debug', dest='debug', help='Save intermediary images', action='store_true')
+parser.add_option('-d', '--debug', dest='debug', help='Save intermediary images', action='store_true')
 parser.add_option('-v', '--verbose', dest='verbose', action='store_true', default=False)
 parser.add_option('-w', '--whitecount', dest='whitecount', action='store_true', default=False)
 parser.add_option('-i', '--input-dir', dest='inputdir')
@@ -88,7 +87,7 @@ logger = logging.getLogger('autocrop')
 #
 #    print "%s: Total %u white %u index %f" % (filename, height * width, whiteCount, index)
 
-def whitePixels(data, minlen, maxlen):
+def whitePixels(data):
     whites = []
 
     idx = 0
@@ -258,25 +257,29 @@ def processSuper8(filenames, outputpath):
     if options.debug and eroded_dir is not None:
         sPlacement = imp
     (fcHeight, fcWidth) = flattened.shape
-    xOffset = 600
-    yOffset = fcHeight - 135
+    sprocket = ndimage.grey_erosion(flattened[:,50:300], size=(25, 25))
+#    xOffset = 600
+#    yOffset = fcHeight - 135
     #yOffset = 0 # fcHeight - 135
-    flattened = flattened[yOffset:,:]
-    eroded = ndimage.grey_erosion(flattened, size=(25, 25))
+#    flattened = flattened[yOffset:,:]
+#    sprocket = ndimage.grey_erosion(sprocket, size=(25, 25))
 
     # get the darkest and lightest values, their midpoint is the threshold
-    darkest = ndimage.minimum(eroded)
-    lightest = ndimage.maximum(eroded)
+    darkest = ndimage.minimum(sprocket)
+    lightest = ndimage.maximum(sprocket)
 
-    ethreshold = darkest + (lightest - darkest)/2
-    eroded[eroded < ethreshold] = 0
-    eroded[eroded >= ethreshold] = 255
-    if options.debug and eroded_dir is not None:
-        scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
+    threshold = darkest + (lightest - darkest)/2
+    sprocket[sprocket < threshold] = 0
+    sprocket[sprocket >= threshold] = 255
+    if options.debug and sprockets_dir is not None:
+        scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocket)
 
     rangeDict = {}
-    for range in whitePixels(eroded[-1], 200, 400):
-        if eroded.shape[1] > (range[0] + 300):
+    for line in zip(*sprocket[::-1]):
+        range = whitePixels(line)
+        if 0 == len(range): continue
+        range = range[0]
+        if 280 < range[1] < 380:
             logger.debug('Candidate sprocket range %s' % range)
             rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
 
@@ -284,11 +287,13 @@ def processSuper8(filenames, outputpath):
 
     # find the horizontal extents of the sprocket
     # remove top and bottom 150
-    lookFor = numpy.ones([135,SprocketSuper8.w], dtype=numpy.uint8)
+    pdb.set_trace()
+    #lookFor = numpy.ones([135,SprocketSuper8.w], dtype=numpy.uint8)
+    lookFor = numpy.ones([SprocketSuper8.h,135], dtype=numpy.uint8)
     methods = [cv2.TM_CCOEFF,cv2.TM_CCOEFF_NORMED,cv2.TM_CCORR,cv2.TM_CCORR_NORMED,
         cv2.TM_SQDIFF,cv2.TM_SQDIFF_NORMED]
 
-    res = cv2.matchTemplate(eroded[:,useRange[0]:sum(useRange)], lookFor, methods[2])
+    res = cv2.matchTemplate(sprocket[:,useRange[0]:int(useRange[0]+useRange[1]/2)], lookFor, methods[2])
     (minval, maxval, minloc, maxloc) = cv2.minMaxLoc(res)
 
     sprocketCx = useRange[0] + maxloc[1] + (SprocketSuper8.w / 2)
@@ -500,7 +505,7 @@ def process8mm(filenames, outputpath):
         scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)), eroded)
 
     rangeDict = {}
-    for range in whitePixels(eroded[-1], 200, 400):
+    for range in whitePixels(eroded[-1]):
         if eroded.shape[1] > (range[0] + 300):
             rangeDict[abs(int(numpy.mean(range)) - (fcWidth/2))] = range
 
