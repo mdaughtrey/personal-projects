@@ -54,5 +54,6 @@ case "$1" in
     mode) setmode $2 ;;
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
+    resettf) sqlreset fused ;;
     *) echo What?
 esac
