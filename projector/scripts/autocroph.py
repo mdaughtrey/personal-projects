@@ -54,14 +54,14 @@ eroded_dir = {True:'eroded', False: None}[os.path.isdir('%s/eroded' % options.ou
 #SprocketSuper8 = (1.14, .91) # H, W
 #Sprocket8mm = (1.27, 1.83) # H, W
 PxPerMm8mm = 391
-PxPerMmSuper8 = 360
+PxPerMmSuper8 = 350
 Info = namedtuple('Info', 'start height')
 # 
 def roundIt(val): return int(val + val%2)
-SprocketSuper8 = type('obj', (object,), {'h': roundIt(1.14 * PxPerMmSuper8),
-    'w': roundIt(.91 * PxPerMmSuper8)})
-FrameSuper8 = type('obj', (object,), {'h': roundIt(5.46 * PxPerMmSuper8),
-    'w': roundIt(4.01 * PxPerMmSuper8)})
+SprocketSuper8 = type('obj', (object,), {'h': roundIt(.91 * PxPerMmSuper8),
+    'w': roundIt(1.14 * PxPerMmSuper8)})
+FrameSuper8 = type('obj', (object,), {'w': roundIt(5.46 * PxPerMmSuper8),
+    'h': roundIt(4.01 * PxPerMmSuper8)})
 
 Sprocket8mm = type('obj', (object,), {'h': roundIt(1.83 * PxPerMm8mm),
     'w': roundIt(1.27 * PxPerMm8mm)})
@@ -70,9 +70,9 @@ Frame8mm = type('obj', (object,), {'h': roundIt(4.37 * PxPerMm8mm),
 
 logging.basicConfig(level = logging.DEBUG, format='%(asctime)s %(message)s')
 logger = logging.getLogger('autocrop')
-#fileHandler = RotatingFileHandler(filename='/tmp/autocrop_%u.log' % os.getpid(), maxBytes=10e6, backupCount=2)
-#fileHandler.setLevel(logging.DEBUG)
-#logger.addHandler(fileHandler)
+fileHandler = RotatingFileHandler(filename='./autocroph.log', maxBytes=10e6, backupCount=2)
+fileHandler.setLevel(logging.DEBUG)
+logger.addHandler(fileHandler)
 
 #def whiteCount(filename):
 #    imp = PILImage.open(filename).convert('L')
@@ -251,13 +251,14 @@ def processSuper8(filenames, outputpath):
         sys.exit(1)
 
     # Select the brightest image for figuring out the cropping
-    filename = files[0]
+    filename = files[1]
     imp = PILImage.open(filename).convert('L')
     flattened = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
     if options.debug and eroded_dir is not None:
         sPlacement = imp
     (fcHeight, fcWidth) = flattened.shape
-    sprocket = ndimage.grey_erosion(flattened[:,50:300], size=(25, 25))
+    #sprocketsource = flattened[:,:300]
+    sprocket = ndimage.grey_erosion(flattened[:,:300], size=(25, 25))
 #    xOffset = 600
 #    yOffset = fcHeight - 135
     #yOffset = 0 # fcHeight - 135
@@ -271,34 +272,43 @@ def processSuper8(filenames, outputpath):
     threshold = darkest + (lightest - darkest)/2
     sprocket[sprocket < threshold] = 0
     sprocket[sprocket >= threshold] = 255
+    sprocketSlice = sprocket[:,50:200]
     if options.debug and sprockets_dir is not None:
-        scipy.misc.imsave('%s/%s/1_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocket)
+    #    scipy.misc.imsave('%s/%s/source_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocketsource)
+        scipy.misc.imsave('%s/%s/sprocket_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocket)
+        scipy.misc.imsave('%s/%s/slice_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocketSlice)
 
     rangeDict = {}
-    for line in zip(*sprocket[::-1]):
-        range = whitePixels(line)
+    for line in zip(*sprocketSlice[::-1]):
+        range = whitePixels(reversed(line))
         if 0 == len(range): continue
         range = range[0]
-        if 280 < range[1] < 380:
-            logger.debug('Candidate sprocket range %s' % range)
-            rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
+#        logger.debug('%u < %u < %u' % (int(SprocketSuper8.w*0.95), range[1], int(SprocketSuper8.w*1.05)))
+#        if int(SprocketSuper8.w*0.95) < range[1] < int(SprocketSuper8.w*1.05):
+         rangeDict[range[1]] = range[0]
+#            logger.debug('Candidate sprocket range %s' % range)
+            #rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
 
-    useRange = rangeDict[sorted(rangeDict.keys())[0]]
+    useRange = []
+    useRange.append(rangeDict[sorted(rangeDict.keys())[-1]])
+    useRange.append(sorted(rangeDict.keys())[-1])
 
     # find the horizontal extents of the sprocket
     # remove top and bottom 150
-    pdb.set_trace()
     #lookFor = numpy.ones([135,SprocketSuper8.w], dtype=numpy.uint8)
-    lookFor = numpy.ones([SprocketSuper8.h,135], dtype=numpy.uint8)
-    methods = [cv2.TM_CCOEFF,cv2.TM_CCOEFF_NORMED,cv2.TM_CCORR,cv2.TM_CCORR_NORMED,
-        cv2.TM_SQDIFF,cv2.TM_SQDIFF_NORMED]
-
-    res = cv2.matchTemplate(sprocket[:,useRange[0]:int(useRange[0]+useRange[1]/2)], lookFor, methods[2])
-    (minval, maxval, minloc, maxloc) = cv2.minMaxLoc(res)
-
-    sprocketCx = useRange[0] + maxloc[1] + (SprocketSuper8.w / 2)
-    sprocketCy = fcHeight - 135 - 135 + maxloc[0] + (SprocketSuper8.h / 2)
-
+#    lookFor = numpy.ones([SprocketSuper8.h,135], dtype=numpy.uint8)
+#    methods = [cv2.TM_CCOEFF,cv2.TM_CCOEFF_NORMED,cv2.TM_CCORR,cv2.TM_CCORR_NORMED,
+#        cv2.TM_SQDIFF,cv2.TM_SQDIFF_NORMED]
+#
+#    #res = cv2.matchTemplate(sprocket[:,useRange[0]:int(useRange[0]+useRange[1]/2)], lookFor, methods[2])
+#    res = cv2.matchTemplate(sprocket, lookFor, methods[2])
+#    (minval, maxval, minloc, maxloc) = cv2.minMaxLoc(res)
+#
+#    sprocketCx = useRange[0] + maxloc[1] + (SprocketSuper8.w / 2)
+#    sprocketCy = fcHeight - 135 - 135 + maxloc[0] + (SprocketSuper8.h / 2)
+#
+    sprocketCx = int(270 - SprocketSuper8.h/2)
+    sprocketCy = int(useRange[0] + SprocketSuper8.w/2)
     (xAdj, yAdj, wAdj, hAdj) = (0, 0, 0, 0)
     if options.adjfile:
         try:
@@ -307,8 +317,8 @@ def processSuper8(filenames, outputpath):
         except:
             logger.debug("%s file not found", options.adjfile)
 
-    frameX = (sprocketCx - FrameSuper8.w / 2) + xAdj
-    frameY = sprocketCy - (SprocketSuper8.h / 2) - FrameSuper8.h + yAdj 
+    frameX = int(sprocketCx + SprocketSuper8.h/2) + xAdj
+    frameY = int(sprocketCy - FrameSuper8.h/2) + yAdj 
     frameH = FrameSuper8.h + hAdj
     frameW = FrameSuper8.w + wAdj
 
