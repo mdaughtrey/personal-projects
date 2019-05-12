@@ -40,6 +40,7 @@ Geometry = {'geo0':' --mode 0',
     'geo6':' --mode 5', 
     'geo7':' --mode 6', 
     'geo8':' --mode 7', 
+    'geo9':' --mode 6 --width 1250', 
 }
 
 FormatString='%(asctime)s %(levelname)s %(lineno)s %(message)s'
@@ -131,7 +132,7 @@ def frame(port, num):
         #-tp, --top      : Set current mode top
 
         args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
-            Geometry['geo8'], " --fps 1 -t 1000 -sr 1 -o ",
+            Geometry['geo0'], " --fps 1 -t 1000 -sr 1 -o ",
             "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
         runargs = (args1)
         #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
