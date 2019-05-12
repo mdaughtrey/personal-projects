@@ -4,13 +4,9 @@ PROJECT=test
 #TYPE=8mm
 TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
-#if[[! -d "$ROOTOFALL" ]]
-#then
-	mkdir -p $ROOTOFALL/$PROJECT
+mkdir -p $ROOTOFALL/$PROJECT
+db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
 
-#fi
-
-#JOBMODE=inline
 run()
 {
     JOBMODE=proc
@@ -27,7 +23,6 @@ run()
 setmode()
 {
     mode=$1
-    db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
     case "${mode}" in
         init)  -rf ${ROOTOFALL}/${PROJECT} ;;
         del) rm $db ;;
@@ -36,10 +31,28 @@ setmode()
     esac
 }
 
+#    resetpc) resetpc ;;sqlite3 $db "update picdata set processing=0, precrop=NULL,precroptag=NULL;\\r .exit" ;;
+#    resetac) sqlite3 $db "update picdata set processing=0, autocrop=NULL,autocroptag=NULL;\\r .exit" ;;
+
+#    $(echo <<STATEMENT
+#        update picdata set processing=0, ${1}=NULL,${1}tag=NULL;
+#        .exit
+#    STATEMENT
+#    )  
+
+sqlreset()
+{
+    sqlite3 $db <<STMT
+update picdata set processing=0, ${1}=NULL,${1}tag=NULL;
+.exit
+STMT
+}
+
+
 case "$1" in 
     run) run ;;
     mode) setmode $2 ;;
-    resetpc) sqlite3 $db "update picdata set processing=0, precrop=NULL,precroptag=NULL; .exit" ;;
-    resetac) sqlite3 $db "update picdata set processing=0, autocrop=NULL,autocroptag=NULL; .exit" ;;
+    resetpc) sqlreset precrop ;;
+    resetac) sqlreset autocrop ;;
     *) echo What?
 esac
