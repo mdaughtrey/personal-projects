@@ -220,7 +220,7 @@ class JobManagerRaw(JobManager):
         self._logger.info("Autocrop %s %s %s %s" % (project, rowid, container, filename))
         source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
         dest = os.path.abspath(self._fileman.getAutocropDir(project, container))
-        jobargs = ('../autocroph.py', '-d', '--filenames',
+        jobargs = ('../autocroph.py', '--filenames',
             '%s,%s,%s' % (source + filename + 'a.jpg',source + filename + 'b.jpg',source + filename + 'c.jpg'),
             '--mode', self._config.film,
             '--output-dir', dest,
@@ -294,6 +294,7 @@ class JobManagerRaw(JobManager):
         targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename) + tag + '.jpg'
         jobargs = ('convert', sourcefile,
             #'-strip', '-flop', '-flip',
+            '-contrast-stretch', '0',
             '-strip', 
             '-crop', {'8mm': JobManager.Precrop8mmGeometry,
                 'super8': JobManager.PrecropS8Geometry}[self._config.film],
