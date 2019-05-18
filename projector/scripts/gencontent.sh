@@ -45,30 +45,28 @@ genyuvstream()
 #    cp $project/title/titlelist.txt $project/contentlist.txt
     getImages >> $project/contentlist.txt
 
+        #-vf-add rotate=1 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$project/contentlist.txt \
         -vf scale=$HRES:$VRES \
-        -vf-add rotate=1 \
     	-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub \
-        -vo yuv4mpeg:file=$project/${container}.yuv
+        -vo yuv4mpeg:file=$project/$(basename $project).yuv
 }
 
 processyuv()
 {
-    if [[ ! -f "$project/${container}.yuv" ]]
+    if [[ ! -f "$project/$(basename $project).yuv" ]]
     then
         genyuvstream
-        exit 0
     fi
-    if [[ ! -f "$project/${container}.avi" ]]
+    if [[ ! -f "$project/$(basename $project).avi" ]]
     then
-        cat $project/${container}.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
-            avconv -loglevel info -i - -vcodec rawvideo -y $project/${container}.avi
+        cat $project/$(basename $project).yuv | yuvfps -v 0 -r 18:1 -v 1 | \
+            avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi
     fi
-    exit 0
 	
     avsscript=/tmp/interpolate.avs
-    echo "film=\"${project}/content.avi\"" > $avsscript
+    echo "film=\"${project}/$(basename $project)/content.avi\"" > $avsscript
 	#echo -n "film=\"Y:\\\\`basename $PWD`\\\\rawframes.avi\"" > $avsscript
 	echo "result=\"result1\" # specify the wanted output here" >> $avsscript
     cat $MYDIR/pp_interpolate2.avs >> $avsscript
@@ -76,17 +74,17 @@ processyuv()
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
 #    export WINEDEBUG=trace+all
     #wine /mnt/imageinput/software/avs2yuv/avs2yuv.exe $avsscript - > $project/out.yuv
-    wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/out.yuv
+    wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/$(basename $project).yuv
 }
 
-if [[ ! -f "$project/out.yuv" ]]
+if [[ ! -f "$project/$(basename $project).yuv" ]]
 then
     processyuv
 fi
 
 if [[ ! -f "$project/content.mp4" ]]
 then
-avconv -loglevel verbose -y -i $project/out.yuv -threads `nproc` \
+avconv -loglevel verbose -y -i $project/$(basename $project).yuv -threads `nproc` \
     -f mp4 -vcodec libx264 -preset slow -b:v 4000k  -flags +loop \
     -cmp chroma -b:v 1250k -maxrate 4500k -bufsize 4M -bt 256k -refs 1 \
     -bf 3 -coder 1 -me_method umh -me_range 16 -subq 7 -partitions \
