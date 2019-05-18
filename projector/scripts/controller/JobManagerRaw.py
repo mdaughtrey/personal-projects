@@ -142,21 +142,19 @@ class JobManagerRaw(JobManager):
             self._workers[-1].start()
         self._generateTitles = False
         return 1    
-#
-#    def _scheduleGenContent(self, freeWorkers):
-#        if True == self._genContent: return 0
-#        chunks, processed = self._pstore.getVideoChunkStatus(self._config.project)
+
+    def _scheduleGenContent(self, freeWorkers):
+#        chunks, processed = self._pstore.getVideoChunk(self._config.project)
 #        todo = [ee.encode('ascii', 'ignore') for ee in chunks if ee not in processed]
 #        if 0 == len(todo):
 #            return 0
-#        if 'inline' == self._config.jobmode: 
-#            self._vmGenContent(self._config.project, self._root, todo[0])
-#        else:
-#            self._workers.append(Process(target = self._vmGenContent,
-#                args = (self._config.project, self._root, todo[0])))
-#            self._workers[-1].start()
-#        self._genContent = True
-#        return 1    
+        if 'inline' == self._config.jobmode: 
+            self._vmGenContent(self._config.project, self._root)
+        else:
+            self._workers.append(Process(target = self._vmGenContent,
+                args = (self._config.project, self._root)))
+            self._workers[-1].start()
+        return 1    
 #
 #    def shutdown(self):
 #        self._wmrunning = False
@@ -325,9 +323,9 @@ class JobManagerRaw(JobManager):
         except subprocess.CalledProcessError as ee:
             self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
 
-#    def _vmGenContent(self, project, root, container):
-#        self._pstore.markChunkProcessing(project, container)
-#        jobargs = ('../gencontent.sh', '-p', project, '-r', root)
+    def _vmGenContent(self, project, root, container):
+        self._pstore.markChunkProcessing(project, container)
+        jobargs = ('../gencontent.sh', '-p', project, '-r', root)
 #
 #        try:
 #            self._logger.info(jobargs)
