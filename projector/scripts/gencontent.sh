@@ -53,18 +53,8 @@ genyuvstream()
         -vo yuv4mpeg:file=$project/$(basename $project).yuv
 }
 
-processyuv()
+processavi()
 {
-    if [[ ! -f "$project/$(basename $project).yuv" ]]
-    then
-        genyuvstream
-    fi
-    if [[ ! -f "$project/$(basename $project).avi" ]]
-    then
-        cat $project/$(basename $project).yuv | yuvfps -v 0 -r 18:1 -v 1 | \
-            avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi
-    fi
-	
     avsscript=/tmp/interpolate.avs
     echo "film=\"${project}/$(basename $project)/content.avi\"" > $avsscript
 	#echo -n "film=\"Y:\\\\`basename $PWD`\\\\rawframes.avi\"" > $avsscript
@@ -74,13 +64,16 @@ processyuv()
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
 #    export WINEDEBUG=trace+all
     #wine /mnt/imageinput/software/avs2yuv/avs2yuv.exe $avsscript - > $project/out.yuv
-    wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/$(basename $project).yuv
+    echo wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/$(basename $project).yuv
 }
 
-if [[ ! -f "$project/$(basename $project).yuv" ]]
-then
-    processyuv
-fi
+#if [[ ! -f "$project/$(basename $project).yuv" ]]; then processyuv; fi
+if [[ ! -f "$project/$(basename $project).yuv" ]]; then genyuvstream; fi
+if [[ ! -f "$project/$(basename $project).avi" ]]; then cat $project/$(basename $project).yuv | yuvfps -v 0 -r 18:1 -v 1 | \
+            avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi; fi
+if [[ -f "$project/$(basename $project).yuv" ]]; then processavi; fi
+exit 0
+
 
 if [[ ! -f "$project/content.mp4" ]]
 then
