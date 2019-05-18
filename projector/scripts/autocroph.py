@@ -257,13 +257,7 @@ def processSuper8(filenames, outputpath):
     if options.debug and eroded_dir is not None:
         sPlacement = imp
     (fcHeight, fcWidth) = flattened.shape
-    #sprocketsource = flattened[:,:300]
     sprocket = ndimage.grey_erosion(flattened[:,:300], size=(25, 25))
-#    xOffset = 600
-#    yOffset = fcHeight - 135
-    #yOffset = 0 # fcHeight - 135
-#    flattened = flattened[yOffset:,:]
-#    sprocket = ndimage.grey_erosion(sprocket, size=(25, 25))
 
     # get the darkest and lightest values, their midpoint is the threshold
     darkest = ndimage.minimum(sprocket)
@@ -274,7 +268,6 @@ def processSuper8(filenames, outputpath):
     sprocket[sprocket >= threshold] = 255
     sprocketSlice = sprocket[:,50:200]
     if options.debug and sprockets_dir is not None:
-    #    scipy.misc.imsave('%s/%s/source_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocketsource)
         scipy.misc.imsave('%s/%s/sprocket_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocket)
         scipy.misc.imsave('%s/%s/slice_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocketSlice)
 
@@ -283,30 +276,12 @@ def processSuper8(filenames, outputpath):
         range = whitePixels(reversed(line))
         if 0 == len(range): continue
         range = range[0]
-#        logger.debug('%u < %u < %u' % (int(SprocketSuper8.w*0.95), range[1], int(SprocketSuper8.w*1.05)))
-#        if int(SprocketSuper8.w*0.95) < range[1] < int(SprocketSuper8.w*1.05):
         rangeDict[range[1]] = range[0]
-#            logger.debug('Candidate sprocket range %s' % range)
-            #rangeDict[abs(int(range[0]+(range[1]/2)) - (fcWidth/2))] = range
 
     useRange = []
     useRange.append(rangeDict[sorted(rangeDict.keys())[-1]])
     useRange.append(sorted(rangeDict.keys())[-1])
 
-    # find the horizontal extents of the sprocket
-    # remove top and bottom 150
-    #lookFor = numpy.ones([135,SprocketSuper8.w], dtype=numpy.uint8)
-#    lookFor = numpy.ones([SprocketSuper8.h,135], dtype=numpy.uint8)
-#    methods = [cv2.TM_CCOEFF,cv2.TM_CCOEFF_NORMED,cv2.TM_CCORR,cv2.TM_CCORR_NORMED,
-#        cv2.TM_SQDIFF,cv2.TM_SQDIFF_NORMED]
-#
-#    #res = cv2.matchTemplate(sprocket[:,useRange[0]:int(useRange[0]+useRange[1]/2)], lookFor, methods[2])
-#    res = cv2.matchTemplate(sprocket, lookFor, methods[2])
-#    (minval, maxval, minloc, maxloc) = cv2.minMaxLoc(res)
-#
-#    sprocketCx = useRange[0] + maxloc[1] + (SprocketSuper8.w / 2)
-#    sprocketCy = fcHeight - 135 - 135 + maxloc[0] + (SprocketSuper8.h / 2)
-#
     sprocketCx = int(270 - SprocketSuper8.h/2)
     sprocketCy = int(useRange[0] + SprocketSuper8.w/2)
     (xAdj, yAdj, wAdj, hAdj) = (0, 0, 0, 0)

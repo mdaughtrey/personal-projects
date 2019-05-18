@@ -198,7 +198,7 @@ class JobManagerRaw(JobManager):
             output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
             self._logger.info(output)
             self._logger.info("Done %s %s %s" % (project, container, outputfile))
-            self._pstore.markFused(project, container, file1, file2, file3)
+            self._pstore.markFused(project, container, file1)
             self._logger.debug("_wmTonefuse Done")
 
         except subprocess.CalledProcessError as ee:
