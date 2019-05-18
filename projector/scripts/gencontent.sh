@@ -57,13 +57,10 @@ processavi()
 {
     avsscript=/tmp/interpolate.avs
     echo "film=\"${project}/$(basename $project)/content.avi\"" > $avsscript
-	#echo -n "film=\"Y:\\\\`basename $PWD`\\\\rawframes.avi\"" > $avsscript
 	echo "result=\"result1\" # specify the wanted output here" >> $avsscript
     cat $MYDIR/pp_interpolate2.avs >> $avsscript
-    #wine Z:\\mnt\\imageinput\\software\\avs2yuv\\avs2yuv.exe $avsscript - > $project/out.yuv
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
 #    export WINEDEBUG=trace+all
-    #wine /mnt/imageinput/software/avs2yuv/avs2yuv.exe $avsscript - > $project/out.yuv
     echo wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/$(basename $project).yuv
 }
 
@@ -72,7 +69,6 @@ if [[ ! -f "$project/$(basename $project).yuv" ]]; then genyuvstream; fi
 if [[ ! -f "$project/$(basename $project).avi" ]]; then cat $project/$(basename $project).yuv | yuvfps -v 0 -r 18:1 -v 1 | \
             avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi; fi
 if [[ -f "$project/$(basename $project).yuv" ]]; then processavi; fi
-exit 0
 
 
 if [[ ! -f "$project/content.mp4" ]]
