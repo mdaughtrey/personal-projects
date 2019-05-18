@@ -259,11 +259,11 @@ class ProjectStore():
         else:
             return "%03u" % newContainer, "%06u.JPG" % newFile
 
-    def getVideoChunkStatus(self, project):
+    def getVideoChunk(self, project):
         # don't make any chunks available until all fusing is done
-        if 0 != self.getRemaining(project, 'fused'):
-            logger.debug("Fused jobs remaining, not ready for video chunk")
-            return [], []
+#        if 0 != self.getRemaining(project, 'fused'):
+#            logger.debug("Fused jobs remaining, not ready for video chunk")
+#            return [], []
         with self._dbLock:
             conn = self._openDb(project)
             cursor = conn.cursor()
