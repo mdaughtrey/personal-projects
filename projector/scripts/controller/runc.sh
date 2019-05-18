@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT=test
+PROJECT=test2
 #TYPE=8mm
 TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
@@ -10,6 +10,7 @@ db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
 run()
 {
     JOBMODE=proc
+    #JOBMODE=inline
     ./controller.py --jobmode $JOBMODE --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw 
     #./controller.py --jobmode uploadonly --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
 }
