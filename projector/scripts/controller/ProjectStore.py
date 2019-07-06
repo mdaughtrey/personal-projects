@@ -20,7 +20,6 @@ class ProjectStore():
 #            os.makedirs(dblocation)
 
     def _initDb(self, project):
-#        pdb.set_trace()
         conn = sqlite3.connect(project)
         cur = conn.cursor()
         cur.execute('''CREATE TABLE picdata (
@@ -35,7 +34,6 @@ class ProjectStore():
                     autocrop TEXT,
                     autocroptag TEXT,
                     fused TEXT,
-                    fusedtag TEXT,
                     titleframe TEXT
                     )''')
         cur.execute('''CREATE TABLE videodata (
@@ -180,13 +178,12 @@ class ProjectStore():
         #self._logger.debug(statement)
         return self._getPendingWork(project, statement)
 
-    def markFused(self, project, container, file1, file2, file3):
-        for (file, tag) in zip([file1, file2, file3], ["a","b","c"]):
-            self.simpleUpdate(project, "UPDATE picdata set fused='%s',fusedtag='%s' WHERE container='%s' and autocrop='%s'"
-            % (file, tag, container, file))
+    def markFused(self, project, container, file):
+        for tag in ["a","b","c"]:
+            self.simpleUpdate(project, "UPDATE picdata set fused='%s' WHERE container='%s' and autocrop='%s' and autocroptag='%s'"
+            % (file, container, file, tag))
 
-        self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and autocrop in ('%s','%s','%s')"
-                % (container, file1, file2, file3))
+        self.simpleUpdate(project, "UPDATE picdata SET processing=0 WHERE container='%s' and autocrop='%s'" % (container, file))
 
     def abortTonefuse(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortTonefuse")
@@ -262,11 +259,11 @@ class ProjectStore():
         else:
             return "%03u" % newContainer, "%06u.JPG" % newFile
 
-    def getVideoChunkStatus(self, project):
+    def getVideoChunk(self, project):
         # don't make any chunks available until all fusing is done
-        if 0 != self.getRemaining(project, 'fused'):
-            logger.debug("Fused jobs remaining, not ready for video chunk")
-            return [], []
+#        if 0 != self.getRemaining(project, 'fused'):
+#            logger.debug("Fused jobs remaining, not ready for video chunk")
+#            return [], []
         with self._dbLock:
             conn = self._openDb(project)
             cursor = conn.cursor()
