@@ -16,12 +16,12 @@ import argparse
 
 BIN='/usr/local/bin/raspiraw'
 SPOOLTYPE="SMALL"
-FILMTYPE="SUPER8"
+#FILMTYPE="SUPER8"
 PREFRAMES=1
 FRAMES=0
 #SHUTTER=[40000,80000,1200000]
 
-SHUTTER=[50,200,400]
+SHUTTER=[200,300,400]
 #SHUTTER=[5e5, 1e6, 2e6]
 #SHUTTER=[20000, 50000, 200000]
 TARGETDIR='/tmp'
@@ -57,6 +57,7 @@ parser.add_argument('--dev', dest='dev', help='image device')
 parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
 parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
 parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
+parser.add_argument('--film', dest='film', choices=['super8','8mm'], help='8mm/super8')
 config = parser.parse_args()
 
 def signal_handler(signal, frame):
@@ -101,7 +102,7 @@ def init():
     if False == config.noled:
         serPort.write(b'l')
 #    serPort.write(b'c%st' % {'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]) 
-    serPort.write("vc{0}10T".format({'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]).encode('utf-8')) 
+    serPort.write("vc{0}10T".format({'8mm': 'd', 'super8': 'D'}[config.film]).encode('utf-8')) 
 #    portWaitFor(serPort, b'{pt:')
     return serPort
 
