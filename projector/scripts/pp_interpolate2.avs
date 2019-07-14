@@ -1,7 +1,6 @@
-film= "C:\Users\You\Documents\Yourfile.avi"  # source clip, you must specify the full path here
 #PARAMETERS
 #----------------------------------------------------------------------------------------------------------------------------
-result="resultS1" # specify the wanted output here 
+result="interpolated" # specify the wanted output here 
 trim_begin=2  trim_end=10  play_speed=18   #trim frames and play speed (PAL: 16.6666 or 18.75)
 numerator= 25  #numerator for the interpolator (final frame rate)
 denumerator= 1 #denumerator  example: 60000/1001= 59.94fps

@@ -323,8 +323,8 @@ class JobManagerRaw(JobManager):
         except subprocess.CalledProcessError as ee:
             self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
 
-    def _vmGenContent(self, project, root, container):
-        self._pstore.markChunkProcessing(project, container)
+    def _vmGenContent(self, project, root):
+#        self._pstore.markChunkProcessing(project, container)
         jobargs = ('../gencontent.sh', '-p', project, '-r', root)
 #
 #        try:
