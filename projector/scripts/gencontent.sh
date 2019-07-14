@@ -61,7 +61,7 @@ processavi()
     cat $MYDIR/pp_interpolate2.avs >> $avsscript
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
 #    export WINEDEBUG=trace+all
-    echo wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/$(basename $project).yuv
+     wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/$(basename $project).yuv
 }
 
 #if [[ ! -f "$project/$(basename $project).yuv" ]]; then processyuv; fi
