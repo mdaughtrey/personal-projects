@@ -1,8 +1,8 @@
 #!/bin/bash
 
 PROJECT=8mm1
-#TYPE=8mm
-TYPE=super8
+TYPE=8mm
+#TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
 IMPORT=/media/sf_vproj/import
 mkdir -p $ROOTOFALL/$PROJECT
