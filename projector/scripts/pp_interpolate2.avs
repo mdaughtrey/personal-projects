@@ -1,7 +1,6 @@
-film= "C:\Users\You\Documents\Yourfile.avi"  # source clip, you must specify the full path here
 #PARAMETERS
 #----------------------------------------------------------------------------------------------------------------------------
-result="resultS1" # specify the wanted output here 
+result="interpolated" # specify the wanted output here 
 trim_begin=2  trim_end=10  play_speed=18   #trim frames and play speed (PAL: 16.6666 or 18.75)
 numerator= 25  #numerator for the interpolator (final frame rate)
 denumerator= 1 #denumerator  example: 60000/1001= 59.94fps
@@ -56,7 +55,7 @@ LoadPlugin("plugins/MVTools.dll")
 LoadPlugin("plugins/MVTools2.dll")
 Loadplugin("plugins/warpsharp.dll")
 LoadPlugin("plugins/autolevels_06.dll")
-Import("plugins/03_RemoveDirtMC.avs")
+Import("c:\\windows\\system\\plugins/03_RemoveDirtMC.avs")
 source= AviSource(film).assumefps(play_speed).trim(trim_begin,0).converttoYV12()
 trimming= framecount(source)-trim_end
 source1= trim(source,0,trimming)
