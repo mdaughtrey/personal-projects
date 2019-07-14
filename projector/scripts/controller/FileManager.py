@@ -2,6 +2,7 @@ import os
 import pdb
 from threading import Lock
 import subprocess
+import shutil
 
 class FileManager():
     mtxGetDir = Lock()
@@ -30,6 +31,11 @@ class FileManager():
             open(targetFile, 'wb').write(fileData)
         except ee:
             logger.error("Write to %s failed, %s" % (targetFile, ee.message))
+
+    def newImport(self, file, project, container, filename, tag):
+        cmdargs = file, "%s/%s/%s/rawfile/%s%s.RAW" % (self._fileRoot, project, container, filename, tag)
+        self._logger.debug("copyfile %s" % ' '.join(cmdargs))
+        shutil.copyfile(*cmdargs)
         
     def getRawFileLocation(self, project, container, filename):
         return "%s/%s" % (self._getdir(project, container, 'rawfile'), filename)
