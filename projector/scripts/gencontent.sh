@@ -10,7 +10,7 @@ while getopts "c:p:r:h" OPT
 do
     case $OPT in
         p) project=$OPTARG ;;
-#        r) fileroot=$OPTARG ;;
+        r) fileroot=$OPTARG ;;
 #        c) container=$OPTARG ;;
         h) HRES=1920; VRES=1080 ;;
         *) echo What?; exit 1 ;;
@@ -68,7 +68,8 @@ processavi()
 if [[ ! -f "$project/$(basename $project).yuv" ]]; then genyuvstream; fi
 if [[ ! -f "$project/$(basename $project).avi" ]]; then cat $project/$(basename $project).yuv | yuvfps -v 0 -r 18:1 -v 1 | \
             avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi; fi
-if [[ -f "$project/$(basename $project).yuv" ]]; then processavi; fi
+if [[ -f "$project/$(basename $project).avi" ]]; then processavi; fi
+exit 0
 
 
 if [[ ! -f "$project/content.mp4" ]]
