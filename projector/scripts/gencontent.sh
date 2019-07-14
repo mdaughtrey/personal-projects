@@ -50,13 +50,13 @@ genyuvstream()
         mf://@$project/contentlist.txt \
         -vf scale=$HRES:$VRES \
     	-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub \
-        -vo yuv4mpeg:file=$project/$(basename $project).yuv
+        -vo yuv4mpeg:file=$project/$(basename $project)_raw.yuv
 }
 
 processavi()
 {
     avsscript=/tmp/interpolate.avs
-    echo "film=\"${project}/$(basename $project)/content.avi\"" > $avsscript
+    echo "film=\"${project}/$(basename $project).avi\"" > $avsscript
 	echo "result=\"result1\" # specify the wanted output here" >> $avsscript
     cat $MYDIR/pp_interpolate2.avs >> $avsscript
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
@@ -65,14 +65,13 @@ processavi()
 }
 
 #if [[ ! -f "$project/$(basename $project).yuv" ]]; then processyuv; fi
-if [[ ! -f "$project/$(basename $project).yuv" ]]; then genyuvstream; fi
-if [[ ! -f "$project/$(basename $project).avi" ]]; then cat $project/$(basename $project).yuv | yuvfps -v 0 -r 18:1 -v 1 | \
+if [[ ! -f "$project/$(basename $project)_raw.yuv" ]]; then genyuvstream; fi
+if [[ ! -f "$project/$(basename $project).avi" ]]; then cat $project/$(basename $project)_raw.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
             avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi; fi
-if [[ -f "$project/$(basename $project).avi" ]]; then processavi; fi
-exit 0
+if [[ ! -f "$project/$(basename $project).avi" ]]; then processavi; fi
 
 
-if [[ ! -f "$project/content.mp4" ]]
+if [[ ! -f "$project/$(basename $project).mp4" ]]
 then
 avconv -loglevel verbose -y -i $project/$(basename $project).yuv -threads `nproc` \
     -f mp4 -vcodec libx264 -preset slow -b:v 4000k  -flags +loop \
@@ -80,5 +79,5 @@ avconv -loglevel verbose -y -i $project/$(basename $project).yuv -threads `nproc
     -bf 3 -coder 1 -me_method umh -me_range 16 -subq 7 -partitions \
     +parti4x4+parti8x8+partp8x8+partb8x8 -g 250 -keyint_min 25 -level 30 \
     -qmin 10 -qmax 51 -qcomp 0.6 -trellis 2 -sc_threshold 40 -i_qfactor 0.71 \
-    -acodec aac -strict experimental -b:a 112k -ar 48000 -ac 2 $project/content.mp4 
+    -acodec aac -strict experimental -b:a 112k -ar 48000 -ac 2 $project/$(basename $project).mp4 
 fi
