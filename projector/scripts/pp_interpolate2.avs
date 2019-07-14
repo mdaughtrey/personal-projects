@@ -55,7 +55,7 @@ LoadPlugin("plugins/MVTools.dll")
 LoadPlugin("plugins/MVTools2.dll")
 Loadplugin("plugins/warpsharp.dll")
 LoadPlugin("plugins/autolevels_06.dll")
-Import("plugins/03_RemoveDirtMC.avs")
+Import("c:\\windows\\system\\plugins/03_RemoveDirtMC.avs")
 source= AviSource(film).assumefps(play_speed).trim(trim_begin,0).converttoYV12()
 trimming= framecount(source)-trim_end
 source1= trim(source,0,trimming)
