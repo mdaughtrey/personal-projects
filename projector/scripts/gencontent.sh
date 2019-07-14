@@ -68,7 +68,7 @@ processavi()
 if [[ ! -f "$project/$(basename $project)_raw.yuv" ]]; then genyuvstream; fi
 if [[ ! -f "$project/$(basename $project).avi" ]]; then cat $project/$(basename $project)_raw.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
             avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi; fi
-if [[ ! -f "$project/$(basename $project).avi" ]]; then processavi; fi
+if [[ ! -f "$project/$(basename $project).yuv" ]]; then processavi; fi
 
 
 if [[ ! -f "$project/$(basename $project).mp4" ]]
