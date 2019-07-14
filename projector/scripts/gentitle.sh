@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -o xtrace
 declare -ix TITLE_STREAM_FRAMES=200
 #FONT="/usr/share/fonts/truetype/droid/DroidSerif-BoldItalic.ttf"
 SOFTWARE=/media/sf_vproj/scans/software/
@@ -28,8 +29,8 @@ getFirstImage()
 {
     IFS=\|
     #select="select container,fused from picdata where fused is not NULL order by container,fused limit 1"
-    select="select container,fused from picdata where rowid=1"
-    sqlite3 -list $fileroot//${project}/${project}db "$select" | while read container filename tag
+    select="select container,fused from picdata limit 1"
+    sqlite3 -list $fileroot/${project}/${project}db "$select" | while read container filename tag
     do
         echo $fileroot/$project/$container/fused/${filename}".jpg"
     done
@@ -95,7 +96,8 @@ gentitles()
 				-stroke yellow -strokewidth 2 \
 				-fill blue -font ${FONT} \
 				-size x${rowsize} label:"${line}" \
-                -rotate -90 $titleroot/titleline_${linecount}.png
+                $titleroot/titleline_${linecount}.png
+                # -rotate -90 $titleroot/titleline_${linecount}.png
 			((translateY+=rowsize+20))
 			#echo -n " -page +$((translateX))+$((translateY)) $titleroot/titleline_${linecount}.png"
 			echo -n " -page +$((translateY)) $titleroot/titleline_${linecount}.png"
