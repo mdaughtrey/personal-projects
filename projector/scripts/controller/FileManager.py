@@ -35,6 +35,7 @@ class FileManager():
     def newImport(self, file, project, container, filename, tag):
         cmdargs = file, "%s/%s/%s/rawfile/%s%s.RAW" % (self._fileRoot, project, container, filename, tag)
         self._logger.debug("copyfile %s" % ' '.join(cmdargs))
+        os.makedirs("%s/%s/%s/rawfile" % (self._fileRoot, project, container), exist_ok=True)
         shutil.copyfile(*cmdargs)
         
     def getRawFileLocation(self, project, container, filename):

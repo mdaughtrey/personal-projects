@@ -74,7 +74,7 @@ class JobManagerRaw(JobManager):
             container, filename = self._pstore.getNextImageLocation(self._config.project, tag)
             self._fileman.newImport(file, self._config.project, container, filename, tag)
             self._pstore.newRawFile(self._config.project, container, filename, tag)
-            pass
+            return 0
     
     def _scheduleProcessRaw(self, freeWorkers):
         self._logger.debug("scheduleProcessRaw")
