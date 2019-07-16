@@ -1,8 +1,8 @@
 #!/bin/bash
 
-PROJECT=test2
-#TYPE=8mm
-TYPE=super8
+PROJECT=8mm1
+TYPE=8mm
+#TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
 mkdir -p $ROOTOFALL/$PROJECT
 db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
