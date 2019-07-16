@@ -23,6 +23,7 @@ parser.add_argument('--project', required = True, dest='project', help='set jobm
 parser.add_argument('--film', required = True, dest='film', choices=['8mm','super8'], help="film mode")
 parser.add_argument('--saveroot', required = True, dest='saveroot', help="root dir to save to")
 parser.add_argument('--raw', required = True, dest='raw', default='False', action='store_true', help="process RAW files")
+parser.add_argument('--iimport', dest='iimport', help="set import directory")
 config = parser.parse_args()
 
 ROOTOFALL=config.saveroot 
