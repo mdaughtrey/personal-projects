@@ -30,11 +30,7 @@ getFirstImage()
     IFS=\|
     #select="select container,fused from picdata where fused is not NULL order by container,fused limit 1"
     select="select container,fused from picdata limit 1"
-<<<<<<< HEAD
-    sqlite3 -list $fileroot//${project}/${project}db "$select" | while read container filename tag
-=======
     sqlite3 -list $fileroot/${project}/${project}db "$select" | while read container filename tag
->>>>>>> 0e7a10aad40b745d39bde45db4ab5d0468e9df89
     do
         echo $fileroot/$project/$container/fused/${filename}".jpg"
     done
