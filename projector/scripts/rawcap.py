@@ -21,7 +21,7 @@ PREFRAMES=1
 FRAMES=0
 #SHUTTER=[40000,80000,1200000]
 
-SHUTTER=[200,300,400]
+SHUTTER=[150,300,450]
 #SHUTTER=[5e5, 1e6, 2e6]
 #SHUTTER=[20000, 50000, 200000]
 TARGETDIR='/tmp'
@@ -58,6 +58,7 @@ parser.add_argument('--prefix', dest='prefix', default='', help='prefix filename
 parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
 parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
 parser.add_argument('--film', dest='film', choices=['super8','8mm'], help='8mm/super8')
+parser.add_argument('--dir', dest='dir', required=True, help='set project directory')
 config = parser.parse_args()
 
 def signal_handler(signal, frame):
@@ -121,33 +122,19 @@ def frame(port, num):
 #    for ss in range(1, 100000, 1000):
 
         logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
-        #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
-        #        "--fps 1 -t 100 -sr 1 -o {:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag))
-        #args1 = ''.join(["/usr/local/bin/raspiraw2 --mode 0 --header --i2c 0 --expus {0} ".format(ss), 
-        #args1 = ''.join([BIN, " --mode 0 --header --i2c 0 --expus {0}",format(ss),
-        #    " --fps 1 --serport /dev/ttyUSB0 --serspeed 57600 --ledus {0} -t 1000 -sr 1 -o ".format(ss),
-        #    "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
-        #-w, --width     : Set current mode width
-        #-h, --height    : Set current mode height
-        #-lt, --left     : Set current mode left
-        #-tp, --top      : Set current mode top
 
         args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
             Geometry['geo0'], " --fps 1 -t 1000 -sr 1 -o ",
-            "{:s}/{:s}{:06d}{:s}.raw".format(OUTPUTDIR, config.prefix, num, tag)])
+            "{:s}/{:s}{:06d}{:s}.raw".format(config.dir, config.prefix, num, tag)])
         runargs = (args1)
-        #runargs = ("/usr/local/bin/raspiraw --mode 0 --header --i2c 0 --expus {0} ".format(ss),
-        #        "--fps 1 -t 250 -sr 1 -w 640 -h 480 -o {:s}/{:06d}.raw".format(OUTPUTDIR, num))
         logger.debug(''.join(runargs))
         retcode = subprocess.call(''.join(runargs), shell=True, stderr=None)
         logger.debug("retcode %u" % retcode)
-        open("{:s}/{:06d}{:s}.done".format(OUTPUTDIR, num, tag), "w")
-        #time.sleep(2)
-        #num += 1
+        open("{:s}/{:06d}{:s}.done".format(config.dir, num, tag), "w")
 
 def main():
-#    subprocess.call('/usr/local/bin/camera_i2c', shell=True, stderr=None)
-    files = sorted(glob("{0}/{1}??????.done".format(OUTPUTDIR, config.prefix)))
+    os.makedirs(config.dir, exist_ok=True);
+    files = sorted(glob("{0}/{1}??????.done".format(config.dir, config.prefix)))
     if len(files):
         frameNum = int(files[-1][-11:-5])
     else:
@@ -167,7 +154,7 @@ def main():
         frame(port, frameNum)
         frameNum += 1
     stop(port)
-    open("{:s}/{:s}done.done".format(OUTPUTDIR, config.prefix), "w")
+    open("{:s}/{:s}done.done".format(config.dir, config.prefix), "w")
 
 main()
 
