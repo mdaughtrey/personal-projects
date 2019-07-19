@@ -21,7 +21,7 @@ PREFRAMES=1
 FRAMES=0
 #SHUTTER=[40000,80000,1200000]
 
-SHUTTER=[150,300,450]
+SHUTTER=[150,250,350]
 #SHUTTER=[5e5, 1e6, 2e6]
 #SHUTTER=[20000, 50000, 200000]
 TARGETDIR='/tmp'
@@ -117,7 +117,7 @@ def frame(port, num):
     if False == config.nofilm:
         port.write(b'n')
         if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
-            return 
+            return 1
     for ss,tag in zip(SHUTTER, ['a','b','c']):
 #    for ss in range(1, 100000, 1000):
 
@@ -131,6 +131,7 @@ def frame(port, num):
         retcode = subprocess.call(''.join(runargs), shell=True, stderr=None)
         logger.debug("retcode %u" % retcode)
         open("{:s}/{:06d}{:s}.done".format(config.dir, num, tag), "w")
+        return 0
 
 def main():
     os.makedirs(config.dir, exist_ok=True);
@@ -151,7 +152,7 @@ def main():
             else:
                 logger.info('Waiting for disk space')
                 time.sleep(10)
-        frame(port, frameNum)
+        if frame(port, frameNum): break
         frameNum += 1
     stop(port)
     open("{:s}/{:s}done.done".format(config.dir, config.prefix), "w")
