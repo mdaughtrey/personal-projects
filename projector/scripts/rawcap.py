@@ -131,7 +131,7 @@ def frame(port, num):
         retcode = subprocess.call(''.join(runargs), shell=True, stderr=None)
         logger.debug("retcode %u" % retcode)
         open("{:s}/{:06d}{:s}.done".format(config.dir, num, tag), "w")
-     return 0
+    return 0
 
 def main():
     os.makedirs(config.dir, exist_ok=True);
