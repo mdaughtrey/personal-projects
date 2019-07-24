@@ -516,8 +516,8 @@ def process8mm(filenames, outputpath):
 
 #    frameX = int(sprocketCx + Sprocket8mm.h/2) + xAdj
 #    frameY = int(sprocketCy + Frame8mm.h/2) + yAdj 
-    frameX = int(sprocketCx + Sprocket8mm.w/2)
-    frameY = sprocketCy
+    frameX = int(sprocketCx + Sprocket8mm.w/2) + hAdj
+    frameY = sprocketCy + yAdj
     frameH = Frame8mm.h + hAdj
     frameW = Frame8mm.w + wAdj
 
