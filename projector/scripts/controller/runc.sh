@@ -61,7 +61,7 @@ STMTTF
 
 rebuild()
 {
-    ls ${ROOTOFALL}/${PROJECT}/*/rawfile/*.RAW | head -5 | while read RAWFILE; do
+    ls ${ROOTOFALL}/${PROJECT}/*/rawfile/*.RAW |  while read RAWFILE; do
         name=$(basename $RAWFILE)
         read -a dirs <<<$(dirname $RAWFILE | tr '/' ' ')
         echo insert into picdata '(processing,rawfile,tag,container)' values"(0,'"${name:0:6}"','"${name:6:1}"','"${dirs[2]}"');"
