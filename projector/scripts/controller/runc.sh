@@ -51,12 +51,20 @@ update picdata set processing=0, ${1}=NULL,${1}tag=NULL;
 STMT
 }
 
+sqlresettf()
+{
+    sqlite3 $db <<STMTTF
+update picdata set processing=0, ${1}=NULL;
+.exit
+STMTTF
+}
+
 
 case "$1" in 
     run) run ;;
     mode) setmode $2 ;;
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
-    resettf) sqlreset fused ;;
+    resettf) sqlresettf ;;
     *) echo What?
 esac
