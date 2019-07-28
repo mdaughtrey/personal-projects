@@ -1,4 +1,5 @@
 import os
+import re
 import pdb
 from multiprocessing import Process
 from shutil import copyfile
@@ -9,6 +10,7 @@ from JobManager import JobManager
 import numpy
 #import imageio
 from PIL import Image
+import glob
 
 def trampoline(object):
     #object._logger.debug("Worker")
@@ -29,6 +31,7 @@ class JobManagerRaw(JobManager):
         #self._logger.debug("tasks %s" % tasks)
         self._scheduledTasks = []
         JobManagerRaw.taskTable = { 
+            "im": self._scheduleImport,
             "rf": self._scheduleProcessRaw,
             "pc": self._schedulePrecrop,
             "ac": self._scheduleAutocrop,
@@ -61,6 +64,18 @@ class JobManagerRaw(JobManager):
 ##        elif 'inline' == mode:
 ##            self._workerManager()
 
+    def _scheduleImport(self, freeWorkers):
+        for file in glob.iglob("%s/*.raw" % self._config.iimport):
+            tag = re.search('[0-9]*[abc]?.raw', file)
+            if tag is None:
+                logger.error("Cannot find tag on %s" % file)
+                sys.exit(1)
+            tag = tag.group()[6]
+            container, filename = self._pstore.getNextImageLocation(self._config.project, tag)
+            self._fileman.newImport(file, self._config.project, container, filename, tag)
+            self._pstore.newRawFile(self._config.project, container, filename, tag)
+        sys.exit(0)
+    
     def _scheduleProcessRaw(self, freeWorkers):
         self._logger.debug("scheduleProcessRaw")
         scheduled = 0
