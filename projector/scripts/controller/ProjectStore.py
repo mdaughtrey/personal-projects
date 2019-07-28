@@ -30,7 +30,7 @@ class ProjectStore():
                     converted TEXT,
                     convertedtag TEXT,
                     precrop TEXT,
-                    precroptag TEST,
+                    precroptag TEXT,
                     autocrop TEXT,
                     autocroptag TEXT,
                     fused TEXT,
