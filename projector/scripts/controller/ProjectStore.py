@@ -52,7 +52,8 @@ class ProjectStore():
         '''
         if False == os.path.isdir(self._dbroot):
             os.makedirs(self._dbroot)
-            self._initDb(project)
+            dblocation = "%s/%s" % (os.path.abspath(self._dbroot), project)
+            self._initDb(dblocation)
         else:
             '''
         if ProjectStore.psdebug: pdb.set_trace()

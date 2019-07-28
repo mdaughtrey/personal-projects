@@ -1,17 +1,18 @@
 #!/bin/bash
 
-PROJECT=8mm1
+PROJECT=fm101
 TYPE=8mm
 #TYPE=super8
-ROOTOFALL=/media/sf_vproj/scans/
-IMPORT=/media/sf_vproj/import
+#ROOTOFALL=/media/sf_vproj/scans/
+ROOTOFALL=/import/
+IMPORT=/import/fm101
 mkdir -p $ROOTOFALL/$PROJECT
 db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
 
 run()
 {
-    JOBMODE=proc
-    #JOBMODE=inline
+    #JOBMODE=proc
+    JOBMODE=inline
     ./controller.py --jobmode $JOBMODE --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw --iimport $IMPORT
     #./controller.py --jobmode uploadonly --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
 }
