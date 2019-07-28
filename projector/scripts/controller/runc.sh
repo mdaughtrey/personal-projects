@@ -54,9 +54,18 @@ STMT
 sqlresettf()
 {
     sqlite3 $db <<STMTTF
-update picdata set processing=0, ${1}=NULL;
+update picdata set processing=0, fused=NULL;
 .exit
 STMTTF
+}
+
+rebuild()
+{
+    ls ${ROOTOFALL}/${PROJECT}/*/rawfile/*.RAW | head -5 | while read RAWFILE; do
+        name=$(basename $RAWFILE)
+        read -a dirs <<<$(dirname $RAWFILE | tr '/' ' ')
+        echo insert into picdata '(processing,rawfile,tag,container)' values"(0,'"${name:0:6}"','"${name:6:1}"','"${dirs[2]}"');"
+    done
 }
 
 
@@ -66,5 +75,6 @@ case "$1" in
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
     resettf) sqlresettf ;;
+    rebuild) rebuild ;;
     *) echo What?
 esac
