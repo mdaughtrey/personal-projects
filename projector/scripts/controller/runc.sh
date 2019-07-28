@@ -1,10 +1,10 @@
 #!/bin/bash
 
-PROJECT=fm101
+PROJECT=8mm3
 TYPE=8mm
 #TYPE=super8
-#ROOTOFALL=/media/sf_vproj/scans/
-ROOTOFALL=/import/
+ROOTOFALL=/media/sf_vproj/scans/
+#ROOTOFALL=/import/
 IMPORT=/import/fm101
 mkdir -p $ROOTOFALL/$PROJECT
 db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
@@ -59,12 +59,25 @@ update picdata set processing=0, fused=NULL;
 STMTTF
 }
 
+initdb()
+{
+    cat <<DBINIT
+CREATE TABLE picdata ( processing integer, rawfile TEXT, tag TEXT, container TEXT, converted TEXT, convertedtag TEXT, precrop TEXT,
+ precroptag TEXT, autocrop TEXT, autocroptag TEXT, fused TEXT, titleframe TEXT);
+CREATE TABLE videodata ( container TEXT, processing integer);
+CREATE TABLE taskcontrol ( task TEXT);
+CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container,tag);
+DBINIT
+}
+
+
 rebuild()
 {
+
     ls ${ROOTOFALL}/${PROJECT}/*/rawfile/*.RAW |  while read RAWFILE; do
         name=$(basename $RAWFILE)
-        read -a dirs <<<$(dirname $RAWFILE | tr '/' ' ')
-        echo insert into picdata '(processing,rawfile,tag,container)' values"(0,'"${name:0:6}"','"${name:6:1}"','"${dirs[2]}"');"
+        container=$(echo $RAWFILE | egrep -o '/[0-9]{3}/' | tr -d '/')
+        echo insert into picdata '(processing,rawfile,tag,container)' values"(0,'"${name:0:6}"','"${name:6:1}"','"${container}"');"
     done
 }
 
@@ -72,9 +85,21 @@ rebuild()
 case "$1" in 
     run) run ;;
     mode) setmode $2 ;;
+    initdb) initdb | sqlite3 ${ROOTOFALL}/${PROJECT}/${PROJECT}db ;;
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
     resettf) sqlresettf ;;
-    rebuild) rebuild ;;
+    rebuild) rm /tmp/rebuilddb
+        initdb > rebuild.txt
+        echo Init
+        rebuild >> rebuild.txt
+        echo Rebuild.txt
+        echo ".exit" >> rebuild.txt
+        echo Rebuilding
+        cat rebuild.txt | sqlite3 /tmp/rebuilddb
+        echo Moving
+        mv /tmp/rebuilddb ${ROOTOFALL}/${PROJECT}/${PROJECT}db
+        echo Done
+        ;;
     *) echo What?
 esac
