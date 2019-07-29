@@ -286,42 +286,15 @@ def process8mm(filenames, outputpath):
     #    if 0 == len(range): continue
     #    range = range[0]
     #    rangeDict[range[1]] = range[0]
-    pdb.set_trace()
-    upperSprocket = findExtents("upper", sprocketSlice[:550])
-    lowerSprocket = findExtents("lower", sprocketSlice[1200:])
-#Pdb) upperSprocket[1]
-#[(147, 0, 401, 99)]
-#(Pdb) lowerSprocket[1]
-#[(173, 0, 423, 85)]
+    upperSprocket = findExtents("upper", sprocketSlice[:550])[1][0]
+    lowerSprocket = findExtents("lower", sprocketSlice[1200:])[1][0]
+    #(Pdb) upperSprocket
+    #(24735, [(188, 0, 442, 96)]) y,x,y,x
+    #(Pdb) lowerSprocket
+    #(13360, [(211, 0, 377, 79)]) y,x,y,x
 
-    if options.debug and sprockets_dir is not None:
-        idraw = ImageDraw.Draw(sPlacement)
-        xy = numpy.array(upperSprocket[1][0])[[1,0,3,2]]
-        idraw.rectangle([*xy])
-        xy = numpy.array(lowerSprocket[1][0])[[1,0,3,2]] + numpy.array([0,1200,0,1200])
-        idraw.rectangle([*xy])
-#        idraw.rectangle(lowerSprocket[1][[1,0,3,2]] + numpy.array([0,1200,0,1200]))
-        #xy = numpy.array(upperSprocket[1][0])[[1,0,3,2]]
-#        scipy.misc.imsave('%s/%s/rects_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)), sprocketSlice)
-        sPlacement.save('%s/%s/rect_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)))
-#
-#        line2 = (sprocketCx + SprocketSuper8.w/2, sprocketCy - SprocketSuper8.h/2,
-#                 sprocketCx - SprocketSuper8.w/2, sprocketCy + SprocketSuper8.h/2)
-#            
-#        idraw.line(line1, fill=255, width=2)
+    frameCy = int(upperSprocket[2] + (lowerSprocket[0] + 1200 - upperSprocket[2])/2)
 
-    # find largest rectangle
-    # find y center of triangle
-    # exclude groups that dont encompass y center
-    # find average height
-    # exclude <10% and >90%
-
-#    useRange = []
-#    useRange.append(rangeDict[sorted(rangeDict.keys())[-1]])
-#    useRange.append(sorted(rangeDict.keys())[-1])
-
-    sprocketCx = int(59-Sprocket8mm.w/2)
-    sprocketCy = int(useRange[0] + useRange[1]/2)
     (xAdj, yAdj, wAdj, hAdj) = (0, 0, 0, 0)
     if options.adjfile:
         try:
@@ -329,48 +302,29 @@ def process8mm(filenames, outputpath):
             logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
         except:
             logger.debug("%s file not found", options.adjfile)
-
-#    frameX = int(sprocketCx + Sprocket8mm.h/2) + xAdj
-#    frameY = int(sprocketCy + Frame8mm.h/2) + yAdj 
-    frameX = int(sprocketCx + Sprocket8mm.w/2) + hAdj
-    frameY = sprocketCy + yAdj
+    frameX = upperSprocket[3] + xAdj
+    frameY = frameCy - Frame8mm.h/2 + yAdj
     frameH = Frame8mm.h + hAdj
     frameW = Frame8mm.w + wAdj
 
-    if options.debug and eroded_dir is not None:
+    if options.debug and sprockets_dir is not None:
         idraw = ImageDraw.Draw(sPlacement)
-        line1 = (sprocketCx - Sprocket8mm.w/2, sprocketCy - Sprocket8mm.h/2,
-                 sprocketCx + Sprocket8mm.w/2, sprocketCy + Sprocket8mm.h/2)
-            
-        line2 = (sprocketCx + Sprocket8mm.w/2, sprocketCy - Sprocket8mm.h/2,
-                 sprocketCx - Sprocket8mm.w/2, sprocketCy + Sprocket8mm.h/2)
-            
-        idraw.line(line1, fill=255, width=2)
-        idraw.line(line2, fill=255, width=2)
-        idraw.line([i + j for i, j in zip(line1, (0, 1, 0, 1))], fill=0, width=2)
-        idraw.line([i + j for i, j in zip(line2, (0, 1, 0, 1))], fill=0, width=2)
+        # upper sprocket
+        xy = numpy.array(upperSprocket)[[1,0,3,2]]
+        idraw.rectangle([*xy])
+        # lower sprocket
+        xy = numpy.array(lowerSprocket)[[1,0,3,2]] + numpy.array([0,1200,0,1200])
+        idraw.rectangle([*xy])
+        # center line
+        idraw.line([0, frameCy-1, fcWidth, frameCy-1], fill=255,width=1)
+        idraw.line([0, frameCy, fcWidth, frameCy], fill=0,width=1)
+        idraw.line([0, frameCy+1, fcWidth, frameCy+1], fill=255,width=1)
+        # frame
+        idraw.rectangle([frameX-1, frameY-1, frameX + frameW-1, frameY + frameH-1],  outline=255)
+        idraw.rectangle([frameX, frameY, frameX + frameW, frameY + frameH], outline=0)
+        idraw.rectangle([frameX+1, frameY + 1, frameX + frameW+1, frameY + frameH+1], outline=255)
+        sPlacement.save('%s/%s/rect_%s' % (options.outputdir, sprockets_dir, os.path.basename(filename)))
 
-        # top horizontal
-        fline = (frameX, frameY, frameX + frameW, frameY)
-        idraw.line(fline, fill=255, width=2)
-        idraw.line([i + j for i, j in zip(fline, (0, 1, 0, 1))], fill=0, width=2)
-
-        # bottom horizontal
-        fline = (frameX, frameY + frameH, frameX + frameW, frameY + frameH)
-        idraw.line(fline, fill=255, width=2)
-        idraw.line([i + j for i, j in zip(fline, (0, 1, 0, 1))], fill=0, width=2)
-
-        # left vertical
-        fline = (frameX, frameY, frameX, frameY + frameH)
-        idraw.line(fline, fill=255, width=2)
-        idraw.line([i + j for i, j in zip(fline, (1, 0, 1, 0))], fill=0, width=2)
-
-        # right vertical
-        fline = (frameX + frameW, frameY, frameX + frameW, frameY + frameH)
-        idraw.line(fline, fill=255, width=2)
-        idraw.line([i + j for i, j in zip(fline, (1, 0, 1, 0))], fill=0, width=2)
-
-        sPlacement.save('%s/%s/2_%s' % (options.outputdir, eroded_dir, os.path.basename(filename)))
     # crop and save
     if ((frameX + frameW) > fcWidth) or ((frameY + frameH) > fcHeight):
         logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameX + frameW, fcWidth, frameY + frameH, fcHeight))
