@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import scipy
+import struct
 from scipy import ndimage
 from scipy import signal
 from optparse import OptionParser
@@ -188,27 +189,31 @@ def writeThresholds(sprocket):
             scipy.misc.imsave('%s/%s/sprocket_%s.jpg' % (options.outputdir, sprockets_dir, ii), sprocket)
         sprocket = copy.deepcopy(ss)
 
-#def findLargestRect(mat, value=0):
-#    """Find height, width of the largest rectangle containing all `value`'s."""
-#    it = iter(mat)
-#    rowIdx = 1
-#    endRow = 0
-#    endCol = 0
-#    hist = [(el==value) for el in next(it, [])]
-#    max_size, endCol = maxRect(hist)
-#    for row in it:
-#        hist = [(1+h) if el == value else 0 for h, el in zip(hist, row)]
-#        this_size, thisEnd = maxRect(hist)
-#        #print "row %u this_size %s thisEnd %u" % (rowIdx, this_size, thisEnd)
-#        if area(this_size) > area(max_size):
-#            max_size = this_size
-#            endRow = rowIdx
-#            endCol = thisEnd
-#        rowIdx += 1
-#    return max_size, (endRow, endCol)
+def findLargestRect(mat, value=0):
+    """Find height, width of the largest rectangle containing all `value`'s."""
+    it = iter(mat)
+    rowIdx = 1
+    endRow = 0
+    endCol = 0
+    hist = [(el==value) for el in next(it, [])]
+    max_size, endCol = maxRect(hist)
+    for row in it:
+        hist = [(1+h) if el == value else 0 for h, el in zip(hist, row)]
+        this_size, thisEnd = maxRect(hist)
+        #print "row %u this_size %s thisEnd %u" % (rowIdx, this_size, thisEnd)
+        if area(this_size) > area(max_size):
+            max_size = this_size
+            endRow = rowIdx
+            endCol = thisEnd
+        rowIdx += 1
+    return max_size, (endRow, endCol)
 
 def findExtents(tag, data):
     (nrows, ncols) = data.shape
+    arrfile = open("/tmp/%s%s.bin" % (tag, os.getpid()),"wb")
+    arrfile.write(struct.pack("II", *data.shape))
+    data.tofile(arrfile)
+    arrfile.close()
     w = numpy.zeros(dtype=numpy.uint8, shape=data.shape)
     h = numpy.zeros(dtype=numpy.uint8, shape=data.shape)
     area_max = (0,[])
