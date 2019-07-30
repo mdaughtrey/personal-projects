@@ -189,6 +189,39 @@ def writeThresholds(sprocket):
             scipy.misc.imsave('%s/%s/sprocket_%s.jpg' % (options.outputdir, sprockets_dir, ii), sprocket)
         sprocket = copy.deepcopy(ss)
 
+def maxRect(histogram):
+    """Find height, width of the largest rectangle that fits entirely under
+    the histogram."""
+    stack = []
+    top = lambda: stack[-1]
+    max_size = (0, 0) # height, width of the largest rectangle
+    pos = 0 # current position in the histogram
+    endCol = 0
+    for pos, height in enumerate(histogram):
+        start = pos # position where rectangle starts
+        while True:
+            if not stack or height > top().height:
+                stack.append(Info(start, height)) # push
+            elif stack and height < top().height:
+                thisArea = (top().height, pos - top().start)
+                if (thisArea[0] * thisArea[1]) > (max_size[0] * max_size[1]):
+                    endCol = pos
+                    max_size = thisArea
+                start, _ = stack.pop()
+                continue
+            break # height == top().height goes here
+
+    pos += 1
+    for start, height in stack:
+	    if (max_size[0] * max_size[1]) < (height * (pos - start)):
+		    max_size = (height, (pos - start))
+        #max_size = max(max_size, (height, (pos - start)), key=area)    
+#    if 0 == endCol: endCol = len(histogram)
+    return max_size, endCol - 1
+
+#def area(size):
+#    return reduce(mul, size)
+
 def findLargestRect(mat, value=0):
     """Find height, width of the largest rectangle containing all `value`'s."""
     it = iter(mat)
@@ -201,7 +234,7 @@ def findLargestRect(mat, value=0):
         hist = [(1+h) if el == value else 0 for h, el in zip(hist, row)]
         this_size, thisEnd = maxRect(hist)
         #print "row %u this_size %s thisEnd %u" % (rowIdx, this_size, thisEnd)
-        if area(this_size) > area(max_size):
+        if (this_size[0] * this_size[1]) > (max_size[0] * max_size[1]):
             max_size = this_size
             endRow = rowIdx
             endCol = thisEnd
@@ -209,6 +242,9 @@ def findLargestRect(mat, value=0):
     return max_size, (endRow, endCol)
 
 def findExtents(tag, data):
+    pass
+
+def findExtents2(tag, data):
     (nrows, ncols) = data.shape
     arrfile = open("/tmp/%s%s.bin" % (tag, os.getpid()),"wb")
     arrfile.write(struct.pack("II", *data.shape))
