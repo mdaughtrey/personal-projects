@@ -23,6 +23,7 @@ from collections import namedtuple
 from operator import mul
 import timeit
 import copy
+import subprocess
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 XFudge = 225
@@ -242,7 +243,16 @@ def findLargestRect(mat, value=0):
     return max_size, (endRow, endCol)
 
 def findExtents(tag, data):
-    pass
+    (nrows, ncols) = data.shape
+    filename = "/tmp/%s%s.bin" % (tag, os.getpid())
+    arrfile = open(filename,"wb")
+    arrfile.write(struct.pack("II", *data.shape))
+    data.tofile(arrfile)
+    arrfile.close()
+    args = ['/media/sf_vproj/scans/software/a.out', filename]
+    extents = subprocess.check_output(args).decode(sys.stdout.encoding).strip().split(' ')
+    os.remove(filename)
+    return [int(xx) for xx in extents]
 
 def findExtents2(tag, data):
     (nrows, ncols) = data.shape
@@ -327,14 +337,16 @@ def process8mm(filenames, outputpath):
     #    if 0 == len(range): continue
     #    range = range[0]
     #    rangeDict[range[1]] = range[0]
-    upperSprocket = findExtents("upper", sprocketSlice[:550])[1][0]
-    lowerSprocket = findExtents("lower", sprocketSlice[1200:])[1][0]
+    #    '157', '469', '88'] top,bottom,right
+    pdb.set_trace()
+    upperSprocket = findExtents("upper", sprocketSlice[:550])
+    lowerSprocket = findExtents("lower", sprocketSlice[1200:])
     #(Pdb) upperSprocket
     #(24735, [(188, 0, 442, 96)]) y,x,y,x
     #(Pdb) lowerSprocket
     #(13360, [(211, 0, 377, 79)]) y,x,y,x
 
-    frameCy = int(upperSprocket[2] + (lowerSprocket[0] + 1200 - upperSprocket[2])/2)
+    frameCy = int(upperSprocket[1] + (lowerSprocket[0] + 1200 - upperSprocket[1])/2)
 
     (xAdj, yAdj, wAdj, hAdj) = (0, 0, 0, 0)
     if options.adjfile:
@@ -343,7 +355,7 @@ def process8mm(filenames, outputpath):
             logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
         except:
             logger.debug("%s file not found", options.adjfile)
-    frameX = upperSprocket[3] + xAdj
+    frameX = upperSprocket[2] + xAdj
     frameY = frameCy - Frame8mm.h/2 + yAdj
     frameH = Frame8mm.h + hAdj
     frameW = Frame8mm.w + wAdj
