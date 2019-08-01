@@ -252,7 +252,7 @@ def findExtents(tag, data):
     args = ['/media/sf_vproj/scans/software/a.out', filename]
     extents = subprocess.check_output(args).decode(sys.stdout.encoding).strip().split(' ')
     os.remove(filename)
-    return [int(xx) for xx in extents]
+    return dict(zip(['top','bottom','right'],[int(xx) for xx in extents]))
 
 def findExtents2(tag, data):
     (nrows, ncols) = data.shape
@@ -338,7 +338,6 @@ def process8mm(filenames, outputpath):
     #    range = range[0]
     #    rangeDict[range[1]] = range[0]
     #    '157', '469', '88'] top,bottom,right
-    pdb.set_trace()
     upperSprocket = findExtents("upper", sprocketSlice[:550])
     lowerSprocket = findExtents("lower", sprocketSlice[1200:])
     #(Pdb) upperSprocket
@@ -346,7 +345,7 @@ def process8mm(filenames, outputpath):
     #(Pdb) lowerSprocket
     #(13360, [(211, 0, 377, 79)]) y,x,y,x
 
-    frameCy = int(upperSprocket[1] + (lowerSprocket[0] + 1200 - upperSprocket[1])/2)
+    frameCy = int(upperSprocket['bottom'] + (lowerSprocket['top'] + 1200 - upperSprocket['bottom'])/2)
 
     (xAdj, yAdj, wAdj, hAdj) = (0, 0, 0, 0)
     if options.adjfile:
@@ -355,7 +354,7 @@ def process8mm(filenames, outputpath):
             logger.debug("xAdj %d yAdj %d wAdj %d hAdj %d" % (xAdj, yAdj, wAdj, hAdj))
         except:
             logger.debug("%s file not found", options.adjfile)
-    frameX = upperSprocket[2] + xAdj
+    frameX = upperSprocket['right'] + xAdj
     frameY = frameCy - Frame8mm.h/2 + yAdj
     frameH = Frame8mm.h + hAdj
     frameW = Frame8mm.w + wAdj
@@ -363,10 +362,11 @@ def process8mm(filenames, outputpath):
     if options.debug and sprockets_dir is not None:
         idraw = ImageDraw.Draw(sPlacement)
         # upper sprocket
-        xy = numpy.array(upperSprocket)[[1,0,3,2]]
+        xy = numpy.array([0, upperSprocket['top'], upperSprocket['right'], upperSprocket['bottom']])
         idraw.rectangle([*xy])
         # lower sprocket
-        xy = numpy.array(lowerSprocket)[[1,0,3,2]] + numpy.array([0,1200,0,1200])
+        xy = numpy.array([0, lowerSprocket['top'], lowerSprocket['right'], lowerSprocket['bottom']]) + numpy.array([0,1200,0,1200])
+#        xy = numpy.array(lowerSprocket)[[1,0,3,2]] + numpy.array([0,1200,0,1200])
         idraw.rectangle([*xy])
         # center line
         idraw.line([0, frameCy-1, fcWidth, frameCy-1], fill=255,width=1)
