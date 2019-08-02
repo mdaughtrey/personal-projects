@@ -1,11 +1,11 @@
 #!/bin/bash
 
-PROJECT=8mm3
+PROJECT=fm101
 TYPE=8mm
 #TYPE=super8
-ROOTOFALL=/media/sf_vproj/scans/
-#ROOTOFALL=/import/
-IMPORT=/import/fm101
+#ROOTOFALL=/media/sf_vproj/scans/
+ROOTOFALL=/import/
+IMPORT=/import/
 mkdir -p $ROOTOFALL/$PROJECT
 db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
 
