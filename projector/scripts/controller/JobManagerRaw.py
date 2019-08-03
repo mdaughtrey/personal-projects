@@ -120,8 +120,8 @@ class JobManagerRaw(JobManager):
             self._logger.debug('toBeAutocropped1 %s' % str(toBeAutocropped))
             #toBeAutocropped = zip(*toBeAutocropped[::-1])[1]
             self._logger.debug('toBeAutocropped2 %s' % str(toBeAutocropped))
-            for (rowid, container, filename) in toBeAutocropped:
-                jobargs = (self._config.project, rowid, container, filename)
+            for (rowid, container, filename, tag) in toBeAutocropped:
+                jobargs = (self._config.project, rowid, container, filename, tag)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmAutocrop(*jobargs)
                 else:
@@ -229,7 +229,7 @@ class JobManagerRaw(JobManager):
 #        open("%s/%s" % (outputdir, file3),'w').write(open(source3).read())
 #        self._pstore.markAutocropped(project, container, file1, file2, file3)
 #
-    def _vmAutocrop(self, project, rowid, container, filename):
+    def _vmAutocrop(self, project, rowid, container, filename, tag):
         self._logger.info("Autocrop %s %s %s %s" % (project, rowid, container, filename))
         source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
         dest = os.path.abspath(self._fileman.getAutocropDir(project, container))
@@ -245,7 +245,7 @@ class JobManagerRaw(JobManager):
             self._logger.debug("retcode %u" % retcode)
 #            self._logger.info("Done %s %s %s" % (project, container, outputdir))
             if 0 == retcode:
-                self._pstore.markAutocropped(project, filename, rowid)
+                self._pstore.markAutocropped(project, filename, rowid, tag)
             else:
                 self._logger.error("Failed (%u) jobargs %s" % (retcode, str(jobargs)))
             self._logger.debug("_wmAutocrop Done")
