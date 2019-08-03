@@ -135,7 +135,7 @@ class ProjectStore():
         return self._getPendingWork(project, statement)
 
     def toBeAutocropped(self, project, limit):
-        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
+        statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop,precroptag FROM picdata
             WHERE autocrop IS NULL AND processing != 1 ORDER BY autocrop,autocroptag LIMIT %s;''' % limit
         return self._getPendingWork(project, statement)
 
@@ -157,10 +157,10 @@ class ProjectStore():
             conn.close()
         return result[0][0]
 
-    def markAutocropped(self, project, filename, rowid):
-        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='a' WHERE rowid IS %u" % (filename, rowid))
-        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='b' WHERE rowid IS %u" % (filename, rowid + 1))
-        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='c' WHERE rowid IS %u" % (filename, rowid + 2))
+    def markAutocropped(self, project, filename, rowid, tag):
+        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='%s' WHERE rowid IS %u" % (filename, tag, rowid))
+        #self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='b' WHERE rowid IS %u" % (filename, rowid + 1))
+        #self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='c' WHERE rowid IS %u" % (filename, rowid + 2))
 
     def abortAutocrop(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortAutocrop")
