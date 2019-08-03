@@ -5,11 +5,7 @@ TYPE=8mm
 #TYPE=super8
 #ROOTOFALL=/media/sf_vproj/scans/
 ROOTOFALL=/import/
-<<<<<<< HEAD
-IMPORT=/media/sf_vproj/import
-=======
 IMPORT=/import/
->>>>>>> bf4e58528ba08b36550f689da4b75dc75eb41df2
 mkdir -p $ROOTOFALL/$PROJECT
 db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
 
