@@ -60,14 +60,15 @@ class FileManager():
     def getTonefuseDir(self, project, container):
         return self._getdir(project, container, 'fused')
 
-    def getAdjFile(self, project, config):
-        adjfile = open("%s/%s/frameadj.txt" % (self._fileRoot, project), "w")
-        if '8mm' == self._config.mode:
+    def getAdjFile(self, project):
+        filename = "%s/%s/frameadj.txt" % (self._fileRoot, project)
+        adjfile = open(filename, "w")
+        if '8mm' == self._config.film:
             adjfile.write("30,20,-130,-60")
         else:
             adjfile.write("30,20,-130,-60")
         adjfile.close()
-        return adjfile
+        return filename
 
     def newTitleFile(self, fileStream, project, titlepage):
         targetDir = "%s/%s/" % (self._fileRoot, project)
