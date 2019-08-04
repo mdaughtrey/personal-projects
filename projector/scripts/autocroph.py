@@ -249,8 +249,9 @@ def findExtents(tag, data):
     arrfile.write(struct.pack("II", *data.shape))
     data.tofile(arrfile)
     arrfile.close()
-    args = ['/media/sf_vproj/scans/software/a.out', filename]
-    extents = subprocess.check_output(args).decode(sys.stdout.encoding).strip().split(' ')
+    runargs = ['/media/sf_vproj/scans/software/a.out', '-debug', filename]
+    logger.debug("Calling %s" % ' '.join(runargs))
+    extents = subprocess.check_output(runargs).decode(sys.stdout.encoding).strip().split(' ')
     os.remove(filename)
     return dict(zip(['top','bottom','right'],[int(xx) for xx in extents]))
 
@@ -338,8 +339,8 @@ def process8mm(filenames, outputpath):
     #    range = range[0]
     #    rangeDict[range[1]] = range[0]
     #    '157', '469', '88'] top,bottom,right
-    upperSprocket = findExtents("upper", sprocketSlice[:550])
-    lowerSprocket = findExtents("lower", sprocketSlice[1200:])
+    upperSprocket = findExtents("upper_%s" % os.path.basename(filename), sprocketSlice[:550])
+    lowerSprocket = findExtents("lower_%s" % os.path.basename(filename), sprocketSlice[1200:])
     #(Pdb) upperSprocket
     #(24735, [(188, 0, 442, 96)]) y,x,y,x
     #(Pdb) lowerSprocket

@@ -11,8 +11,8 @@ db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
 
 run()
 {
-    JOBMODE=proc
-    #JOBMODE=inline
+    #JOBMODE=proc
+    JOBMODE=inline
     ./controller.py --jobmode $JOBMODE --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw --iimport $IMPORT
     #./controller.py --jobmode uploadonly --project $PROJECT --film $TYPE --saveroot $ROOTOFALL --raw
 }
