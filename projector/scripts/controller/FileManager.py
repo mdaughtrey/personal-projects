@@ -64,7 +64,7 @@ class FileManager():
         filename = "%s/%s/frameadj.txt" % (self._fileRoot, project)
         adjfile = open(filename, "w")
         if '8mm' == self._config.film:
-            adjfile.write("30,20,-130,-60")
+            adjfile.write("40,15,-120,-60")
         else:
             adjfile.write("30,20,-130,-60")
         adjfile.close()
