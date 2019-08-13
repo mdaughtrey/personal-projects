@@ -1,10 +1,11 @@
 import os
 import re
+import io
 import pdb
 from multiprocessing import Process
 from shutil import copyfile
 import threading
-import subprocess
+from subprocess import check_call, Popen, PIPE, check_output
 import time
 from JobManager import JobManager
 import numpy
@@ -209,14 +210,14 @@ class JobManagerRaw(JobManager):
         '--output', outputfile, source1, source2, source3)
         self._logger.info("Calling %s" % ' '.join(jobargs))
         try:
-            #subprocess.check_call(jobargs)
-            output = subprocess.check_output(jobargs, stderr=subprocess.STDOUT)
+            #check_call(jobargs)
+            output = check_output(jobargs, stderr=STDOUT)
             self._logger.info(output)
             self._logger.info("Done %s %s %s" % (project, container, outputfile))
             self._pstore.markFused(project, container, file1)
             self._logger.debug("_wmTonefuse Done")
 
-        except subprocess.CalledProcessError as ee:
+        except CalledProcessError as ee:
             self._logger.error("Tonefuse failed rc %d $s" % (ee.returncode, ee.output))
             self._pstore.abortTonefuse(project, container, file1, file2, file3)
 #    def _vmAutocropShort(self, project, container, file1, file2, file3):
@@ -242,8 +243,8 @@ class JobManagerRaw(JobManager):
             '--adjfile', self._fileman.getAdjFile(project))
         self._logger.debug("Calling %s" % str(jobargs))
         try:
-#            #subprocess.check_call(jobargs)
-            retcode = subprocess.call(jobargs, stderr=subprocess.STDOUT)
+#            #check_call(jobargs)
+            retcode = call(jobargs, stderr=STDOUT)
             self._logger.debug("retcode %u" % retcode)
 #            self._logger.info("Done %s %s %s" % (project, container, outputdir))
             if 0 == retcode:
@@ -252,13 +253,12 @@ class JobManagerRaw(JobManager):
                 self._logger.error("Failed (%u) jobargs %s" % (retcode, str(jobargs)))
             self._logger.debug("_wmAutocrop Done")
 #
-        except subprocess.CalledProcessError as ee:
+        except CalledProcessError as ee:
             print(ee.output)
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
     def _vmConvert(self, project, container, filename, tag, rowid, tempdir):
-        pdb.set_trace()
         source = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         raw = os.path.abspath(self._fileman.getConvertedDir(project, container) + "/%s" % filename)
         ppm = tempdir + "/%s.ppm" % tag
@@ -271,21 +271,27 @@ class JobManagerRaw(JobManager):
 #        copyfile(source, raw)
         
         jobargs = ('/personal-projects/projector/raspiraw/dcraw/dcraw', '-c', source)
-        os.chdir(tempdir)
         self._logger.debug("Calling %s in %s" % (' '.join(jobargs), os.getcwd()))
-        retcode = subprocess.call(jobargs)
-        self._logger.info("dcraw returns %u" % retcode)
-        if retcode:
+   #     retcode = call(jobargs)
+        try:
+            ppmdata = check_output(jobargs)
+            self._logger.debug("dcraw returns %u bytes" % len(ppmdata))
+
+        except:
             self._logger.error("dcraw fail")
             return
-        jobargs = ('convert', ppm, jpg)
-        retcode = subprocess.call(jobargs)
-        self._logger.info("convert returns %u" % retcode)
-        if retcode:
+
+        try:
+            jobargs = ('convert', '-', jpg)
+            #check_call(jobargs, io.BytesIO(ppmdata))
+            p = Popen(jobargs, stdin=PIPE)
+            o = p.communicate(input=ppmdata)
+        except:
             self._logger.error("convert fail")
             return
-        os.remove(raw)
-        os.remove(ppm)
+
+        #os.remove(raw)
+        #os.remove(ppm)
         self._pstore.markConverted(project, filename, tag, rowid)
 
 #    def _vmPrecrop(self, project, container, filename):
@@ -295,7 +301,7 @@ class JobManagerRaw(JobManager):
 #
 ##        pdb.set_trace() 
 #        jobargs = ('/home/mattd/personal-projects/projector/raspiraw/dcraw/dcraw', sourcefile)
-#        retcode = subprocess.call(jobargs)
+#        retcode = call(jobargs)
 #        sourcefile = sourcefile.replace('.RAW','.ppm')
 #        refFile = imageio.imread("%s/reference0.bmp" % self._config.saveroot)
 #        rgbRef = numpy.full(refFile.shape, 255, dtype=numpy.uint8)
@@ -324,12 +330,12 @@ class JobManagerRaw(JobManager):
             self._logger.debug("Precrop disabled")
         else:
             try:
-                #retcode = subprocess.call(jobargs)
-                self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+                #retcode = call(jobargs)
+                self._logger.info( check_output(jobargs, stderr=STDOUT))
                 self._logger.info("Done %s %s %s" % (project, container, filename))
                 self._pstore.markPrecropped(project, filename, tag, rowid)
 
-            except subprocess.CalledProcessError as ee:
+            except CalledProcessError as ee:
                 self._logger.error("precrop failed rc %d $s" % (ee.returncode, ee.output))
 
         self._logger.debug("_vmPrecrop Done")
@@ -337,11 +343,11 @@ class JobManagerRaw(JobManager):
     def _vmGenTitle(self, project, root):
         jobargs = ('../gentitle.sh', '-p', project, '-r', root)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
-        retcode = subprocess.call(jobargs)
+        retcode = call(jobargs)
         try:
-            self._logger.info( subprocess.check_output(jobargs, stderr=subprocess.STDOUT))
+            self._logger.info( check_output(jobargs, stderr=STDOUT))
 
-        except subprocess.CalledProcessError as ee:
+        except CalledProcessError as ee:
             self._logger.error("gentitle failed rc %d $s" % (ee.returncode, ee.output))
 
     def _vmGenContent(self, project, root):
@@ -350,14 +356,14 @@ class JobManagerRaw(JobManager):
 #
 #        try:
 #            self._logger.info(jobargs)
-#            #output = subprocess.check_output(jobargs)
-#            subprocess.check_call(jobargs, stderr=subprocess.STDOUT)
+#            #output = check_output(jobargs)
+#            check_call(jobargs, stderr=STDOUT)
 #            #self._logger.debug(output)
 #            self._pstore.markChunkProcessed(project, container)
 #
-#        except subprocess.CalledProcessError as ee:
+#        except CalledProcessError as ee:
 #            self._logger.error("gencontent failed rc %d $s" % (ee.returncode, ee.output))
-#        #retcode = subprocess.call(jobargs)
+#        #retcode = call(jobargs)
 #        #if 0 == retcode:
 #        #return retcode
 #
