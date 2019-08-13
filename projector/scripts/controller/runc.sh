@@ -89,6 +89,7 @@ case "$1" in
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
     resettf) sqlresettf ;;
+    resetrf) sqlreset converted ;;
     rebuild) rm /tmp/rebuilddb
         initdb > rebuild.txt
         echo Init
