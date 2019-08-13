@@ -8,6 +8,7 @@ import subprocess
 import time
 from JobManager import JobManager
 import numpy
+import tempfile
 #import imageio
 from PIL import Image
 import glob
@@ -81,10 +82,11 @@ class JobManagerRaw(JobManager):
         scheduled = 0
         todo = self._pstore.toBeConverted(self._config.project, freeWorkers)
         self._logger.debug('toBeConverted %s' % str(todo))
+        tempdir = tempfile.TemporaryDirectory()
         if todo:
             for (rowid, container, filename,tag) in todo:
                 self._logger.debug("Container %s filename %s" % (container, filename))
-                jobargs = (self._config.project, container, filename, tag, rowid)
+                jobargs = (self._config.project, container, filename, tag, rowid, tempdir.name)
                 self._logger.info("Calling %s" % str(jobargs))
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmConvert(*jobargs)
@@ -255,18 +257,22 @@ class JobManagerRaw(JobManager):
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
-    def _vmConvert(self, project, container, filename, tag, rowid):
+    def _vmConvert(self, project, container, filename, tag, rowid, tempdir):
+        pdb.set_trace()
         source = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         raw = os.path.abspath(self._fileman.getConvertedDir(project, container) + "/%s" % filename)
-        ppm = raw + "%s.ppm" % tag
+        ppm = tempdir + "/%s.ppm" % tag
         jpg = raw + "%s.jpg" % tag
-        raw = raw + "%s.RAW" % tag
+#        raw = raw + "%s.RAW" % tag
         source += "%s.RAW" % tag
-        self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
+        #self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
+        self._logger.info("source %s  ppm %s jpg %s" % (source, ppm, jpg))
         #if False == os.path.isfile(jpg):
-        copyfile(source, raw)
-        jobargs = ('/personal-projects/projector/raspiraw/dcraw/dcraw', raw)
-        self._logger.debug("Calling %s" % ' '.join(jobargs))
+#        copyfile(source, raw)
+        
+        jobargs = ('/personal-projects/projector/raspiraw/dcraw/dcraw', '-c', source)
+        os.chdir(tempdir)
+        self._logger.debug("Calling %s in %s" % (' '.join(jobargs), os.getcwd()))
         retcode = subprocess.call(jobargs)
         self._logger.info("dcraw returns %u" % retcode)
         if retcode:
