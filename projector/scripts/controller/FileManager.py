@@ -6,9 +6,10 @@ import shutil
 
 class FileManager():
     mtxGetDir = Lock()
-    def __init__(self, logger, fileroot = './'):
+    def __init__(self, logger, fileroot,config):
         self._logger = logger
         self._fileRoot = fileroot
+        self._config = config
         self._logger.debug("FileManager init root %s" % self._fileRoot)
 
     def _getdir(self, project, container, dirname):
@@ -60,7 +61,14 @@ class FileManager():
         return self._getdir(project, container, 'fused')
 
     def getAdjFile(self, project):
-        return "%s/%s/frameadj.txt" % (self._fileRoot, project)
+        filename = "%s/%s/frameadj.txt" % (self._fileRoot, project)
+        adjfile = open(filename, "w")
+        if '8mm' == self._config.film:
+            adjfile.write("40,15,-120,-60")
+        else:
+            adjfile.write("30,20,-130,-60")
+        adjfile.close()
+        return filename
 
     def newTitleFile(self, fileStream, project, titlepage):
         targetDir = "%s/%s/" % (self._fileRoot, project)
