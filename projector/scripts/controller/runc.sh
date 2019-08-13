@@ -1,19 +1,11 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 PROJECT=fm101
-=======
-PROJECT=nofilm
->>>>>>> 85c8e04381aad7001ff5f5d6e32da53c042a1266
 TYPE=8mm
 #TYPE=super8
 #ROOTOFALL=/media/sf_vproj/scans/
 ROOTOFALL=/import/
-<<<<<<< HEAD
 IMPORT=/media/sf_vproj/import
-=======
-IMPORT=/import/
->>>>>>> 85c8e04381aad7001ff5f5d6e32da53c042a1266
 mkdir -p $ROOTOFALL/$PROJECT
 db=${ROOTOFALL}/${PROJECT}/${PROJECT}db
 
