@@ -30,7 +30,7 @@ class ProjectStore():
                     converted TEXT,
                     convertedtag TEXT,
                     precrop TEXT,
-                    precroptag TEST,
+                    precroptag TEXT,
                     autocrop TEXT,
                     autocroptag TEXT,
                     fused TEXT,
@@ -52,7 +52,8 @@ class ProjectStore():
         '''
         if False == os.path.isdir(self._dbroot):
             os.makedirs(self._dbroot)
-            self._initDb(project)
+            dblocation = "%s/%s" % (os.path.abspath(self._dbroot), project)
+            self._initDb(dblocation)
         else:
             '''
         if ProjectStore.psdebug: pdb.set_trace()
@@ -131,12 +132,12 @@ class ProjectStore():
 
     def toBePrecropped(self, project, limit):
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,converted,tag FROM picdata
-                 WHERE precrop IS NULL and precroptag IS NULL AND processing != 1 ORDER BY converted,tag LIMIT %s;''' % limit
+                 WHERE precrop IS NULL and precroptag IS NULL AND processing != 1 ORDER BY container,converted,tag LIMIT %s;''' % limit
         return self._getPendingWork(project, statement)
 
     def toBeAutocropped(self, project, limit):
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,precrop FROM picdata
-            WHERE autocrop IS NULL AND processing != 1 ORDER BY autocrop,autocroptag LIMIT %s;''' % limit
+            WHERE autocrop IS NULL AND processing != 1 AND precroptag = 'a' ORDER BY container,precrop LIMIT %s;''' % limit
         return self._getPendingWork(project, statement)
 
     def markConverted(self, project, filename, tag, rowid):

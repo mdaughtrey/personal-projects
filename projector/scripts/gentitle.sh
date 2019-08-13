@@ -73,6 +73,7 @@ gentitles()
 	let translateX=0
 	let translateY=0
 	let pageIndex=0
+     # -rotate -90 $titleroot/titleline_${linecount}.png
 
 	for pageFile in $(ls $imgroot/title?.txt)
 	do
@@ -97,17 +98,16 @@ gentitles()
 				-fill blue -font ${FONT} \
 				-size x${rowsize} label:"${line}" \
                 $titleroot/titleline_${linecount}.png
-                # -rotate -90 $titleroot/titleline_${linecount}.png
 			((translateY+=rowsize+20))
 			#echo -n " -page +$((translateX))+$((translateY)) $titleroot/titleline_${linecount}.png"
-			echo -n " -page +$((translateY)) $titleroot/titleline_${linecount}.png"
+			echo -n " -page +0+$((translateY)) $titleroot/titleline_${linecount}.png"
 			((linecount++))
 		done) 
 
 		compositecmd="convert ${compositecmd} -background transparent -layers merge $titleroot/titletext${pageIndex}.png"
 		#echo $compositecmd
 		$compositecmd
-		rm $titleroot/titleline_*.png
+		#rm $titleroot/titleline_*.png
 		((pageIndex++))
     done	
 

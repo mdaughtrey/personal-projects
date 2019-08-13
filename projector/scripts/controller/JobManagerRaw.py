@@ -75,7 +75,7 @@ class JobManagerRaw(JobManager):
             container, filename = self._pstore.getNextImageLocation(self._config.project, tag)
             self._fileman.newImport(file, self._config.project, container, filename, tag)
             self._pstore.newRawFile(self._config.project, container, filename, tag)
-            return 0
+        sys.exit(0)
     
     def _scheduleProcessRaw(self, freeWorkers):
         self._logger.debug("scheduleProcessRaw")
@@ -119,9 +119,9 @@ class JobManagerRaw(JobManager):
         self._logger.debug('toBeAutocropped untrimmed %s' % str(toBeAutocropped))
         if toBeAutocropped:
             #toBeAutocropped = filter(lambda x: not x[0]%3, zip(range(len(toBeAutocropped)), toBeAutocropped))
-            self._logger.debug('toBeAutocropped1 %s' % str(toBeAutocropped))
+            #self._logger.debug('toBeAutocropped1 %s' % str(toBeAutocropped))
             #toBeAutocropped = zip(*toBeAutocropped[::-1])[1]
-            self._logger.debug('toBeAutocropped2 %s' % str(toBeAutocropped))
+            #self._logger.debug('toBeAutocropped2 %s' % str(toBeAutocropped))
             for (rowid, container, filename) in toBeAutocropped:
                 jobargs = (self._config.project, rowid, container, filename)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
@@ -235,7 +235,7 @@ class JobManagerRaw(JobManager):
         self._logger.info("Autocrop %s %s %s %s" % (project, rowid, container, filename))
         source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
         dest = os.path.abspath(self._fileman.getAutocropDir(project, container))
-        jobargs = ('../autocroph.py', '--filenames',
+        jobargs = ('../autocroph.py', '-d', '--filenames',
             '%s,%s,%s' % (source + filename + 'a.jpg',source + filename + 'b.jpg',source + filename + 'c.jpg'),
             '--mode', self._config.film,
             '--output-dir', dest,

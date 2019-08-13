@@ -47,7 +47,7 @@ logging.getLogger('RemoteDev').addHandler(fileHandler)
 
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL + config.project, config)
-fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL)
+fileman = FileManager(logging.getLogger('FileManager'), ROOTOFALL, config)
 
 if 'uploadonly' != config.jobmode:
     if config.raw:
