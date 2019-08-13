@@ -125,7 +125,7 @@ class ProjectStore():
 
     def toBeConverted(self, projectname, limit=10):
         statement = '''CREATE TEMPORARY TABLE ttable AS SELECT rowid,container,rawfile,tag FROM picdata
-                 WHERE converted IS NULL and convertedtag IS NULL AND processing != 1 ORDER BY rawfile,tag LIMIT %s;''' % limit
+                 WHERE converted IS NULL and convertedtag IS NULL AND processing != 1 ORDER BY container,rawfile,tag LIMIT %s;''' % limit
         self._logger.debug(statement)
         return self._getPendingWork(projectname, statement)
 
