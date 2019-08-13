@@ -9,7 +9,7 @@ from subprocess import check_call, Popen, PIPE, check_output
 import time
 from JobManager import JobManager
 import numpy
-import tempfile
+#import tempfile
 #import imageio
 from PIL import Image
 import glob
@@ -83,11 +83,11 @@ class JobManagerRaw(JobManager):
         scheduled = 0
         todo = self._pstore.toBeConverted(self._config.project, freeWorkers)
         self._logger.debug('toBeConverted %s' % str(todo))
-        tempdir = tempfile.TemporaryDirectory()
+#        tempdir = tempfile.TemporaryDirectory()
         if todo:
             for (rowid, container, filename,tag) in todo:
                 self._logger.debug("Container %s filename %s" % (container, filename))
-                jobargs = (self._config.project, container, filename, tag, rowid, tempdir.name)
+                jobargs = (self._config.project, container, filename, tag, rowid)
                 self._logger.info("Calling %s" % str(jobargs))
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmConvert(*jobargs)
@@ -258,15 +258,15 @@ class JobManagerRaw(JobManager):
 #            self._logger.error("autocrop failed rc %s $s" % (str(ee.returncode), str(ee.output)))
 #            self._pstore.abortAutocrop(project, container, file1, file2, file3)
 
-    def _vmConvert(self, project, container, filename, tag, rowid, tempdir):
+    def _vmConvert(self, project, container, filename, tag, rowid):
         source = os.path.abspath(self._fileman.getRawFileLocation(project, container, filename))
         raw = os.path.abspath(self._fileman.getConvertedDir(project, container) + "/%s" % filename)
-        ppm = tempdir + "/%s.ppm" % tag
+        #ppm = tempdir + "/%s.ppm" % tag
         jpg = raw + "%s.jpg" % tag
 #        raw = raw + "%s.RAW" % tag
         source += "%s.RAW" % tag
         #self._logger.info("source %s raw %s ppm %s jpg %s" % (source, raw, ppm, jpg))
-        self._logger.info("source %s  ppm %s jpg %s" % (source, ppm, jpg))
+        self._logger.info("source %s %s" % (source, jpg))
         #if False == os.path.isfile(jpg):
 #        copyfile(source, raw)
         
