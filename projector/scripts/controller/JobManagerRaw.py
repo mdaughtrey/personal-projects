@@ -5,7 +5,7 @@ import pdb
 from multiprocessing import Process
 from shutil import copyfile
 import threading
-from subprocess import check_call, Popen, PIPE, check_output
+from subprocess import check_call, Popen, PIPE, check_output, STDOUT, CalledProcessError
 import time
 from JobManager import JobManager
 import numpy
@@ -244,7 +244,7 @@ class JobManagerRaw(JobManager):
         self._logger.debug("Calling %s" % str(jobargs))
         try:
 #            #check_call(jobargs)
-            retcode = call(jobargs, stderr=STDOUT)
+            retcode = check_call(jobargs, stderr=STDOUT)
             self._logger.debug("retcode %u" % retcode)
 #            self._logger.info("Done %s %s %s" % (project, container, outputdir))
             if 0 == retcode:
@@ -343,7 +343,7 @@ class JobManagerRaw(JobManager):
     def _vmGenTitle(self, project, root):
         jobargs = ('../gentitle.sh', '-p', project, '-r', root)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
-        retcode = call(jobargs)
+#        retcode = check_call(jobargs)
         try:
             self._logger.info( check_output(jobargs, stderr=STDOUT))
 
