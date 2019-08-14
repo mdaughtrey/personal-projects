@@ -5,14 +5,15 @@ SEM=sem
 VRES=576
 HRES=720
 SOFTWARE=/media/sf_vproj/scans/software/
+useac="no"
 
-while getopts "c:p:r:h" OPT
+while getopts "ap:r:h" OPT
 do
     case $OPT in
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
-#        c) container=$OPTARG ;;
         h) HRES=1920; VRES=1080 ;;
+        a) useac="yes" ;;
         *) echo What?; exit 1 ;;
     esac
 done
@@ -21,6 +22,18 @@ export project=$fileroot/$project/
 #export projroot=$fileroot/$project
 export titleroot=$project/title
 
+if [[ "$useac" == "yes" ]]; then
+    RAWYUV=$project/$(basename $project)_ac.yuv
+    COOKEDYUV=$project/$(basename $project)_ac.yuv
+    AVI=project/$(basename $project)_ac.avi
+    MP4=$project/$(basename $project)_ac.mp4
+else
+    RAWYUV=$project/$(basename $project)_raw.yuv
+    COOKEDYUV=$project/$(basename $project).yuv
+    AVI=project/$(basename $project).avi
+    MP4=$project/$(basename $project).mp4
+fi
+
 #if [[ "" == $project || "" == $fileroot || "" == $container ]]
 if [[ "" == $project ]]
 then
@@ -28,7 +41,7 @@ then
     exit 1
 fi
 
-getImages()
+getFusedImages()
 {
     IFS=\|
     select="select container,fused from picdata where fused is not NULL order by container,fused"
@@ -38,46 +51,57 @@ getImages()
     done
 }
 
+getAutoCroppedImages()
+{
+    IFS=\|
+    select="select container,autocrop from picdata where autocrop is not NULL AND autocroptag='b' order by container,autocrop"
+    sqlite3 -list ${project}/$(basename $project)db "$select" | uniq | while read container filename
+    do
+        echo ${project}/${container}/autocrop/${filename}b.jpg
+    done
+}
+
 genyuvstream()
 {
-#    $MYDIR/gentitle.sh -p $project -r $fileroot
     ls $project/title/title*.JPG | sort -n > $project/contentlist.txt
-#    cp $project/title/titlelist.txt $project/contentlist.txt
-    getImages >> $project/contentlist.txt
+    if [[ "$useac" == "yes" ]]; then
+        getAutoCroppedImages >> $project/contentlist.txt
+    else
+        getFusedImages >> $project/contentlist.txt
+    fi
 
-        #-vf-add rotate=1 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$project/contentlist.txt \
         -vf scale=$HRES:$VRES \
     	-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub \
-        -vo yuv4mpeg:file=$project/$(basename $project)_raw.yuv
+        -vo yuv4mpeg:file=${RAWYUV}
 }
 
 processavi()
 {
     avsscript=/tmp/interpolate.avs
-    echo "film=\"${project}/$(basename $project).avi\"" > $avsscript
+    echo "film=\"${AVI}\"" > $avsscript
 	echo "result=\"result1\" # specify the wanted output here" >> $avsscript
     cat $MYDIR/pp_interpolate2.avs >> $avsscript
     WINEDLLPATH=~/.wine/drive_c/windows/system32 
 #    export WINEDEBUG=trace+all
-     wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > $project/$(basename $project).yuv
+     wine ${SOFTWARE}/avs2yuv/avs2yuv.exe $avsscript - > ${COOKEDYUV}
 }
 
-#if [[ ! -f "$project/$(basename $project).yuv" ]]; then processyuv; fi
-if [[ ! -f "$project/$(basename $project)_raw.yuv" ]]; then genyuvstream; fi
-if [[ ! -f "$project/$(basename $project).avi" ]]; then cat $project/$(basename $project)_raw.yuv | yuvfps -v 0 -r 18:1 -v 1 | \
-            avconv -loglevel info -i - -vcodec rawvideo -y $project/$(basename $project).avi; fi
-if [[ ! -f "$project/$(basename $project).yuv" ]]; then processavi; fi
+if [[ ! -f "${RAWYUV}" ]]; then genyuvstream; fi
+if [[ ! -f "${AVI}" ]]; then cat ${RAWYUV} | yuvfps -v 0 -r 18:1 -v 1 | \
+            avconv -loglevel info -i - -vcodec rawvideo -y ${AVI}; fi
+if [[ ! -f "${COOKEDYUV}" ]]; then processavi; fi
 
 
-if [[ ! -f "$project/$(basename $project).mp4" ]]
+if [[ ! -f "${MP4}" ]]
 then
-avconv -loglevel verbose -y -i $project/$(basename $project).yuv -threads `nproc` \
-    -f mp4 -vcodec libx264 -preset slow -b:v 4000k  -flags +loop \
-    -cmp chroma -b:v 1250k -maxrate 4500k -bufsize 4M -bt 256k -refs 1 \
+    #-cmp chroma -b:v 8M -maxrate 16M -bufsize 4M -bt 256k -refs 1 \
+avconv -loglevel verbose -y -i ${COOKEDYUV} -threads `nproc` \
+    -f mp4 -vcodec libx264 -preset slow  -flags +loop \
+    -cmp chroma -maxrate 16M -bufsize 4M -bt 256k -refs 1 \
     -bf 3 -coder 1 -me_method umh -me_range 16 -subq 7 -partitions \
     +parti4x4+parti8x8+partp8x8+partb8x8 -g 250 -keyint_min 25 -level 30 \
     -qmin 10 -qmax 51 -qcomp 0.6 -trellis 2 -sc_threshold 40 -i_qfactor 0.71 \
-    -acodec aac -strict experimental -b:a 112k -ar 48000 -ac 2 $project/$(basename $project).mp4 
+    -acodec aac -strict experimental -b:a 112k -ar 48000 -ac 2 ${MP4}
 fi
