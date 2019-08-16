@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT=fm101
+PROJECT=nofilm
 TYPE=8mm
 #TYPE=super8
 #ROOTOFALL=/media/sf_vproj/scans/

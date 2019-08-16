@@ -5,15 +5,15 @@ SEM=sem
 VRES=576
 HRES=720
 SOFTWARE=/media/sf_vproj/scans/software/
-useac="no"
+use="no"
 
-while getopts "ap:r:h" OPT
+while getopts "p:r:hu:" OPT
 do
     case $OPT in
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
         h) HRES=1920; VRES=1080 ;;
-        a) useac="yes" ;;
+        u) use=$OPTARG ;;
         *) echo What?; exit 1 ;;
     esac
 done
@@ -22,17 +22,28 @@ export project=$fileroot/$project/
 #export projroot=$fileroot/$project
 export titleroot=$project/title
 
-if [[ "$useac" == "yes" ]]; then
-    RAWYUV=$project/$(basename $project)_ac.yuv
-    COOKEDYUV=$project/$(basename $project)_ac.yuv
-    AVI=project/$(basename $project)_ac.avi
-    MP4=$project/$(basename $project)_ac.mp4
-else
-    RAWYUV=$project/$(basename $project)_raw.yuv
-    COOKEDYUV=$project/$(basename $project).yuv
-    AVI=project/$(basename $project).avi
-    MP4=$project/$(basename $project).mp4
-fi
+case $use in
+    ac) RAWYUV=$project/$(basename $project)_ac_raw.yuv
+        COOKEDYUV=$project/$(basename $project)_ac.yuv
+        AVI=$project/$(basename $project)_ac.avi
+        MP4=$project/$(basename $project)_ac.mp4
+        ;;
+    pc) RAWYUV=$project/$(basename $project)_pc_raw.yuv
+        COOKEDYUV=$project/$(basename $project)_pc.yuv
+        AVI=$project/$(basename $project)_pc.avi
+        MP4=$project/$(basename $project)_pc.mp4
+        ;;
+    co) RAWYUV=$project/$(basename $project)_co_raw.yuv
+        COOKEDYUV=$project/$(basename $project)_co.yuv
+        AVI=$project/$(basename $project)_co.avi
+        MP4=$project/$(basename $project)_co.mp4
+        ;;
+    *) RAWYUV=$project/$(basename $project)_raw.yuv
+       COOKEDYUV=$project/$(basename $project).yuv
+       AVI=$project/$(basename $project).avi
+       MP4=$project/$(basename $project).mp4
+       ;;
+esac
 
 #if [[ "" == $project || "" == $fileroot || "" == $container ]]
 if [[ "" == $project ]]
@@ -61,14 +72,36 @@ getAutoCroppedImages()
     done
 }
 
+getPreCroppedImages()
+{
+    IFS=\|
+    select="select container,precrop from picdata where precrop is not NULL AND precroptag='b' order by container,precrop"
+    sqlite3 -list ${project}/$(basename $project)db "$select" | uniq | while read container filename
+    do
+        echo ${project}/${container}/precrop/${filename}b.jpg
+    done
+}
+
+getConvertedImages()
+{
+    IFS=\|
+    select="select container,converted from picdata where converted is not NULL AND convertedtag='b' order by container,converted"
+    sqlite3 -list ${project}/$(basename $project)db "$select" | uniq | while read container filename
+    do
+        echo ${project}/${container}/converted/${filename}b.JPG
+    done
+}
+
 genyuvstream()
 {
     ls $project/title/title*.JPG | sort -n > $project/contentlist.txt
-    if [[ "$useac" == "yes" ]]; then
-        getAutoCroppedImages >> $project/contentlist.txt
-    else
-        getFusedImages >> $project/contentlist.txt
-    fi
+    echo use is $use
+    case "$use" in 
+        ac) getAutoCroppedImages >> $project/contentlist.txt ;;
+        pc) getPreCroppedImages >> $project/contentlist.txt ;;
+        co) getConvertedImages >> $project/contentlist.txt ;;
+        *) getFusedImages >> $project/contentlist.txt ;;
+    esac
 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$project/contentlist.txt \
