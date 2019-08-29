@@ -21,7 +21,7 @@ PREFRAMES=1
 FRAMES=0
 #SHUTTER=[40000,80000,1200000]
 
-SHUTTER=[300,1000,1300]
+SHUTTER=[1, 24, 30]
 TARGETDIR='/tmp'
 MAXINFLIGHT=30
 SerialPort="/dev/ttyUSB0"
@@ -117,8 +117,8 @@ def frame(port, num):
         if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
             return 1
     for ss,tag in zip(SHUTTER, ['a','b','c']):
-#    for ss in range(1, 100000, 1000):
-
+#    for ss in range(1, 1000, 1):
+#        tag = 'a'
         logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
 
         args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
