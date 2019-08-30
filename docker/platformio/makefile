@@ -4,7 +4,8 @@ all:
 	docker build -f test.Dockerfile --tag=${TAG} .
 
 run:
-	docker run -dh ${TAG} -it --expose 22 --device=/dev/ttyUSB0 ${TAG}:latest 
+	docker run -dh ${TAG} -it --expose 22 ${TAG}:latest 
+	#docker run -dh ${TAG} -it --expose 22 --device=/dev/ttyUSB0 ${TAG}:latest 
 
 attach:
 	docker exec -it `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1 ` /bin/bash
