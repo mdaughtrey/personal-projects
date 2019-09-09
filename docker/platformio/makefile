@@ -15,8 +15,8 @@ stop:
 make:
 	docker tag ${IMAGE} mdaughtrey/projects:${TAG}
 
-push:
-	docker push mdaughtrey/projects:${TAG}
-
 make:
-	docker build -f ${TAG}.Dockerfile . --tag=${TAG}
+	docker build -f ${TAG}.Dockerfile . --tag=${TAG
+
+push:	
+	docker push mdaughtrey/projects:${TAG}
