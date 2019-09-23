@@ -7,9 +7,10 @@ HRES=720
 SOFTWARE=/media/sf_vproj/scans/software/
 use="no"
 
-while getopts "p:r:hu:" OPT
+while getopts "bp:r:hu:" OPT
 do
     case $OPT in
+        b) backward=1
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
         h) HRES=1920; VRES=1080 ;;
@@ -102,6 +103,10 @@ genyuvstream()
         co) getConvertedImages >> $project/contentlist.txt ;;
         *) getFusedImages >> $project/contentlist.txt ;;
     esac
+    if [[ "$backward" == "1" ]]; then
+        tac $projects/contentlist.txt > tmp/contentlist.txt
+        cp /tmp/contentlist.txt $projects/contentlist.txt
+    fi
 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$project/contentlist.txt \
