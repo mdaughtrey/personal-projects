@@ -10,7 +10,7 @@ use="no"
 while getopts "bp:r:hu:" OPT
 do
     case $OPT in
-        b) backward=1
+        b) backward=1 ;;
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
         h) HRES=1920; VRES=1080 ;;
