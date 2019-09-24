@@ -104,8 +104,8 @@ genyuvstream()
         *) getFusedImages >> $project/contentlist.txt ;;
     esac
     if [[ "$backward" == "1" ]]; then
-        tac $projects/contentlist.txt > tmp/contentlist.txt
-        cp /tmp/contentlist.txt $projects/contentlist.txt
+        tac $project/contentlist.txt > /tmp/contentlist.txt
+        cp /tmp/contentlist.txt $project/contentlist.txt
     fi
 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
