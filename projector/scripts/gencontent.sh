@@ -98,15 +98,18 @@ genyuvstream()
     ls $project/title/title*.JPG | sort -n > $project/contentlist.txt
     echo use is $use
     case "$use" in 
-        ac) getAutoCroppedImages >> $project/contentlist.txt ;;
-        pc) getPreCroppedImages >> $project/contentlist.txt ;;
-        co) getConvertedImages >> $project/contentlist.txt ;;
-        *) getFusedImages >> $project/contentlist.txt ;;
+        ac) getAutoCroppedImages >> $project/imagelist.txt ;;
+        pc) getPreCroppedImages >> $project/imagelist.txt ;;
+        co) getConvertedImages >> $project/imagelist.txt ;;
+        *) getFusedImages >> $project/imagelist.txt ;;
     esac
+    set -o xtrace
     if [[ "$backward" == "1" ]]; then
-        tac $project/contentlist.txt > /tmp/contentlist.txt
-        cp /tmp/contentlist.txt $project/contentlist.txt
+        tac $project/imagelist.txt >> $project/contentlist.txt
+    else
+        cat $project/imagelist.txt >> $project/contentlist.txt
     fi
+    exit 0
 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$project/contentlist.txt \
