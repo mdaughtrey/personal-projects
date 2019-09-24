@@ -78,27 +78,27 @@ rebuild()
         container=$(echo $RAWFILE | egrep -o '/[0-9]{3}/' | tr -d '/')
         echo insert into picdata '(processing,rawfile,tag,container)' values"(0,'"${name:0:6}"','"${name:6:1}"','"${container}"');"
     done
-    echo Done rawfile
+    echo Done rawfile >&2
     ls ${ROOTOFALL}/${PROJECT}/*/converted/*.jpg |  while read JPG; do
         name=$(basename $JPG)
         echo insert into picdata '(processing,converted,convertedtag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
     done
-    echo Done converted
+    echo Done converted >&2
     ls ${ROOTOFALL}/${PROJECT}/*/precrop/*.jpg |  while read file; do
         name=$(basename $file)
         echo insert into picdata '(processing,precrop,precroptag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
     done
-    echo Done precropped
+    echo Done precropped >&2
     ls ${ROOTOFALL}/${PROJECT}/*/autocrop/*.jpg |  while read file; do
         name=$(basename $file)
         echo insert into picdata '(processing,autocrop,autocroptag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
     done
-    echo Done autocropped
+    echo Done autocropped >&2
     ls ${ROOTOFALL}/${PROJECT}/*/fused/*.jpg |  while read file; do
         name=$(basename $file)
         echo insert into picdata '(processing,fused)' values"(0,'"${name:0:6}"');"
     done
-    echo Done fused
+    echo Done fused >&2
 }
 
 
