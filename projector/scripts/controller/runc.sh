@@ -67,17 +67,38 @@ CREATE TABLE videodata ( container TEXT, processing integer);
 CREATE TABLE taskcontrol ( task TEXT);
 CREATE UNIQUE INDEX picdata_rawfile_container ON picdata(rawfile, container,tag);
 DBINIT
+
 }
 
 
 rebuild()
 {
-
     ls ${ROOTOFALL}/${PROJECT}/*/rawfile/*.RAW |  while read RAWFILE; do
         name=$(basename $RAWFILE)
         container=$(echo $RAWFILE | egrep -o '/[0-9]{3}/' | tr -d '/')
         echo insert into picdata '(processing,rawfile,tag,container)' values"(0,'"${name:0:6}"','"${name:6:1}"','"${container}"');"
     done
+    echo Done rawfile
+    ls ${ROOTOFALL}/${PROJECT}/*/converted/*.jpg |  while read JPG; do
+        name=$(basename $JPG)
+        echo insert into picdata '(processing,converted,convertedtag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
+    done
+    echo Done converted
+    ls ${ROOTOFALL}/${PROJECT}/*/precrop/*.jpg |  while read file; do
+        name=$(basename $file)
+        echo insert into picdata '(processing,precrop,precroptag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
+    done
+    echo Done precropped
+    ls ${ROOTOFALL}/${PROJECT}/*/autocrop/*.jpg |  while read file; do
+        name=$(basename $file)
+        echo insert into picdata '(processing,autocrop,autocroptag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
+    done
+    echo Done autocropped
+    ls ${ROOTOFALL}/${PROJECT}/*/fused/*.jpg |  while read file; do
+        name=$(basename $file)
+        echo insert into picdata '(processing,fused)' values"(0,'"${name:0:6}"');"
+    done
+    echo Done fused
 }
 
 
