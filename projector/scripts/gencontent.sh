@@ -103,13 +103,11 @@ genyuvstream()
         co) getConvertedImages >> $project/imagelist.txt ;;
         *) getFusedImages >> $project/imagelist.txt ;;
     esac
-    set -o xtrace
     if [[ "$backward" == "1" ]]; then
         tac $project/imagelist.txt >> $project/contentlist.txt
     else
         cat $project/imagelist.txt >> $project/contentlist.txt
     fi
-    exit 0
 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$project/contentlist.txt \

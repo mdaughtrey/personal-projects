@@ -73,32 +73,49 @@ DBINIT
 
 rebuild()
 {
-    ls ${ROOTOFALL}/${PROJECT}/*/rawfile/*.RAW |  while read RAWFILE; do
+    ls ${ROOTOFALL}/${PROJECT}/???/rawfile/*.RAW |  while read RAWFILE; do
         name=$(basename $RAWFILE)
         container=$(echo $RAWFILE | egrep -o '/[0-9]{3}/' | tr -d '/')
         echo insert into picdata '(processing,rawfile,tag,container)' values"(0,'"${name:0:6}"','"${name:6:1}"','"${container}"');"
     done
     echo Done rawfile >&2
-    ls ${ROOTOFALL}/${PROJECT}/*/converted/*.jpg |  while read JPG; do
+    ls ${ROOTOFALL}/${PROJECT}/???/converted/*.jpg |  while read JPG; do
         name=$(basename $JPG)
         echo insert into picdata '(processing,converted,convertedtag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
     done
     echo Done converted >&2
-    ls ${ROOTOFALL}/${PROJECT}/*/precrop/*.jpg |  while read file; do
+    ls ${ROOTOFALL}/${PROJECT}/???/precrop/*.jpg |  while read file; do
         name=$(basename $file)
         echo insert into picdata '(processing,precrop,precroptag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
     done
     echo Done precropped >&2
-    ls ${ROOTOFALL}/${PROJECT}/*/autocrop/*.jpg |  while read file; do
+    ls ${ROOTOFALL}/${PROJECT}/???/autocrop/*.jpg |  while read file; do
         name=$(basename $file)
         echo insert into picdata '(processing,autocrop,autocroptag)' values"(0,'"${name:0:6}"','"${name:6:1}"');"
     done
     echo Done autocropped >&2
-    ls ${ROOTOFALL}/${PROJECT}/*/fused/*.jpg |  while read file; do
+    ls ${ROOTOFALL}/${PROJECT}/???/fused/*.jpg |  while read file; do
         name=$(basename $file)
         echo insert into picdata '(processing,fused)' values"(0,'"${name:0:6}"');"
     done
     echo Done fused >&2
+}
+
+rebuild2()
+{
+    readarray -t raw <<<$(ls ${ROOTOFALL}/${PROJECT}/???/rawfile/*.RAW)
+#    readarray -t converted <<<$(ls ${ROOTOFALL}/${PROJECT}/???/converted/*.jpg)
+#    readarray -t precrop <<<$(ls ${ROOTOFALL}/${PROJECT}/???/precrop/*.jpg)
+#    readarray -t autocrop <<<$(ls ${ROOTOFALL}/${PROJECT}/???/autocrop/*.jpg)
+#    readarray -t fused <<<$(ls ${ROOTOFALL}/${PROJECT}/???/fused/*.jpg)
+
+    for ii in ${raw[@]}; do
+        file=$(basename $ii})
+        name=${file:0:6}
+        tag=${file:6:1}
+        container=$(echo ${ii} | egrep -o '/[0-9]{3}/' | tr -d '/')
+        echo insert into picdata '(processing,rawfile,tag,container,converted,convertedtag,precrop,precroptag,autocrop,autocroptag,fused)' values"(0,'"${name}"','"${tag}"','"${container}"','"${name}"','"${tag}"','"${name}"','"${tag}"','"${name}"','"${tag}"','"${name}"');"
+    done
 }
 
 
@@ -110,10 +127,11 @@ case "$1" in
     resetac) sqlreset autocrop ;;
     resettf) sqlresettf ;;
     resetrf) sqlreset converted ;;
+    rebuild2) rebuild2 ;;
     rebuild) rm /tmp/rebuilddb
         initdb > rebuild.txt
         echo Init
-        rebuild >> rebuild.txt
+        rebuild2 >> rebuild.txt
         echo Rebuild.txt
         echo ".exit" >> rebuild.txt
         echo Rebuilding
