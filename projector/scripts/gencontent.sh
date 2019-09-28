@@ -7,9 +7,10 @@ HRES=720
 SOFTWARE=/media/sf_vproj/scans/software/
 use="no"
 
-while getopts "p:r:hu:" OPT
+while getopts "bp:r:hu:" OPT
 do
     case $OPT in
+        b) backward=1 ;;
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
         h) HRES=1920; VRES=1080 ;;
@@ -97,11 +98,16 @@ genyuvstream()
     ls $project/title/title*.JPG | sort -n > $project/contentlist.txt
     echo use is $use
     case "$use" in 
-        ac) getAutoCroppedImages >> $project/contentlist.txt ;;
-        pc) getPreCroppedImages >> $project/contentlist.txt ;;
-        co) getConvertedImages >> $project/contentlist.txt ;;
-        *) getFusedImages >> $project/contentlist.txt ;;
+        ac) getAutoCroppedImages >> $project/imagelist.txt ;;
+        pc) getPreCroppedImages >> $project/imagelist.txt ;;
+        co) getConvertedImages >> $project/imagelist.txt ;;
+        *) getFusedImages >> $project/imagelist.txt ;;
     esac
+    if [[ "$backward" == "1" ]]; then
+        tac $project/imagelist.txt >> $project/contentlist.txt
+    else
+        cat $project/imagelist.txt >> $project/contentlist.txt
+    fi
 
     mplayer -msglevel all=6 -lavdopts threads=`nproc` \
         mf://@$project/contentlist.txt \
