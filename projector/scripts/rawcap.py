@@ -117,8 +117,6 @@ def frame(port, num):
         if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
             return 1
     for ss,tag in zip(SHUTTER, ['a','b','c']):
-#    for ss in range(1, 1000, 1):
-#        tag = 'a'
         logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
 
         args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
@@ -129,6 +127,26 @@ def frame(port, num):
         retcode = subprocess.call(''.join(runargs), shell=True, stderr=None)
         logger.debug("retcode %u" % retcode)
         open("{:s}/{:06d}{:s}.done".format(config.dir, num, tag), "w")
+    return 0
+
+def exptestframe(port, num):
+    if False == config.nofilm:
+        port.write(b'n')
+        if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
+            return 1
+    ss = num
+    tag = 'a'
+    logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
+
+    args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
+        Geometry['geo0'], " --fps 1 -t 1000 -sr 1 -o ",
+        "{:s}/{:s}{:06d}{:s}.raw".format(config.dir, config.prefix, num, tag)])
+    runargs = (args1)
+    logger.debug(''.join(runargs))
+    retcode = subprocess.call(''.join(runargs), shell=True, stderr=None)
+    logger.debug("retcode %u" % retcode)
+    open("{:s}/{:06d}{:s}.done".format(config.dir, num, tag), "w")
+
     return 0
 
 def main():
@@ -151,6 +169,7 @@ def main():
                 logger.info('Waiting for disk space')
                 time.sleep(10)
         if frame(port, frameNum): break
+        #if exptestframe(port, frameNum): break
         frameNum += 1
     stop(port)
     open("{:s}/{:s}done.done".format(config.dir, config.prefix), "w")
