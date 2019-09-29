@@ -111,6 +111,6 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
-export PATH=${PATH}:/mnt/c/q/w32
+export PATH=${PATH}:/mnt/c/q/w32:${HOME}/.local/bin
 
 export DOCKER_HOST=tcp://localhost:2375

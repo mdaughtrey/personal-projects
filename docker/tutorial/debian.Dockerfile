@@ -27,4 +27,6 @@ RUN git clone https://github.com/mdaughtrey/personal-projects
 RUN pip3 install opencv-python-headless imageio
 RUN cp /personal-projects/bin/vimrc ~/.vimrc
 RUN cp /personal-projects/bin/tmux.conf ~/.tmux.conf
-RUN cp -R /media/sf_vproj/scans/software/avx/scripts/plugins/ ~/.wine/drive_c/windows/system
+RUN echo mkdir -p ~/.wine/drive_c/windows/system > /init.sh 
+RUN echo cp -R /media/sf_vproj/scans/software/avx/scripts/plugins/ ~/.wine/drive_c/windows/system >> /init.sh
+

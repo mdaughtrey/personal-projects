@@ -5,11 +5,11 @@ all:
 	docker build -f test.Dockerfile --tag=${TAG} .
 
 run:
-	docker run -dh vproj --expose 22 -p5000:5000 -it -v /p/vproj:/media/sf_vproj  vproj:latest 
+	docker run -dh vproj --expose 22 -p5000:5000 -it -v /p/vproj:/media/sf_vproj -v /c/import:/import vproj:latest 
 	#docker run -dh vproj --expose 5000 -it  -v /p/vproj:/media/sf_vproj vproj:latest 
 
 attach:
-	docker exec -it `docker ps -q`  /bin/bash
+	docker exec -it `docker ps -a | grep vproj:latest | grep -v Exited | cut -d' ' -f1 ` /bin/bash
 
 stop:
 	docker stop `docker ps -q`
