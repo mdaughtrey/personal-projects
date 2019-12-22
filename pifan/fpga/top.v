@@ -39,7 +39,6 @@ end
 always @(posedge WF_CLK)
 begin
 	if (spiReset); begin spiReset <= 1; end
-//	digit1 <= diag;
 end
 
 // 2msec timer for 7 segment display
@@ -55,8 +54,11 @@ WF_timer #(.COUNT(500), .EVERY_CLK(1'b1)) one_sec(
 
 always @(posedge one_s)
 begin
-	digit3 <= digit3 + 1;
-//	WF_LED <= SPI0_MOSI;
+    if (digit2 == 15)
+    begin
+    	digit3 <= digit3 + 1;
+    end
+	digit2 <= digit2 + 1;
 end
 
 //reg [0:0] rDiag;
@@ -64,7 +66,7 @@ end
 wire [3:0] diag;
 
 spi_slave spiSlave(.reset(spiReset),
-    .txEnable(1'b1),
+    .txEnable(1'b0),
     .txData(regTx),
     .msb_lsb(1'b0),
     .SPI_SS(SPI0_CS),
@@ -96,6 +98,10 @@ WF_BL_7seg_if seg7(
 
 always @(negedge SPI0_CS)
 begin
+    if (digit0 == 15)
+    begin
+    	digit1 <= digit1 + 1;
+    end
 	digit0 <= digit0 + 1;
 //	digit1 <= spiRx[7:4];
 end
