@@ -61,10 +61,11 @@ class FileManager():
         return self._getdir(project, container, 'fused')
 
     def getAdjFile(self, project):
+        #   (xAdj, yAdj, wAdj, hAdj)
         filename = "%s/%s/frameadj.txt" % (self._fileRoot, project)
         adjfile = open(filename, "w")
         if '8mm' == self._config.film:
-            adjfile.write("40,15,-120,-60")
+            adjfile.write("266,40,-150,-110")
         else:
             adjfile.write("30,20,-130,-60")
         adjfile.close()

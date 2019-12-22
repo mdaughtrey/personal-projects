@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT=fm104
+PROJECT=100_150_180_fullscan
 TYPE=8mm
 #TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
