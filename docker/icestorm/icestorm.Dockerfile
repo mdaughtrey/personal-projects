@@ -21,6 +21,6 @@ RUN echo "ACTION==\"add\", ATTR{idVendor}==\"0403\", ATTR{idProduct}==\"6010\", 
 > /etc/udev/rules.d/53.lattice-ftdi.rules
 RUN cd /icestorm && git clone https://github.com/cliffordwolf/icestorm.git icestorm && \
 	cd icestorm && make -j$(nproc) && make install
-RUN apt-get -y install iverilog gtkwave verilator
-RUN cd / && git clone https://github.com/cocotb/cocotb.git && pip3 install ./cocotb && cd /
+RUN apt-get -y install iverilog 
+#RUN cd / && git clone https://github.com/cocotb/cocotb.git && pip3 install ./cocotb && cd /
 
