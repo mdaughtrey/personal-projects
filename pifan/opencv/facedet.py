@@ -9,19 +9,16 @@ face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 cap = cv2.VideoCapture(0)
 
 centers = np.zeros((100,2), np.int32)
+
 def avg_center(center):
     global centers
     if center is not None:
-        centers[:-1] = centers[1:]
-        centers[-1] = center
+        centers = np.append(centers[1:], [center], axis=0)
     weights = list(range(1, 1+len(centers)))
     totalweight = sum(weights)
-    x, y = 0, 0
-    for ii in range(len(centers)):
-        x = x + centers[ii][0] * (1+ii) / totalweight
-        y = y + centers[ii][1] * (1+ii) / totalweight
-    return (int(x),int(y))
-
+    xa = sum([ii*jj for ii,jj in zip(centers[:,0],weights)]) / totalweight
+    ya = sum([ii*jj for ii,jj in zip(centers[:,1],weights)]) / totalweight
+    return (int(xa),int(ya))
 
 while True:
     _, img = cap.read()
@@ -39,5 +36,6 @@ while True:
     k=cv2.waitKey(30) & 0xff
     if k == 27:
         break;
+
 cap.release()
 
