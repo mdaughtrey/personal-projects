@@ -319,7 +319,8 @@ class JobManagerRaw(JobManager):
         targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename) + tag + '.jpg'
         jobargs = ('convert', sourcefile,
             #'-strip', '-flop', '-flip',
-            '-contrast-stretch', '0',
+#            '-contrast-stretch', '0',
+#            '-normalize',
             '-strip', 
             '-crop', {'8mm': JobManager.Precrop8mmGeometry,
                 'super8': JobManager.PrecropS8Geometry}[self._config.film],
