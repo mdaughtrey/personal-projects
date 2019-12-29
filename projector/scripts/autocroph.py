@@ -309,7 +309,7 @@ def process8mm(filenames, outputpath):
         logger.error("Need three filenames")
         sys.exit(1)
 
-    filename = files[0]
+    filename = files[1]
     imp = PILImage.open(filename).convert('L')
     flattened = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
     if options.debug and eroded_dir is not None:
@@ -323,7 +323,8 @@ def process8mm(filenames, outputpath):
 
 #    writeThresholds(sprocket)
 
-    threshold = darkest + (lightest - darkest)/2
+    threshold = int(darkest + (lightest - darkest)/2)
+    logger.debug("Threshold is {}".format(threshold))
     sprocket[sprocket < threshold] = 0
     sprocket[sprocket >= threshold] = 255
     sprocketSlice = sprocket[:,:100]
@@ -360,6 +361,7 @@ def process8mm(filenames, outputpath):
     frameH = Frame8mm.h + hAdj
     frameW = Frame8mm.w + wAdj
 
+
     if options.debug and sprockets_dir is not None:
         idraw = ImageDraw.Draw(sPlacement)
         # upper sprocket
@@ -381,7 +383,7 @@ def process8mm(filenames, outputpath):
 
     # crop and save
     if ((frameX + frameW) > fcWidth) or ((frameY + frameH) > fcHeight):
-        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameX + frameW, fcWidth, frameY + frameH, fcHeight))
+        logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameX + frameW, frameY + frameH, fcWidth, fcHeight))
         sys.exit(1)
 
     for iFile in files:
