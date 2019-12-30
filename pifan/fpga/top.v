@@ -33,13 +33,13 @@ wire [7:0] spiRx;
 //assign MYLED = spiRxReady;
 reg[0:0] spiReset;
 initial begin
-	spiReset = 0;
+	spiReset = 1;
 end
 
-always @(posedge WF_CLK)
-begin
-	if (spiReset); begin spiReset <= 1; end
-end
+//always @(posedge WF_CLK)
+//begin
+//	if (spiReset); begin spiReset <= 1; end
+//end
 
 // 2msec timer for 7 segment display
 WF_timer #(.COUNT(31916), .EVERY_CLK(1'b1)) two_msec(
@@ -61,21 +61,7 @@ begin
 	digit2 <= digit2 + 1;
 end
 
-//reg [0:0] rDiag;
-//assign WF_LED = rDiag;
-wire [3:0] diag;
 
-spi_slave spiSlave(.reset(spiReset),
-    .txEnable(1'b0),
-    .txData(regTx),
-    .msb_lsb(1'b0),
-    .SPI_SS(SPI0_CS),
-    .SPI_SCK(SPI0_CLK),
-    .SPI_MOSI(SPI0_MOSI), 
-    .SPI_MISO(SPI0_MISO),
-    .done(spiRxReady),
-    .rxData(spiRx),
-	.diag(diag));
 
 reg [3:0] digit0;    // BCD digits, 0 is LSD
 reg [3:0] digit1;
@@ -96,14 +82,15 @@ WF_BL_7seg_if seg7(
 	.DOUT(DOUT_7SEG)
 );
 
-always @(negedge SPI0_CS)
+always @(diag)
 begin
-    if (digit0 == 15)
-    begin
-    	digit1 <= digit1 + 1;
-    end
-	digit0 <= digit0 + 1;
-//	digit1 <= spiRx[7:4];
+//    if (digit0 == 15)
+//    begin
+//    	digit1 <= digit1 + 1;
+//    end
+//	digit0 <= digit0 + 1;
+	digit0 <= spiRx[3:0];
+    digit1 <= spiRx[7:4];
 end
 //always @(posedge spiRxReady)
 //begin
