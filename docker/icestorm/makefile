@@ -10,7 +10,7 @@ stop:
 	docker stop `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1`
 
 tag:
-	docker tag ${IMAGE} mdaughtrey/projects:${TAG}
+	docker tag ${TAG} mdaughtrey/projects:${TAG}
 
 make:
 	docker build -f ${TAG}.Dockerfile . --tag=${TAG}
