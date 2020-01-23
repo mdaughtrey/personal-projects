@@ -22,16 +22,53 @@ module fpga_top(
 // -----------------------------------------------------------------------------
 // SPI
 // -----------------------------------------------------------------------------
+// Inputs are regs
+reg [0:0] reset;
+reg [3:0] rsmState;
+
+// Outputs are wires
 wire[7:0] spiRx;
 wire[0:0] spiRxReady;
+wire [7:0] probe;
 
-wire[3:0] wdigit0;
-wire[3:0] wdigit1;
-wire[3:0] wdigit2;
-wire[3:0] wdigit3;
+initial begin
+	reset <= 1;
+	rsmState <= 0;
+end
+
+//always @(probe)
+always @(posedge spiRxReady)
+begin
+	digit2 <= digit2 + 1;
+	digit0 <= spiRx[3:0];
+	digit1 <= spiRx[7:4];
+end
+
+// Reset state machine
+always @(posedge two_ms)
+begin
+	case (rsmState)
+	0: rsmState <= rsmState + 1;
+	1: 	begin
+			reset <= 0;
+			rsmState <= rsmState + 1;
+		end
+	2: 	begin
+			reset <= 1;
+			rsmState <= rsmState + 1;
+		end
+	default: rsmState <= 3;
+	endcase
+end
+
+//wire[3:0] wdigit0;
+//wire[3:0] wdigit1;
+//wire[3:0] wdigit2;
+//wire[3:0] wdigit3;
 
 MySpi spi(
    // Control/Data Signals,
+	.reset(reset),
    .sysclk(WF_CLK),      
    .oRxReady(spiRxReady),
    .oRx(spiRx),
@@ -40,25 +77,13 @@ MySpi spi(
    .iSPIClk(SPI0_CLK),
    .iSPIMOSI(SPI0_MOSI),
    .iSPICS(SPI0_CS),
-   .digit0(wdigit0),
-   .digit1(wdigit1),
-   .digit2(wdigit2),
-   .digit3(wdigit3)
+	.probe(probe)
    );
 
-always @(wdigit0) digit0 <= wdigit0;
-always @(wdigit1) digit1 <= wdigit1;
-always @(wdigit2) digit2 <= wdigit2;
-always @(wdigit3) digit3 <= wdigit3;
-//
-//always @(posedge spiRxReady)
-//begin
-//    if (digit0 == 15)
-//    begin
-//    	digit1 <= digit1 + 1;
-//    end
-//	digit0 <= digit0 + 1;
-//end
+//always @(wdigit0) digit0 <= wdigit0;
+//always @(wdigit1) digit1 <= wdigit1;
+//always @(wdigit2) digit2 <= wdigit2;
+//always @(wdigit3) digit3 <= wdigit3;
 
 // DIGITS 3 2 1 0
 
@@ -87,18 +112,16 @@ WF_timer #(.COUNT(500), .EVERY_CLK(1'b1)) one_sec(
            .enable(1'b1),
            .timer_pulse(one_s));
 
-//always @(posedge one_s)
-//begin
+always @(posedge one_s)
+begin
 //    if (digit2 == 15)
 //    begin
 //    	digit3 <= digit3 + 1;
 //    end
-//	digit2 <= digit2 + 1;
-//end
+	digit3 <= digit3 + 1;
+end
 
-
-
-reg [3:0] digit0;    // BCD digits, 0 is LSD
+reg [3:0] digit0;    // BCD digits, 0 is LSB
 reg [3:0] digit1;
 reg [3:0] digit2;
 reg [3:0] digit3;
