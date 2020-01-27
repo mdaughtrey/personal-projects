@@ -23,12 +23,12 @@ module fpga_top(
 // SPI
 // -----------------------------------------------------------------------------
 // Inputs are regs
-reg [0:0] reset;
+reg reset;
 reg [3:0] rsmState;
 
 // Outputs are wires
 wire[7:0] spiRx;
-wire[0:0] spiRxReady;
+wire spiRxReady;
 wire [7:0] probe;
 
 initial begin
@@ -36,30 +36,34 @@ initial begin
 	rsmState <= 0;
 end
 
+assign spiRx[7:4] = digit1;
+assign spiRx[3:0] = digit0;
+
 //always @(probe)
-always @(posedge spiRxReady)
-begin
-	digit2 <= digit2 + 1;
-	digit0 <= spiRx[3:0];
-	digit1 <= spiRx[7:4];
-end
+//always @(posedge spiRxReady)
+//begin
+//    digit2 <= probe;
+//	digit2 <= digit2 + 1;
+//	digit0 <= spiRx[3:0];
+//    digit1 <= spiRx[7:4];
+//end
 
 // Reset state machine
-always @(posedge two_ms)
-begin
-	case (rsmState)
-	0: rsmState <= rsmState + 1;
-	1: 	begin
-			reset <= 0;
-			rsmState <= rsmState + 1;
-		end
-	2: 	begin
-			reset <= 1;
-			rsmState <= rsmState + 1;
-		end
-	default: rsmState <= 3;
-	endcase
-end
+//always @(posedge two_ms)
+//begin
+//	case (rsmState)
+//	0: rsmState <= rsmState + 1;
+//	1: 	begin
+//			reset <= 0;
+//			rsmState <= rsmState + 1;
+//		end
+//	2: 	begin
+//			reset <= 1;
+//			rsmState <= rsmState + 1;
+//		end
+//	default: rsmState <= 3;
+//	endcase
+//end
 
 //wire[3:0] wdigit0;
 //wire[3:0] wdigit1;
@@ -77,7 +81,7 @@ MySpi spi(
    .iSPIClk(SPI0_CLK),
    .iSPIMOSI(SPI0_MOSI),
    .iSPICS(SPI0_CS),
-	.probe(probe)
+   .probe(probe)
    );
 
 //always @(wdigit0) digit0 <= wdigit0;
@@ -97,8 +101,10 @@ initial begin
     digit3 <= 0;
 end
 
-wire [0:0] two_ms;
-wire [0:0] one_s;
+//wire [0:0] two_ms;
+//wire [0:0] one_s;
+wire two_ms;
+wire one_s;
 
 
 // 2msec timer for 7 segment display

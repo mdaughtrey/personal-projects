@@ -9,34 +9,38 @@ module MySpi
    input iSPIClk,  // External pin 22 (2)
    input iSPIMOSI, // External pin 20 (45)
    input iSPICS, // External pin 19 (47)
-	output [7:0] probe
+    output [7:0] probe
    );
 
-reg [3:0] rxBit;
+reg [2:0] rxBit;
 reg [7:0] rxAccum;
+reg [7:0] rxFinal;
+reg rxReady;
 
-assign oRxReady = rxBit[3];
-assign oRx = rxAccum;
-//assign probe = {7'b0000000, oRxReady};
-//assign probe = rxAccum;
+assign oRxReady = rxReady;
+assign oRx = rxFinal;
+//assign probe = {3'b000, iSPIClk, 1'b0, rxBit};
+//assign probe = {3'b000, iSPICS, 1'b0,  rxBit}; 
+assign probe = rxAccum;
 
-always @(posedge iSPIClk or posedge iSPICS or negedge reset)
+always @(posedge iSPIClk or posedge iSPICS) // or negedge reset)
 begin
-	if (!reset) begin
+   if (iSPICS)
+	begin
 		rxBit <= 0;
-		rxAccum <= 0;
+        rxReady <= 0;
 	end else begin
-		if (iSPICS)
-		begin
-			rxBit <= 0;
-		end else begin
-		  if (rxBit < 8) begin
-			rxBit <= rxBit + 1;
-			rxAccum <= {rxAccum[6:0], iSPIMOSI};
-		  end else begin
-			rxBit <= 0;
-		  end
-		end
+		rxBit <= rxBit + 1;
+		rxAccum <= {rxAccum[6:0], iSPIMOSI};
+        if (rxBit == 3'b111)
+        begin   
+            rxFinal = {rxAccum[6:0], iSPIMOSI};
+            rxReady = 1'b1;
+        end
+        else if (rxBit == 3'b010)
+        begin
+            rxReady = 1'b0;
+        end
 	end
 end
 
