@@ -124,7 +124,7 @@ class JobManagerRaw(JobManager):
             #toBeAutocropped = zip(*toBeAutocropped[::-1])[1]
             #self._logger.debug('toBeAutocropped2 %s' % str(toBeAutocropped))
             for (rowid, container, filename) in toBeAutocropped:
-                jobargs = (self._config.project, rowid, container, filename)
+                jobargs = (self._config.project, rowid, container, filename, self._config.single)
                 if 'inline' == self._config.jobmode: # JobManager.WorkerManagerControl == True:
                     self._vmAutocrop(*jobargs)
                 else:
@@ -232,15 +232,17 @@ class JobManagerRaw(JobManager):
 #        open("%s/%s" % (outputdir, file3),'w').write(open(source3).read())
 #        self._pstore.markAutocropped(project, container, file1, file2, file3)
 #
-    def _vmAutocrop(self, project, rowid, container, filename):
+    def _vmAutocrop(self, project, rowid, container, filename,single):
         self._logger.info("Autocrop %s %s %s %s" % (project, rowid, container, filename))
         source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
         dest = os.path.abspath(self._fileman.getAutocropDir(project, container))
-        jobargs = ('../autocroph.py', '-d', '--filenames',
+        jobargs = ['../autocroph.py', '-d', '--filenames',
             '%s,%s,%s' % (source + filename + 'a.jpg',source + filename + 'b.jpg',source + filename + 'c.jpg'),
             '--mode', self._config.film,
             '--output-dir', dest,
-            '--adjfile', self._fileman.getAdjFile(project))
+            '--adjfile', self._fileman.getAdjFile(project)]
+        if single:
+            jobargs.append('--single')
         self._logger.debug("Calling %s" % str(jobargs))
         try:
 #            #check_call(jobargs)
