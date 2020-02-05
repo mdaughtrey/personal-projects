@@ -246,7 +246,8 @@ class JobManagerRaw(JobManager):
         self._logger.debug("Calling %s" % str(jobargs))
         try:
 #            #check_call(jobargs)
-            retcode = check_call(jobargs, stderr=STDOUT)
+            fileno = self._logger.handlers[0].stream.fileno()
+            retcode = check_call(jobargs, stderr=fileno, stdout=fileno)
             self._logger.debug("retcode %u" % retcode)
 #            self._logger.info("Done %s %s %s" % (project, container, outputdir))
             if 0 == retcode:
