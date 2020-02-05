@@ -66,10 +66,10 @@ getFusedImages()
 getAutoCroppedImages()
 {
     IFS=\|
-    select="select container,autocrop from picdata where autocrop is not NULL AND autocroptag='b' order by container,autocrop"
+    select="select container,autocrop from picdata where autocrop is not NULL AND autocroptag='a' order by container,autocrop"
     sqlite3 -list ${project}/$(basename $project)db "$select" | uniq | while read container filename
     do
-        echo ${project}/${container}/autocrop/${filename}b.jpg
+        echo ${project}/${container}/autocrop/${filename}a.jpg
     done
 }
 
