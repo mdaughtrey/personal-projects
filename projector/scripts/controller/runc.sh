@@ -122,6 +122,8 @@ rebuild2()
 case "$1" in 
     run) run ;;
     mode) setmode $2 ;;
+    title) ../gentitle.sh -r ${ROOTOFALL} -p ${PROJECT} -u ac ;;
+    gen) ../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ac ;;
     initdb) initdb | sqlite3 ${ROOTOFALL}/${PROJECT}/${PROJECT}db ;;
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
