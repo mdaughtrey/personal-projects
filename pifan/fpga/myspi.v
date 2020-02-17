@@ -1,4 +1,6 @@
 
+// inputs are regs
+// outputs are wires
 module MySpi
   (
    // Control/Data Signals,
@@ -21,19 +23,26 @@ reg [7:0] rxFinal;
 reg [7:0] txShift;
 reg rxReady;
 reg spiMiso;
-  reg [3:0] misoState;
+reg [3:0] misoState;
+reg [2:0] txIndex;
 
-  assign probe = {1'b0, rxBit, misoState};
-//  assign probe = {5'b000000, rxBit};
+//assign probe = {5'b0, rxBit};
+//assign probe = rxAccum;
+//assign probe = {1'b0, rxBit, misoState};
+assign probe = {3'b0, txReady, misoState};
 assign oRxReady = rxReady;
 assign oRx = rxFinal;
 assign oSPIMISO = spiMiso;
   
 // Tx
-  always @(posedge iSPIClk or posedge txReady or posedge iSPICS) //  or posedge sysclk)
+//always @(posedge iSPIClk or posedge txReady or posedge iSPICS) //  or posedge sysclk)
+always @(posedge iSPIClk or negedge iSPIClk or posedge txReady or posedge iSPICS) //  or posedge sysclk)
 begin
   if (iSPICS)
+      begin
     misoState <= 0;
+    txIndex <= 0;
+    end
   else
     case (misoState)
       // Idle and waiting for txready
@@ -45,8 +54,9 @@ begin
       // Loaded and waiting for sync with rx
       1: if ((rxBit == 0) && (iSPIClk))//  && (~iSPICS)) 
         begin
-          spiMiso <= txShift & 1'b1;
-          txShift <= txShift >> 1;
+          spiMiso <= txShift[0];
+          txIndex <= 1;
+//          txShift <= txShift >> 1;
           misoState <= 2;
         end
       
@@ -54,12 +64,12 @@ begin
       9: misoState <= 0;
       
       // Sending bits
-      default:
-        if (iSPIClk) //  && (~iSPICS)) 
+      default: if (iSPIClk) //  && (~iSPICS)) 
         begin
-          spiMiso <= txShift & 1'b1;
-          txShift <= txShift >> 1;
+          spiMiso <= txShift[txIndex];
           misoState <= misoState + 1;
+          end else begin
+          txIndex <= txIndex + 1;
         end
     endcase
 end
