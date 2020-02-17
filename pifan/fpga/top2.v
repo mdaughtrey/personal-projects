@@ -33,14 +33,21 @@ wire[7:0] spiRx;
 wire spiRxReady;
 wire [7:0] probe;
 
+reg [3:0] rxCount;
+
 initial begin
 	reset <= 1;
 	rsmState <= 0;
     txReady <= 0;
+    rxCount <= 0;
 end
 
-assign spiRx[7:4] = digit1;
-assign spiRx[3:0] = digit0;
+// spiRx is good
+//assign spiRx[7:4] = digit1;
+//assign spiRx[3:0] = digit0;
+//assign spiRx[7:4] = digit1;
+assign probe[7:4] = digit1;
+assign probe[3:0] = digit0;
 
 MySpi spi(
    // Control/Data Signals,
@@ -58,23 +65,29 @@ MySpi spi(
    .probe(probe)
    );
 
+
+//always @(posedge spiRxReady)
+//begin
+//    digit0 <= digit0 + 1; <-- works
+//end
 //assign tx = spiRx + 1;
 always @(posedge spiRxReady or posedge two_ms)
 begin
     if (spiRxReady)
     begin
         tx <= spiRx + 1;
-//        txReady <= 1;
+        txReady <= 1;
+//        digit0 <= digit0 + 1;
+    end else begin
+        txReady <= 0;
+        //digit0 <= 4'b0;
     end //  else begin
-//        txReady <= 0;
-//    end
-    txReady <= spiRxReady;
 end
 
-always @(posedge two_ms)
-begin
-    txReady <= 0;
-end
+//always @(posedge two_ms)
+//begin
+//    txReady <= 0;
+//end
 
 // DIGITS 3 2 1 0
 
