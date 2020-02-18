@@ -31,7 +31,7 @@ reg [7:0] tx;
 // Outputs are wires
 wire[7:0] spiRx;
 wire spiRxReady;
-wire [7:0] probe;
+wire [15:0] probe;
 
 reg [3:0] rxCount;
 
@@ -46,6 +46,7 @@ end
 //assign spiRx[7:4] = digit1;
 //assign spiRx[3:0] = digit0;
 //assign spiRx[7:4] = digit1;
+assign probe[11:9] = digit2;
 assign probe[7:4] = digit1;
 assign probe[3:0] = digit0;
 
@@ -65,7 +66,6 @@ MySpi spi(
    .probe(probe)
    );
 
-
 //always @(posedge spiRxReady)
 //begin
 //    digit0 <= digit0 + 1; <-- works
@@ -73,15 +73,14 @@ MySpi spi(
 //assign tx = spiRx + 1;
 always @(posedge spiRxReady or posedge two_ms)
 begin
-    if (spiRxReady)
+    if (spiRxReady & !txReady)
     begin
         tx <= spiRx + 1;
         txReady <= 1;
-//        digit0 <= digit0 + 1;
-    end else begin
+    end else if (two_ms & txReady & !spiRxReady)
+    begin
         txReady <= 0;
-        //digit0 <= 4'b0;
-    end //  else begin
+    end 
 end
 
 //always @(posedge two_ms)
