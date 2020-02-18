@@ -6,12 +6,14 @@ declare -ix TITLE_STREAM_FRAMES=200
 SOFTWARE=/media/sf_vproj/scans/software/
 FONT=${SOFTWARE}/fonts/DroidSerif-BoldItalic.ttf
 SEM=sem
+use="no"
 
-while getopts "p:r:" OPT
+while getopts "p:r:u:" OPT
 do
     case $OPT in
         p) project=$OPTARG ;;
         r) fileroot=$OPTARG ;;
+        u) use=$OPTARG ;;
         *) echo What?; exit 1 ;;
     esac
 done
@@ -27,13 +29,23 @@ fi
 
 getFirstImage()
 {
-    IFS=\|
-    #select="select container,fused from picdata where fused is not NULL order by container,fused limit 1"
-    select="select container,fused from picdata limit 1"
-    sqlite3 -list $fileroot/${project}/${project}db "$select" | while read container filename tag
-    do
-        echo $fileroot/$project/$container/fused/${filename}".jpg"
-    done
+    case $use in
+    ac)
+        IFS=\|
+        select="select container,autocrop from picdata limit 1"
+        sqlite3 -list $fileroot/${project}/${project}db "$select" | while read container filename 
+        do
+            echo $fileroot/$project/$container/autocrop/${filename}a".jpg"
+        done ;;
+
+    *)
+        IFS=\|
+        select="select container,fused from picdata limit 1"
+        sqlite3 -list $fileroot/${project}/${project}db "$select" | while read container filename tag
+        do
+            echo $fileroot/$project/$container/fused/${filename}".jpg"
+        done ;;
+    esac
 }
 
 oneTitleFrame()

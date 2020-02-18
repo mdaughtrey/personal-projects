@@ -160,8 +160,9 @@ class ProjectStore():
 
     def markAutocropped(self, project, filename, rowid):
         self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='a' WHERE rowid IS %u" % (filename, rowid))
-        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='b' WHERE rowid IS %u" % (filename, rowid + 1))
-        self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='c' WHERE rowid IS %u" % (filename, rowid + 2))
+        if not self._config.single:
+            self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='b' WHERE rowid IS %u" % (filename, rowid + 1))
+            self.simpleUpdate(project, "UPDATE picdata set processing=0, autocrop='%s',autocroptag='c' WHERE rowid IS %u" % (filename, rowid + 2))
 
     def abortAutocrop(self, project, container, file1, file2, file3):
         self._logger.warning("TODO abortAutocrop")
