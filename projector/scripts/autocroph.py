@@ -40,6 +40,7 @@ parser.add_option('-f','--filenames', dest='filenames', help='Three filenames, c
 parser.add_option('-m','--mode', dest='mode', default='8mm')
 parser.add_option('-l','--listfile', dest='listfile', help='file containing list of triplets')
 parser.add_option('-a','--adjfile', dest='adjfile', help='frame adjustmentfile (x,y,w,h)')
+parser.add_option('-s','--single', dest='single', action='store_true', default=False, help='one image per frame')
 
 (options, args) = parser.parse_args()
 
@@ -305,11 +306,14 @@ def findExtents2(tag, data):
 
 def process8mm(filenames, outputpath):
     files = filenames.split(',')
-    if 3 != len(files):
-        logger.error("Need three filenames")
-        sys.exit(1)
+    if options.single:
+        filename = files[0]
+    else:
+        if 3 != len(files):
+            logger.error("Need three filenames")
+            sys.exit(1)
+        filename = files[1]
 
-    filename = files[1]
     imp = PILImage.open(filename).convert('L')
     flattened = scipy.misc.fromimage(imp, flatten = True).astype(numpy.uint8)
     if options.debug and eroded_dir is not None:
@@ -386,6 +390,8 @@ def process8mm(filenames, outputpath):
         logger.error("Crop tile out of bounds %u x %u > %u x %u" % (frameX + frameW, frameY + frameH, fcWidth, fcHeight))
         sys.exit(1)
 
+    if options.single:
+        files = [files[0]]
     for iFile in files:
         try:
             fullColor = PILImage.open(iFile)
