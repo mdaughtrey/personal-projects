@@ -12,7 +12,7 @@ module fpga_top(
     input wire SPI0_CLK,
     input wire SPI0_MOSI,
     input wire SPI0_CS,
-    output reg SPI0_MISO,
+    output wire SPI0_MISO,
 	output wire CLK_7SEG,
 	output wire DOUT_7SEG,
 	output wire LOAD_7SEG,
@@ -25,69 +25,68 @@ module fpga_top(
 // Inputs are regs
 reg reset;
 reg [3:0] rsmState;
+reg txReady;
+reg [7:0] tx;
 
 // Outputs are wires
 wire[7:0] spiRx;
 wire spiRxReady;
-wire [7:0] probe;
+wire [15:0] probe;
+
+reg [3:0] rxCount;
 
 initial begin
 	reset <= 1;
 	rsmState <= 0;
+    txReady <= 0;
+    rxCount <= 0;
 end
 
-assign spiRx[7:4] = digit1;
-assign spiRx[3:0] = digit0;
-
-//always @(probe)
-//always @(posedge spiRxReady)
-//begin
-//    digit2 <= probe;
-//	digit2 <= digit2 + 1;
-//	digit0 <= spiRx[3:0];
-//    digit1 <= spiRx[7:4];
-//end
-
-// Reset state machine
-//always @(posedge two_ms)
-//begin
-//	case (rsmState)
-//	0: rsmState <= rsmState + 1;
-//	1: 	begin
-//			reset <= 0;
-//			rsmState <= rsmState + 1;
-//		end
-//	2: 	begin
-//			reset <= 1;
-//			rsmState <= rsmState + 1;
-//		end
-//	default: rsmState <= 3;
-//	endcase
-//end
-
-//wire[3:0] wdigit0;
-//wire[3:0] wdigit1;
-//wire[3:0] wdigit2;
-//wire[3:0] wdigit3;
+// spiRx is good
+//assign spiRx[7:4] = digit1;
+//assign spiRx[3:0] = digit0;
+//assign spiRx[7:4] = digit1;
+assign probe[11:9] = digit2;
+assign probe[7:4] = digit1;
+assign probe[3:0] = digit0;
 
 MySpi spi(
    // Control/Data Signals,
-	.reset(reset),
    .sysclk(WF_CLK),      
    .oRxReady(spiRxReady),
    .oRx(spiRx),
+   .txReady(txReady),
+   .tx(tx),
 
    // SPI Interface
    .iSPIClk(SPI0_CLK),
    .iSPIMOSI(SPI0_MOSI),
+   .oSPIMISO(SPI0_MISO),
    .iSPICS(SPI0_CS),
    .probe(probe)
    );
 
-//always @(wdigit0) digit0 <= wdigit0;
-//always @(wdigit1) digit1 <= wdigit1;
-//always @(wdigit2) digit2 <= wdigit2;
-//always @(wdigit3) digit3 <= wdigit3;
+//always @(posedge spiRxReady)
+//begin
+//    digit0 <= digit0 + 1; <-- works
+//end
+//assign tx = spiRx + 1;
+always @(posedge spiRxReady or posedge two_ms)
+begin
+    if (spiRxReady & !txReady)
+    begin
+        tx <= spiRx + 1;
+        txReady <= 1;
+    end else if (two_ms & txReady & !spiRxReady)
+    begin
+        txReady <= 0;
+    end 
+end
+
+//always @(posedge two_ms)
+//begin
+//    txReady <= 0;
+//end
 
 // DIGITS 3 2 1 0
 
@@ -101,8 +100,6 @@ initial begin
     digit3 <= 0;
 end
 
-//wire [0:0] two_ms;
-//wire [0:0] one_s;
 wire two_ms;
 wire one_s;
 
@@ -120,10 +117,6 @@ WF_timer #(.COUNT(500), .EVERY_CLK(1'b1)) one_sec(
 
 always @(posedge one_s)
 begin
-//    if (digit2 == 15)
-//    begin
-//    	digit3 <= digit3 + 1;
-//    end
 	digit3 <= digit3 + 1;
 end
 

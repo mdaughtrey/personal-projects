@@ -24,6 +24,7 @@ parser.add_argument('--film', required = True, dest='film', choices=['8mm','supe
 parser.add_argument('--saveroot', required = True, dest='saveroot', help="root dir to save to")
 parser.add_argument('--raw', required = True, dest='raw', default='False', action='store_true', help="process RAW files")
 parser.add_argument('--iimport', dest='iimport', help="set import directory")
+parser.add_argument('--single', dest='single', help="one image per frame", action='store_true', default='False')
 config = parser.parse_args()
 
 ROOTOFALL=config.saveroot 
@@ -44,6 +45,7 @@ else:
     logging.getLogger('JobManager').addHandler(fileHandler)
 #logging.getLogger('ControllerStore').addHandler(fileHandler)
 logging.getLogger('RemoteDev').addHandler(fileHandler)
+
 
 app = Flask(__name__)
 pstore = ProjectStore(logging.getLogger('ProjectStore'), ROOTOFALL + config.project, config)
