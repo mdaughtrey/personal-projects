@@ -21,7 +21,8 @@ PREFRAMES=1
 FRAMES=0
 #SHUTTER=[40000,80000,1200000]
 
-SHUTTER=[1, 24, 30]
+#SHUTTER=[150, 180, 220]
+SHUTTER=[100, 150, 180]
 TARGETDIR='/tmp'
 MAXINFLIGHT=30
 SerialPort="/dev/ttyUSB0"
@@ -57,6 +58,7 @@ parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=Fals
 parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
 parser.add_argument('--film', dest='film', choices=['super8','8mm'], help='8mm/super8')
 parser.add_argument('--dir', dest='dir', required=True, help='set project directory')
+parser.add_argument('--single', dest='singleframe', action='store_true', default=False, help='One image per frame')
 config = parser.parse_args()
 
 def signal_handler(signal, frame):
@@ -116,7 +118,13 @@ def frame(port, num):
         port.write(b'n')
         if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
             return 1
-    for ss,tag in zip(SHUTTER, ['a','b','c']):
+    if config.singleframe:
+        ii = zip([SHUTTER[1]], ['a'])
+    else:
+        ii = zip(SHUTTER, ['a','b','c'])
+
+#    pdb.set_trace()
+    for ss,tag in ii:
         logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
 
         args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
@@ -130,10 +138,10 @@ def frame(port, num):
     return 0
 
 def exptestframe(port, num):
-    if False == config.nofilm:
-        port.write(b'n')
-        if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
-            return 1
+#    if False == config.nofilm:
+#        port.write(b'n')
+#        if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
+#            return 1
     ss = num
     tag = 'a'
     logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))

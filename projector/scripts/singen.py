@@ -4,8 +4,11 @@ import math
 import pdb
 import sys
 
-TENSION_START = 40
-TENSION_END = 20
+DIA_MAX=2250
+DIA_MIN=1250
+
+TENSION_MAX = 10
+TENSION_MIN
 FRAMES = 5000
 
 tensions = []
