@@ -22,7 +22,6 @@ module fpga_top(
 // -----------------------------------------------------------------------------
 // SPI
 // -----------------------------------------------------------------------------
-// Inputs are regs
 reg reset;
 reg [3:0] rsmState;
 reg txReady;
@@ -40,13 +39,15 @@ initial begin
 	rsmState <= 0;
     txReady <= 0;
     rxCount <= 0;
+    tx <= 8'b01010101;
 end
 
 // spiRx is good
 //assign spiRx[7:4] = digit1;
 //assign spiRx[3:0] = digit0;
 //assign spiRx[7:4] = digit1;
-assign probe[11:9] = digit2;
+assign probe[15:12] = digit3;
+assign probe[11:8] = digit2;
 assign probe[7:4] = digit1;
 assign probe[3:0] = digit0;
 
@@ -71,15 +72,16 @@ MySpi spi(
 //    digit0 <= digit0 + 1; <-- works
 //end
 //assign tx = spiRx + 1;
-always @(posedge spiRxReady or posedge two_ms)
+
+always @(posedge spiRxReady or posedge WF_CLK)
 begin
     if (spiRxReady & !txReady)
     begin
-        tx <= spiRx + 1;
-        txReady <= 1;
-    end else if (two_ms & txReady & !spiRxReady)
+//        tx <= spiRx + 1;
+        txReady <= 1'b1;
+    end else if (WF_CLK & txReady)
     begin
-        txReady <= 0;
+        txReady <= 1'b0;
     end 
 end
 
@@ -115,10 +117,10 @@ WF_timer #(.COUNT(500), .EVERY_CLK(1'b1)) one_sec(
            .enable(1'b1),
            .timer_pulse(one_s));
 
-always @(posedge one_s)
-begin
-	digit3 <= digit3 + 1;
-end
+//kalways @(posedge one_s)
+//kbegin
+//k	digit3 <= digit3 + 1;
+//kend
 
 reg [3:0] digit0;    // BCD digits, 0 is LSB
 reg [3:0] digit1;
