@@ -29,7 +29,7 @@ reg [3:0] misoState;
 //assign probe = {5'b0, rxBit};
 //assign probe = rxAccum;
 //assign probe = {1'b0, rxBit, misoState};
-assign probe = {7'b0, txReady, misoState, 1'b0, rxBit};
+assign probe = {rxFinal, misoState, 1'b0, rxBit};
 //assign probe = {4'b0,  misoState, txShift};
 assign oRxReady = rxReady;
 assign oRx = rxFinal;
@@ -53,80 +53,82 @@ assign oSPIMISO = spiMiso;
 //end
 //end
 // Rx
-always @(posedge iSPIClk or negedge iSPIClk or posedge iSPICS)
+always @(posedge iSPIClk or posedge iSPICS)
 begin
     if (iSPICS)
     begin
         rxBit <= 0;
         rxReady <= 0;
-        misoState <= 4'b1000;
-//        txIndex <= 0;
+    end else  begin
+        rxBit <= rxBit + 1;
+        rxAccum <= {rxAccum[6:0], iSPIMOSI};
+        if (rxBit == 3'b111) begin
+            rxFinal <= {rxAccum[6:0], iSPIMOSI};
+            rxReady <= 1;
+        end
+        else if (rxBit == 3'b010) begin
+            rxReady <= 0;
+        end 
+    end
+end
+
+// tx
+always @(posedge iSPIClk or posedge iSPICS)
+begin
+    if (iSPICS)
+    begin
+        misoState <= 8;
         spiMiso <= 0;
         txShift <= 0;
     end else begin
-        // Rx handler
-        if (iSPIClk) begin
-            rxAccum <= {rxAccum[6:0], iSPIMOSI};
-            if (rxBit == 3'b111) begin
-                rxFinal <= {rxAccum[6:0], iSPIMOSI};
-                rxReady <= 1'b1;
-            end
-            else if (rxBit == 3'b010) begin
-                rxReady <= 1'b0;
-            end
             // Tx handler
             case (misoState)
             // Idle and waiting for txready
-            4'b1000: if (txReady) begin
+            8: if (txReady) begin
             //4'b1000: begin
 //                txShift <= tx;
-                misoState <= 4'b0111;
+                misoState <= 7;
             end
-            4'b0111: if (!rxBit) begin
+            7: if (!rxBit) begin
  //               spiMiso <= txShift[7];
 //                spiMiso <= 1'b1;
-                misoState <= 4'b0110;
+                misoState <= 6;
             end
 
-            4'b0110: begin
+            6: begin
 //                spiMiso <= txShift[6];
 //                spiMiso <= 1'b0;
-                misoState <= 4'b0101;
+                misoState <= 5;
             end
-            4'b0101: begin
+            5: begin
 //                spiMiso <= txShift[5];
 //                spiMiso <= 1'b1;
-                misoState <= 4'b0100;
+                misoState <= 4;
             end
-            4'b0100: begin
+            4: begin
 //                spiMiso <= txShift[4];
 //                spiMiso <= 1'b0;
-                misoState <= 4'b0011;
+                misoState <= 3;
             end
-            4'b0011: begin
+            3: begin
 //                spiMiso <= txShift[3];
 //                spiMiso <= 1'b1;
-                misoState <= 4'b0010;
+                misoState <= 2;
             end
-            4'b0010: begin
+            2: begin
 //                spiMiso <= txShift[2];
 //                spiMiso <= 1'b0;
-                misoState <= 4'b0001;
+                misoState <= 1;
             end
-            4'b0001: begin
+            1: begin
 //                spiMiso <= txShift[1];
-                misoState <= 4'b0000;
+                misoState <= 0;
             end
-            4'b0000: begin
+            0: begin
  //               spiMiso <= txShift[0];
-                misoState <= 4'b1000;
+//                misoState <= 8;
             end
             endcase
-        end
-        else begin
-            rxBit <= rxBit + 1;
-//            if (misoState && (misoState < 7)) misoState <= misoState <= 1;
-        end
     end
 end
 
