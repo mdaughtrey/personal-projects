@@ -20,7 +20,7 @@ reg [2:0] rxBit;
 reg [7:0] rxAccum;
 reg [7:0] rxFinal;
 reg [7:0] txShift;
-//reg [7:0] txBuffer;
+reg [7:0] txBuffer;
 reg rxReady;
 //reg spiMiso;
 reg txEnable;
@@ -57,9 +57,10 @@ end
 
 always @(posedge txReady or posedge sysclk)
 begin
-    if (txReady) begin
+    if (txReady & !txEnable) begin
         txEnable <= 1'b1;
-        txShift <= tx;
+        //txShift <= tx;
+        txBuffer <= tx;
     //end  else if (txEnable & txDone & misoState == 3'd0)
     end  else if (txEnable & txDone)
         txEnable <= 1'b0;
@@ -75,14 +76,19 @@ always @(posedge iSPIClk or posedge iSPICS)
 begin
     if (iSPICS)
     begin
-        misoIndex <= 3'd7;
+        misoIndex <= 3'd0;
         misoState <= 0;
     end else begin
         case (misoState)
-            2'd0: if (rxBit == 3'b0 && txEnable) misoState <= 1;
-            2'd1: begin misoIndex <= misoIndex - 1; if (misoIndex == 3'd0) misoState <= 2'd2; end
+            2'd0: if (rxBit == 3'b0 && txEnable)
+            begin
+                txShift <= txBuffer;
+                misoState <= 1;
+                misoIndex <= 3'd1;
+            end
+            2'd1: begin misoIndex <= misoIndex + 1; if (misoIndex == 3'd7) misoState <= 2'd2; end
             2'd2: begin misoState <= 2'd3; end
-            2'd3: begin misoIndex <= 3'd7; misoState <= 2'd0; end
+            2'd3: begin misoIndex <= 3'd0; misoState <= 2'd0; end
         endcase
     end
 end
