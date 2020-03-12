@@ -1,4 +1,3 @@
-
 // inputs are regs
 // outputs are wires
 module MySpi
@@ -21,37 +20,21 @@ reg [2:0] rxBit;
 reg [7:0] rxAccum;
 reg [7:0] rxFinal;
 reg [7:0] txShift;
+reg [7:0] txBuffer;
 reg rxReady;
-reg spiMiso;
-reg [3:0] misoState;
-//reg [2:0] txIndex;
+//reg spiMiso;
+reg txEnable;
+//reg txDone;
+wire txDone;
+reg [1:0] misoState;
+reg [2:0] misoIndex;
 
-//assign probe = {5'b0, rxBit};
-//assign probe = rxAccum;
-//assign probe = {1'b0, rxBit, misoState};
-assign probe = {rxFinal, misoState, 1'b0, rxBit};
-//assign probe = {4'b0,  misoState, txShift};
+//assign probe = {3'b0, rxReady, 3'b0, txReady, misoState, 1'b0, rxBit};
+assign probe = {txDone, 2'b0,  txEnable, 3'b0, txReady, 1'b0, misoIndex, 1'b0, rxBit};
 assign oRxReady = rxReady;
 assign oRx = rxFinal;
-assign oSPIMISO = spiMiso;
+//assign oSPIMISO = spiMiso;
 
-//jinitial begin
-//j    spiMiso <= 0;
-//jend
-  
-//always @(posedge sysclk)
-//begin
-//    if (iSPIClk)
-//    spiMiso <= !spiMiso;
-//end
-//always @(posedge iSPIClk)
-//begin
-//    if (iSPICS) spiMiso <= 0;
-//    else begin
-//        spiMiso <= !spiMiso;
-//        rxBit <= rxBit + 1;
-//end
-//end
 // Rx
 always @(posedge iSPIClk or posedge iSPICS)
 begin
@@ -60,75 +43,53 @@ begin
         rxBit <= 0;
         rxReady <= 0;
     end else  begin
-        rxBit <= rxBit + 1;
+        rxBit <= rxBit + 1'b1;
         rxAccum <= {rxAccum[6:0], iSPIMOSI};
         if (rxBit == 3'b111) begin
             rxFinal <= {rxAccum[6:0], iSPIMOSI};
-            rxReady <= 1;
+            rxReady <= 1'b1;
         end
-        else if (rxBit == 3'b010) begin
-            rxReady <= 0;
+        else if (rxBit == 3'b000) begin
+            rxReady <= 1'b0;
         end 
     end
 end
 
+always @(posedge txReady or posedge sysclk)
+begin
+    if (txReady & !txEnable) begin
+        txEnable <= 1'b1;
+        //txShift <= tx;
+        txBuffer <= tx;
+    //end  else if (txEnable & txDone & misoState == 3'd0)
+    end  else if (txEnable & txDone)
+        txEnable <= 1'b0;
+end
+
+//assign oSPIMISO = txEnable ? txShift[misoState] : 1'bZ;
+assign oSPIMISO = iSPICS ? 1'bZ : txShift[misoIndex];
+assign txDone = (!iSPICS & misoState == 2'd2);
+//assign txShift = txEnable ? txBuffer : 8'b0;
 // tx
+
 always @(posedge iSPIClk or posedge iSPICS)
 begin
     if (iSPICS)
     begin
-        misoState <= 8;
-        spiMiso <= 0;
-        txShift <= 0;
+        misoIndex <= 3'd0;
+        misoState <= 0;
     end else begin
-            // Tx handler
-            case (misoState)
-            // Idle and waiting for txready
-            8: if (txReady) begin
-            //4'b1000: begin
-//                txShift <= tx;
-                misoState <= 7;
-            end
-            7: if (!rxBit) begin
- //               spiMiso <= txShift[7];
-//                spiMiso <= 1'b1;
-                misoState <= 6;
-            end
-
-            6: begin
-//                spiMiso <= txShift[6];
-//                spiMiso <= 1'b0;
-                misoState <= 5;
-            end
-            5: begin
-//                spiMiso <= txShift[5];
-//                spiMiso <= 1'b1;
-                misoState <= 4;
-            end
-            4: begin
-//                spiMiso <= txShift[4];
-//                spiMiso <= 1'b0;
-                misoState <= 3;
-            end
-            3: begin
-//                spiMiso <= txShift[3];
-//                spiMiso <= 1'b1;
-                misoState <= 2;
-            end
-            2: begin
-//                spiMiso <= txShift[2];
-//                spiMiso <= 1'b0;
+        case (misoState)
+            2'd0: if (rxBit == 3'b0 && txEnable)
+            begin
+                txShift <= txBuffer;
                 misoState <= 1;
+                misoIndex <= 3'd1;
             end
-            1: begin
-//                spiMiso <= txShift[1];
-                misoState <= 0;
-            end
-            0: begin
- //               spiMiso <= txShift[0];
-//                misoState <= 8;
-            end
-            endcase
+            2'd1: begin misoIndex <= misoIndex + 1; if (misoIndex == 3'd7) misoState <= 2'd2; end
+            2'd2: begin misoState <= 2'd3; end
+            2'd3: begin misoIndex <= 3'd0; misoState <= 2'd0; end
+        endcase
     end
 end
 

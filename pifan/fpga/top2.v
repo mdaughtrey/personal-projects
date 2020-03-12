@@ -22,9 +22,9 @@ module fpga_top(
 // -----------------------------------------------------------------------------
 // SPI
 // -----------------------------------------------------------------------------
-reg reset;
-reg [3:0] rsmState;
 reg txReady;
+//wire txReady;
+//wire [7:0] tx;
 reg [7:0] tx;
 
 // Outputs are wires
@@ -35,11 +35,9 @@ wire [15:0] probe;
 reg [3:0] rxCount;
 
 initial begin
-	reset <= 1;
-	rsmState <= 0;
-    txReady <= 0;
-    rxCount <= 0;
-    tx <= 8'b01010101;
+    txReady = 0;
+    rxCount = 0;
+    tx = 0;
 end
 
 // spiRx is good
@@ -67,17 +65,14 @@ MySpi spi(
    .probe(probe)
    );
 
-//always @(posedge spiRxReady)
-//begin
-//    digit0 <= digit0 + 1; <-- works
-//end
-//assign tx = spiRx + 1;
-
+//assign txReady = spiRxReady;
+//assign tx = 8'h55;
 always @(posedge spiRxReady or posedge WF_CLK)
 begin
     if (spiRxReady & !txReady)
     begin
 //        tx <= spiRx + 1;
+        tx <= 8'h55;
         txReady <= 1'b1;
     end else if (WF_CLK & txReady)
     begin
@@ -85,26 +80,19 @@ begin
     end 
 end
 
-//always @(posedge two_ms)
-//begin
-//    txReady <= 0;
-//end
-
 // DIGITS 3 2 1 0
-
 // -----------------------------------------------------------------------------
 // 7 segment display
 // -----------------------------------------------------------------------------
 initial begin
-    digit0 <= 0;
-    digit1 <= 0;
-    digit2 <= 0;
-    digit3 <= 0;
+    digit0 = 0;
+    digit1 = 0;
+    digit2 = 0;
+    digit3 = 0;
 end
 
 wire two_ms;
 wire one_s;
-
 
 // 2msec timer for 7 segment display
 WF_timer #(.COUNT(31916), .EVERY_CLK(1'b1)) two_msec(
