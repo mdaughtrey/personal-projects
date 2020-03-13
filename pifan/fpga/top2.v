@@ -72,7 +72,7 @@ begin
     if (spiRxReady & !txReady)
     begin
 //        tx <= spiRx + 1;
-        tx <= 8'h55;
+        tx <= 8'ha5;
         txReady <= 1'b1;
     end else if (WF_CLK & txReady)
     begin
