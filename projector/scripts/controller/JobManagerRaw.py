@@ -50,6 +50,7 @@ class JobManagerRaw(JobManager):
 
     def __init__(self, logger, pstore, fileman, config, root):
         JobManager.__init__(self, logger, pstore, fileman, config, root)
+        self._precropframe = open(self._fileman.getPrecropAdjFile(self._config.project)).read()
 #
 #        if 'disable' == self._config.jobmode: # JobManager.WorkerManagerControl:
 #            return
@@ -101,7 +102,7 @@ class JobManagerRaw(JobManager):
         scheduled = 0
         toBePrecropped = self._pstore.toBePrecropped(self._config.project, freeWorkers)
         self._logger.debug('toBePrecropped %s' % str(toBePrecropped))
-#        pdb.set_trace()
+        
         if toBePrecropped:
             for (rowid, container, filename, tag) in toBePrecropped:
                 self._logger.debug("Container %s filename %s" % (container, filename))
@@ -234,13 +235,15 @@ class JobManagerRaw(JobManager):
 #
     def _vmAutocrop(self, project, rowid, container, filename,single):
         self._logger.info("Autocrop %s %s %s %s" % (project, rowid, container, filename))
-        source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
+#        pdb.set_trace()
+        #source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
+        source = os.path.abspath(self._fileman.getConvertedDir(project, container)) + '/'
         dest = os.path.abspath(self._fileman.getAutocropDir(project, container))
         jobargs = ['../autocroph.py', '-d', '--filenames',
             '%s,%s,%s' % (source + filename + 'a.jpg',source + filename + 'b.jpg',source + filename + 'c.jpg'),
             '--mode', self._config.film,
             '--output-dir', dest,
-            '--adjfile', self._fileman.getAdjFile(project)]
+            '--adjfile', self._fileman.getAutocropAdjFile(project)]
         if single:
             jobargs.append('--single')
         self._logger.debug("Calling %s" % str(jobargs))
@@ -325,8 +328,9 @@ class JobManagerRaw(JobManager):
 #            '-contrast-stretch', '0',
 #            '-normalize',
             '-strip', 
-            '-crop', {'8mm': JobManager.Precrop8mmGeometry,
-                'super8': JobManager.PrecropS8Geometry}[self._config.film],
+            '-crop', self._precropframe,
+#            '-crop', {'8mm': JobManager.Precrop8mmGeometry,
+#                'super8': JobManager.PrecropS8Geometry}[self._config.film],
             targetfile)
         self._logger.debug("Calling %s" % ' '.join(jobargs))
 #        pdb.set_trace()
