@@ -60,15 +60,28 @@ class FileManager():
     def getTonefuseDir(self, project, container):
         return self._getdir(project, container, 'fused')
 
-    def getAdjFile(self, project):
+    def getPrecropAdjFile(self, project):
         #   (xAdj, yAdj, wAdj, hAdj)
-        filename = "%s/%s/frameadj.txt" % (self._fileRoot, project)
-        adjfile = open(filename, "w")
-        if '8mm' == self._config.film:
-            adjfile.write("266,40,-150,-110")
-        else:
-            adjfile.write("30,20,-130,-60")
-        adjfile.close()
+        filename = "%s/%s/precropadj.txt" % (self._fileRoot, project)
+        if False == os.path.isfile(filename):
+            adjfile = open(filename, "w")
+            if '8mm' == self._config.film:
+                adjfile.write("266,40,-150,-110")
+            else:
+                adjfile.write("30,20,-130,-60")
+            adjfile.close()
+        return filename
+
+    def getAutocropAdjFile(self, project):
+        #   (xAdj, yAdj, wAdj, hAdj)
+        filename = "%s/%s/autocropadj.txt" % (self._fileRoot, project)
+        if False == os.path.isfile(filename):
+            adjfile = open(filename, "w")
+            if '8mm' == self._config.film:
+                adjfile.write("266,40,-150,-110")
+            else:
+                adjfile.write("30,20,-130,-60")
+            adjfile.close()
         return filename
 
     def newTitleFile(self, fileStream, project, titlepage):
