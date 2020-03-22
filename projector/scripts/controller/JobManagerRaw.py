@@ -49,8 +49,8 @@ class JobManagerRaw(JobManager):
                 self._logger.error("Unknown task [%s]" % task)
 
     def __init__(self, logger, pstore, fileman, config, root):
+        self._precropframe = open(fileman.getPrecropAdjFile(config.project)).read()
         JobManager.__init__(self, logger, pstore, fileman, config, root)
-        self._precropframe = open(self._fileman.getPrecropAdjFile(self._config.project)).read()
 #
 #        if 'disable' == self._config.jobmode: # JobManager.WorkerManagerControl:
 #            return
@@ -236,8 +236,8 @@ class JobManagerRaw(JobManager):
     def _vmAutocrop(self, project, rowid, container, filename,single):
         self._logger.info("Autocrop %s %s %s %s" % (project, rowid, container, filename))
 #        pdb.set_trace()
-        #source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
-        source = os.path.abspath(self._fileman.getConvertedDir(project, container)) + '/'
+        source = os.path.abspath(self._fileman.getPrecropDir(project, container)) + '/'
+        #source = os.path.abspath(self._fileman.getConvertedDir(project, container)) + '/'
         dest = os.path.abspath(self._fileman.getAutocropDir(project, container))
         jobargs = ['../autocroph.py', '-d', '--filenames',
             '%s,%s,%s' % (source + filename + 'a.jpg',source + filename + 'b.jpg',source + filename + 'c.jpg'),
@@ -323,6 +323,7 @@ class JobManagerRaw(JobManager):
         self._logger.info("Precrop %s %s %s" % (project, container, filename))
         sourcefile = os.path.abspath(self._fileman.getConvertedLocation(project, container, filename)) + tag + '.jpg'
         targetfile = os.path.abspath(self._fileman.getPrecropDir(project, container) + "/%s" % filename) + tag + '.jpg'
+#        pdb.set_trace()
         jobargs = ('convert', sourcefile,
             #'-strip', '-flop', '-flip',
 #            '-contrast-stretch', '0',
