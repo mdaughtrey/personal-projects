@@ -19,6 +19,19 @@ module fpga_top(
 	output wire MYLED
 );
 
+// SPITEST
+wire testclk;
+wire testcs;
+wire testmosi;
+SpiTest spitest
+  (
+    .clock(two_ms),
+   // SPI Interface
+   .otestclk(testclk),
+   .otestcs(testcs),
+   .otestmosi(testmosi)
+   );
+
 // -----------------------------------------------------------------------------
 // SPI
 // -----------------------------------------------------------------------------
@@ -58,10 +71,13 @@ MySpi spi(
    .tx(tx),
 
    // SPI Interface
-   .iSPIClk(SPI0_CLK),
-   .iSPIMOSI(SPI0_MOSI),
+   //.iSPIClk(SPI0_CLK),
+   .iSPIClk(testclk),
+   //.iSPIMOSI(SPI0_MOSI),
+   .iSPIMOSI(testmosi),
    .oSPIMISO(SPI0_MISO),
-   .iSPICS(SPI0_CS),
+   //.iSPICS(SPI0_CS),
+   .iSPICS(testcs),
    .probe(probe)
    );
 

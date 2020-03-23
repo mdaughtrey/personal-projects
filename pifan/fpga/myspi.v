@@ -31,7 +31,7 @@ reg [2:0] misoIndex;
 
 //assign probe = {3'b0, rxReady, 3'b0, txReady, misoState, 1'b0, rxBit};
 //jassign probe = {txDone, 2'b0,  txEnable, 3'b0, txReady, 1'b0, misoIndex, 1'b0, rxBit};
-assign probe = {rxAccum, rxFinal};
+assign probe = {3'b0, iSPICS, 1'b0, rxBit, rxFinal};
 assign oRxReady = rxReady;
 assign oRx = rxFinal;
 //assign oSPIMISO = spiMiso;
@@ -54,11 +54,12 @@ begin
         rxBit <= 0;
         rxReady <= 0;
         rxAccum <= 0;
+        rxAccum <= 0;
     end else if (iSPIClk) begin
         if (rxBit == 3'd7) begin                    // if we're on the last bit
-            rxBit <= 3'd0;
             rxFinal <= {rxAccum[6:0], iSPIMOSI};    
             rxReady <= 1'b1;                        // signal ready
+            rxBit <= 3'd0;
         end else begin                              // else gathering bits
             rxBit <= rxBit + 1'b1;
             rxAccum <= {rxAccum[6:0], iSPIMOSI};
