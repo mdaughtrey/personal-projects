@@ -6,12 +6,13 @@ TOP=top2.v
 SPISLAVE=myspi.v
 SEG7=7seg.v
 TIMER=timer.v
+TEST=spitest.v
 
 build:
-	cat ${TOP} ${SPISLAVE} ${TIMER} ${SEG7} > main.v
+	cat ${TOP} ${SPISLAVE} ${TIMER} ${SEG7} ${TEST} > main.v
 	cp myspi.v /c/Users/matt/Downloads
 	cp main.v /c/Users/matt/Downloads
-	docker run -ti -v /c/Users/matt/Downloads:/work --user $(shell id -u):$(shell id -g) verilator/verilator:latest --cc main.v
+	docker run -ti -v /c/Users/matt/Downloads:/work --user $(shell id -u):$(shell id -g) verilator/verilator:latest --lint-only main.v
 
 io:
 	cat iomon.v ${TIMER} ${SEG7} > main.v
@@ -19,3 +20,6 @@ io:
 
 verie:
 	docker run -ti -v /c/Users/matt/Downloads:/work --entrypoint /bin/bash verilator/verilator:latest
+
+test:
+	docker run -ti -v `pwd`:/work --user $(shell id -u):$(shell id -g) verilator/verilator:latest --cc main.v
