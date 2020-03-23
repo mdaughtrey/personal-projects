@@ -232,7 +232,7 @@ class JobManager():
 #            '%s,%s,%s' % (source1, source2, source3),
 #            '--mode', self._config.film,
 #            '--output-dir', outputdir,
-#            '--adjfile', self._fileman.getAdjFile(project))
+#            '--adjfile', self._fileman.getAutocropAdjFile(project))
 #        self._logger.debug("Calling %s" % ' '.join(jobargs))
 #        try:
 #            #subprocess.check_call(jobargs)
