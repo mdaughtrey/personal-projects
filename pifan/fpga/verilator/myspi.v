@@ -13,7 +13,7 @@ module MySpi
    input wire iSPIMOSI, // External pin 20 (45)
    output wire oSPIMISO, // 
    input wire iSPICS, // External pin 19 (47)
-   output wire [15:0] probe
+   output wire [23:0] probe
    );
 
 reg [2:0] rxBit;
@@ -31,7 +31,7 @@ reg [2:0] misoIndex;
 
 //assign probe = {3'b0, rxReady, 3'b0, txReady, misoState, 1'b0, rxBit};
 //jassign probe = {txDone, 2'b0,  txEnable, 3'b0, txReady, 1'b0, misoIndex, 1'b0, rxBit};
-assign probe = {3'b0, iSPICS, 1'b0, rxBit, rxFinal};
+assign probe = {5'b0, rxBit, rxAccum, rxFinal};
 assign oRxReady = rxReady;
 assign oRx = rxFinal;
 //assign oSPIMISO = spiMiso;
