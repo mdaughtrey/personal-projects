@@ -13,7 +13,7 @@ module MySpi
    input wire iSPIMOSI, // External pin 20 (45)
    output wire oSPIMISO, // 
    input wire iSPICS, // External pin 19 (47)
-   output wire [23:0] probe
+   output wire [31:0] probe
    );
 
 reg [2:0] rxBit;
@@ -25,15 +25,15 @@ reg rxReady;
 //reg spiMiso;
 reg txEnable;
 //reg txDone;
-wire txDone;
+reg txDone;
 reg [1:0] misoState;
 reg [2:0] misoIndex;
-
-//assign probe = {3'b0, rxReady, 3'b0, txReady, misoState, 1'b0, rxBit};
-//jassign probe = {txDone, 2'b0,  txEnable, 3'b0, txReady, 1'b0, misoIndex, 1'b0, rxBit};
-assign probe = {5'b0, rxBit, rxAccum, rxFinal};
+reg spimiso;
+//               9,     1,       3,        3,      8,      8
+assign probe = {9'b0, spimiso, misoIndex, rxBit, rxAccum, rxFinal};
 assign oRxReady = rxReady;
 assign oRx = rxFinal;
+assign oSPIMISO = spimiso;
 //assign oSPIMISO = spiMiso;
 
 //assign iSPIMOSI = rxAccum[rxBit];
@@ -80,21 +80,27 @@ begin
 end
 
 //assign oSPIMISO = txEnable ? txShift[misoState] : 1'bZ;
-assign oSPIMISO = iSPICS ? 1'bZ : txShift[rxBit];
-assign txDone = (!iSPICS & rxBit > 3'd5);
+//assign oSPIMISO = iSPICS ? 1'bZ : txShift[rxBit];
+//assign txDone = (!iSPICS & rxBit > 3'd5);
 //assign txShift = txEnable ? txBuffer : 8'b0;
 // tx
 
-always @(posedge iSPIClk) //  or posedge iSPICS)
+always @(posedge iSPIClk or negedge iSPIClk) //  or posedge iSPICS)
 begin
-//    if (iSPICS)
-//    begin
-//        misoIndex <= 3'd7;
-//        misoState <= 0;
-    if (rxBit == 3'b0) txShift <= txBuffer;
-    //end else if (rxBit == 3'b0) txShift <= txBuffer;
-//        csCount <= csCount + 1'b1;
-//    end else begin
+    if (iSPICS)
+    begin
+        misoIndex <= 3'd7;
+        misoState <= 0;
+        txDone <= 0;
+    end else if (txEnable) begin
+        if (iSPIClk) begin
+            spimiso <= tx[misoIndex];
+            misoIndex <= misoIndex - 1;
+        end else if (misoIndex == 3'b0) begin
+            txDone <= 1;
+        end
+    end
+
 //        case (misoState)
 //            //2'd0: if (rxBit == 3'b0 && txEnable)
 //            2'd0: if (rxBit == 3'b0)
