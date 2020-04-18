@@ -78,7 +78,8 @@ class FileManager():
         if False == os.path.isfile(filename):
             adjfile = open(filename, "w")
             if '8mm' == self._config.film:
-                adjfile.write("266,40,-150,-110")
+                adjfile.write("146,40,-150,-110")
+                #adjfile.write("266,40,-150,-110")
             else:
                 adjfile.write("30,20,-130,-60")
             adjfile.close()
