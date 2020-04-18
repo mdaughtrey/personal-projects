@@ -4,7 +4,8 @@ all:
 	docker build -f test.Dockerfile --tag=${TAG} .
 
 run:
-	docker run -dh ${TAG} -it --expose 22 -v /c/scratch:/scratch --cap-add=SYS_PTRACE --security-opt seccomp=unconfined gcc:latest 
+	docker run -h ${TAG} -v ${PWD}:/work -ti gcc:latest
+	#docker run -dh ${TAG} -it --expose 22 -v /c/scratch:/scratch --cap-add=SYS_PTRACE --security-opt seccomp=unconfined gcc:latest 
 	#docker run -dh vproj --expose 5000 -it  -v /p/vproj:/media/sf_vproj vproj:latest 
 
 attach:
