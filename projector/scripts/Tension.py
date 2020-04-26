@@ -1,4 +1,5 @@
 import math
+import pdb
 
 class Tension:
     TENSION_MAX = 50
@@ -15,7 +16,8 @@ class Tension:
         feedC = self.calcCircums(enddia, math.floor(feedTurns), Tension.FILM_THICKNESS)
         feedD = self.calcDia(enddia, math.floor(feedTurns), Tension.FILM_THICKNESS)
         tPerTurn = (Tension.TENSION_MAX - Tension.TENSION_MIN) / feedTurns * startdia / Tension.DIA_MAX
-        tensionPerC = [math.floor(Tension.TENSION_MIN + tPerTurn * t) for t in range(math.floor(feedTurns))][::-1]
+        #tensionPerC = [math.floor(Tension.TENSION_MIN + tPerTurn * t) for t in range(math.floor(feedTurns))][::-1]
+        tensionPerC = [Tension.TENSION_MIN + math.tanh((t/2)/(enddia/2)) * (Tension.TENSION_MAX - Tension.TENSION_MIN)  for t in feedD]
         framesPerC = [math.floor(x/Tension.FRAMESPACE_8MM) for x in feedC][::-1]
         return (filmLength, numFrames, [tensionPerC[self.getindex(frame, framesPerC)] for frame in range(numFrames)])
 
