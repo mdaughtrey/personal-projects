@@ -13,7 +13,7 @@ t = Tension()
 (filmlength, numframes, tension) = t.do(startdia, enddia)
 
 x = range(numframes)
-plt.plot(x, tension[::-1])
+plt.plot(x, tension)
 #scale = rOuter/tMax
 #plt.plot(x, [tMin + r * (tMax/rOuter) for r in range (rInner, rOuter, 1)])
 #plt.plot(x, [r * (tMax/rOuter) for r in range (rInner, rOuter, 1)])
