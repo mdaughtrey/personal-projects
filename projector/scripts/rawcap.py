@@ -33,6 +33,7 @@ OUTPUTDIR="/mnt/exthd"
 port = 0
 tension = list()
 lastTension = 0
+numframes = 0
 
 Geometry = {'geo0':' --mode 0', 
     'geo1':' --left 804 --top 225 --mode 0', 
@@ -101,6 +102,7 @@ def portWaitFor2(port, text1, text2):
 def init():
     global tension
     t = Tension()
+    global numframes
     (filmlength, numframes, tension) = t.do(config.startdia, config.enddia)
     print("Length {}m, {} Frames".format(math.floor(filmlength/1000), numframes))
 
@@ -189,7 +191,8 @@ def main():
     global port
     port = init()
     frameCount = 0
-    for frameCount in range(0, config.frames):
+    #for frameCount in range(0, config.frames):
+    for frameCount in range(0, numframes):
         while True:
             statvfs = os.statvfs(config.dev)
             if 20e6 < statvfs.f_frsize * statvfs.f_bavail:
