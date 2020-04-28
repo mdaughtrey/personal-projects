@@ -6,8 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from Tension import Tension
 
-#startdia = 180
-startdia = 62
+startdia = 180
+#startdia = 62
 enddia = 35
 t = Tension()
 (filmlength, numframes, tension) = t.do(startdia, enddia)
