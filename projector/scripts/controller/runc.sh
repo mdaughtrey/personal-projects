@@ -124,7 +124,8 @@ case "$1" in
     mode) setmode $2 ;;
     title) ../gentitle.sh -r ${ROOTOFALL} -p ${PROJECT} -u ac ;;
     gen) use=${2:-ac}
-        ../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use} >/dev/null 2>&1;;
+        ../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use} ;;
+        #../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use} >/dev/null 2>&1;;
     initdb) initdb | sqlite3 ${ROOTOFALL}/${PROJECT}/${PROJECT}db ;;
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
