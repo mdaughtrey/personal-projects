@@ -11,7 +11,7 @@ startdia = 180
 enddia = 35
 t = Tension()
 (filmlength, numframes, tension) = t.feedstats(startdia, enddia)
-(turns, uptakeEndDia) = t.uptakestats(filmlength)
+#(turns, uptakeEndDia) = t.uptakestats(filmlength)
 
 x = range(numframes)
 plt.plot(x, tension)
