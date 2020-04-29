@@ -10,9 +10,10 @@ TEST=spitest.v
 
 build:
 	cat ${TOP} ${SPISLAVE} ${TIMER} ${SEG7} ${TEST} > main.v
-	cp myspi.v /c/Users/matt/Downloads
-	cp main.v /c/Users/matt/Downloads
-	docker run -ti -v /c/Users/matt/Downloads:/work --user $(shell id -u):$(shell id -g) verilator/verilator:latest --lint-only main.v
+	docker run -ti -v ${PWD}:/work --user $(shell id -u):$(shell id -g) verilator/verilator:latest --lint-only main.v
+#	cp myspi.v /c/Users/matt/Downloads
+#	cp main.v /c/Users/matt/Downloads
+#	docker run -ti -v /c/Users/matt/Downloads:/work --user $(shell id -u):$(shell id -g) verilator/verilator:latest --lint-only main.v
 
 io:
 	cat iomon.v ${TIMER} ${SEG7} > main.v
