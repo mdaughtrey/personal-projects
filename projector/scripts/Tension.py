@@ -2,7 +2,7 @@ import math
 import pdb
 
 class Tension:
-    TENSION_MAX = 50
+    TENSION_MAX = 40
     TENSION_MIN = 5
     DIA_MAX = 180
     DIA0_UPTAKE = 65
