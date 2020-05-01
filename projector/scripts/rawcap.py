@@ -103,7 +103,8 @@ def init():
     global tension
     t = Tension()
     global numframes
-    (filmlength, numframes, tension) = t.do(config.startdia, config.enddia)
+    (filmlength, numframes, tension) = t.feedstats(config.startdia, config.enddia)
+    numframes += 1000
     print("Length {}m, {} Frames".format(math.floor(filmlength/1000), numframes))
 
     global lastTension
@@ -135,7 +136,7 @@ def frame(port, num):
     if tension[num] != lastTension:
         lastTension = tension[num]
         port.write('{}T'.format(tension[num]).encode('utf-8'))
-        print("Set tension {}".format(lastTension))
+        logger.debug("Set tension {}".format(lastTension))
 
     if False == config.nofilm:
         port.write(b'n')
@@ -148,7 +149,7 @@ def frame(port, num):
 
 #    pdb.set_trace()
     for ss,tag in ii:
-        logger.debug("Frame {0} shutter {1} tag {2}".format(num, ss, tag))
+        logger.debug("Frame {}/{} shutter {} tag {} tension {}".format(num, numframes, ss, tag, lastTension))
 
         args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
             Geometry['geo0'], " --fps 1 -t 1000 -sr 1 -o ",
