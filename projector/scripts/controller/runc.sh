@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT=fm120
+PROJECT=fm128
 TYPE=8mm
 #TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
@@ -123,7 +123,9 @@ case "$1" in
     run) run ;;
     mode) setmode $2 ;;
     title) ../gentitle.sh -r ${ROOTOFALL} -p ${PROJECT} -u ac ;;
-    gen) ../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ac ;;
+    gen) use=${2:-ac}
+        ../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use} ;;
+        #../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use} >/dev/null 2>&1;;
     initdb) initdb | sqlite3 ${ROOTOFALL}/${PROJECT}/${PROJECT}db ;;
     resetpc) sqlreset precrop ;;
     resetac) sqlreset autocrop ;;
