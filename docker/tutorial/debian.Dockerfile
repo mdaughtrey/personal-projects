@@ -2,7 +2,7 @@ FROM debian:stretch
 EXPOSE 5000
 RUN dpkg --add-architecture i386
 RUN apt-get update -y
-RUN apt-get install git parallel tmux python3 python3-pip git python3-flask vim python3-numpy python3-pil sqlite3 -y
+RUN apt-get install parallel tmux python3 python3-pip python3-flask vim python3-numpy python3-pil sqlite3 -y
 RUN apt-get install python3-scipy enfuse bc vim mplayer mjpegtools libav-tools wine32 -y
 #RUN apt-get install  apt-utils -y
 #RUN apt-get install  git -y
@@ -20,9 +20,9 @@ RUN apt-get install  imagemagick -y
 #RUN apt-get install bc -y
 #RUN apt-get install vim -y
 #RUN apt-get install python3-pip -y
-RUN git config --global user.email "matt@daughtrey.com"
-RUN git config --global user.name "mdaughtrey"
-RUN git clone https://github.com/mdaughtrey/personal-projects
+#RUN git config --global user.email "matt@daughtrey.com"
+#RUN git config --global user.name "mdaughtrey"
+#RUN git clone https://github.com/mdaughtrey/personal-projects
 #RUN git pull
 RUN pip3 install opencv-python-headless imageio
 RUN cp /personal-projects/bin/vimrc ~/.vimrc

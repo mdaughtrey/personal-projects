@@ -5,7 +5,7 @@ all:
 	docker build -f test.Dockerfile --tag=${TAG} .
 
 run:
-	docker run -dh vproj --expose 22 -p5000:5000 -it -v /p/vproj:/media/sf_vproj -v /c/import:/import vproj:latest 
+	docker run -dh vproj --expose 22 -p5000:5000 -it -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects -v /p/vproj:/media/sf_vproj -v /c/import:/import vproj:latest 
 	#docker run -dh vproj --expose 5000 -it  -v /p/vproj:/media/sf_vproj vproj:latest 
 
 attach:
