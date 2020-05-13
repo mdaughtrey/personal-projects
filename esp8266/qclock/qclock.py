@@ -38,21 +38,19 @@ def wakeup():
 
 
 def sweep():
-    for ii in range(11, 50):
-        utime.sleep(0.1)
+    for ii in servopos:
+        utime.sleep(1.0)
         servo.duty(ii)
-    for ii in range(50, 11, -1):
-        utime.sleep(0.1)
+    for ii in servopos[::-1]:
+        utime.sleep(1.0)
         servo.duty(ii)
-
 
 def main():
-    esp.sleep_type(esp.SLEEP_MODEM)
     sweep()
     while True:
         wakeup()
         print("Sleeping for 7200 secs")
-        utime.sleep(7200)
+        machine.deepsleep(7200000)
         #utime.sleep(20)
 
 
