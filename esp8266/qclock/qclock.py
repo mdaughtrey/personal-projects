@@ -32,37 +32,31 @@ def wakeup():
     print("Connected {}".format(sta_if.isconnected()))
 
     setlocaltime()
-    dow = utime.localtime()[6]
+    lt = utime.localtime()
+    dow = lt[6]
     print ("DOW {}".format(dow))
     sta_if.active(False)
     #sta_if.disconnect()
+    sta_if.active(False)
 #    return servopos[dow]
     servo.duty(servopos[dow])
     print("Servo duty {}".format(servo.duty()))
+    sleepfor = 86500 - (lt[3] * 3600) - (lt[4] * 60) - lt[5]
+    print("Sleeping for {} secs".format(sleepfor))
+    return sleepfor
 
 
 def sweep():
     for ii in servopos:
         utime.sleep(1)
         servo.duty(ii)
-#    for ii in servopos[::-1]:
-#        utime.sleep(1.0)
-#        servo.duty(ii)
 
 def main():
-    sweep()
     while True:
-        wakeup()
-        print("Sleeping")
-        utime.sleep(60*60*3)
-
-#    machine.deepsleep(60000)
-    #machine.deepsleep(7200000)
-#    while True:
-#        pass
-#        utime.sleep(10)
-#        print("Sleeping for 7200 secs")
-#        utime.sleep(5)
-
-
-
+        utime.sleep(wakeup())
+        #wakeup()
+        #rtc = machine.RTC()
+        #rtc.irq(trigger = rtc.ALARM0, wake=machine.DEEPSLEEP)
+        #utime.sleep(10)
+        #rtc.alarm(rtc.ALARM0, 10000)
+        #machine.deepsleep()

@@ -8,12 +8,13 @@ screen:
 
 put:
 	~/.local/bin/ampy --port ${PORT} put ${UPFILE}
+	~/.local/bin/ampy --port ${PORT} put boot.py
 
 get:
-	~/.local/bin/ampy --port ${PORT} get boot.py > boot.py
+	~/.local/bin/ampy --port ${PORT} --baud ${BAUD}  get boot.py > boot.py
 
 erase:
 	~/.local/bin/esptool.py --port ${PORT} erase_flash     
 
 flashfirm:
-	~/.local/bin/esptool.py --port ${PORT}--baud 460800 write_flash --flash_size=detect 0 esp8266-20191220-v1.12.bin
+	~/.local/bin/esptool.py --port ${PORT} --baud 460800 write_flash --flash_size=detect 0 esp8266-20191220-v1.12.bin
