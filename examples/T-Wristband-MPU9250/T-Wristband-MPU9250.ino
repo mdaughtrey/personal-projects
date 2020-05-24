@@ -12,7 +12,7 @@
 //  git clone -b development https://github.com/tzapu/WiFiManager.git
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
-// #define FACTORY_HW_TEST     //! Test RTC and WiFi scan when enabled
+//#define FACTORY_HW_TEST     //! Test RTC and WiFi scan when enabled
 // #define ARDUINO_OTA_UPDATE      //! Enable this line OTA update
 
 
@@ -496,7 +496,7 @@ void loop()
     case 2:
         tft.setTextColor(TFT_GREEN, TFT_BLACK);
         tft.setTextDatum(MC_DATUM);
-        tft.drawString("Press again to wake up",  tft.width() / 2, tft.height() / 2 );
+        tft.drawString("Press again to wake up, Matt!",  tft.width() / 2, tft.height() / 2 );
         IMU.setSleepEnabled(true);
         Serial.println("Go to Sleep");
         delay(3000);
