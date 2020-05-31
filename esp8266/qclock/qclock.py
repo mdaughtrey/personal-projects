@@ -5,6 +5,7 @@ import utime
 import network
 import ntptime
 import machine
+import webrepl_setup
 
 gamma = [0, 0, 1, 2, 4, 6, 9, 13, 16, 21, 26, 31, 37, 44, 51, 58, 66, 74, 84, 93, 103, 114, 125, 136, 148, 161, 174, 188, 202, 217, 232, 248, 264, 281, 298, 316, 334, 353, 372, 392, 412, 433, 455, 477, 499, 522, 545, 569, 594, 619, 644, 670, 697, 724, 752, 780, 808, 837, 867, 897, 928, 959, 991, 1023];
 
@@ -26,27 +27,28 @@ def setlocaltime():
     tm = utime.localtime(t)
     machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
 
-def wakeup():
-    print("Waking up")
+def init():
+    global sta_if
     sta_if = network.WLAN(network.STA_IF);
     sta_if.active(True)
     sta_if.scan()                             # Scan for available access points
     sta_if.connect("Zooma223", "N0stromo") # Connect to an AP
-    servo.freq(20)
-    servo.duty(servopos[0])
+    sta_if.config(dhcp_hostname='qclock')
     while False == sta_if.isconnected():
         print("Waiting to connect")
-        utime.sleep(1)
-    servo.duty(servopos[1])
-    print("Connected {}".format(sta_if.isconnected()))
 
+def gettthetime():
+    print("Waking up")
+    servo.freq(20)
+    servo.duty(servopos[0])
+    print("Connected {}".format(sta_if.isconnected()))
     setlocaltime()
     lt = utime.localtime()
     dow = lt[6]
     print ("DOW {}".format(dow))
-    sta_if.active(False)
+    #sta_if.active(False)
     #sta_if.disconnect()
-    sta_if.active(False)
+    #sta_if.active(False)
 #    return servopos[dow]
     servo.duty(servopos[dow])
     print("Servo duty {}".format(servo.duty()))
@@ -64,7 +66,8 @@ def sweep():
         utime.sleep(1)
 
 def pulse():
-    servo.duty(0)
+#    servo.duty(0)
+    servo.duty(servopos[0])
     ledPWM.freq(500)
     ledpower.on()
     for ii in gamma + gamma[::-1]:
@@ -73,10 +76,11 @@ def pulse():
     ledpower.off()
         
 def main():
+    init()
     sweep()
     pulse()
     while True:
-        wakeup()
+        gettthetime()
         while True:
             lt = utime.localtime()
             togo = 86400 - (lt[3] * 3600) - (lt[4] * 60) - lt[5]
@@ -92,9 +96,9 @@ def main():
 #        print(utime.localtime()[3])
 #        utime.sleep(60)
 #        if utime.localtime[3] == 0:
-#            wakeup()
+#            gettthetime()
 #    while True:
-#        utime.sleep(wakeup())
+#        utime.sleep(gettthetime())
         #rtc = machine.RTC()
         #rtc.irq(trigger = rtc.ALARM0, wake=machine.DEEPSLEEP)
         #utime.sleep(10)
