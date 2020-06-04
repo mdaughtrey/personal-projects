@@ -53,6 +53,7 @@ def init():
 
 def getthetime():
     print("Waking up")
+    global lastDOW
     #servo.duty(servopos[0])
     print("Connected {}".format(sta_if.isconnected()))
     setlocaltime()
@@ -64,7 +65,6 @@ def getthetime():
     #sta_if.active(False)
 #    return servopos[dow]
     if dow != lastDOW:
-        global lastDOW
         lastDOW = dow
         servo = machine.PWM(machine.Pin(14))
         servo.freq(SERVOFREQ)
