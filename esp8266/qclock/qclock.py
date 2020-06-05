@@ -2,10 +2,10 @@ import esp
 import math
 import time
 import utime
-import network
+#import network
 import ntptime
 import machine
-import webrepl
+#import webrepl
 
 gamma = [0, 0, 1, 2, 4, 6, 9, 13, 16, 21, 26, 31, 37, 44, 51, 58, 66, 74, 84, 93, 103, 114, 125, 136, 148, 161, 174, 188, 202, 217, 232, 248, 264, 281, 298, 316, 334, 353, 372, 392, 412, 433, 455, 477, 499, 522, 545, 569, 594, 619, 644, 670, 697, 724, 752, 780, 808, 837, 867, 897, 928, 959, 991, 1023];
 
@@ -22,15 +22,13 @@ servopos = [105, 90, 75, 60, 45, 30, 125]
 #ledPWM = machine.PWM(ledpower)
 #ledPWM.freq(500)
 SERVOFREQ = 50
-#lastDOW = 0
+lastDOW = 0
 
 def setlocaltime():
     for ii in range(5):
         try:
             t = ntptime.time() - 60 * 60 * 4 # hardcoded -4 hours
             print("NTP time {}".format(t))
-            import machine
-            import utime
             tm = utime.localtime(t)
             machine.RTC().datetime((tm[0], tm[1], tm[2], tm[6] + 1, tm[3], tm[4], tm[5], 0))
             return
@@ -38,24 +36,22 @@ def setlocaltime():
             print("Sleep 5 and retry {}".format(ii))
             utime.sleep(5)
 
-def init():
-   # servo.freq(SERVOFREQ)
-   # servo.duty(servopos[2])
-    global sta_if
-    sta_if = network.WLAN(network.STA_IF);
-    sta_if.active(True)
-    sta_if.scan()                             # Scan for available access points
-    sta_if.connect("Zooma223", "N0stromo") # Connect to an AP
-    sta_if.config(dhcp_hostname='qclock')
-    while False == sta_if.isconnected():
-        print("Waiting to connect")
-        utime.sleep(1)
-
+#def init():
+#    global sta_if
+#    sta_if = network.WLAN(network.STA_IF);
+#    sta_if.active(True)
+#    sta_if.scan()                             # Scan for available access points
+#    sta_if.connect("Zooma223", "N0stromo") # Connect to an AP
+#    sta_if.config(dhcp_hostname='qclock')
+#    while False == sta_if.isconnected():
+#        print("Waiting to connect")
+#        utime.sleep(1)
+#
 def getthetime():
     print("Waking up")
     global lastDOW
     #servo.duty(servopos[0])
-    print("Connected {}".format(sta_if.isconnected()))
+    #print("Connected {}".format(sta_if.isconnected()))
     setlocaltime()
     lt = utime.localtime()
     dow = lt[6]
@@ -65,13 +61,13 @@ def getthetime():
     #sta_if.active(False)
 #    return servopos[dow]
     if dow != lastDOW:
-        lastDOW = dow
         servo = machine.PWM(machine.Pin(14))
         servo.freq(SERVOFREQ)
         servo.duty(servopos[dow])
         print("Servo duty {}".format(servo.duty()))
         utime.sleep(2)
         servo.deinit()
+    lastDOW = dow
 #    sleepfor = 86500 - (lt[3] * 3600) - (lt[4] * 60) - lt[5]
 #    print("Sleeping for {} secs".format(sleepfor))
 #    return sleepfor
@@ -99,15 +95,13 @@ def sweep():
 #    ledpower.off()
 #        
 def main():
-    init()
-    webrepl.start()
-#$    sweep()
-#$    utime.sleep(1)
+    sweep()
+    utime.sleep(1)
 #$#    pulse()
-#$    while True:
-#$        getthetime()
-#$        lt = utime.localtime()
-#$        togo = 86400 - (lt[3] * 3600) - (lt[4] * 60) - lt[5]
-#$        print("{} seconds to go".format(togo))
-#$        utime.sleep(30)
-#$        #utime.sleep(togo)
+    while True:
+        getthetime()
+        lt = utime.localtime()
+        togo = 86400 - (lt[3] * 3600) - (lt[4] * 60) - lt[5]
+        print("{} seconds to go".format(togo))
+#        utime.sleep(togo)
+        utime.sleep(30)

@@ -4,9 +4,21 @@
 import uos, machine
 #uos.dupterm(None, 1) # disable REPL on UART(0)
 import gc
-#import webrepl
-#webrepl.start()
+import network
+import webrepl
+import utime
 gc.collect()
+
+#global sta_if
+sta_if = network.WLAN(network.STA_IF);
+sta_if.active(True)
+sta_if.scan()                             # Scan for available access points
+sta_if.connect("Zooma223", "N0stromo") # Connect to an AP
+sta_if.config(dhcp_hostname='qclock')
+while False == sta_if.isconnected():
+    print("Waiting to connect")
+    utime.sleep(1)
+webrepl.start()
 import qclock
 qclock.main()
 
