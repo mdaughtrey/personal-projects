@@ -13,7 +13,7 @@
 #include <WiFiManager.h>         //https://github.com/tzapu/WiFiManager
 
 //#define FACTORY_HW_TEST     //! Test RTC and WiFi scan when enabled
-// #define ARDUINO_OTA_UPDATE      //! Enable this line OTA update
+//#define ARDUINO_OTA_UPDATE      //! Enable this line OTA update
 
 
 #ifdef ARDUINO_OTA_UPDATE
