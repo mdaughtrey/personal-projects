@@ -1,0 +1,70 @@
+Here are my new improved instructions for installing a local copy of the
+perl modules needed by My Photo Gallery from www.fuzzymonkey.org.
+
+Get the latest version of ImageMagick from www.imagemagick.org and put it in 
+your home directory and decompress it.
+
+tar -zxvpf ImageMagick-xxx.tar.gz
+cd ImageMagick-xxx/
+
+Now make a directory to install a local copy of ImageMagick in and configure 
+ImageMagick to be installed in there.
+
+mkdir $HOME/local/
+(still in the ImageMagick-xxx/ directory)
+./configure --prefix=$HOME/local --with-modules --disable-static\
+--enableshared --without-perl --without-magick-plus-plus
+
+This will configure image magick and it will spit out a table after it is
+finished.  This is very important.  Check the table that it spits out to make
+sure that it has a 'yes' next to support for jpeg v1, png, and bzlib for gif.
+If it does not have a 'yes' next to these items, see the README for
+ImageMagick on how to install these libraries.  You can install them locally
+in the same directory where we are installing ImagMagick.  Once they are 
+isntalled, re-run the ./configure and ensure that you now have a 'yes' by
+these items.  The jpeg v1 support is REQUIRED for MyPhotoGallery.  If you 
+will be using .png or .gif images, you will need the support for them.
+
+IMPORTANT NOTE:  Again, if you do not see a YES next to the jpeg (and png
+and gif support if you will be using those) then you must download and locally
+install the libraries for these types of files.  The jpeg library is called
+jpegsrc.v6b.tar.gz and can be found using a simple google search on the 
+net.
+
+make
+make install
+
+Now we need to do the same for the Perl portion of Image Magick
+
+cd PerlMagick/
+perl Makefile.PL PREFIX=$HOME/local
+make
+make install
+
+Now its time to do the same for Image-Info and IO-String.  Download them from:
+http://www.cpan.org/authors/id/GAAS/Image-Info-1.08.tar.gz
+http://www.cpan.org/authors/id/GAAS/IO-String-1.01.tar.gz
+
+For both of these, you can install them with:
+
+tar -zxpvf filename.tar.gz
+cd new-directory/
+perl Makefile.PL PREFIX=$HOME/local
+make
+make install
+
+Now you are done installing!  You need to add some lines to index.cgi and
+manage.cgi (or any other scripts that need these perl modules) to tell them
+where to find them.  You can do this by adding the lines:
+
+use lib "/path/to/perlmodules/";
+
+To find the path, you can use: 
+find $HOME -name Image/Magick.pm
+find $HOME -name Image/Info.pm
+
+Just use these paths in the use lib ""; line.  Don't include the
+Image/Magick.pm and Image/Info.pm portions in the use lib lines.
+
+Email me if you need help,
+mike@fuzzymonkey.org

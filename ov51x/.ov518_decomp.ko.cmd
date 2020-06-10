@@ -1,0 +1,1 @@
+cmd_/home/mattd/data/projects/ov51x/ov518_decomp.ko := ld -m elf_i386 -r -o /home/mattd/data/projects/ov51x/ov518_decomp.ko /home/mattd/data/projects/ov51x/ov518_decomp.o /home/mattd/data/projects/ov51x/ov518_decomp.mod.o

@@ -1,0 +1,33 @@
+# String Constants Initialization
+    sconst top1 "t\x04 ask"
+    sconst top2 "t\x04not "
+    sconst top3 "t\x04what"
+    sconst top4 "t\x04 You"
+    sconst top5 "t\x04can "
+    sconst top6 "t\x04 do "
+    sconst top7 "t\x04for "
+    sconst top8 "t\x04your"
+#    sconst top9 "t\x04 dog"
+
+
+main:
+    svar top9 "t\x04 dog"
+    pausems 500
+    semit top1
+    pausems 500
+    semit top2
+    pausems 500
+    semit top3
+    pausems 500
+    semit top4
+    pausems 500
+    semit top5
+    pausems 500
+    semit top6
+    pausems 500
+    semit top7
+    pausems 500
+    semit top8
+    pausems 500
+    semit top9
+    jump main 

@@ -1,0 +1,24 @@
+set number
+colorscheme murphy
+set wildmenu
+set ruler
+set ignorecase
+set smartcase
+set hlsearch
+set magic
+set showmatch
+set noerrorbells
+set novisualbell
+set t_vb=
+set tm=500
+syntax enable
+set nobackup
+set nowb
+set noswapfile
+set smarttab
+set shiftwidth=4
+set tabstop=4
+set ai
+set si
+set expandtab
+set vb t_vb=

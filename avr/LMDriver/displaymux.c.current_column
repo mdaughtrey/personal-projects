@@ -1,0 +1,1252 @@
+#include <avr/io.h>
+#include <avr/pgmspace.h>
+#include <avr/interrupt.h>
+#include <displaymux.h>
+#include <typedefs.h>
+#include <stddef.h>
+
+#include <serutil.h>
+#define DEBUG
+#define USE_CURRENTCOLUMN 1
+
+#ifdef USE_CURRENTCOLUMN
+#define BITSPERSCAN 2
+#endif
+
+#define NUM_ROWS (7)
+#define NUM_COLUMNS (5)
+#define NUM_DISPLAYS (2)
+#define TRANSFORM_LIST_LENGTH (16)
+#define PALETTE_COUNTDOWN_INIT (4);
+
+#define TRANSFORM_FLIP 0x00
+#define TRANSFORM_MIRROR 0x01
+#define TRANSFORM_REVERSE 0x02
+#define TRANSFORM_ROLL_VERT 0x03
+#define TRANSFORM_ROLL_HORZ 0x04
+#define TRANSFORM_SHIFT_VERT 0x05
+#define TRANSFORM_SHIFT_HORZ 0x06
+#define TRANSFORM_EOL 0x0f	/* End Of List */
+
+#define DIR_UP 0x10
+#define DIR_DOWN 0x20
+#define DIR_LEFT 0x30
+#define DIR_RIGHT 0x40
+
+#ifdef DEBUG
+u08 dispDebugChar;
+u08 msgSetChar[] PROGMEM = "dm_SetChar\r\n";
+u08 msgTxMirror[] PROGMEM = "tx_Mirror\r\n";
+u08 msgTxFlip[] PROGMEM = "tx_Flip\r\n";
+u08 msgTxReverse[] PROGMEM = "tx_Reverse\r\n";
+u08 msgTransformIs[] PROGMEM = "Transform is ";
+u08 msgCR[] PROGMEM = "\r\n";
+u08 msgSpace[] PROGMEM = "  ";
+u08 msgSetTransform[] PROGMEM = "dm_setTransform ";
+u08 msgFindFirstTransform[] PROGMEM = "dm_findFirstTransform ";
+u08 msgTxRollVert[] PROGMEM = "tx_RollVert\r\n";
+u08 msgTxRollHorz[] PROGMEM = "tx_RollHorz\r\n";
+u08 msgTxShiftVert[] PROGMEM = "tx_ShiftVert\r\n";
+u08 msgTxShiftHorz[] PROGMEM = "tx_ShiftHorz\r\n";
+u08 msgRollUp[] PROGMEM = "rollUp ";
+u08 msgRollLeft[] PROGMEM = "rollLeft ";
+u08 msgDeleteTransform[] PROGMEM = "deleteTransform\r\n";
+u08 msgFound[] PROGMEM = "Found\r\n";
+u08 msgLength[] PROGMEM = "Length ";
+u08 msgDumpTxList[] PROGMEM = "Dump TxList:\r\n";
+u08 msgArrow[] PROGMEM = "->";
+u08 msgPreCopy[] PROGMEM = "pre copy:\r\n";
+u08 msgPostCopy[] PROGMEM = "post copy:\r\n";
+u08 msgReset[] PROGMEM = "reset\r\n";
+u08 msgClearColumns[] PROGMEM = "clearColumns";
+u08 msgGreen[] PROGMEM = "g";
+u08 msgOrange[] PROGMEM = "o";
+u08 msgDisp[] PROGMEM = "disp ";
+u08 msgBoot[] PROGMEM = "LMDriver init";
+u08 msgCopy[] PROGMEM = "copy to custom: ";
+u08 msgDmPixel[] PROGMEM = "dm_pixel: ";
+u08 msgDmProgColumn[] PROGMEM = "dm_progColumn: ";
+
+#define SDEBUG(x)  uart_send_sync(x, sizeof(x))
+#define SNUMBER(c) uart_send_char((c) + '0')
+#define SHEX(c) uart_send_hex_byte(c);
+
+#else  /* DEBUG */
+#define SDEBUG(x)
+#define SNUMBER(x)
+#define SHEX(x)
+#endif
+
+extern u08 font5x7[];
+
+
+#ifdef LTP1157
+u08 columnCtl[NUM_DISPLAYS][NUM_COLUMNS][2] PROGMEM =
+  {
+    /* Display 0 */
+    0x02, 5,			/* PORTA */
+    0x08, 4,			/* PORTC */
+    0x08, 3,			/* PORTC */
+    0x02, 2,			/* PORTA */
+    0x08, 1,			/* PORTC */
+    /* Display 1 */
+    0x11, 6,			/* PORTF */
+    0x05, 7,			/* PORTB */
+    0x05, 6,			/* PORTB */
+    0x11, 3,			/* PORTF */
+    0x05, 4			/* PORTB */
+  };
+
+u08 rowCtl[NUM_DISPLAYS][NUM_ROWS][2] PROGMEM =
+  {
+    /* Display 0 */
+    0x02, 1,			/* PORTA */
+    0x02, 6,			/* PORTA */
+    0x02, 0,			/* PORTA */
+    0x08, 2,			/* PORTC */
+    0x08, 6,			/* PORTC */
+    0x08, 0,			/* PORTC */
+    0x08, 5,			/* PORTC */
+
+    /* Display 1 */
+    0x11, 2,			/* PORTF */
+    0x11, 7,			/* PORTF */
+    0x11, 1,			/* PORTF */
+    0x05, 5,			/* PORTB */
+    0x14, 4,			/* PORTG */
+    0x0e, 7,			/* PORTE */
+    0x14, 3			/* PORTG */
+  };
+#endif  /* !LTP1157 */
+#ifdef LTP1257
+u08 columnCtl[NUM_DISPLAYS][NUM_COLUMNS][2] PROGMEM =
+  {
+    /* Display 0 */
+    0x08, 4,			/* PORTC */
+    0x08, 3,			/* PORTC */
+    0x08, 2,			/* PORTC */
+    0x08, 1,			/* PORTC */
+    0x08, 0,			/* PORTC */
+    /* Display 1 */
+    0x0b, 0,			/* PORTD */
+    0x14, 4,			/* PORTG */
+    0x14, 3,			/* PORTG */
+    0x05, 7,			/* PORTB */
+    0x05, 6			/* PORTB */
+  };
+
+u08 rowCtlGreen[NUM_DISPLAYS][NUM_ROWS][2] PROGMEM =
+  {
+    /* Display 0 */
+    0x14, 2,			/* PORTG */
+    0x02, 6,			/* PORTA */
+    0x02, 4,			/* PORTA */
+    0x02, 2,			/* PORTA */
+    0x02, 0,			/* PORTA */
+    0x14, 1,			/* PORTG */
+    0x08, 6,			/* PORTC */
+
+    /* Display 1 */
+    0x11, 6,			/* PORTF */
+    0x11, 4,			/* PORTF */
+    0x11, 2,			/* PORTF */
+    0x11, 0,			/* PORTF */
+    0x0E, 3,			/* PORTE */
+    0x05, 5,			/* PORTB */
+    0x0B, 2			/* PORTD */
+  };
+
+u08 rowCtlOrange[NUM_DISPLAYS][NUM_ROWS][2] PROGMEM =
+  {
+    /* Display 0 */
+    0x08, 7,			/* PORTC */
+    0x02, 7,			/* PORTA */
+    0x02, 5,			/* PORTA */
+    0x02, 3,			/* PORTA */
+    0x02, 1,			/* PORTA */
+    0x14, 0,			/* PORTG */
+    0x08, 5,			/* PORTC */
+
+    /* Display 1 */
+    0x11, 7,			/* PORTF */
+    0x11, 5,			/* PORTF */
+    0x11, 3,			/* PORTF */
+    0x11, 1,			/* PORTF */
+    0x0E, 2,			/* PORTE */
+    0x05, 4,			/* PORTB */
+    0x0B, 1			/* PORTD */
+  };
+#endif /* LTP1157 */
+
+/* KingBright TBC12-22EGWA */
+
+#ifdef KB_TBC12
+typedef struct
+{
+  uint8_t * port;
+  uint8_t pin;
+}PortPin;
+
+PortPin columnCtl[NUM_DISPLAYS][NUM_COLUMNS] PROGMEM =
+  {
+    /* Display 0 */
+    {
+      { &PORTC, 4 },			/* PORTC */
+      { &PORTC, 3 },			/* PORTC */
+      { &PORTC, 2 },			/* PORTC */
+      { &PORTC, 1 },			/* PORTC */
+      { &PORTC, 0 },			/* PORTC */
+    },
+    {
+      /* Display 1 */
+      { &PORTD, 0 },			/* PORTD */
+      { &PORTG, 4 },			/* PORTG */
+      { &PORTG, 3 },			/* PORTG */
+      { &PORTB, 7 },			/* PORTB */
+      { &PORTB, 6 }			/* PORTB */
+    }
+  };
+
+PortPin rowCtlGreen[NUM_DISPLAYS][NUM_ROWS] PROGMEM =
+  {
+    {
+      /* Display 0 */
+      { &PORTG, 2 },			/* PORTG */
+      { &PORTA, 6 },			/* PORTA */
+      { &PORTA, 4 },			/* PORTA */
+      { &PORTA, 2 },			/* &PORTA */
+      { &PORTA, 0 },			/* &PORTA */
+      { &PORTG, 1 },			/* PORTG */
+      { &PORTC, 6 },			/* PORTC */
+    },
+    {
+      /* Display 1 */
+      { &PORTF, 6 },		/* PORTF */
+      { &PORTF, 4 },			/* PORTF */
+      { &PORTF, 2 },			/* PORTF */
+      { &PORTF, 0 },			/* PORTF */
+      { &PORTE, 3 },			/* PORTE */
+      { &PORTB, 5 },			/* PORTB */
+      { &PORTD, 2 }			/* PORTD */
+    }
+  };
+
+PortPin rowCtlOrange[NUM_DISPLAYS][NUM_ROWS] PROGMEM =
+  {
+    {
+      /* Display 0 */
+      { &PORTC, 7 },			/* PORTC */
+      { &PORTA, 7 },			/* PORTA */
+      { &PORTA, 5 },			/* PORTA */
+      { &PORTA, 3 },			/* PORTA */
+      { &PORTA, 1 },			/* PORTA */
+      { &PORTG, 0 },			/* PORTG */
+      { &PORTC, 5 },			/* PORTC */
+    },
+    {
+      /* Display 1 */
+      { &PORTF, 7 },			/* PORTF */
+      { &PORTF, 5 },			/* PORTF */
+      { &PORTF, 3 },			/* PORTF */
+      { &PORTF, 1 },			/* PORTF */
+      { &PORTE, 2 },			/* PORTE */
+      { &PORTB, 4 },			/* PORTB */
+      { &PORTD, 1 }			/* PORTD */
+    }
+  };
+#endif
+
+struct _display
+{
+  u08 charIndex;
+  u08 colIndex;
+  u08 flags;
+  u08 txList[TRANSFORM_LIST_LENGTH];
+  u08 txListBookmark;
+  u08 progColumn[NUM_COLUMNS];
+  u08 bitsOut[NUM_COLUMNS];
+#ifdef USE_CURRENTCOLUMN
+  u08 currentColumn;
+#endif
+  //  u08 portDataSelect;		/* palette currently being displayed */
+  u08 paletteSelected;		/* Change to this pallete */
+  u08 paletteCountdown;		/* countdown to next palette change */
+  u08 * rowCtlPtr;
+  uint8_t * litPort;
+  u08 litBit;
+}display[NUM_DISPLAYS];
+
+#define FLAG_DIM (_BV(3))	/* bright/dim */
+#define FLAG_PROGCOLS (_BV(4))	/* display programmed columns */
+#define FLAG_BLANK (_BV(5))	/* blank character */
+
+
+static void dm_deleteTransform(u08 which, u08 command);
+static void dm_setTransform(u08 which, u08 command);
+static u08 dm_findNextTransform(struct _display * display);
+static u08 dm_getTransformData(struct _display * display, u08 index);
+static void dm_setTransformData(struct _display * display, u08 index, u08 data);
+static u08 dm_findFirstTransform(struct _display * display);
+static u08 dm_cmdLength(u08 command);
+static void dm_applyTransforms(u08 which);
+static void dm_rollUp(struct _display * display, u08 count);
+static void dm_rollLeft(struct _display * display, u08 count);
+static void dm_dumpTxList(struct _display * display);
+static void dm_clearRows(struct _display * display, u08 start, u08 count);
+static void dm_clearColumns(struct _display * display, u08 start, u08 count);
+
+/* #ifdef LTP1257 */
+#ifdef KB_TBC12
+void dm_timerHandler(void)
+{
+  register u08 data = 0;
+  register u08 whichIndex;
+  u08 * rowCtlPtr;
+  u08 * oldRowCtlPtr;
+
+  for (whichIndex = 0; whichIndex < NUM_DISPLAYS; whichIndex++)
+    {
+      //      u08 cont = 0;
+#ifdef USE_CURRENTCOLUMN
+      u08 numBits = 0;
+#endif
+      struct _display * disp = &display[whichIndex];
+      u08 flags = disp->flags;
+      u08 colIndex = disp->colIndex;
+      u08 * colOnPort;
+      u08 colOnBit;
+      u08 count;
+      const u08 * colCtlPtr = &columnCtl[whichIndex][colIndex];
+
+      colOnPort = pgm_read_byte_near(colCtlPtr + offsetof(PortPin, port));
+      colOnBit = pgm_read_byte_near(colCtlPtr + offsetof(PortPin, pin));
+
+
+      /* Set the row data */
+      /* If we're about to make a pallete change, just blank */
+      /* out the display for one refresh cycle. This is because  */
+      /* we're also changing which bits control the LEDs and it's */
+      /* easier to turn them off now when we know what rowCtl array */
+      /* we're using. */
+      rowCtlPtr = disp->rowCtlPtr;
+      oldRowCtlPtr = disp->rowCtlPtr;
+
+
+      if (data == 0 &&
+	  colIndex == 0)
+	{
+	  rowCtlPtr = disp->rowCtlPtr;
+	  if (disp->paletteCountdown < disp->paletteSelected)
+	    {
+	      disp->rowCtlPtr = &rowCtlOrange[whichIndex][0];
+	    }
+	  else
+	    {
+	      disp->rowCtlPtr = &rowCtlGreen[whichIndex][0];
+	    }
+	  if (disp->rowCtlPtr != rowCtlPtr)
+	    {
+	      oldRowCtlPtr = rowCtlPtr;
+	      //	      rowCtlPtr = disp->rowCtlPtr;
+	      /* If we've changed palettes, turn off the old one */
+/* 	      for (count = 0; count < NUM_ROWS; count++) */
+/* 		{ */
+/* 		  u08 * port = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, port)); */
+/* 		  u08 bit = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, pin)); */
+/* 		  rowCtlPtr += sizeof(PortPin); */
+/* 		  (*port) &= ~_BV(bit);	/\* zeroes out each row to blank display *\/ */
+/* 		} */
+	      rowCtlPtr = disp->rowCtlPtr;
+	    }
+	  if (--disp->paletteCountdown == 0)
+	    {
+	      disp->paletteCountdown = PALETTE_COUNTDOWN_INIT;
+	    }
+	}
+
+/*       if (disp->portDataSelect == 0) */
+/* 	{ */
+/* 	  rowCtlPtr = &rowCtlOrange[whichIndex][0]; */
+/* 	} */
+/*       else */
+/* 	{ */
+/* 	  rowCtlPtr = &rowCtlGreen[whichIndex][0]; */
+/* 	} */
+#ifdef USE_CURRENTCOLUMN
+      if (disp->currentColumn)
+	{
+	  data = disp->currentColumn;
+	}
+      else
+#endif
+	{
+	  data = disp->bitsOut[colIndex];
+	}
+#ifdef USE_CURRENTCOLUMN
+      /* Turn off the previous column */
+      (*disp->litPort) |= _BV(disp->litBit);
+      disp->litPort = colOnPort;
+      disp->litBit = colOnBit;
+      for (count = 0; count < NUM_ROWS; count++)
+	{
+	  u08 * newPort = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, port));
+	  u08 newBit = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, pin));
+	  u08 * oldPort = pgm_read_byte_near(oldRowCtlPtr + offsetof(PortPin, port));
+	  u08 oldBit = pgm_read_byte_near(oldRowCtlPtr + offsetof(PortPin, pin));
+	  rowCtlPtr += sizeof(PortPin);
+	  oldRowCtlPtr += sizeof(PortPin);
+	  if (data & (1 << count) && numBits < BITSPERSCAN)
+	    {
+	      if (oldPort != newPort || oldBit != newBit)
+		{
+		  (*oldPort) &= ~_BV(oldBit);
+		}
+	      (*newPort) |= _BV(newBit);
+	      data &= ~(1 << count);
+	      numBits++;
+	    }
+	  else
+	    {
+	      (*oldPort) &= ~_BV(oldBit);
+	      (*newPort) &= ~_BV(newBit);
+	    }
+	}
+      disp->currentColumn = data;
+#else  /* USE_CURRENTCOLUMN */
+      for (count = 0; count < NUM_ROWS; count++)
+	{
+	  u08 *  port = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, port));
+	  u08 bit = pgm_read_byte_near(rowCtlPtr + offsetof(PortPin, pin));
+	  if (data & 1)
+	    (*port) |= _BV(bit);
+	  else
+	    (*port) &= ~_BV(bit);
+	  data >>= 1;
+	}
+#endif /* USE_CURRENTCOLUMN */
+
+      /* If display is not blanked, turn on the current column */
+      if ((flags & FLAG_BLANK) == 0)
+	{
+	  (*colOnPort) &= ~_BV(colOnBit);
+	}
+
+#ifdef USE_CURRENTCOLUMN
+      if (data == 0 && ++colIndex == NUM_COLUMNS)
+#else
+      if (++colIndex == NUM_COLUMNS)
+#endif
+	{
+	  colIndex = 0;
+	}
+      disp->colIndex = colIndex;
+      /* If display is dimmed, turn column off immediately */
+      if (flags & FLAG_DIM)
+	{
+	  (*colOnPort) |= _BV(colOnBit);
+	}
+    }
+}
+#else  /* !LTP1257 */
+void dm_timerHandler(void)
+{
+  register u08 data;
+  register u08 whichIndex;
+   
+#ifdef LTP1257
+  u08 * rowCtlPtr;
+#else
+  const u08 * rowCtlPtr = &rowCtl[0][0][0];
+#endif
+
+  for (whichIndex = 0; whichIndex < NUM_DISPLAYS; whichIndex++)
+    {
+      struct _display * disp = &display[whichIndex];
+      u08 flags = disp->flags;
+      u08 colIndex = disp->colIndex;
+      u08 colOnPort;
+      u08 colOnBit;
+      u08 count;
+      const u08 * dataPtr = &columnCtl[whichIndex][colIndex][0];
+
+      colOnPort = pgm_read_byte_near(dataPtr++);
+      colOnBit = pgm_read_byte_near(dataPtr);
+      data = disp->bitsOut[colIndex];
+
+      /* Turn off the previous column */
+      /* When we're transitioning from one display to the other, refer back */
+      /* to the other disp structure to find out which column to blank. */
+      /* This matters if the displays are multicolor and using different */
+      /* palettes. */
+      if (colIndex == 0)
+	{
+	  if (whichIndex == 0)
+	    {
+#ifdef LTP1157
+	      display[1].litPort |= _BV(display[1].litBit);
+#else
+	      display[1].litPort &= ~_BV(display[1].litBit);
+#endif
+	    }
+	  else
+	    {
+#ifdef LTP1157
+	      display[0].litPort |= _BV(display[1].litBit);
+#else
+	      display[0].litPort &= ~_BV(display[0].litBit);
+
+#endif
+	    }
+	}
+      else
+	{
+#ifdef LTP1157
+	  disp->litPort |= _BV(disp->litBit);
+#else
+	  disp->litPort &= ~_BV(disp->litBit);
+#endif
+	}
+      disp->litPort = colOnPort;
+      disp->litBit = colOnBit;
+      /* Set the row data */
+#ifdef LTP1257
+      if (disp->portDataSelect == 0)
+	{
+	  rowCtlPtr = &rowCtlOrange[0][0][0];
+	}
+      else
+	{
+	  rowCtlPtr = &rowCtlGreen[0][0][0];
+	}
+#endif
+      for (count = 0; count < NUM_ROWS; count++)
+	{
+	  u08 port = pgm_read_byte_near(rowCtlPtr++);
+	  u08 bit = pgm_read_byte_near(rowCtlPtr++);
+	  if (data & 1)
+#ifdef LTP1157
+	    port |= _BV(bit);
+	  else
+	    port &= ~_BV(bit);
+#else  /* LTP1257 */
+	  port &= ~_BV(bit);
+	  else
+	    port |= _BV(bit);
+#endif
+	  data >>= 1;
+	}
+	  
+      /* If display is not blanked, turn on the current column */
+      if ((flags & FLAG_BLANK) == 0)
+	{
+#ifdef LTP1157
+	  colonPort &= ~_BV(colOnBit);
+#else  /* LTP1257 */
+	  colOnPort |= _BV(colOnBit);
+#endif
+	}
+      /* If display is dimmed, turn column off immediately */
+      if (flags & FLAG_DIM)
+	{
+#ifdef LTP1157
+	  colOnPort |= _BV(colOnBit);
+#else  /* LTP1257 */
+	  colOnPort &= ~_BV(colOnBit);
+#endif
+	}
+
+      disp->colIndex++;
+      disp->colIndex %= NUM_COLUMNS;
+    }
+}
+#endif /* LTP1257 */
+void dm_init(void)
+{
+  memset(display, 0, sizeof(display));
+  display[0].txList[0] = TRANSFORM_EOL;
+  display[1].txList[0] = TRANSFORM_EOL;
+#ifdef KB_TBC12
+  DDRA = 0xff; /*76543210 1111 1111  */
+  DDRB |= 0xf0; /*7654 1111 0000 */
+  DDRC = 0xff; /*76543210 1111 1111  */
+  DDRD = 0x07; /* 210 0000 0111*/
+  DDRE = 0x0c; /* 32 0000 1100*/
+  DDRF = 0xff; /* 76543210 11111111*/
+  DDRG = 0x1f; /* 43210 0001 1111*/
+/*   display[0].litPort = PORTA; */
+/*   display[0].litBit = 5; */
+  display[0].rowCtlPtr = &rowCtlGreen[0][0];
+  display[1].rowCtlPtr = &rowCtlGreen[1][0];
+
+#endif
+#ifdef LTP1157
+  DDRA = 0x67; /*65210 0110 0111 */
+  DDRB = 0xf0; /*4567  1111 0000 */
+  DDRC = 0x7f; /*0123456 0111 1111 */
+  DDRD = 0x00; /* */
+  DDRE = 0x80; /* 7 1000 0000*/
+  DDRF = 0xce; /* 76321 1100 1110 */
+  DDRG = 0x18; /* 34 0001 1000 */
+  display[0].litPort = PORTA;
+  display[0].litBit = 5;
+#endif
+#ifdef LTP1157 
+  DDRA  = 0xff;		/* 76543210 1111 1111 */
+  PORTA = 0xff;
+  DDRB  = 0xf0;		/* 7654 1111 0000 */
+  PORTB = 0xf0;
+  DDRC  = 0xff;		/* 76543210 1111 1111 */
+  PORTC = 0xff;
+  DDRD  = 0x07;		/* 210 0000 0111 */
+  PORTD = 0x07;
+  DDRE  = 0x0c;		/* 32 0000 1100 */
+  PORTE = 0x0c;
+  DDRF  = 0xff;		/* 76543210 1111 1111 */
+  PORTF = 0xff;
+  DDRG  = 0x1f;		/* 43210 0001 1111 */
+  PORTG = 0x1f;
+  display[0].litPort = PORTC;
+  display[0].litBit = 4;
+  display[1].litPort = PORTB;
+  display[1].litBit = 6;
+#endif
+  TCCR0A = _BV(CS01);		/* Timer 0 prescaler =CLK/256 */
+/*   sbi(TIMSK0, TOIE0); */
+  TIMSK0 |= _BV(TOIE0);
+
+  SDEBUG(msgBoot);
+  SDEBUG(msgCR);
+
+}
+
+
+void dm_setChar(u08 which, u08 set)
+{
+  display[which].charIndex = set;
+  SDEBUG(msgSetChar);
+  dm_applyTransforms(which);
+}
+
+static void dm_applyTransforms(u08 which)
+{
+  u08 count;
+  u08 transform;
+  struct _display * disp = &display[which];
+  u08 * dataPtr = font5x7 + (disp->charIndex * NUM_COLUMNS);
+
+/*   cbi(TIMSK0, TOIE0); */
+  TIMSK0 &= ~_BV(TOIE0);
+
+  if (disp->flags & FLAG_PROGCOLS)
+    {
+      for (count = 0; count < NUM_COLUMNS; count++)
+	{
+	  disp->bitsOut[count] = disp->progColumn[count];
+	}
+    }
+  else
+    {
+      for (count = 0; count < NUM_COLUMNS; count++)
+	{
+	  disp->bitsOut[count] = pgm_read_byte_near(dataPtr++);
+	}
+    }
+  
+  disp->colIndex = 0;
+
+  dm_dumpTxList(display);
+
+  transform = dm_findFirstTransform(disp);
+  while ((transform & 0x0f) != TRANSFORM_EOL)
+    {
+      int tmp = (int)disp;
+      u08 data;
+      u08 count2;
+      SDEBUG(msgTransformIs);
+      SNUMBER(transform & 0x0f);
+      SDEBUG(msgCR);
+      switch (transform & 0x0f)
+	{
+
+	case TRANSFORM_FLIP:
+	  {
+	    SDEBUG(msgTxFlip);
+	    for (count2 = 0; count2 < NUM_COLUMNS; count2++)
+	      {
+		data = disp->bitsOut[count2];
+		data = ((data & 0xAA) >>  1) | ((data & 0x55) <<  1);
+		data = ((data & 0xCC) >>  2) | ((data & 0x33) <<  2);
+		data = (data >> 4) | (data << 4);
+		data = data >> 1;
+		disp->bitsOut[count2] = data;
+	      }
+	  }
+	  break;
+
+	case TRANSFORM_MIRROR:
+	  {
+	    u08 temp;
+	    SDEBUG(msgTxMirror);
+	    temp = disp->bitsOut[0];
+	    disp->bitsOut[0] = disp->bitsOut[4];
+	    disp->bitsOut[4] = disp->bitsOut[1];
+	    disp->bitsOut[1] = disp->bitsOut[3];
+	    disp->bitsOut[3] = disp->bitsOut[4];
+	    disp->bitsOut[4] = temp;
+	  }
+	  break;
+	  
+ 	case TRANSFORM_REVERSE: 
+ 	  { 
+ 	    SDEBUG(msgTxReverse); 
+ 	    for (count2 = 0; count2 < NUM_COLUMNS; count2++) 
+ 	      { 
+		disp->bitsOut[count2] = ~disp->bitsOut[count2] & 0x7f;
+ 	      } 
+ 	  } 
+ 	  break; 
+
+	case TRANSFORM_ROLL_VERT:
+	    SDEBUG(msgTxRollVert);
+	case TRANSFORM_ROLL_HORZ:
+	  {
+	    u08 data;
+	    SDEBUG(msgTxRollHorz);
+	    data = dm_getTransformData(disp, 0);
+	    switch (data & 0xf0)
+	      {
+	      case DIR_UP: dm_rollUp(disp, data & 0x0f); break;
+	      case DIR_DOWN: dm_rollUp(disp, NUM_ROWS - (data & 0x0f)); break;
+	      case DIR_LEFT: dm_rollLeft(disp, data & 0x0f); break;
+	      case DIR_RIGHT: dm_rollLeft(disp, NUM_COLUMNS - (data & 0x0f)); break;
+	      }
+	  }
+	  break;
+
+	case TRANSFORM_SHIFT_VERT:
+	  {
+	    u08 data;
+	    data = dm_getTransformData(disp, 0);
+	    switch (data & 0xf0)
+	      {
+	      case DIR_UP:
+		data &= 0x0f;
+		SDEBUG(msgRollUp);
+		SNUMBER(data);
+		SDEBUG(msgCR);
+		dm_rollUp(disp, data);
+		dm_clearRows(disp, NUM_ROWS - data, data);
+		break;
+		
+	      case DIR_DOWN:
+		data &= 0x0f;
+		SDEBUG(msgRollUp);
+		SNUMBER(NUM_ROWS - data);
+		SDEBUG(msgCR);
+		dm_rollUp(disp, NUM_ROWS - data);
+		dm_clearRows(disp, 0, data);
+		break;
+	      }
+	    break;
+	  }
+
+	case TRANSFORM_SHIFT_HORZ:
+	  {
+	    data = dm_getTransformData(disp, 0);
+	    switch (data & 0xf0)
+	      {
+	      case DIR_LEFT:
+		data &= 0x0f;
+		SDEBUG(msgRollLeft);
+		SNUMBER(data);
+		SDEBUG(msgCR);
+		dm_rollLeft(disp, data);
+		dm_clearColumns(disp, NUM_COLUMNS - data, data);
+		break;
+		
+	      case DIR_RIGHT:
+		data &= 0x0f;
+		SDEBUG(msgRollLeft);
+		SNUMBER(NUM_COLUMNS - data);
+		SDEBUG(msgCR);
+		dm_rollLeft(disp, NUM_COLUMNS - data);
+		dm_clearColumns(disp, 0, data);
+		break;
+	      }
+	  }
+	  break;
+
+	}
+      SDEBUG(msgCR);
+      transform = dm_findNextTransform(disp);
+    }
+/*   sei(); */
+  TIMSK0 |= _BV(TOIE0);
+}
+
+void dm_setReverse(u08 which, u08 set)
+{
+  switch (set)
+    {
+    case 0: dm_deleteTransform(which, TRANSFORM_REVERSE); break;
+    case 1: dm_setTransform(which, TRANSFORM_REVERSE); break;
+    }
+  dm_applyTransforms(which);
+}
+
+void dm_setFlip(u08 which, u08 set)
+{
+  switch (set)
+    {
+    case 0: dm_deleteTransform(which, TRANSFORM_FLIP); break;
+    case 1: dm_setTransform(which, TRANSFORM_FLIP); break;
+    }
+  dm_applyTransforms(which);
+}
+
+void dm_setMirror(u08 which, u08 set)
+{
+  switch (set)
+    {
+    case 0: dm_deleteTransform(which, TRANSFORM_MIRROR); break;
+    case 1: dm_setTransform(which, TRANSFORM_MIRROR); break;
+    }
+  dm_applyTransforms(which);
+}
+
+void dm_setDim(u08 which, u08 set)
+{
+  switch (set)
+    {
+    case 0: display[which].flags &= ~FLAG_DIM; break;
+    case 1: display[which].flags |= FLAG_DIM; break;
+    }
+}
+
+
+void dm_displayProgrammed(u08 which, u08 set)
+{
+  switch (set)
+    {
+    case 0: display[which].flags &= ~FLAG_PROGCOLS; break;
+    case 1: display[which].flags |= FLAG_PROGCOLS; break;
+    }
+  dm_applyTransforms(which);
+}
+
+void dm_blank(u08 which)
+{
+  display[which].flags |= FLAG_BLANK;
+}
+
+void dm_unBlank(u08 which)
+{
+  display[which].flags &= ~FLAG_BLANK;
+}
+
+void dm_shift(u08 which, u08 direction, u08 count)
+{
+  struct _display * disp = &display[which];
+  switch (count)
+    {
+    case 0:
+      switch (direction)
+	{
+	case 'u':
+	case 'd':
+	  dm_deleteTransform(which, TRANSFORM_SHIFT_VERT);
+	  break;
+
+	case 'l':
+	case 'r':
+	  dm_deleteTransform(which, TRANSFORM_SHIFT_HORZ);
+	  break;
+	}
+      break;
+
+/*     case 1: */
+    default:
+      switch (direction)
+	{
+	case 'u':
+	  dm_setTransform(which, TRANSFORM_SHIFT_VERT);
+	  dm_setTransformData(disp, 0, DIR_UP | count);
+	  break;
+
+	case 'd':
+	  dm_setTransform(which, TRANSFORM_SHIFT_VERT);
+	  dm_setTransformData(disp, 0, DIR_DOWN | count);
+	  break;
+
+	case 'l':
+	  dm_setTransform(which, TRANSFORM_SHIFT_HORZ);
+	  dm_setTransformData(disp, 0, DIR_LEFT | count);
+	  break;
+
+	case 'r':
+	  dm_setTransform(which, TRANSFORM_SHIFT_HORZ);
+	  dm_setTransformData(disp, 0, DIR_RIGHT | count);
+	  break;
+	}
+    }
+  dm_applyTransforms(which);
+}
+
+void dm_roll(u08 which, u08 direction, u08 count)
+{
+  struct _display * disp = &display[which];
+  switch (count)
+    {
+    case 0:
+      switch (direction)
+	{
+	case 'u':
+	case 'd':
+	  dm_deleteTransform(which, TRANSFORM_ROLL_VERT);
+	  break;
+
+	case 'l':
+	case 'r':
+	  dm_deleteTransform(which, TRANSFORM_ROLL_HORZ);
+	  break;
+	}
+      break;
+
+    default:
+      switch (direction)
+	{
+	case 'u':
+	  dm_setTransform(which, TRANSFORM_ROLL_VERT);
+	  dm_setTransformData(disp, 0, DIR_UP | count);
+	  break;
+
+	case 'd':
+	  dm_setTransform(which, TRANSFORM_ROLL_VERT);
+	  dm_setTransformData(disp, 0, DIR_DOWN | count);
+	  break;
+
+	case 'l':
+	  dm_setTransform(which, TRANSFORM_ROLL_HORZ);
+	  dm_setTransformData(disp, 0, DIR_LEFT | count);
+	  break;
+
+	case 'r':
+	  dm_setTransform(which, TRANSFORM_ROLL_HORZ);
+	  dm_setTransformData(disp, 0, DIR_RIGHT | count);
+	  break;
+	}
+    }
+  dm_applyTransforms(which);
+}
+
+
+void dm_setPalette(u08 which, u08 index)
+{
+  cli();
+  display[which].paletteCountdown = PALETTE_COUNTDOWN_INIT;
+  display[which].paletteSelected = index;
+  sei();
+}
+
+static void dm_deleteTransform(u08 which, u08 command)
+{
+  struct _display * disp = &display[which];
+  u08 test = (dm_findFirstTransform(disp) & 0x0f);
+
+  SDEBUG(msgDeleteTransform);
+  
+  while (test != TRANSFORM_EOL)
+    {
+      if (test == command)
+	{
+	  SDEBUG(msgFound);
+	  u08 length = dm_cmdLength(command);
+	  SDEBUG(msgLength);
+	  SNUMBER(length);
+	  SDEBUG(msgCR);
+	    
+	  SDEBUG(msgPreCopy);
+	  dm_dumpTxList(disp);
+
+	  memmove(&disp->txList[disp->txListBookmark],
+		  &disp->txList[disp->txListBookmark + length],
+		  TRANSFORM_LIST_LENGTH - disp->txListBookmark - length);
+
+	  SDEBUG(msgPostCopy);
+	  dm_dumpTxList(disp);
+	  break;
+	}
+      test = (dm_findNextTransform(disp) & 0x0f);
+    }
+
+}
+
+static void dm_setTransform(u08 which, u08 command)
+{
+  struct _display * disp = &display[which];
+
+  SDEBUG(msgSetTransform);
+  SNUMBER(command);
+  SDEBUG(msgCR);
+
+  u08 test = dm_findFirstTransform(disp);
+  
+  while ((test & 0x0f) != TRANSFORM_EOL)
+    {
+      if (test == command)
+	{
+	  break;
+	}
+      test = dm_findNextTransform(disp);
+    }
+
+  disp->txList[disp->txListBookmark++] = command;
+  if ((test & 0x0f) == TRANSFORM_EOL)
+    {
+      disp->txList[disp->txListBookmark] = TRANSFORM_EOL;
+    }
+}
+
+static u08 dm_findFirstTransform(struct _display * display)
+{
+  display->txListBookmark = 0;
+  SDEBUG(msgFindFirstTransform);
+  SNUMBER(display->txList[0]);
+  SDEBUG(msgCR);
+  return display->txList[0];
+}
+
+static u08 dm_cmdLength(u08 command)
+{
+  switch (command & 0x0f)
+    {
+    case TRANSFORM_FLIP:
+    case TRANSFORM_MIRROR:
+    case TRANSFORM_REVERSE:
+      return 1;
+
+    case TRANSFORM_ROLL_VERT:
+    case TRANSFORM_ROLL_HORZ:
+    case TRANSFORM_SHIFT_VERT:
+    case TRANSFORM_SHIFT_HORZ:
+      return 2;
+    }
+  return 0;
+}
+
+static u08 dm_findNextTransform(struct _display * display)
+{
+  display->txListBookmark += dm_cmdLength(display->txList[display->txListBookmark] & 0x0f);
+  return display->txList[display->txListBookmark];
+}
+
+static u08 dm_getTransformData(struct _display * display, u08 index)
+{
+  return display->txList[display->txListBookmark + index + 1];
+}
+
+static void dm_setTransformData(struct _display * display, u08 index, u08 data)
+{
+  u08 * dataPtr = &display->txList[display->txListBookmark + index];
+  if (*dataPtr == TRANSFORM_EOL)
+    {
+      *dataPtr++ = data;
+      *dataPtr = TRANSFORM_EOL;
+    }
+  else
+    {
+      *dataPtr = data;
+    }
+}
+
+static void dm_rollUp(struct _display * display, u08 count)
+{
+  u08 temp;
+  u08 index;
+
+  SDEBUG(msgRollUp);
+  SNUMBER(count);
+  SDEBUG(msgCR);
+
+  for (index = 0; index < NUM_COLUMNS; index++)
+    {
+      u08 data = display->bitsOut[index];
+      temp = data & ((1 << count) - 1);
+      data >>= count;
+      data |= temp << (NUM_ROWS - count);
+      display->bitsOut[index] = data;
+    }
+}
+
+static void dm_rollLeft(struct _display * display, u08 count)
+{
+  u08 temp;
+  u08 index;
+
+  SDEBUG(msgRollLeft);
+  SNUMBER(count);
+  SDEBUG(msgCR);
+
+  while (count)
+    {
+      temp = display->bitsOut[0];
+      for (index = 0; index < NUM_COLUMNS - 1; index++)
+	{
+	  display->bitsOut[index] = display->bitsOut[index + 1];
+	}
+      display->bitsOut[NUM_COLUMNS - 1] = temp;
+      count--;
+    }
+}
+
+static void dm_dumpTxList(struct _display * display)
+{
+  u08 count = 0;
+  SDEBUG(msgDumpTxList);
+  
+  while (display->txList[count] != TRANSFORM_EOL)
+    {
+      SNUMBER(count);
+      SDEBUG(msgArrow);
+      SNUMBER(display->txList[count]);
+      SDEBUG(msgCR);
+      count++;
+    }
+}
+
+static void dm_clearRows(struct _display * display, u08 start, u08 count)
+{
+  u08 index;
+
+  for (index = 0; index < NUM_COLUMNS; index++)
+    {
+      display->bitsOut[index] &= ~(((1 << count) - 1) << start);
+    }
+}
+
+static void dm_clearColumns(struct _display * display, u08 start, u08 count)
+{
+  SDEBUG(msgClearColumns);
+  SNUMBER(start);
+  SNUMBER(count);
+  SDEBUG(msgCR);
+
+  do
+    {
+      --count;
+      display->bitsOut[start + count] = 0;
+    } while (count > 0);
+}
+
+void dm_reset(u08 which)
+{
+  SDEBUG(msgReset);
+  display[which].txListBookmark = 0;
+  display[which].txList[0] = TRANSFORM_EOL;
+  dm_applyTransforms(which);
+}
+
+void dm_progColumn(u08 which, u08 column, u08 data)
+{
+  SDEBUG(msgDmProgColumn);
+  SHEX(column);
+  SDEBUG(msgSpace);
+  SHEX(data);
+  SDEBUG(msgCR);
+  display[which].progColumn[column] = data;
+  if (display[which].flags & FLAG_PROGCOLS)
+    {
+      dm_applyTransforms(which);
+    }
+}
+
+void dm_pixel(u08 which, u08 set, u08 row, u08 column)
+{
+  SDEBUG(msgDmPixel);
+  SNUMBER(which);
+  SDEBUG(msgSpace);
+  SNUMBER(set);
+  SDEBUG(msgSpace);
+  SNUMBER(row);
+  SDEBUG(msgSpace);
+  SNUMBER(column);
+  SDEBUG(msgCR);
+
+  if (set == 1)
+    {
+      display[which].progColumn[column] |= (1 << row);
+    }
+  else
+    {
+      display[which].progColumn[column] &= ~(1 << row);
+    }
+  if (display[which].flags & FLAG_PROGCOLS)
+    {
+      dm_applyTransforms(which);
+    }
+}
+
+
+void dm_copyToCustom(u08 which, u08 charIndex)
+{
+  u08 count;
+  struct _display * disp = &display[which];
+  u08 * dataPtr = font5x7 + (charIndex * NUM_COLUMNS);
+
+  for (count = 0; count < NUM_COLUMNS; count++)
+    {
+      disp->progColumn[count] = pgm_read_byte_near(dataPtr++);
+    }
+  dm_applyTransforms(which);
+}
+
+
+void dm_dumpdisp(u08 which)
+{
+  u08 count;
+  struct _display * disp = &display[which];
+
+  SDEBUG(msgDisp);
+  SNUMBER(which);
+  SDEBUG(msgCR);
+
+  uart_send_hex_byte(disp->charIndex);
+  SDEBUG(msgSpace);
+  uart_send_hex_byte(disp->colIndex);
+  SDEBUG(msgSpace);
+  uart_send_hex_byte(disp->flags);
+  SDEBUG(msgCR);
+
+  for (count = 0; count < TRANSFORM_LIST_LENGTH; count++)
+    {
+      uart_send_hex_byte(disp->txList[count]);
+      SDEBUG(msgSpace);
+    }
+  SDEBUG(msgCR);
+  uart_send_hex_byte(disp->txListBookmark);
+  SDEBUG(msgCR);
+
+  for (count = 0; count < NUM_COLUMNS; count++)
+    {
+      uart_send_hex_byte(disp->progColumn[count]);
+      SDEBUG(msgSpace);
+    }
+  SDEBUG(msgCR);
+
+  for (count = 0; count < NUM_COLUMNS; count++)
+    {
+      uart_send_hex_byte(disp->bitsOut[count]);
+      SDEBUG(msgSpace);
+    }
+  SDEBUG(msgCR);
+
+#ifdef USE_CURRENTCOLUMN  
+  uart_send_hex_byte(disp->currentColumn);
+  SDEBUG(msgSpace);
+#endif
+  //  uart_send_hex_byte(disp->portDataSelect);
+  // SDEBUG(msgSpace);
+  uart_send_hex_byte(disp->paletteSelected);
+  SDEBUG(msgSpace);
+  SDEBUG(msgCR);
+}

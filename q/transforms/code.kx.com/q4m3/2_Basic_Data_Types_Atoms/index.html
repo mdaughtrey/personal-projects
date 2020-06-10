@@ -1,0 +1,2046 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="Q for Mortals">
+      
+      
+        <link rel="canonical" href="index.html">
+      
+      
+        <meta name="author" content="Jeffry Borror">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-0.17.3, mkdocs-material-2.7.2">
+    
+    
+      
+        <title>2. Basic Data Types – Atoms - Q for Mortals</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.8d40d89b.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+    
+    
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+      
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="http://code.kx.com/stylesheets/prism.css">
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="deep-orange">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <a href="index.html#2-basic-data-types-atoms" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="http://code.kx.com/q4m3" title="Q for Mortals" class="md-header-nav__button md-logo">
+          
+            <img src="../img/qfm3.jpg" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            
+              <span class="md-header-nav__topic">
+                Q for Mortals
+              </span>
+              <span class="md-header-nav__topic">
+                2. Basic Data Types – Atoms
+              </span>
+            
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+            <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+            
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+        
+      </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    <span class="md-nav__button md-logo">
+      
+        <img src="../img/qfm3.jpg" width="48" height="48">
+      
+    </span>
+    Q for Mortals
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../redirect/index.html" title="code.kx.com" class="md-nav__link">
+      code.kx.com
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../index.html" title="Contents" class="md-nav__link">
+      Contents
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../preface/index.html" title="Preface" class="md-nav__link">
+      Preface
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../0_Overview/index.html" title="0. Overview" class="md-nav__link">
+      0. Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../1_Q_Shock_and_Awe.1" title="1. Q Shock and Awe" class="md-nav__link">
+      1. Q Shock and Awe
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        2. Basic Data Types – Atoms
+      </label>
+    
+    <a href="index.html" title="2. Basic Data Types – Atoms" class="md-nav__link md-nav__link--active">
+      2. Basic Data Types – Atoms
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="index.html#20-overview" title="2.0 Overview" class="md-nav__link">
+    2.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#21-integer-data" title="2.1 Integer Data" class="md-nav__link">
+    2.1 Integer Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#211-long" title="2.1.1 long" class="md-nav__link">
+    2.1.1 long
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#212-short-and-int" title="2.1.2 short and int" class="md-nav__link">
+    2.1.2 short and int
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#22-floating-point-data" title="2.2 Floating Point Data" class="md-nav__link">
+    2.2 Floating Point Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#221-float" title="2.2.1 float" class="md-nav__link">
+    2.2.1 float
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#222-real" title="2.2.2 real" class="md-nav__link">
+    2.2.2 real
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#223-floating-point-display" title="2.2.3 Floating Point Display" class="md-nav__link">
+    2.2.3 Floating Point Display
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#23-binary-data" title="2.3 Binary Data" class="md-nav__link">
+    2.3 Binary Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#231-boolean" title="2.3.1 boolean" class="md-nav__link">
+    2.3.1 boolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#232-byte" title="2.3.2 byte" class="md-nav__link">
+    2.3.2 byte
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#233-guid" title="2.3.3 GUID" class="md-nav__link">
+    2.3.3 GUID
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#24-text-data" title="2.4 Text Data" class="md-nav__link">
+    2.4 Text Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#241-char" title="2.4.1 char" class="md-nav__link">
+    2.4.1 char
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#242-symbol" title="2.4.2 symbol" class="md-nav__link">
+    2.4.2 symbol
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#25-temporal-data" title="2.5 Temporal Data" class="md-nav__link">
+    2.5 Temporal Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#251-date" title="2.5.1 date" class="md-nav__link">
+    2.5.1 date
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#252-time-types" title="2.5.2 Time Types" class="md-nav__link">
+    2.5.2 Time Types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#253-date-time-types" title="2.5.3 Date-Time Types" class="md-nav__link">
+    2.5.3 Date-Time Types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#254-month" title="2.5.4 month" class="md-nav__link">
+    2.5.4 month
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#255-minute" title="2.5.5 minute" class="md-nav__link">
+    2.5.5 minute
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#256-second" title="2.5.6 second" class="md-nav__link">
+    2.5.6 second
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#257-constituents-and-dot-notation" title="2.5.7 Constituents and Dot Notation" class="md-nav__link">
+    2.5.7 Constituents and Dot Notation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#26-arithmetic-infinities-and-nulls" title="2.6 Arithmetic Infinities and Nulls" class="md-nav__link">
+    2.6 Arithmetic Infinities and Nulls
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#27-nulls" title="2.7 Nulls" class="md-nav__link">
+    2.7 Nulls
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#270-overview-of-nulls" title="2.7.0 Overview of Nulls" class="md-nav__link">
+    2.7.0 Overview of Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#271-binary-nulls" title="2.7.1 Binary Nulls" class="md-nav__link">
+    2.7.1 Binary Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#272-numeric-and-temporal-nulls" title="2.7.2 Numeric and Temporal Nulls" class="md-nav__link">
+    2.7.2 Numeric and Temporal Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#273-text-nulls" title="2.7.3 Text Nulls" class="md-nav__link">
+    2.7.3 Text Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#274-testing-for-null" title="2.7.4 Testing for Null" class="md-nav__link">
+    2.7.4 Testing for Null
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../3_Lists.1" title="3. Lists" class="md-nav__link">
+      3. Lists
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../4_Operators.1" title="4. Operators" class="md-nav__link">
+      4. Operators
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../5_Dictionaries.1" title="5. Dictionaries" class="md-nav__link">
+      5. Dictionaries
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../6_Functions.1" title="6. Functions" class="md-nav__link">
+      6. Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../7_Transforming_Data/index.html" title="7. Transforming Data" class="md-nav__link">
+      7. Transforming Data
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../8_Tables.1" title="8. Tables" class="md-nav__link">
+      8. Tables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../9_Queries_q-sql.1" title="9. Queries – q-sql" class="md-nav__link">
+      9. Queries – q-sql
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../10_Execution_Control/index.html" title="10. Execution Control" class="md-nav__link">
+      10. Execution Control
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../11_IO.1" title="11. I/O" class="md-nav__link">
+      11. I/O
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../12_Workspace_Organization.1" title="12. Workspace Organization" class="md-nav__link">
+      12. Workspace Organization
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../13_Commands_and_System_Variables.1" title="13. Commands and System Variables" class="md-nav__link">
+      13. Commands and System Variables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../14_Introduction_to_Kdb+.1" title="14. Introduction to Kdb+" class="md-nav__link">
+      14. Introduction to Kdb+
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../A_Built-in_Functions.1" title="Appendix A. Built-in Functions" class="md-nav__link">
+      Appendix A. Built-in Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../B_Error_Messages/index.html" title="Appendix B. Error Messages" class="md-nav__link">
+      Appendix B. Error Messages
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../colophon/index.html" title="Colophon" class="md-nav__link">
+      Colophon
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="index.html#20-overview" title="2.0 Overview" class="md-nav__link">
+    2.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#21-integer-data" title="2.1 Integer Data" class="md-nav__link">
+    2.1 Integer Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#211-long" title="2.1.1 long" class="md-nav__link">
+    2.1.1 long
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#212-short-and-int" title="2.1.2 short and int" class="md-nav__link">
+    2.1.2 short and int
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#22-floating-point-data" title="2.2 Floating Point Data" class="md-nav__link">
+    2.2 Floating Point Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#221-float" title="2.2.1 float" class="md-nav__link">
+    2.2.1 float
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#222-real" title="2.2.2 real" class="md-nav__link">
+    2.2.2 real
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#223-floating-point-display" title="2.2.3 Floating Point Display" class="md-nav__link">
+    2.2.3 Floating Point Display
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#23-binary-data" title="2.3 Binary Data" class="md-nav__link">
+    2.3 Binary Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#231-boolean" title="2.3.1 boolean" class="md-nav__link">
+    2.3.1 boolean
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#232-byte" title="2.3.2 byte" class="md-nav__link">
+    2.3.2 byte
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#233-guid" title="2.3.3 GUID" class="md-nav__link">
+    2.3.3 GUID
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#24-text-data" title="2.4 Text Data" class="md-nav__link">
+    2.4 Text Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#241-char" title="2.4.1 char" class="md-nav__link">
+    2.4.1 char
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#242-symbol" title="2.4.2 symbol" class="md-nav__link">
+    2.4.2 symbol
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#25-temporal-data" title="2.5 Temporal Data" class="md-nav__link">
+    2.5 Temporal Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#251-date" title="2.5.1 date" class="md-nav__link">
+    2.5.1 date
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#252-time-types" title="2.5.2 Time Types" class="md-nav__link">
+    2.5.2 Time Types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#253-date-time-types" title="2.5.3 Date-Time Types" class="md-nav__link">
+    2.5.3 Date-Time Types
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#254-month" title="2.5.4 month" class="md-nav__link">
+    2.5.4 month
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#255-minute" title="2.5.5 minute" class="md-nav__link">
+    2.5.5 minute
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#256-second" title="2.5.6 second" class="md-nav__link">
+    2.5.6 second
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#257-constituents-and-dot-notation" title="2.5.7 Constituents and Dot Notation" class="md-nav__link">
+    2.5.7 Constituents and Dot Notation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#26-arithmetic-infinities-and-nulls" title="2.6 Arithmetic Infinities and Nulls" class="md-nav__link">
+    2.6 Arithmetic Infinities and Nulls
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#27-nulls" title="2.7 Nulls" class="md-nav__link">
+    2.7 Nulls
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#270-overview-of-nulls" title="2.7.0 Overview of Nulls" class="md-nav__link">
+    2.7.0 Overview of Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#271-binary-nulls" title="2.7.1 Binary Nulls" class="md-nav__link">
+    2.7.1 Binary Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#272-numeric-and-temporal-nulls" title="2.7.2 Numeric and Temporal Nulls" class="md-nav__link">
+    2.7.2 Numeric and Temporal Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#273-text-nulls" title="2.7.3 Text Nulls" class="md-nav__link">
+    2.7.3 Text Nulls
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#274-testing-for-null" title="2.7.4 Testing for Null" class="md-nav__link">
+    2.7.4 Testing for Null
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="2-basic-data-types-atoms">2. Basic Data Types: Atoms<a class="headerlink" href="index.html#2-basic-data-types-atoms" title="Permanent link">&para;</a></h1>
+<h2 id="20-overview">2.0 Overview<a class="headerlink" href="index.html#20-overview" title="Permanent link">&para;</a></h2>
+<p>All data is ultimately built from atoms. An <em>atom</em> is an irreducible value of a specific data type. The basic data types in q correspond mostly to those of traditional programming languages with additional date- and time-related types that facilitate time series. The tables below summarize the basic data types, giving the corresponding types in SQL, Java and C#. Other data types, including enumerations and functions, will be covered when they are discussed in later sections.</p>
+<table>
+<thead>
+<tr>
+<th>Q</th>
+<th>SQL</th>
+<th>Java</th>
+<th>.Net</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean</td>
+<td>Boolean</td>
+<td>Boolean</td>
+<td>Boolean</td>
+</tr>
+<tr>
+<td>guid</td>
+<td></td>
+<td>UUID</td>
+<td>GUID</td>
+</tr>
+<tr>
+<td>byte</td>
+<td>Byte</td>
+<td>Byte</td>
+<td>Byte</td>
+</tr>
+<tr>
+<td>short</td>
+<td>Smallint</td>
+<td>Short</td>
+<td>Int16</td>
+</tr>
+<tr>
+<td>int</td>
+<td>Int</td>
+<td>Integer</td>
+<td>Int32</td>
+</tr>
+<tr>
+<td>long</td>
+<td>Bigint</td>
+<td>Long</td>
+<td>Int64</td>
+</tr>
+<tr>
+<td>real</td>
+<td>Real</td>
+<td>Float</td>
+<td>Single</td>
+</tr>
+<tr>
+<td>float</td>
+<td>Float</td>
+<td>Double</td>
+<td>Double</td>
+</tr>
+<tr>
+<td>char</td>
+<td>Char(1)</td>
+<td>Character</td>
+<td>Char</td>
+</tr>
+<tr>
+<td>symbol</td>
+<td>Varchar</td>
+<td>String</td>
+<td>(String)</td>
+</tr>
+<tr>
+<td>date</td>
+<td>Date</td>
+<td>Date</td>
+<td></td>
+</tr>
+<tr>
+<td>timestamp</td>
+<td></td>
+<td>Timestamp</td>
+<td>DateTime</td>
+</tr>
+<tr>
+<td>timespan</td>
+<td></td>
+<td>Timespan</td>
+<td>TimeSpan</td>
+</tr>
+<tr>
+<td>minute</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>second</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>time</td>
+<td>Time</td>
+<td>Time</td>
+<td>TimeSpan</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The words under the q heading – boolean, short, int, etc. – are not reserved in q, so they are not displayed in a special font in this text. They do have special meaning when used as name arguments in some operators, so do not use them as names.</p>
+</div>
+<p>The next table collects the important information about q data types. We shall refer to this in subsequent sections.</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Size</th>
+<th>CharType</th>
+<th>NumType</th>
+<th>Notation</th>
+<th>Null Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean</td>
+<td>1</td>
+<td>b</td>
+<td>1</td>
+<td><code>1b</code></td>
+<td><code>0b</code></td>
+</tr>
+<tr>
+<td>byte</td>
+<td>1</td>
+<td>x</td>
+<td>4</td>
+<td><code>0x26</code></td>
+<td><code>0x00</code></td>
+</tr>
+<tr>
+<td>short</td>
+<td>2</td>
+<td>h</td>
+<td>5</td>
+<td><code>42h</code></td>
+<td><code>0Nh</code></td>
+</tr>
+<tr>
+<td>int</td>
+<td>4</td>
+<td>i</td>
+<td>6</td>
+<td><code>42i</code></td>
+<td><code>0Ni</code></td>
+</tr>
+<tr>
+<td>long</td>
+<td>8</td>
+<td>j</td>
+<td>7</td>
+<td><code>42j</code></td>
+<td><code>0Nj</code></td>
+</tr>
+<tr>
+<td>real</td>
+<td>4</td>
+<td>e</td>
+<td>8</td>
+<td><code>4.2e</code></td>
+<td><code>0Ne</code></td>
+</tr>
+<tr>
+<td>float</td>
+<td>8</td>
+<td>f</td>
+<td>9</td>
+<td><code>4.2</code></td>
+<td><code>0n</code></td>
+</tr>
+<tr>
+<td>char</td>
+<td>1</td>
+<td>c</td>
+<td>10</td>
+<td><code>"z"</code></td>
+<td><code>" "</code></td>
+</tr>
+<tr>
+<td>symbol</td>
+<td>*</td>
+<td>s</td>
+<td>11</td>
+<td><code>`zaphod</code></td>
+<td><code>`</code></td>
+</tr>
+<tr>
+<td>timestamp</td>
+<td>8</td>
+<td>p</td>
+<td>12</td>
+<td><code>2015.01.01T00:00:00.000000000</code></td>
+<td><code>0Np</code></td>
+</tr>
+<tr>
+<td>month</td>
+<td>4</td>
+<td>m</td>
+<td>13</td>
+<td><code>2006.07m</code></td>
+<td><code>0Nm</code></td>
+</tr>
+<tr>
+<td>date</td>
+<td>4</td>
+<td>d</td>
+<td>14</td>
+<td><code>2006.07.21</code></td>
+<td><code>0Nd</code></td>
+</tr>
+<tr>
+<td>(datetime)</td>
+<td>4</td>
+<td>z</td>
+<td>15</td>
+<td><code>2006.07.21T09:13:39</code></td>
+<td><code>0Nz</code></td>
+</tr>
+<tr>
+<td>timespan</td>
+<td>8</td>
+<td>n</td>
+<td>16</td>
+<td><code>12:00:00.000000000</code></td>
+<td><code>0Nn</code></td>
+</tr>
+<tr>
+<td>minute</td>
+<td>4</td>
+<td>u</td>
+<td>17</td>
+<td><code>23:59</code></td>
+<td><code>0Nu</code></td>
+</tr>
+<tr>
+<td>second</td>
+<td>4</td>
+<td>v</td>
+<td>18</td>
+<td><code>23:59:59</code></td>
+<td><code>0Nv</code></td>
+</tr>
+<tr>
+<td>time</td>
+<td>4</td>
+<td>t</td>
+<td>19</td>
+<td><code>09:01:02:042</code></td>
+<td><code>0Nt</code></td>
+</tr>
+<tr>
+<td>enumeration</td>
+<td></td>
+<td></td>
+<td>20+</td>
+<td><code>`sym$`kx</code></td>
+<td></td>
+</tr>
+<tr>
+<td>table</td>
+<td></td>
+<td></td>
+<td>98</td>
+<td><code>([] c1:`a`b`c; c2:10 20 30)</code></td>
+<td></td>
+</tr>
+<tr>
+<td>dictionary</td>
+<td></td>
+<td></td>
+<td>99</td>
+<td><code>`a`b`v!10 20 30</code></td>
+<td></td>
+</tr>
+<tr>
+<td>function</td>
+<td></td>
+<td></td>
+<td>100</td>
+<td><code>{x}</code></td>
+<td></td>
+</tr>
+<tr>
+<td>nil item</td>
+<td></td>
+<td></td>
+<td>101</td>
+<td><code>::</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="21-integer-data">2.1 Integer Data<a class="headerlink" href="index.html#21-integer-data" title="Permanent link">&para;</a></h2>
+<p>Integer data types are ubiquitous in programming. There are three integer types in q.</p>
+<h3 id="211-long">2.1.1 long<a class="headerlink" href="index.html#211-long" title="Permanent link">&para;</a></h3>
+<p>In q versions 3.0 and later, the basic integer type is a signed eight-byte integer, called <em>long</em>. A literal is identified as a long by the fact that it contains only numeric digits, with an optional leading minus sign, and <strong>no</strong> decimal point. It may also have an optional trailing type indicator <code>j</code> indicating it is a long and not another integer type. Here is a typical long integer value.</p>
+<pre><code class="q">q)42
+42
+</code></pre>
+
+<p>Observe that the type indicator <code>j</code> is accepted but redundant.</p>
+<pre><code class="q">q)42j
+42
+</code></pre>
+
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>In q versions 2.8 and earlier the default integer type when no type indicator was given was the four-byte int. Any 2.* long values given with <code>j</code> will carry over to 3.* but if you intend a four-byte value you must now explicitly include the type indicator <code>i</code>.</p>
+</div>
+<h3 id="212-short-and-int">2.1.2 short and int<a class="headerlink" href="index.html#212-short-and-int" title="Permanent link">&para;</a></h3>
+<p>The two smaller signed integer data types are <em>short</em> and <em>int</em>. The short type represents a two-byte signed integer and requires the trailing type indicator <code>h</code>. For example,</p>
+<pre><code class="q">q)-123h
+_
+</code></pre>
+
+<p>Similarly, the int type represents a four-byte signed integer and requires the trailing type indicator <code>i</code>.</p>
+<pre><code class="q">q)1234567890i
+_
+</code></pre>
+
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Type promotion is performed automatically in arithmetic operations. However, for a homogenous list of atoms of "wide" type, should a narrower type be presented for update or append in place, the narrow type will not be automatically promoted and an error will result. This may be unintuitive in the context of other type promotion, but it will make sense for table columns.</p>
+</div>
+<h2 id="22-floating-point-data">2.2 Floating Point Data<a class="headerlink" href="index.html#22-floating-point-data" title="Permanent link">&para;</a></h2>
+<p>Single- and double-precision floating-point data types are supported. Double precision is more common.</p>
+<h3 id="221-float">2.2.1 float<a class="headerlink" href="index.html#221-float" title="Permanent link">&para;</a></h3>
+<p>The <em>float</em> type represents an IEEE standard eight-byte floating-point number, often called "double" in traditional languages. A float can hold (at least) 15 decimal digits of precision. It is denoted by optionally signed numeric digits with either a decimal point or an optional trailing type indicator <code>f</code>. Observe that the console shortens the display of floats with no significant digits to the right of the decimal.</p>
+<pre><code class="q">q)3.14159265
+_
+q)1f
+_
+q)1.0
+_
+</code></pre>
+
+<p>A float can also be specified in scientific notation. Here the <code>e</code> standards for "exponent" – i.e., a power of 10 – and should not be confused with a type indicator. To the right of the <code>e</code> is a two digit signed exponent. The <code>+</code> and leading <code>0</code> for a positive exponent are optional.</p>
+<pre><code class="q">q)1.234e07
+_
+q)1.234e7
+_
+q)1.234e-7
+1.234e-07
+</code></pre>
+
+<h3 id="222-real">2.2.2 real<a class="headerlink" href="index.html#222-real" title="Permanent link">&para;</a></h3>
+<p>The real type represents a single-precision, four-byte floating-point number and is denoted by numeric digits containing a decimal point and a trailing type indicator <code>e</code>. Be mindful that this type is called 'float' in some languages. A real can hold at least 6 decimal digits of precision.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The real type is basically useless in finance since it does not provide enough precision for quantities expressed in currencies such as Yen. We recommend always using float.</p>
+</div>
+<p>The scientific notation of reals is awkward, given the presence of <code>e</code> both for the exponent and the type indicator.</p>
+<pre><code class="q">q)12.34e
+_
+q)1.234e7e
+_
+</code></pre>
+
+<h3 id="223-floating-point-display">2.2.3 Floating Point Display<a class="headerlink" href="index.html#223-floating-point-display" title="Permanent link">&para;</a></h3>
+<p>The q console display defaults to seven decimal digits of accuracy for float and real values by rounding the display in the seventh significant digit, even though more digits are stored.</p>
+<pre><code class="q">q)f:1.23456789e-10
+q)r:1.2345678e-10e
+q)f
+1.234568e-010
+q)r
+1.234568e+010e
+</code></pre>
+
+<p>You can change this by using the <code>\P</code> command (note upper case) to specify a display width up to 16 digits. If you issue <code>\P 0</code> the console will display all 17 decimal digits of the underlying binary representation, although the last digit is unreliable.</p>
+<pre><code class="q">q)f12:1.23456789012
+q)f16:1.234567890123456
+q)\P 12
+q)f12
+1.23456789012
+q)f16
+1.23456789012
+q)\P 16
+q)f12
+1.23456789012
+q)f16
+1.234567890123456
+q)\P 0
+q)1%3
+0.33333333333333331
+</code></pre>
+
+<h2 id="23-binary-data">2.3 Binary Data<a class="headerlink" href="index.html#23-binary-data" title="Permanent link">&para;</a></h2>
+<p>Binary data can be represented as bit or byte values.</p>
+<h3 id="231-boolean">2.3.1 boolean<a class="headerlink" href="index.html#231-boolean" title="Permanent link">&para;</a></h3>
+<p>The <em>boolean</em> type uses one byte to store a bit and is denoted by the bit value with the trailing type indicator <code>b</code>. There are <strong>no</strong> keywords for 'true' or 'false', nor are there separate logical operators for booleans.</p>
+<pre><code class="q">q)0b
+_
+q)1b
+_
+</code></pre>
+
+<p>Binary values are implicitly promoted to unsigned integers when participating in arithmetic expressions or comparisons. For example, the following yields an integer.</p>
+<pre><code class="q">q)42+1b
+_
+</code></pre>
+
+<p>The following yields a float.</p>
+<pre><code class="q">q)3.1415+0b
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The ability of booleans to participate in arithmetic can be useful in eliminating conditionals. 
+<pre><code class="labguage-q">
+q)flag:1b
+q)base:100
+q)base+flag*42
+142
+</code></pre></p>
+</div>
+<h3 id="232-byte">2.3.2 byte<a class="headerlink" href="index.html#232-byte" title="Permanent link">&para;</a></h3>
+<p>The <em>byte</em> type uses one byte to store an unsigned 8-bit value and is denoted by the <strong>leading</strong> type indicator <code>0x</code> followed by two hexadecimal digits. Upper or lower case can be used for the alpha hex digits but lower case is customary.</p>
+<pre><code class="q">q)0x2a
+_
+q)0x2A
+_
+</code></pre>
+
+<p>As with boolean, a byte participates in arithmetic via type promotion to signed int.</p>
+<pre><code class="q">q)1+0x29
+_
+</code></pre>
+
+<h3 id="233-guid">2.3.3 GUID<a class="headerlink" href="index.html#233-guid" title="Permanent link">&para;</a></h3>
+<p>The <em>guid</em> type was introduced in q3.0. A GUID (globally unique identifier) is a 16-byte binary value that is unique across time and space (well, nearly so). It is ideally suited for locally generating a globally unique identifier without resorting to a central control mechanism – e.g., transaction IDs. It can be used as a table key or in joins and is preferred to strings or symbols in such situations.</p>
+<p>The guid type does not have a literal form since it is generated for you by a process that guarantees uniqueness. Applying <code>?</code> to the null guid value <code>0Ng</code> generates a list of guids.</p>
+<pre><code class="q">q)1?0Ng
+,61f35174-90bc-a48a-d88f-e15e4a377ec8
+q)2?0Ng
+_
+q)-1?0Ng
+_
+q)-2?0Ng
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The difference between using a positive integer vs. a negative integer to generate a list of GUIDs is that the positive case uses the same initial seed in each new q session whereas the negative case uses a random seed. The former is useful for reproducible results during testing but only the latter should be used in production; otherwise, your "GUIDs" will not be unique across q sessions.</p>
+</div>
+<p>You can import a guid generated elsewhere by parsing a string of 16 hex digits.</p>
+<pre><code class="q">q)&quot;G&quot;$&quot;61f35174-90bc-a48a-d88f-e15e4a377ec8&quot;
+_
+</code></pre>
+
+<p>You can also convert from a list of 16 bytes using an overload of <a href="http://code.kx.com/wiki/Reference/sv"><code>sv</code></a>.</p>
+<pre><code class="q">q)0x0 sv 16?0xff
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Unless these values have been constructed from a legitimate GUID creation process, there is no guarantee they will be unique.</p>
+</div>
+<p>The only operations available for guids are <code>~</code>, <code>=</code>, <code>&lt;</code>, <code>&gt;</code> and <code>null</code>.</p>
+<h2 id="24-text-data">2.4 Text Data<a class="headerlink" href="index.html#24-text-data" title="Permanent link">&para;</a></h2>
+<p>There are two atomic text types in q. They are more akin to the SQL types <code>CHAR</code> and <code>VARCHAR</code> than the character types of traditional languages.</p>
+<h3 id="241-char">2.4.1 char<a class="headerlink" href="index.html#241-char" title="Permanent link">&para;</a></h3>
+<p>A <em>char</em> holds an individual ASCII or 8-bit Unicode character that is stored in one byte. It corresponds to a SQL <code>CHAR</code>. It is denoted by a single character enclosed in double quotes.</p>
+<pre><code class="q">q)&quot;q&quot;
+_
+</code></pre>
+
+<p>Some keyboard characters – e.g., the double-quote – cannot be entered directly into a char since they have special meaning in the q console. As in C, special characters are escaped with a preceding back-slash <code>\</code>. The console display somewhat confusingly displays the escape, but the following are all actually single characters.</p>
+<pre><code class="q">q)&quot;\&quot;&quot; / double-quote
+&quot;\&quot;&quot;
+q)&quot;\\&quot; / back-slash
+_
+q)&quot;\n&quot; / newline
+_
+q)&quot;\r&quot; / return
+_
+q)&quot;\t&quot; / horizontal tab
+_
+</code></pre>
+
+<p>Also as in C, you can escape any ASCII character by specifying its underlying numeric value as three octal digits.</p>
+<pre><code class="q">q)&quot;\142&quot;
+&quot;b&quot;
+</code></pre>
+
+<h3 id="242-symbol">2.4.2 symbol<a class="headerlink" href="index.html#242-symbol" title="Permanent link">&para;</a></h3>
+<p>A symbol is an atom holding text. It is denoted by a leading back-quote, read "back tick" in q-speak.</p>
+<pre><code class="q">q)`q
+_
+q)`zaphod
+_
+</code></pre>
+
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Symbols are used for names in q. All names are symbols but not all symbols are names.</p>
+</div>
+<p>A symbol is akin to a SQL <code>VARCHAR</code>, in that it can hold an arbitrary number of characters, but is different in that it is atomic. The char <code>"q"</code> and the symbol <code>`kdb</code> are both atomic entities. A symbol is irreducible, meaning that the individual characters that comprise it are <strong>not</strong> directly accessible.</p>
+<p>A symbol is <strong>not</strong> a string. We shall see in Chapter 3 that there is an analogue of strings in q, namely a list of char. While a list of char is a kissing cousin to a symbol, we emphasize that a symbol is <strong>not</strong> a collection of char. The symbol <code>`a</code> and the char <code>"a"</code> are not the same, as we can see by asking q if they are identical.</p>
+<pre><code class="q">q)`a~&quot;a&quot;
+0b
+</code></pre>
+
+<div class="admonition advanced">
+<p class="admonition-title">Advanced</p>
+<p>A symbol can include arbitrary text, including text that cannot be directly entered from the console – e.g., embedded blanks and special characters such as back-tick. You can manufacture a symbol from any text by casting the corresponding list of char to a symbol. (You will need to escape special characters into the string.) See <a href="../6_Functions.1#615-we-dont-need-no-stinkin-brackets">§6.1.5</a> for more on casting.</p>
+</div>
+<pre><code class="language-q">
+q)`$"A symbol with blanks and `"
+`A symbol with blanks and `
+</code></pre>
+
+<h2 id="25-temporal-data">2.5 Temporal Data<a class="headerlink" href="index.html#25-temporal-data" title="Permanent link">&para;</a></h2>
+<p>In the real world, time is measured in a system of units determined by calendars and clocks. A calendar measures multiples of days whereas a clock subdivides a day into smaller units. The notion of "telling time" associates a time to a number in the system of units provided by some choice of calendar and clock. We call such a value a <em>temporal type</em>.</p>
+<p>Astronomers know that it is most convenient to put the calendar and clock together to have a single measure of time on all scales – i.e., UTC. In common practice, calendar and clock measurements can be made separately where the full scale is not needed.</p>
+<p>Our system of calendars and clocks is a hodge-podge based on early astronomy. We measure days by counting rotations of the earth on its axis and years by counting revolutions of the Earth. Months evolved from lunar cycles tracking the changes in the phase of the moon.</p>
+<p>Imposed on this is a sexagesimal counting system originated by the ancient Sumerians, who were evidently fond of 12. There were (almost) 360 days in a year and exactly 12 hours of daylight and darkness at equinox. There are 60 minutes in an hour. This was good enough for farmers and astronomers to predict sun and moon cycles 4000 years ago. Increased accuracy of clocks has forced us to adopt leap years, leap seconds and other adjustments to make things come out right. Social and legal customs result in differentiating days into various categories such as business days and holidays. Time zones attempt to make clock time correspond to sunlight and the legislative lunacy of daylight savings time shifts clocks with no actual benefit.</p>
+<p>Computer systems have tried to map this mess into the ordered world of bits with varying levels of success. With the advent of nanosecond-based temporal types, time measurement in q is now logical and consistent in that all temporal values are integral counts. These counts are offsets from millennium and midnight, not some point in the 1970s when a system designer realized something had to be done about time.</p>
+<p>Q handles time series and relational data in a consistent and efficient manner. It extends the basic SQL date and time data types to facilitate temporal operations, which are minimal in SQL and can be clumsy in traditional languages (e.g., Java's original date library and its time zones).</p>
+<h3 id="251-date">2.5.1 date<a class="headerlink" href="index.html#251-date" title="Permanent link">&para;</a></h3>
+<p>A <em>date</em> is stored as a four-byte signed integer and is denoted by <em>yyyy.mm.dd</em>, where <em>yyyy</em> represents the year, <em>mm</em> the month and <em>dd</em> the day. The underlying value is the count of days from Jan 1, 2000 – positive for post-millennium and negative for pre.</p>
+<pre><code class="q">q)2015.01.01
+_
+q)2000.01.01=0
+1b
+q)2000.01.02=1
+_
+q)1999.12.31=-1
+_
+</code></pre>
+
+<p>Since real-world months and days begin at 1 (not zero), January is <code>01</code>. Leading zeroes in months and days are required; their omission causes an error.</p>
+<pre><code class="q">q)2015.1.1
+'2015.1.1
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The underlying day count can be obtained by casting.
+<pre><code class="language-q">
+q)`int$2000.02.01
+_
+</code></pre></p>
+</div>
+<h3 id="252-time-types">2.5.2 Time Types<a class="headerlink" href="index.html#252-time-types" title="Permanent link">&para;</a></h3>
+<p>There are two versions of time, depending on the resolution required. If milliseconds are sufficient, use the <em>time</em> type, which stores the count of milliseconds from midnight in a 32-bit signed integer. It is denoted by <em>hh:mm:ss.uuu</em> where <em>hh</em> represents hours on the 24-hour clock, <em>mm</em> represents minutes, <em>ss</em> represents seconds, and <em>uuu</em> represents milliseconds.</p>
+<pre><code class="q">q)12:34:56.789
+_
+q)12:00:00.000=12*60*60*1000
+1b
+</code></pre>
+
+<p>Leading zeroes are required in all constituents of a time value. The underlying millisecond count can be obtained by casting to an int.</p>
+<pre><code class="q">q)`int$12:00:00.000
+_
+</code></pre>
+
+<p>If milliseconds are not sufficient, use the <em>timespan</em> type, which stores the count of nanoseconds from midnight as a long integer.</p>
+<p>It is denoted by <em>0Dhh:mm:ss.nnnnnnnnn</em> where <em>hh</em> represents hours on the 24-hour clock, <em>mm</em> represents minutes, <em>ss</em> represents seconds, and <em>nnnnnnnnn</em> represents nanoseconds. Observe that the leading <code>0D</code> is optional.</p>
+<pre><code class="q">q)12:34:56.123456789
+0D12:34:56.123456789
+q)12:34:56.123456 / microseconds become nanos
+0D12:34:56.123456000
+</code></pre>
+
+<p>Leading zeroes in constituents are again required.</p>
+<p>The underlying nanosecond count can be obtained by casting to a long.</p>
+<pre><code class="q">q)`long$12:34:56.123456789
+_
+</code></pre>
+
+<h3 id="253-date-time-types">2.5.3 Date-Time Types<a class="headerlink" href="index.html#253-date-time-types" title="Permanent link">&para;</a></h3>
+<p>There are two date-time types. The first is deprecated and should not be used; we include it here in case you encounter it in older q code.</p>
+<p>A <em>datetime</em> (deprecated) is the lexical combination of a date and a time, separated by <code>T</code> as in the ISO standard format. A datetime value stores in a float the fractional day count from midnight Jan 1, 2000.</p>
+<pre><code class="q">q)2000.01.01T12:00:00.000
+_
+q)2000.01.02T12:00:00.000=1.5
+1b
+</code></pre>
+
+<p>The underlying fractional day count can be obtained by casting to float.</p>
+<pre><code class="q">q)`float$2000.01.02T12:00:00.000
+_
+</code></pre>
+
+<p>Extract the date and time portions from a datetime by casting.</p>
+<pre><code class="q">q)`date$2000.01.02T12:00:00.000
+_
+q)`time$2000.01.02T12:00:00.000
+_
+</code></pre>
+
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Do <em>not</em> use a datetime for a key or in a join since the underlying float value is fuzzy and may give unexpected results.</p>
+</div>
+<p>The preferred type is <em>timestamp</em>, which is the lexical combination of a date and a timespan, separated by <code>D</code>. The underlying timestamp value is a long representing the count of nanoseconds since the millennium. Post-millennium is positive and pre- is negative.</p>
+<pre><code class="q">q)2014.11.22D17:43:40.123456789
+_
+</code></pre>
+
+<p>The underlying nanosecond count can be obtained by casting to long.</p>
+<pre><code class="q">q)`long$2014.11.22D17:43:40.123456789
+_
+</code></pre>
+
+<p>Extract the date and timespan constituents from a timestamp by casting.</p>
+<pre><code class="q">q)`date$2014.11.22D17:43:40.123456789
+_
+q)`timespan$2014.11.22D17:43:40.123456789
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Use a timestamp instead of a datetime for a key column or in a join. Or separate into date and time columns.</p>
+</div>
+<h3 id="254-month">2.5.4 month<a class="headerlink" href="index.html#254-month" title="Permanent link">&para;</a></h3>
+<p>The <em>month</em> type is stored as a 32-bit signed integer and is denoted by <em>yyyy.mm</em> with a trailing type indicator <code>m</code>. A month value is the count of months since the beginning of the millennium. Post-milieu is positive and pre is negative.</p>
+<pre><code class="q">q)2015.11m
+_
+q)2001.01m=12
+1b
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Leaving off the type indicator <code>m</code> yields a float. This is a common qbie error.</p>
+</div>
+<pre><code class="q"> q)2014.11 / this is a float!
+ 2014.11
+</code></pre>
+
+<p>The underlying month count can be obtained by casting to int.</p>
+<pre><code class="q">q)`int$2015.01m
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Despite that fact that a month type counts months since the millennium and a date type counts days since the millennium, the first day of the month is equal to the month.
+<pre><code class="language-q">
+q)2015.07m=2015.07.01
+1b
+</code></pre></p>
+</div>
+<h3 id="255-minute">2.5.5 minute<a class="headerlink" href="index.html#255-minute" title="Permanent link">&para;</a></h3>
+<p>The <em>minute</em> type is stored as a 32-bit signed integer and is denoted by <em>hh:mm</em>. A minute value counts the number of minutes from midnight.</p>
+<pre><code class="q">q)12:30
+_
+q)12:00=12*60
+1b
+</code></pre>
+
+<p>The underlying minute count can be obtained by casting to int.</p>
+<pre><code class="q">q)`int$12:00
+_
+</code></pre>
+
+<p>A minute equals its equivalent time and timestamp counterparts.</p>
+<pre><code class="q">q)12:00=12:00:00.000
+1b
+q)12:00=12:00:00.000000000
+_
+</code></pre>
+
+<h3 id="256-second">2.5.6 second<a class="headerlink" href="index.html#256-second" title="Permanent link">&para;</a></h3>
+<p>The <em>second</em> type is stored as 32-bit signed integer and is denoted by <em>hh:mm:ss</em>. A second value counts the number of seconds from midnight.</p>
+<pre><code class="q">q)23:59:59
+_
+q)23:59:59=-1+24*60*60
+1b
+</code></pre>
+
+<p>The representation of the second type makes it look like an ordinary time value, and it can function as that if you only need resolution to the second. However, a q time value is a count of milliseconds or nanoseconds from midnight, so the underlying values are different.</p>
+<pre><code class="q">q)`int$12:34:56
+45296i
+q)`int$12:34:56.000
+_
+q)`long$12:34:56.000000000
+_
+</code></pre>
+
+<p>Nevertheless, these values are equal in the eyes of q – as they should be, since they are merely representations in different units of the same position on a clock.</p>
+<pre><code class="q">q)12:34:56=12:34:56.000
+1b
+q)12:34:56.000=12:34:56.000000000
+_
+</code></pre>
+
+<h3 id="257-constituents-and-dot-notation">2.5.7 Constituents and Dot Notation<a class="headerlink" href="index.html#257-constituents-and-dot-notation" title="Permanent link">&para;</a></h3>
+<p>The constituents of compound temporal types can be extracted using dot notation. For example, the field values of a date are named <code>year</code>, <code>mm</code> and <code>dd</code>; similarly for time and other temporal types.</p>
+<pre><code class="q">q)dt:2014.01.01
+q)dt.year
+2014i
+q)dt.mm
+_
+q)dt.dd
+_
+q)ti:12:34:56.789
+q)ti.hh
+12i
+q)ti.mm
+_
+q)ti.ss
+_
+</code></pre>
+
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Unfortunately, at the time of this writing (Sep 2015) dot notation for extraction (still) does not work inside functions.</p>
+</div>
+<p>Thus we recommend avoiding dot notation altogether and using <em>cast</em> instead, as it always works for any meaningful temporal extraction or conversion. In addition to the individual field values, you can also extract higher-order constituents.</p>
+<pre><code class="q">q)`dd$dt
+1i
+q)`mm$dt
+_
+q)`dd$dt
+_
+q)`month$dt
+2014.01m
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>To extract milliseconds or nanoseconds from a time type, cast to the underlying integer and <code>mod</code> the result by 1000 or 1000000000.
+<pre><code class="language-q">
+q)(`int$12:34:56.789) mod 1000
+789
+q)(`long$12:34:56.123456789) mod 1000000000
+_
+</code></pre></p>
+</div>
+<h2 id="26-arithmetic-infinities-and-nulls">2.6 Arithmetic Infinities and Nulls<a class="headerlink" href="index.html#26-arithmetic-infinities-and-nulls" title="Permanent link">&para;</a></h2>
+<p>Types whose underlying values are integer or floating point have special lexical forms representing values that lie outside the "normal" domain. We list the basic ones in the following table. The others are obtained by appending the appropriate type suffices.</p>
+<table>
+<thead>
+<tr>
+<th>Literal</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0w</td>
+<td>Positive float infinity</td>
+</tr>
+<tr>
+<td>-0w</td>
+<td>Negative float infinity</td>
+</tr>
+<tr>
+<td>0n</td>
+<td>Null float ; NaN, or not a number</td>
+</tr>
+<tr>
+<td>0W</td>
+<td>Positive long infinity</td>
+</tr>
+<tr>
+<td>-0W</td>
+<td>Negative long infinity</td>
+</tr>
+<tr>
+<td>0N</td>
+<td>Null long</td>
+</tr>
+</tbody>
+</table>
+<p>Observe the distinction between lower case <code>w</code> in the float literals and upper case <code>W</code> in the integer literals. The character <code>w</code> was chosen for its resemblance to the infinity symbol. Seriously.</p>
+<p>In q, division of numeric values always results in a float.</p>
+<p>In mathematics, division of a positive value by 0 results in positive infinity and division of a negative value by zero results in negative infinity. So it is in q, with the funky symbols <code>0w</code> and <code>-0w</code> for positive and negative float infinity respectively.</p>
+<p>In mathematics, division of zero by zero is undefined. So it is in q, with <code>0n</code> representing NaN – i.e., an undefined float. The float infinities perform exactly as they should in arithmetic and comparison operations, since they are required to do so by the IEEE spec.</p>
+<p>The q philosophy is that any valid arithmetic expression will produce a result rather than a runtime error. Therefore, dividing by 0 produces a special float value rather than throwing an exception. You can perform a complex sequence of calculations without worrying about things blowing up in the middle or having to insert cumbersome exception trapping.</p>
+<p>The integral infinities and nulls cannot be produced via division on normal integer values, since the result of division in q is always a float. Moreover, while integral nulls propagate as nulls should, the integral infinities do <strong>not</strong> perform as you would expect in arithmetic operations. The integral infinities <strong>do</strong> produce the correct results in comparisons; in fact, this is their <em>raison d’être</em>.</p>
+<pre><code class="q">q)42&lt;0W
+1b
+q)-0W&lt;42
+_
+</code></pre>
+
+<p>To understand the integral nulls and infinities, realize that they are actually valid bit patterns for their corresponding types. Here are the long versions.</p>
+<table>
+<thead>
+<tr>
+<th>q</th>
+<th>C Equivalent</th>
+<th>Numeric</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0N</td>
+<td>MIN_INT</td>
+<td>-9223372036854775808</td>
+</tr>
+<tr>
+<td>-0W</td>
+<td>MIN_INT+1</td>
+<td>-9223372036854775807</td>
+</tr>
+<tr>
+<td>0W</td>
+<td>MAX_INT</td>
+<td>+9223372036854775807</td>
+</tr>
+</tbody>
+</table>
+<p>Consequently, ordering on integers is,</p>
+<p><code>0N</code> &lt; <code>-0W</code> &lt; normal integer &lt; <code>0W</code></p>
+<p>This explains some oddities.</p>
+<pre><code class="q">q)9223372036854775806+1
+0W
+q)-0W-1
+0N
+q)-0W+1
+-9223372036854775806
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The fact that q does not trap overflow explains the equally bizarre looking
+<pre><code class="language-q">
+q)0W+1
+0N
+q)0W+2
+-0W
+q)0W+3
+-9223372036854775806
+</code></pre></p>
+</div>
+<p>Implementing proper arithmetic on integer infinities would entail expensive tests in the arithmetic operators and an unacceptable slow-down for normal arithmetic.</p>
+<h2 id="27-nulls">2.7 Nulls<a class="headerlink" href="index.html#27-nulls" title="Permanent link">&para;</a></h2>
+<h3 id="270-overview-of-nulls">2.7.0 Overview of Nulls<a class="headerlink" href="index.html#270-overview-of-nulls" title="Permanent link">&para;</a></h3>
+<p>The concept of a null value generally indicates missing data. This is an area in which q differs from both traditional programming languages and SQL.</p>
+<p>In such languages as C++, Java and C#, the concept of a null value applies to complex entities (i.e., objects) that are allocated on the heap and accessed by pointer or reference. A null pointer corresponds to an unallocated entity, meaning that it has not been assigned the address of an initialized block of memory. (Tony Hoare, who introduced the concept of null pointer, calls it his "billion dollar mistake.") There is no concept of null for entities that are of value type. For those types that admit null, you test for null by asking if the value is equal to a special null marker.</p>
+<p>The <code>NULL</code> value in SQL indicates that data is not present. The <code>NULL</code> value is distinct from any value that can actually be contained in a field and it does not have '=' semantics. That is, you do not test a field for null with <code>= NULL</code>. Instead, you ask if it <code>IS NULL</code>. Because <code>NULL</code> is a separate value, Boolean fields, for example, actually have three states: <code>0</code>, <code>1</code> and <code>NULL</code>.</p>
+<p>The q situation is more interesting. There are no references or pointers, so the notion of an unallocated entity does not arise. Most types have null values that are distinct from "normal" values and occupy the same amount of storage. Some types do not designate a distinct null value because there is no available bit pattern – i.e., for boolean, byte and char all underlying bit patterns are meaningfully employed. In this case, the value with no information content serves as a proxy for null.</p>
+<p>The following table summarizes the way nulls are handled.</p>
+<table>
+<thead>
+<tr>
+<th>type</th>
+<th>null</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>boolean*</td>
+<td>0b</td>
+</tr>
+<tr>
+<td>guid*</td>
+<td>0Ng (00000000-0000-0000-0000-000000000000)</td>
+</tr>
+<tr>
+<td>byte*</td>
+<td>0x00</td>
+</tr>
+<tr>
+<td>short</td>
+<td>0Nh</td>
+</tr>
+<tr>
+<td>Int</td>
+<td>0N</td>
+</tr>
+<tr>
+<td>long</td>
+<td>0Nj</td>
+</tr>
+<tr>
+<td>real</td>
+<td>0Ne</td>
+</tr>
+<tr>
+<td>float</td>
+<td>0n</td>
+</tr>
+<tr>
+<td>char*</td>
+<td>" "</td>
+</tr>
+<tr>
+<td>sym</td>
+<td>`</td>
+</tr>
+<tr>
+<td>timestamp</td>
+<td>0Np</td>
+</tr>
+<tr>
+<td>month</td>
+<td>0Nm</td>
+</tr>
+<tr>
+<td>date</td>
+<td>0Nd</td>
+</tr>
+<tr>
+<td>datetime</td>
+<td>0Nz</td>
+</tr>
+<tr>
+<td>timespan</td>
+<td>0Nn</td>
+</tr>
+<tr>
+<td>minute</td>
+<td>0Nu</td>
+</tr>
+<tr>
+<td>second</td>
+<td>0Nv</td>
+</tr>
+<tr>
+<td>time</td>
+<td>0Nt</td>
+</tr>
+</tbody>
+</table>
+<h3 id="271-binary-nulls">2.7.1 Binary Nulls<a class="headerlink" href="index.html#271-binary-nulls" title="Permanent link">&para;</a></h3>
+<p>The binary types have no null values. There is no room since every bit pattern is a legitimate value.</p>
+<h3 id="272-numeric-and-temporal-nulls">2.7.2 Numeric and Temporal Nulls<a class="headerlink" href="index.html#272-numeric-and-temporal-nulls" title="Permanent link">&para;</a></h3>
+<p>The numeric and temporal types have their own designated null values. Here the situation is similar to SQL, in that you can distinguish missing data from data whose underlying value is zero. In contrast, there is no universal null value and q nulls take the same space as non-nulls.</p>
+<p>An advantage of the q approach is that the null values act like other values in expressions. The tradeoff is that you must use the correct null value in type-checked situations.</p>
+<h3 id="273-text-nulls">2.7.3 Text Nulls<a class="headerlink" href="index.html#273-text-nulls" title="Permanent link">&para;</a></h3>
+<p>Considering a symbol as variable length text justifies that the symbol null is the empty symbol, designated by a naked back-tick <code>`</code>.</p>
+<p>The null value for the char type is the blank character <code>" "</code>. As with binary data, you cannot distinguish between a missing char value and a blank value. Again, this is not seriously limiting in practice, but you should ensure that your application does not rely on this distinction.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The value <code>""</code> is <em>not</em> a null char. It is an empty list of char.</p>
+</div>
+<h3 id="274-testing-for-null">2.7.4 Testing for Null<a class="headerlink" href="index.html#274-testing-for-null" title="Permanent link">&para;</a></h3>
+<p>You could test for null using <code>=</code> but this requires a null literal of correct type. Because q is dynamically typed, this can result in problems if a variable changes type during program execution.</p>
+<p>Always use the monadic <code>null</code> to test a value for null, as opposed to <code>=</code>, as it provides a type-independent check. Also, you don't have to remember the funky null literals.</p>
+<pre><code class="q">q)null 42
+_
+q)null `
+_
+q)null &quot; &quot;
+_
+q)null &quot;&quot;
+</code></pre>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../1_Q_Shock_and_Awe.1" title="1. Q Shock and Awe" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                1. Q Shock and Awe
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../3_Lists.1" title="3. Lists" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                3. Lists
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            ©2015 Jeffry A. Borror / q4m LLC. Kx® and kdb+ are registered trademarks of Kx Systems, Inc., a subsidiary of First Derivatives plc.
+          </div>
+        
+        powered by
+        <a href="http://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.b438e6c5.js"></script>
+      
+      <script>app.initialize({version:"0.17.3",url:{base:".."}})</script>
+      
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+      
+        <script src="https://tracker.mrpfd.com/tracker.js"></script>
+      
+        <script src="http://code.kx.com/scripts/googleanalytics.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+        <script src="https://use.fontawesome.com/3dbf29ed12.js"></script>
+      
+        <script src="http://code.kx.com/scripts/prism.js"></script>
+      
+    
+    
+      
+    
+  </body>
+</html>

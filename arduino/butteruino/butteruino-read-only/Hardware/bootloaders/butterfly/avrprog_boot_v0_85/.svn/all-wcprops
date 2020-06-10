@@ -1,0 +1,119 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85
+END
+avrprog_boot.pnps
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/avrprog_boot.pnps
+END
+megaxx4p.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/megaxx4p.h
+END
+main
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/main
+END
+mega8.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega8.h
+END
+mega162.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega162.h
+END
+chipdef.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/chipdef.h
+END
+mega128.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega128.h
+END
+mega644.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega644.h
+END
+mega169.h
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega169.h
+END
+mega32.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega32.h
+END
+main.c
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/main.c
+END
+mega16.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega16.h
+END
+mega324p.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega324p.h
+END
+mega64.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega64.h
+END
+avrprog_boot.pnproj
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/avrprog_boot.pnproj
+END
+readme.txt
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/readme.txt
+END
+mega128can.h
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega128can.h
+END
+makefile
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/makefile
+END
+mega644p.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/19/trunk/Hardware/bootloaders/butterfly/avrprog_boot_v0_85/mega644p.h
+END

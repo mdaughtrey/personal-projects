@@ -1,0 +1,111 @@
+array8u custom[] = "c\x041111";
+array8u msg[7];
+global on = 0;
+
+function sendString(str)
+{
+	local x;
+
+	for (x=0; $ptr8u[str, x]; x++)
+    {
+		$uf1($ptr8u[str, x]);
+    }
+}
+
+function pixelOn(row, col)
+{
+    local idx;
+    idx = col / 5;
+
+    if (on == 1)
+        msg[0] = 0x78; // x
+    else 
+        msg[0] = 0x58; // X
+    msg[1] = idx + 0x30;
+    msg[2] = row + 0x30;
+    msg[3] = (col % 5) + 0x30;
+    msg[4] = 0x00;
+    sendString(&msg);
+}
+
+function main()
+{
+    local top;
+    local bottom;
+    local left;
+    local right;
+    local ii;
+    local palette;
+
+    sendString(&custom);
+
+    palette = 0;
+
+    while (1)
+    {
+        left = 0;
+        right = 9;
+        top = 0;
+        bottom = 6;
+        on = !on;
+
+        msg[0] = 0x70; // p
+        msg[1] = 0x34; // 4
+        msg[2] = palette + 0x30;
+        msg[3] = palette + 0x30;
+        msg[4] = palette + 0x30;
+        msg[5] = palette + 0x30;
+        msg[6] = 0x00;
+        sendString(&msg);
+
+        palette++;
+        palette %= 3;
+
+        while (top <= bottom && left <= right)
+        {
+            //
+            // Right
+            //
+            for (ii = left; ii <= right; ii++)
+            {
+                pixelOn(top, ii);
+//                $uf3(50);
+            }
+            top++;
+
+            //
+            // Down
+            //
+            for (ii = top; ii <= bottom; ii++)
+            {
+                pixelOn(ii, right);
+ //               $uf3(50);
+            }
+            right--;
+
+            //
+            // Left
+            //
+            for (ii = right; ii >= left; ii--)
+            {
+                pixelOn(bottom, ii);
+  //              $uf3(50);
+            }
+            bottom--;
+
+            //
+            // Up
+            //
+            for (ii = bottom; ii >= top; ii--)
+            {
+                pixelOn(ii, left);
+   //             $uf3(50);
+            }
+            left++;
+        }
+    }
+
+    $uf0();
+}
+
+

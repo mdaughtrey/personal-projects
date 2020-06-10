@@ -1,0 +1,19 @@
+OBJS=rawout.o
+
+rawout: makefile.rawout $(OBJS)
+	gcc -o rawout $(OBJS)
+
+%.o: %.c
+	gcc -g -c $<
+
+run:    	
+	./rawout test
+
+#run:
+#	./interpreter obj.bin
+
+#gdb:
+#	gdb interpreter
+
+clean:
+	rm *.o

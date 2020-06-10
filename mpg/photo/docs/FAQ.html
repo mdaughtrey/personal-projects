@@ -1,0 +1,184 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Frequently Asked Questions about fuzzymonky.org scripts</title>
+</head>
+<body>
+<table bgcolor="#000000" width="100%" cellpadding="10">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff" size="4"> FAQ - Fuzzymonkey.org CGI and
+Perl scripts</font>
+      <p><font color="#ffffff" size="-1">(version 1.1) don't forget to
+read the Intro to CGI at http://www.fuzzymonkey.org/perl/ also if you
+can't find what you need here! </font></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table bgcolor="#000000" cellpadding="5" width="100%">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"> Q: So how come you are so cool and make
+all this software for free? </font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> A: Well, the coolness is natural, I make the scripts free
+cuz I learned most of what I know from open source software so as I
+learn, I give back what I created along the way.&nbsp; Also, I sure do
+hope that you remember me when you are looking for someone to write
+custom scripts for you. Just email me <a
+ href="mailto:mike@fuzzymonkey.org">mike@fuzzymonkey.org</a> for a quote
+:-) </blockquote>
+<table bgcolor="#000000" cellpadding="5" width="100%">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"> Q: I just pointed my browswer at one of
+the scripts and it says <b>"Internal Sever Error 400"</b> or something
+similar!  Your scripts suck! </font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> A: Well, this could be any error.  The best way to see what
+is going on is to look at your web server error log.&nbsp; On many
+linux systems this is in the /var/log/httpd/ directory.<br>
+  <br>
+If you do not have access to your web serer error log, you can find out
+lots of information by running it from command line.  You will want to
+telnet or ssh into your server.  Then `cd` to the directory containing
+the .cgi script.  To run it, do:
+  <p>$ ./scriptname.cgi <i>(where scriptname.cgi is the name of the
+script</i> </p>
+  <p>Depending on the webserver, it may now ask you to enter name=value
+pairs. At this point, just hit CNTL-D and it will output a combination
+of HTML and/or errors.  If you want to test the script with giving it
+input parameters (e.g. the stuff from forms) then you would enter those
+name=value pairs first, one per line, and then hit CNTL-D.<br>
+  </p>
+  <p>If it doesn't ask you to enter in the name=value pairs, you can
+edit the <span style="font-weight: bold;">use CGI;</span> like to say <span
+ style="font-weight: bold;">use CGI qw(-debug);</span>.<br>
+  </p>
+  <p>If this info is not helpful, some commone reasons for getting this
+error are: </p>
+  <li>not having permissions on the .cgi scripts set to 755 (chmod 755
+filename.cgi) </li>
+  <li>not having perl installed at /usr/bin/perl (see the next
+question) </li>
+</blockquote>
+<table bgcolor="#000000" cellpadding="5" width="100%">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"> Q: I just tried to execute the script
+and it says that the <b>file cannot be found</b> or that it can't find
+perl! </font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> A: Check to make sure you have perl installed and in
+/usr/bin/perl.&nbsp; You can do this by doing:
+  <p>$ whereis perl </p>
+  <p>this should tell you where perl is installed.  If it is not
+installed, install it from <a href="http://www.perl.com">www.perl.com</a>.
+If it is somewhere besides /usr/bin/perl then change the first line of
+the script to reflect where it is installed.<br>
+  </p>
+  <p>If the script says "file not found" or "no such file or directory"
+this could be becuse the file is a DOS text file or was uploaded in the
+wrong mode.<br>
+  </p>
+</blockquote>
+<table bgcolor="#000000" cellpadding="5" width="100%">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"> Q: The script just complained about not
+having <b>permissions to read, write</b>, or something similar! 
+*maybe I should just chmod 777 everything ...* </font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> A:  The problem is that the script you are running needs to
+read or write to files which it doesn't have access to.  Normally,
+these files are written in the same directory where the script is or
+some other directory that you specified when you set the script up. 
+When your script executes, it gets under a certain user account.  If
+you are running an apache server, this is most likely  the user
+'apache' or 'nobody'.  There are a few ways to fix this:
+  <p> </p>
+  <li>You could be really cool and get a <a
+ href="http://www.fuzzymonkey.org/igwig/">web hosting account from me</a>
+and you wouldn't have to worry about it cuz my server is set up properly
+:-) </li>
+  <li>You can install suexec and reinstall apache.  This will make sure
+that all scripts are run as the user who has the web account.  This is
+how most commercial servers are set up. </li>
+  <li>You can change the owner for the folders that contains the script
+and files you want to run.&nbsp; For instance, if the webserver
+executes them as 'apache' you could just (make sure you use the paths
+to the folders you want to change):
+    <p>$ chown -R apache /var/www/html/photo<br>
+$ chown -R apache /var/www/cgi-bin/photo </p>
+  </li>
+</blockquote>
+<table bgcolor="#000000" cellpadding="5" width="100%">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"> Q: When I run the script it says: <b>Unable
+to find something/something.pm in @INC</b> or something similar!  Whats
+up? </font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> A: That means that you do not have one of the requires perl
+modules installed. Don't worry, that is an easy fix ... just install
+the perl module :-)
+  <p>If you have root access, just go to <a
+ href="http://search.cpan.org">search.cpan.org</a>, download it, perl
+Makefile.PL;make;make install </p>
+  <p>If you don't have root access (e.g. you have a hosting account you
+pay for by month), then you have 2 options: </p>
+  <li>You can buy some beer for your server admin or email your hosting
+company to see if they will install it for you.  Unless they are a mega
+company, they probably will. </li>
+  <li>You can install it locally on your account.  This may take up
+some of your precious MB's (web space), but this is what I do here at
+fuzzymonkey.  Just read the instructions in README.IMAGEMAGICK or email
+me for a copy if you dont have one.  Normally, this is just as easy as
+using PREFIX=/home/user/cgi-bin/local when you configure or make
+anything that you want to install locally.  If you do choose this
+method, then make sure you add the uselib lines to the top of your
+scripts so that they know where to find the locally installed modules. 
+I use the following:
+    <p> use lib
+"/home/username/www/cgi-bin/local/lib/site_perl/5.6.0/i686-linux/";
+#ImageMagick use lib "/home/username/www/cgi-bin/local/lib/site_perl/";
+#Image::Info and IO::String </p>
+  </li>
+</blockquote>
+<table bgcolor="#000000" cellpadding="5" width="100%">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"> Q: I just installed the <b>required
+Perl modules</b> for one of your scripts locally (because I don't have
+root access), but I am still getting the same error message! </font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> A: You probably forgot to put the <span
+ style="font-weight: bold;">use lib</span> lines at the top of the
+scripts! (see above) </blockquote>
+<table bgcolor="#000000" width="100%">
+  <tbody>
+    <tr>
+      <td><font color="#ffffff"> Q: I just fixed a bug in your script,
+should I tell you about it? </font></td>
+    </tr>
+  </tbody>
+</table>
+<blockquote> A: By all means!  Please send me the patch (.diff) or email
+and tell me about it. </blockquote>
+Please <a href="mailto:mike@fuzzymonkey.org">let me know if you find
+this list incomplete.</a>
+</body>
+</html>

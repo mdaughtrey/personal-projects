@@ -1,0 +1,2206 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="Q for Mortals">
+      
+      
+        <link rel="canonical" href="../11_IO.1">
+      
+      
+        <meta name="author" content="Jeffry Borror">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-0.17.3, mkdocs-material-2.7.2">
+    
+    
+      
+        <title>11. I/O - Q for Mortals</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.8d40d89b.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+    
+    
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+      
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="http://code.kx.com/stylesheets/prism.css">
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="deep-orange">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <a href="../11_IO.1#11-io" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="http://code.kx.com/q4m3" title="Q for Mortals" class="md-header-nav__button md-logo">
+          
+            <img src="../img/qfm3.jpg" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            
+              <span class="md-header-nav__topic">
+                Q for Mortals
+              </span>
+              <span class="md-header-nav__topic">
+                11. I/O
+              </span>
+            
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+            <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+            
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+        
+      </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    <span class="md-nav__button md-logo">
+      
+        <img src="../img/qfm3.jpg" width="48" height="48">
+      
+    </span>
+    Q for Mortals
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../redirect/index.html" title="code.kx.com" class="md-nav__link">
+      code.kx.com
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../index.html" title="Contents" class="md-nav__link">
+      Contents
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../preface/index.html" title="Preface" class="md-nav__link">
+      Preface
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../0_Overview/index.html" title="0. Overview" class="md-nav__link">
+      0. Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../1_Q_Shock_and_Awe.1" title="1. Q Shock and Awe" class="md-nav__link">
+      1. Q Shock and Awe
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../2_Basic_Data_Types_Atoms/index.html" title="2. Basic Data Types – Atoms" class="md-nav__link">
+      2. Basic Data Types – Atoms
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../3_Lists.1" title="3. Lists" class="md-nav__link">
+      3. Lists
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../4_Operators.1" title="4. Operators" class="md-nav__link">
+      4. Operators
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../5_Dictionaries.1" title="5. Dictionaries" class="md-nav__link">
+      5. Dictionaries
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../6_Functions.1" title="6. Functions" class="md-nav__link">
+      6. Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../7_Transforming_Data/index.html" title="7. Transforming Data" class="md-nav__link">
+      7. Transforming Data
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../8_Tables.1" title="8. Tables" class="md-nav__link">
+      8. Tables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../9_Queries_q-sql.1" title="9. Queries – q-sql" class="md-nav__link">
+      9. Queries – q-sql
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../10_Execution_Control/index.html" title="10. Execution Control" class="md-nav__link">
+      10. Execution Control
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        11. I/O
+      </label>
+    
+    <a href="../11_IO.1" title="11. I/O" class="md-nav__link md-nav__link--active">
+      11. I/O
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#110-overview" title="11.0 Overview" class="md-nav__link">
+    11.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#111-binary-data" title="11.1 Binary Data" class="md-nav__link">
+    11.1 Binary Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1111-file-handles" title="11.1.1 File Handles" class="md-nav__link">
+    11.1.1 File Handles
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1112-hcount-and-hdel" title="11.1.2 hcount and hdel" class="md-nav__link">
+    11.1.2 hcount and hdel
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1113-serializing-and-deserializing-q-entities" title="11.1.3 Serializing and Deserializing q Entities" class="md-nav__link">
+    11.1.3 Serializing and Deserializing q Entities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1114-binary-data-files" title="11.1.4 Binary Data Files" class="md-nav__link">
+    11.1.4 Binary Data Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1115-writing-and-reading-binary" title="11.1.5 Writing and Reading Binary" class="md-nav__link">
+    11.1.5 Writing and Reading Binary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1116-using-dot-amend" title="11.1.6 Using Dot Amend" class="md-nav__link">
+    11.1.6 Using Dot Amend
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#112-save-and-load-on-tables" title="11.2 Save and Load on Tables" class="md-nav__link">
+    11.2 Save and Load on Tables
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#113-splayed-tables" title="11.3 Splayed Tables" class="md-nav__link">
+    11.3 Splayed Tables
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#114-text-data" title="11.4 Text Data" class="md-nav__link">
+    11.4 Text Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1141-reading-and-writing-text-files" title="11.4.1 Reading and Writing Text Files" class="md-nav__link">
+    11.4.1 Reading and Writing Text Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1142-using-hopen-and-hclose" title="11.4.2 Using hopen and hclose" class="md-nav__link">
+    11.4.2 Using hopen and hclose
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1143-preparing-text" title="11.4.3 Preparing Text" class="md-nav__link">
+    11.4.3 Preparing Text
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#115-parsing-records" title="11.5 Parsing Records" class="md-nav__link">
+    11.5 Parsing Records
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1151-fixed-width-records" title="11.5.1 Fixed-Width Records" class="md-nav__link">
+    11.5.1 Fixed-Width Records
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1152-variable-length-records" title="11.5.2 Variable Length Records" class="md-nav__link">
+    11.5.2 Variable Length Records
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1153-key-value-records" title="11.5.3 Key-Value Records" class="md-nav__link">
+    11.5.3 Key-Value Records
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#116-interprocess-communication" title="11.6 Interprocess Communication" class="md-nav__link">
+    11.6 Interprocess Communication
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1161-communication-handle" title="11.6.1 Communication Handle" class="md-nav__link">
+    11.6.1 Communication Handle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1162-opening-a-connection-handle" title="11.6.2 Opening a Connection Handle" class="md-nav__link">
+    11.6.2 Opening a Connection Handle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1163-remote-execution" title="11.6.3 Remote Execution" class="md-nav__link">
+    11.6.3 Remote Execution
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1164-synchronous-and-asynchronous-messages" title="11.6.4 Synchronous and Asynchronous Messages" class="md-nav__link">
+    11.6.4 Synchronous and Asynchronous Messages
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1165-processing-messages" title="11.6.5 Processing Messages" class="md-nav__link">
+    11.6.5 Processing Messages
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1166-remote-queries" title="11.6.6 Remote Queries" class="md-nav__link">
+    11.6.6 Remote Queries
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#117-http-and-web-sockets" title="11.7 HTTP and Web sockets" class="md-nav__link">
+    11.7 HTTP and Web sockets
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1171-http-connections" title="11.7.1 HTTP Connections" class="md-nav__link">
+    11.7.1 HTTP Connections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1172-basic-websockets" title="11.7.2 Basic WebSockets" class="md-nav__link">
+    11.7.2 Basic WebSockets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1173-pushing-data-to-the-browser" title="11.7.3 Pushing Data to the Browser" class="md-nav__link">
+    11.7.3 Pushing Data to the Browser
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../12_Workspace_Organization.1" title="12. Workspace Organization" class="md-nav__link">
+      12. Workspace Organization
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../13_Commands_and_System_Variables.1" title="13. Commands and System Variables" class="md-nav__link">
+      13. Commands and System Variables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../14_Introduction_to_Kdb+.1" title="14. Introduction to Kdb+" class="md-nav__link">
+      14. Introduction to Kdb+
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../A_Built-in_Functions.1" title="Appendix A. Built-in Functions" class="md-nav__link">
+      Appendix A. Built-in Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../B_Error_Messages/index.html" title="Appendix B. Error Messages" class="md-nav__link">
+      Appendix B. Error Messages
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../colophon/index.html" title="Colophon" class="md-nav__link">
+      Colophon
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#110-overview" title="11.0 Overview" class="md-nav__link">
+    11.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#111-binary-data" title="11.1 Binary Data" class="md-nav__link">
+    11.1 Binary Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1111-file-handles" title="11.1.1 File Handles" class="md-nav__link">
+    11.1.1 File Handles
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1112-hcount-and-hdel" title="11.1.2 hcount and hdel" class="md-nav__link">
+    11.1.2 hcount and hdel
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1113-serializing-and-deserializing-q-entities" title="11.1.3 Serializing and Deserializing q Entities" class="md-nav__link">
+    11.1.3 Serializing and Deserializing q Entities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1114-binary-data-files" title="11.1.4 Binary Data Files" class="md-nav__link">
+    11.1.4 Binary Data Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1115-writing-and-reading-binary" title="11.1.5 Writing and Reading Binary" class="md-nav__link">
+    11.1.5 Writing and Reading Binary
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1116-using-dot-amend" title="11.1.6 Using Dot Amend" class="md-nav__link">
+    11.1.6 Using Dot Amend
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#112-save-and-load-on-tables" title="11.2 Save and Load on Tables" class="md-nav__link">
+    11.2 Save and Load on Tables
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#113-splayed-tables" title="11.3 Splayed Tables" class="md-nav__link">
+    11.3 Splayed Tables
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#114-text-data" title="11.4 Text Data" class="md-nav__link">
+    11.4 Text Data
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1141-reading-and-writing-text-files" title="11.4.1 Reading and Writing Text Files" class="md-nav__link">
+    11.4.1 Reading and Writing Text Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1142-using-hopen-and-hclose" title="11.4.2 Using hopen and hclose" class="md-nav__link">
+    11.4.2 Using hopen and hclose
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1143-preparing-text" title="11.4.3 Preparing Text" class="md-nav__link">
+    11.4.3 Preparing Text
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#115-parsing-records" title="11.5 Parsing Records" class="md-nav__link">
+    11.5 Parsing Records
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1151-fixed-width-records" title="11.5.1 Fixed-Width Records" class="md-nav__link">
+    11.5.1 Fixed-Width Records
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1152-variable-length-records" title="11.5.2 Variable Length Records" class="md-nav__link">
+    11.5.2 Variable Length Records
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1153-key-value-records" title="11.5.3 Key-Value Records" class="md-nav__link">
+    11.5.3 Key-Value Records
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#116-interprocess-communication" title="11.6 Interprocess Communication" class="md-nav__link">
+    11.6 Interprocess Communication
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1161-communication-handle" title="11.6.1 Communication Handle" class="md-nav__link">
+    11.6.1 Communication Handle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1162-opening-a-connection-handle" title="11.6.2 Opening a Connection Handle" class="md-nav__link">
+    11.6.2 Opening a Connection Handle
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1163-remote-execution" title="11.6.3 Remote Execution" class="md-nav__link">
+    11.6.3 Remote Execution
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1164-synchronous-and-asynchronous-messages" title="11.6.4 Synchronous and Asynchronous Messages" class="md-nav__link">
+    11.6.4 Synchronous and Asynchronous Messages
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1165-processing-messages" title="11.6.5 Processing Messages" class="md-nav__link">
+    11.6.5 Processing Messages
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1166-remote-queries" title="11.6.6 Remote Queries" class="md-nav__link">
+    11.6.6 Remote Queries
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../11_IO.1#117-http-and-web-sockets" title="11.7 HTTP and Web sockets" class="md-nav__link">
+    11.7 HTTP and Web sockets
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1171-http-connections" title="11.7.1 HTTP Connections" class="md-nav__link">
+    11.7.1 HTTP Connections
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1172-basic-websockets" title="11.7.2 Basic WebSockets" class="md-nav__link">
+    11.7.2 Basic WebSockets
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../11_IO.1#1173-pushing-data-to-the-browser" title="11.7.3 Pushing Data to the Browser" class="md-nav__link">
+    11.7.3 Pushing Data to the Browser
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="11-io">11. I/O<a class="headerlink" href="../11_IO.1#11-io" title="Permanent link">&para;</a></h1>
+<h2 id="110-overview">11.0 Overview<a class="headerlink" href="../11_IO.1#110-overview" title="Permanent link">&para;</a></h2>
+<p>I/O in q is one of the most powerful and succinct features of the language. The names and behavior of the functions are idiosyncratic but the economy of expression is unrivaled.</p>
+<p>I/O is realized via <em>handles</em>, which are symbolic names of resources such as files or machines on a network. One-and-done operations can be performed directly on the symbolic handle – e.g., you can read a file into memory in a single operation. For continuing operations, you open the symbolic handle to obtain an <em>open handle</em>. The open handle is a function that is applied to perform operations. When you have completed the desired operations, you close the open handle to free any allocated resources.</p>
+<h2 id="111-binary-data">11.1 Binary Data<a class="headerlink" href="../11_IO.1#111-binary-data" title="Permanent link">&para;</a></h2>
+<p>In q, files come in two flavors: text and binary. Routines to process text data have ‘0’ in their names, whereas routines to process binary data have ‘1’. A text file is considered to be a list of strings – i.e., a list of char lists – and a binary file is a list of byte lists. While all text files can also be processed as binary data, not all binary data represents text. As mentioned above, file operations use handles.</p>
+<h3 id="1111-file-handles">11.1.1 File Handles<a class="headerlink" href="../11_IO.1#1111-file-handles" title="Permanent link">&para;</a></h3>
+<p>A <em>file handle</em> is a symbol that represents the name of a directory or file on persistent storage. A symbolic file handle starts with a colon <code>:</code> and has the form,</p>
+<p><code>`:</code>[<em>path</em>]<em>name</em></p>
+<p>where the bracketed expression represents an optional path and <em>name</em> is a file or directory name. The combination should be recognized as valid by the underlying operating system.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Some q operations require that you append a trailing slash <code>/</code> to indicate that you mean a directory. We will point these out.</p>
+</div>
+<p>It is generally easier to work with paths and names as strings so that blanks and other special characters can be handled easily. While <code>`$</code> converts a string to a symbol, it can be awkward to include the leading <code>:</code> required in the symbolic handle. The operator <code>hsym</code>, which inserts a leading colon into a symbol, serves this purpose.</p>
+<pre><code class="q">q)hsym `$&quot;/data/file name.csv&quot;
+`:/data/file name.csv
+</code></pre>
+
+<p>Note that q always represents separators in paths by the forward slash <code>/</code>, even when running on Windows. If you run q on Windows, you can type either <code>/</code> or <code>\</code> but q will always display <code>/</code> in its response.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>To make life easier when you are generating paths dynamically, <code>hsym</code> is idempotent, meaning that it will accept its own output and pass it through.
+<pre><code class="language-c">
+q)hsym hsym `$"/data/file name.csv"
+_
+</code></pre></p>
+</div>
+<h3 id="1112-hcount-and-hdel">11.1.2 <code>hcount</code> and <code>hdel</code><a class="headerlink" href="../11_IO.1#1112-hcount-and-hdel" title="Permanent link">&para;</a></h3>
+<p>The first one-and-done operation that works directly on a symbolic file handle is <code>hcount</code>, which returns a long representing the size of the file in bytes as reported by the OS.</p>
+<pre><code class="q">q)hcount `:/data/solong.txt
+35
+</code></pre>
+
+<p>The next one-and-done is <code>hdel</code>, which instructs the OS to remove the file specified by its symbolic handle operand.</p>
+<pre><code class="q">q)hdel `:/data/solong.txt
+`:/data/solong.txt
+</code></pre>
+
+<p>Some notes.</p>
+<ul>
+<li>The return value of the symbolic file handle itself indicates that the deletion was successful. It should not be confused with an error message, which starts with a tick rather than a backtick.</li>
+<li>You will get an error message if the file does not exist or if the delete cannot be performed.</li>
+<li>You will not be prompted for confirmation. Back up any files that are important.</li>
+</ul>
+<h3 id="1113-serializing-and-deserializing-q-entities">11.1.3 Serializing and Deserializing q Entities<a class="headerlink" href="../11_IO.1#1113-serializing-and-deserializing-q-entities" title="Permanent link">&para;</a></h3>
+<p>Every q entity can be serialized and persisted to storage. Unlike traditional languages, where you must instantiate serializers and writers, things are simple and direct in q. This is because q data is self-describing, so that its internal representation can be written out as a sequence of bytes and then read directly back into memory. This is as close to the Star Trek transporter as we are likely to get.</p>
+<p>The magic is done by (an overload of) the dyadic <code>set</code>, whose left operand is a file handle and right operand is the entity to be written. The result is the symbolic handle of the written file. The file is automatically closed once the write is complete.</p>
+<pre><code class="q">q)`:/data/a set 42
+`:/data/a
+q)`:/data/L set 10 20 30
+_
+q)`:/data/t set ([] c1:`a`b`c; c2:10 20 30)
+_
+</code></pre>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The behavior of <code>set</code> is to create the file if it does not exist and overwrite it if it does. It will also create the directory path if it does not exist.</p>
+</div>
+<p>A serialized q data file can be read using (an overload of) the monadic <code>get</code>, whose argument is a symbolic file handle and whose result is the q entity contained in the data file.</p>
+<pre><code class="q">q)get `:/data/a
+42
+q)get `:/data/L
+_
+q)get `:/data/t
+_
+</code></pre>
+
+<p>An equivalent way to read a data file is with (an overload of) <code>value</code>.</p>
+<pre><code class="q">q)value `:/data/t
+_
+</code></pre>
+
+<p>Alternatively, you can use the command <code>\l</code> to load a data file into memory and assign it to a variable with the same name as the file. Here you do <strong>not</strong> use a file handle; rather, specify the path to the file without any decoration. In a fresh q session,</p>
+<pre><code class="q">q)t
+'t
+q)\l /data/t
+`t
+q)t
+_
+</code></pre>
+
+<h3 id="1114-binary-data-files">11.1.4 Binary Data Files<a class="headerlink" href="../11_IO.1#1114-binary-data-files" title="Permanent link">&para;</a></h3>
+<p>As with traditional languages, for continuing operations on a q data file, you open the file, perform the operation(s) and then close it. Unlike traditional languages, opening a symbolic handle returns a function, called an open handle, that is used to perform operations.</p>
+<p>As mentioned previously, q files come in two flavors, binary and text. Serialized q data persisted with <code>set</code> is written in binary form with a header at the beginning of the file. You can read it as raw binary data to inspect its internals.</p>
+<p>Open a data file handle with <code>hopen</code>, whose result is a function called the <em>open handle</em>. This function should be stored in a variable, traditionally <code>h</code>, which is functionally applied to data to write it to the file. We will explain the result of applying the open handle shortly. We begin with a file containing serialized q data and show how to append to it.</p>
+<pre><code class="q">q)`:/data/L set 10 20 30
+`:/data/L
+q)h:hopen `:/data/L
+q)h[42]
+3i
+q)h 100 200
+3i
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Always apply <code>hclose</code> to the open handle to close it and flush any data that might be buffered. Failure to do so may cause your program to run out of file handles unnecessarily.</p>
+</div>
+<p>We verify that the appends have been made.</p>
+<pre><code class="q">q)hclose h
+q)get `:/data/L
+10 20 30 42 100 200
+</code></pre>
+
+<p>We can also create a new file and write raw binary data to it.</p>
+<pre><code class="q">q)h:hopen `:/data/raw
+q)h[42]
+3i
+q)h 10 20 30
+3i
+q)hclose h
+</code></pre>
+
+<p>Now, what is the deal with the <code>3i</code> return value of applying the open handle?</p>
+<pre><code class="q">q)h:hopen `:/data/raw
+q)h 43
+3i
+</code></pre>
+
+<p>In fact, the return value is the value of the open handle itself.</p>
+<pre><code class="q">q)h
+3i
+</code></pre>
+
+<p>Surely, you say, we can’t use an int as a function to write data. But you would be wrong.</p>
+<pre><code class="q">q)h:hopen `:/data/new
+q)h
+3i
+q)3i[100 200 300]
+3i
+q)hclose 3i
+q)get `:/data/new
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Apparently q assigns an int to each open file and keeps track of which int values are valid handles. This accounts for the cryptic error message when you attempt to use variables with simple list notation.</p>
+</div>
+<pre><code class="q"> q)a:42
+ q)b:43
+ q)a b
+ ': Bad file descriptor
+</code></pre>
+
+<h3 id="1115-writing-and-reading-binary">11.1.5 Writing and Reading Binary<a class="headerlink" href="../11_IO.1#1115-writing-and-reading-binary" title="Permanent link">&para;</a></h3>
+<p>Apply <code>read1</code> on a file handle to read <strong>any</strong> file into q as a list of bytes. For example, we can read the previously serialized value <code>L</code> as bytes.</p>
+<pre><code class="q">q)read1 `:/data/L set 10 20 30
+0xfe2007000000000003000000000000000a0000000000000014000000000000001e..
+</code></pre>
+
+<p>This shows the internal representation of the serialized q entity. How cool is that?</p>
+<p>If you want to write raw binary data, as opposed to the internal representation of a q entity containing the data, use the infelicitously named <code>1:</code>. It takes a symbolic file handle as its left argument and a simple byte list as its right argument. Bytes in the right operand are essentially streamed to the file.</p>
+<pre><code class="q">q)`:/data/answer.bin 1: 0x06072a
+`:/data/answer.bin
+q)read1 `:/data/answer.bin
+0x06072a
+</code></pre>
+
+<h3 id="1116-using-dot-amend">11.1.6 Using Dot Amend<a class="headerlink" href="../11_IO.1#1116-using-dot-amend" title="Permanent link">&para;</a></h3>
+<p>Fundamentalists can use <em>dot amend</em> in place of <code>set</code> to serialize q entities to files. To write the file, or overwrite an existing file, use assign <code>:</code>.</p>
+<pre><code class="q">q).[`:/data/raw; (); :; 1001 1002 1003]
+`:/data/raw
+q)get `:/data/raw
+1001 1002 1003
+</code></pre>
+
+<p>To append to an existing file use <code>,</code>.</p>
+<pre><code class="q">q).[`:/data/raw; (); ,; 42]
+`:/data/raw
+q)get `:/data/raw
+1001 1002 1003 42
+</code></pre>
+
+<h2 id="112-save-and-load-on-tables">11.2 Save and Load on Tables<a class="headerlink" href="../11_IO.1#112-save-and-load-on-tables" title="Permanent link">&para;</a></h2>
+<p>We have already seen that it is easy to write and read tables to/from persistent storage.</p>
+<pre><code class="q">q)`:/data/t set ([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+`:/data/t
+q)get `:/data/t
+_
+</code></pre>
+
+<p>The <code>save</code> and <code>load</code> functions make this even easier.</p>
+<p>In its simplest form, <code>save</code> serializes a table in a <strong>global</strong> variable to a binary file having the same name as the variable. It overwrites an existing file.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+q)save `:/data/t
+`:/data/t
+q)get `:/data/t
+_
+</code></pre>
+
+<p>This is equivalent to using <code>set</code> above with the table name as file name.</p>
+<p>As you might expect, <code>load</code> is the inverse of <code>save</code> meaning that it reads a serialized table from a file into a variable with the same name as the file. It creates the variable in the workspace or overwrites it if it already exists.</p>
+<p>In a fresh q session after <code>t</code> has been saved as above,</p>
+<pre><code class="q">q)t / t doesn't exist
+'t
+q)load `:/data/t
+`t
+q)t / now it does
+_
+</code></pre>
+
+<p>You can also use <code>save</code> to write a table to a text file. You determine the format of the text with the file extension in the file handle.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>All the following versions of <code>save</code> can also be performed with the more general <code>0:</code> – see <a href="../11_IO.1#115-parsing-records">§11.5</a>.</p>
+</div>
+<p>Save the table with <code>.txt</code> extension to obtain tab-delimited records. There is no corresponding <code>load</code> but you can parse the text file – see <a href="../11_IO.1#1151-fixed-width-records">§11.5.1</a>.</p>
+<pre><code class="q">q)save `:data/t.txt
+`:data/t.txt
+</code></pre>
+
+<p>The resulting file is,</p>
+<pre><code class="q">c1\tc2\tc3
+a\t10\t1.1
+b\t20\t2.2
+c\t30\t3.3
+</code></pre>
+
+<p>Save the table with <code>.csv</code> extension to obtain comma-separated values. There is no corresponding <code>load</code> but you can parse the CSV file – see <a href="../11_IO.1#1152-variable-length-records">§11.5.2</a>.</p>
+<pre><code class="q">q)save `:data/t.csv
+`:data/t.csv
+</code></pre>
+
+<p>The resulting file is</p>
+<pre><code class="q">c1,c2,c3
+a,10,1.1
+b,20,2.2
+c,30,3.3
+</code></pre>
+
+<p>Save the table with <code>.xml</code> extension to obtain XML records. There is no direct way to read XML into q although libraries have been contributed – see <a href="http://code.kx.com/q/github">code.kx.com</a>.</p>
+<pre><code class="q">q)save `:data/t.xml
+`:data/t.xml
+</code></pre>
+
+<p>The resulting file is,</p>
+<pre><code class="html">&lt;R&gt;
+&lt;r&gt;&lt;c1&gt;a&lt;/c1&gt;&lt;c2&gt;10&lt;/c2&gt;&lt;c3&gt;1.1&lt;/c3&gt;&lt;/r&gt;
+&lt;r&gt;&lt;c1&gt;b&lt;/c1&gt;&lt;c2&gt;20&lt;/c2&gt;&lt;c3&gt;2.2&lt;/c3&gt;&lt;/r&gt;
+&lt;r&gt;&lt;c1&gt;c&lt;/c1&gt;&lt;c2&gt;30&lt;/c2&gt;&lt;c3&gt;3.3&lt;/c3&gt;&lt;/r&gt;
+&lt;/R&gt;
+</code></pre>
+
+<p>Save the table with <code>.xls</code> extension obtain an Excel spreadsheet. This file can be loaded by Excel work-alikes.</p>
+<pre><code class="q">q)save `:data/t.xls
+`:data/t.xls
+</code></pre>
+
+<h2 id="113-splayed-tables">11.3 Splayed Tables<a class="headerlink" href="../11_IO.1#113-splayed-tables" title="Permanent link">&para;</a></h2>
+<p>We have already seen how to persist a table to a file using <code>set</code>. There are no restrictions on the types of columns in the table or the file name in this scenario.</p>
+<pre><code class="q">q)`:/data/t set ([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+`:/data/t
+q)get `:/data/t
+_
+</code></pre>
+
+<p>This creates a single file, as the OS verifies.</p>
+<pre><code class="q">&gt;ls -l /data/t
+-rw-r--r-- 1 jeffry wheel 98 Mar 6 08:22 /data/t
+</code></pre>
+
+<p>For larger tables that may not fit into memory on all machines, you can ask q to serialize each column of the table to its own file in a specified directory. A table persisted in this form is called a <em>splayed</em> table. The advantage is that when querying a splayed table, only the columns referred to in the query will be loaded into memory. This is a substantial memory win for a table having many columns.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>It is worthwhile looking up the origin of the English word “splay”. Also, please don’t spay your tables.</p>
+</div>
+<p>To splay a table, use <code>set</code> and specify a directory as the target location indicated by a trailing slash <code>/</code> in the left operand.</p>
+<pre><code class="q">q)`:/data/tsplay/ set ([] c1:10 20 30; c2:1.1 2.2 3.3)
+`:/data/tsplay/
+</code></pre>
+
+<p>List the directory in the OS and you will see a directory <code>tsplay</code> that contains three files, one file for each column in the original table, as well as a hidden <code>.d</code> file.</p>
+<pre><code class="q">&gt;ls -l -d /data/tsplay
+drwxr-xr-x 5 jeffry wheel 170 Mar 6 08:36 /data/tsplay
+&gt;ls -l -a /data/tsplay
+total 24
+drwxr-xr-x 5 jeffry wheel 170 Mar 6 08:36 .
+drwxr-xr-x 9 jeffry wheel 306 Mar 6 08:36 ..
+-rw-r--r-- 1 jeffry wheel 14 Mar 6 08:36 .d
+-rw-r--r-- 1 jeffry wheel 40 Mar 6 08:36 c1
+-rw-r--r-- 1 jeffry wheel 40 Mar 6 08:36 c2
+</code></pre>
+
+<p>Nearly all the metadata regarding the splayed table can be read from the file system – i.e., the name of table from directory and names of the columns from the files. The one missing bit is the order of the columns, which is stored as a serialized list in the hidden <code>.d</code> file.</p>
+<pre><code class="q">q)get hsym `$&quot;/data/tsplay/.d&quot;
+`c1`c2
+</code></pre>
+
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>There are restrictions on tables that can be splayed.</p>
+<ul>
+<li>All columns must be simple or <em>compound</em> lists. The latter means a list of simple lists of uniform type. An arbitrary general list column cannot be splayed.</li>
+<li>Symbol columns must be enumerated.</li>
+</ul>
+</div>
+<p>Thus the following succeed.</p>
+<pre><code class="q">q)`:/data/tok/ set ([] c1:2000.01.01+til 3; c2:1 2 3)
+`:/data/tok/
+q)`:/data/tok/ set ([] c1:1 2 3; c2:(1.1 2.2; enlist 3.3; 4.4 5.5))
+`:/data/tok/
+</code></pre>
+
+<p>And the following fail.</p>
+<pre><code class="q">q)`:/data/toops/ set ([] c1:1 2 3; c2:(1;`1;&quot;a&quot;))
+k){$[@x;.[x;();:;y];-19!((,y),x)]}
+'type
+q)`:/data/toops/ set ([] c1:`a`b`c; c2:10 20 30)
+k){$[@x;.[x;();:;y];-19!((,y),x)]}
+'type
+</code></pre>
+
+<p>The convention for enumerating symbols in splayed tables is to enumerate all symbol columns in all tables over the domain <code>sym</code> and store the resulting sym list in the root directory – i.e., one level above the directory holding the splayed table. You can do this manually but practically no one does.</p>
+<pre><code class="q">q)`:/db/tsplay/ set ([] `sym?c1:`a`b`c; c2:10 20 30)
+`:/db/tsplay/
+q)sym
+`a`b`c
+q)`:/db/sym set sym
+`:/db/sym
+</code></pre>
+
+<p>Normally folks use one of the <code>.Q</code> utilities, in spite of the official Kx admonition not to use them. For example, here we use <code>.Q.en</code>.</p>
+<pre><code class="q">q)`:/db/tsplay/ set .Q.en[`:/db; ([] c1:`a`b`c; c2:10 20 30)]
+`:/db/tsplay/
+</code></pre>
+
+<p>Only unofficially documented, <code>.Q.en</code> prepares a qualified table for splaying by enumerating all its symbol columns. The first argument is the symbolic file handle of the root directory for the persistent residence of the enumeration domain <code>sym</code> (no choice in the name). The second argument is a table. See <a href="../14_Introduction_to_Kdb+.1#1452-qen">§14.5.2</a> for more detail on its behavior.</p>
+<div class="admonition tip">
+<p class="admonition-title">Update</p>
+<p><code>.Q</code> is now documented at <a href="http://code.kx.com/q/ref/dotq">code.kx.com</a>. <em>Ed.</em></p>
+</div>
+<h2 id="114-text-data">11.4 Text Data<a class="headerlink" href="../11_IO.1#114-text-data" title="Permanent link">&para;</a></h2>
+<p>We have seen that q views a record in a binary data file as a list of bytes. Similarly, a record in a text file is viewed as a list of char – i.e., a string. Thus reading a text file results in a list of strings and you pass a list of strings to write to a text file.</p>
+<h3 id="1141-reading-and-writing-text-files">11.4.1 Reading and Writing Text Files<a class="headerlink" href="../11_IO.1#1141-reading-and-writing-text-files" title="Permanent link">&para;</a></h3>
+<p>Read a text file with the monadic <code>read0</code> that takes a symbolic file handle argument. The result is a list of strings, one for each line in the file. For the file <code>/data/solong.txt</code> with content,</p>
+<pre><code>So long
+and thanks
+for all the fish
+</code></pre>
+
+<p>we find,</p>
+<pre><code class="q">q)read0 `:/data/solong.txt
+&quot;So long&quot;
+&quot;and thanks&quot;
+&quot;for all the fish&quot;
+</code></pre>
+
+<p>You can see the underlying binary values of the text by using <code>read1</code> or casting the result of <code>read0</code> to char.</p>
+<pre><code class="q">q)read1 `:/data/solong.txt
+_
+q)&quot;x&quot;$read0 `:/data/solong.txt
+0x4c696665
+0x54686520556e697665727365
+0x416e642045766572797468696e67
+</code></pre>
+
+<p>Or you can read the data as binary and cast the result to char. Observe that the data is a simple list of char so the newline character does not cause line breaks in the console display.</p>
+<pre><code class="q">q)&quot;c&quot;$read1 `:/data/solong.txt
+&quot;Life\nThe Universe\nAnd Everything\n&quot;
+</code></pre>
+
+<p>To write string as text, use the (infelicitously named) dyadic <code>0:</code>, which takes a file handle in the left operand and a list of strings in the right operand. It creates the directory path if necessary and overwrites the file if it already exists.</p>
+<pre><code class="q">q)`:/data/solong.txt 0: (&quot;Life&quot;; &quot;The Universe&quot;; &quot;And Everything&quot;)
+`:/data/solong.txt
+q)read0 `:/data/solong.txt
+_
+</code></pre>
+
+<h3 id="1142-using-hopen-and-hclose">11.4.2 Using <code>hopen</code> and <code>hclose</code><a class="headerlink" href="../11_IO.1#1142-using-hopen-and-hclose" title="Permanent link">&para;</a></h3>
+<p>Just as with a binary data file, a symbolic text file handle can be opened with <code>hopen</code>. The result is again an int that is conventionally stored in the variable <code>h</code> and is used with function application syntax to write data. The difference is that instead of using plain <code>h</code> to write binary data, you use <code>neg[h]</code> to write strings as text. Seriously.</p>
+<pre><code class="q">q)h:hopen `:/data/new.txt
+q)neg[h] enlist &quot;This&quot;
+-3i
+q)neg[h] (&quot;and&quot;; &quot;that&quot;)
+-3i
+q)hclose h
+q)read0 `:/data/new.txt
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Observe that you apply <code>hclose</code> to <code>h</code>, not to <code>neg[h]</code>.</p>
+</div>
+<p>If the file already exists, opening with <code>hopen</code> and applying the open handle will append rather than overwrite.</p>
+<pre><code class="q">q)h:hopen `:/data/new.txt
+q)neg[h] (&quot;and&quot;; &quot;more&quot;)
+-3i
+q)hclose h
+q)read0 `:/data/new.txt
+_
+</code></pre>
+
+<h3 id="1143-preparing-text">11.4.3 Preparing Text<a class="headerlink" href="../11_IO.1#1143-preparing-text" title="Permanent link">&para;</a></h3>
+<p>We saw the built-in functions for saving tables as text files in <a href="../11_IO.1#112-save-and-load-on-tables">§11.2</a>. When you need to control the filename, you can write the table yourself with <code>0:</code>, but then you must prepare the table columns as formatted text. A separate overload of <code>0:</code> is available for this purpose. A confusing naming convention, to say the least.</p>
+<p>In this use, <code>0:</code> has as left operand a char delimiter and as right operand a table or list of columns. Observe the use of the pre-defined constant <code>csv</code>, which is simply <code>","</code>.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:1 2 3)
+q)&quot;\t&quot; 0: t
+&quot;c1\tc2&quot;
+&quot;a\t1&quot;
+&quot;b\t2&quot;
+&quot;c\t3&quot;
+q)&quot;|&quot; 0: t
+_
+q)csv
+&quot;,&quot;
+q)csv 0: t
+_
+q)`:/data/t.csv 0: csv 0: t
+_
+</code></pre>
+
+<p>In the last snippet we applied <code>0:</code> with two different meanings: to prepare and then write text. We hope you’ve grown fond of this name, since <a href="../11_IO.1#115-parsing-records">§11.5</a> will introduce yet another version of <code>0:</code> for parsing text records.</p>
+<h2 id="115-parsing-records">11.5 Parsing Records<a class="headerlink" href="../11_IO.1#115-parsing-records" title="Permanent link">&para;</a></h2>
+<p>Dyadic forms of <code>0:</code> and <code>1:</code> parse individual fields according to data type from text or binary records. Field parsing is based on the following field types.</p>
+<table>
+<thead>
+<tr>
+<th><em>0</em></th>
+<th><em>1</em></th>
+<th><em>Type</em></th>
+<th><em>Width(1)</em></th>
+<th>*Format(0) *</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B</td>
+<td>b</td>
+<td>boolean</td>
+<td>1</td>
+<td>[1tTyY]</td>
+</tr>
+<tr>
+<td>X</td>
+<td>x</td>
+<td>byte</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>H</td>
+<td>h</td>
+<td>short</td>
+<td>2</td>
+<td>[0-9a-fA-F][0-9a-fA-F]</td>
+</tr>
+<tr>
+<td>I</td>
+<td>i</td>
+<td>int</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>J</td>
+<td>j</td>
+<td>long</td>
+<td>8</td>
+<td></td>
+</tr>
+<tr>
+<td>E</td>
+<td>e</td>
+<td>real</td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>F</td>
+<td>f</td>
+<td>float</td>
+<td>8</td>
+<td></td>
+</tr>
+<tr>
+<td>C</td>
+<td>c</td>
+<td>char</td>
+<td>1</td>
+<td></td>
+</tr>
+<tr>
+<td>S</td>
+<td>s</td>
+<td>symbol</td>
+<td>n</td>
+<td></td>
+</tr>
+<tr>
+<td>P</td>
+<td>p</td>
+<td>timestamp</td>
+<td>8</td>
+<td>date?timespan</td>
+</tr>
+<tr>
+<td>M</td>
+<td>m</td>
+<td>month</td>
+<td>4</td>
+<td>[yy]yy[?]mm</td>
+</tr>
+<tr>
+<td>D</td>
+<td>d</td>
+<td>date</td>
+<td>4</td>
+<td>[yy]yy[?]mm[?]dd or [m]m/[d]d/[yy]yy</td>
+</tr>
+<tr>
+<td>Z</td>
+<td>z</td>
+<td>datetime</td>
+<td>8</td>
+<td>date?time</td>
+</tr>
+<tr>
+<td>N</td>
+<td>n</td>
+<td>timespan</td>
+<td>8</td>
+<td>hh[:]mm[:]ss[[.]ddddddddd]</td>
+</tr>
+<tr>
+<td>U</td>
+<td>u</td>
+<td>minute</td>
+<td>4</td>
+<td>hh[:]mm</td>
+</tr>
+<tr>
+<td>V</td>
+<td>v</td>
+<td>second</td>
+<td>4</td>
+<td>hh[:]mm[:]ss</td>
+</tr>
+<tr>
+<td>T</td>
+<td>t</td>
+<td>time</td>
+<td>4</td>
+<td>hh[:]mm[:]ss[[.]ddd]</td>
+</tr>
+<tr>
+<td>blank</td>
+<td>skip</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>*</td>
+<td></td>
+<td></td>
+<td></td>
+<td>literal chars</td>
+</tr>
+</tbody>
+</table>
+<p>The column labeled ‘0’ contains the (upper case) field type char for text data. The (lower case) char in column ‘1’ is for binary data. The column labeled ‘Width(1)’ contains the number of bytes that will be parsed for a binary read. The column labeled ‘Format(0)’ displays the format(s) that are accepted in a text read.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The parsed records are returned in column form rather than row form to make it easy to associate a list of symbol names with <code>!</code> and then flip into a table.</p>
+</div>
+<h3 id="1151-fixed-width-records">11.5.1 Fixed-Width Records<a class="headerlink" href="../11_IO.1#1151-fixed-width-records" title="Permanent link">&para;</a></h3>
+<p>The dyadic form of <code>0:</code> and <code>1:</code> for reading fixed length files is,</p>
+<p><code>(</code><em>L<sub>t</sub></em><code>;</code><em>L<sub>w</sub></em><code>) 0:</code><em>f</em></p>
+<p><code>(</code><em>L<sub>t</sub></em><code>;</code><em>L<sub>w</sub></em><code>) 1:</code><em>f</em></p>
+<p>The left operand is a nested list containing two items: <em>L<sub>t</sub></em> is a simple list of char containing one letter per field; <em>L<sub>w</sub></em> is a simple list of int containing one integer width per field. The sum of the field widths in <em>L<sub>w</sub></em> should equal the width of the record. The result of the function is a list of lists, one list arising from each field.</p>
+<p>We demonstrate <code>0:</code> here since it is more commonly used; <code>1:</code> works analogously. The simplest form of the right operand <em>f</em> is a symbolic file handle. For example, suppose we have a file with records of the form,</p>
+<pre><code class="q">1001 98.000ABCDEF1234Garbage2015.01.01
+1002 42.001GHUJKL0123Garbage2015.01.02
+1003 44.123nopqrs9876Garbage2015.01.03
+</code></pre>
+
+<p>We could parse the records of the file with,</p>
+<pre><code class="q">q)(&quot;JFS D&quot;;4 8 10 7 10) 0: `:/data/Fixed.txt
+1001 1002 1003
+98 42.001 44.123
+ABCDEF1234 GHUJKL0123 nopqrs9876
+2015.01.01 2015.01.02 2015.01.03
+</code></pre>
+
+<p>This reads a text file containing fixed length records of width 39. The first field is a long occupying 4 positions; the second field is a float occupying 8 positions; the third field consists of a symbol occupying 10 positions; the fourth slot of 6 positions is ignored; the fifth field is a date occupying 10 positions.</p>
+<p>You might think that the widths are superfluous, but they are not. The actual data width can be narrower than the normal size due to small values, as in our case of the long field. Or you may need to specify a width larger than that required by the corresponding data type due to whitespace in the fields, as in the case of our float field.</p>
+<p>Observe how easy it is to make a table from the result.</p>
+<pre><code class="q">q)flip `c1`c2`c3`c4!(&quot;JFS D&quot;;4 8 10 7 10) 0: `:/data/Fixed.txt
+c1   c2     c3         c4
+---------------------------------
+1001 98     ABCDEF1234 2015.01.01
+1002 42.001 GHUJKL0123 2015.01.02
+1003 44.123 nopqrs9876 2015.01.03
+</code></pre>
+
+<p>Also note that it is possible to parse a list of strings using the same format, since they represent text records in memory.</p>
+<pre><code class="q">q)fixed: read0 `:/data/Fixed.txt
+q)(&quot;JFS D&quot;;4 8 10 7 10) 0: fixed
+_
+</code></pre>
+
+<p>The more general form for the right operand <em>f</em> is,</p>
+<p><code>(</code><em>h<sub>file</sub></em><code>;</code><em>i</em><code>;</code><em>n</em><code>)</code></p>
+<p>where <em>h<sub>file</sub></em> is a symbolic file handle, <em>i</em> is the offset into the file to begin reading and <em>n</em> is the number of bytes to read. This is useful for sampling a file or for large files that cannot be read into memory in a single gulp.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>A read operation should begin and end on record boundaries or you will get meaningless results.</p>
+</div>
+<p>In our trivial example, the following reads just the second and third records,</p>
+<pre><code class="q">q)(&quot;JFS D&quot;;4 8 10 7 10) 0: (`:/data/Fixed.txt; 40; 80)
+_
+</code></pre>
+
+<h3 id="1152-variable-length-records">11.5.2 Variable Length Records<a class="headerlink" href="../11_IO.1#1152-variable-length-records" title="Permanent link">&para;</a></h3>
+<p>The dyadic form of <code>0:</code> and <code>1:</code> for reading variable length, delimited files is</p>
+<p><code>(</code><em>L<sub>t</sub></em><code>;</code><em>D</em><code>) 0:</code><em>f</em></p>
+<p><code>(</code><em>L<sub>t</sub></em><code>;</code><em>D</em><code>) 1:</code><em>f</em></p>
+<p>The left operand is a list comprising two lists. <em>L<sub>t</sub></em> is a simple list of char containing one type letter per corresponding field. The right operand <em>D</em> is either a char representing the delimiting character or an enlisted char.</p>
+<p>Specify <em>D</em> as a delimiter char when the first record of the file does <strong>not</strong> contain column names. In this case, the result of the parse is a list of <strong>column</strong> lists, each of which contains items of type specified by <em>L<sub>t</sub></em>. The simplest form of the right operand <em>f</em> is a symbolic file handle.</p>
+<p>For example, say we have a comma-separated file <code>/data/Simple.csv</code> having records</p>
+<pre><code class="q">1001,DBT12345678,98.6
+1002,EQT98765432,24.75
+1004,CCR00000001,121.23
+</code></pre>
+
+<p>Parsing with a delimiter char <code>","</code> results in a list of column lists. As with parsing fixed format recodes, it is easy to make the result into a table.</p>
+<pre><code class="q">q)(&quot;JSF&quot;; &quot;,&quot;) 0: read0 `:/data/Simple.csv
+1001        1002        1004
+DBT12345678 EQT98765432 CCR00000001
+98.6        24.7        121.23
+q)flip `c1`c2`c3!(&quot;JSF&quot;; &quot;,&quot;) 0: read0 `:/data/Simple.csv
+_
+</code></pre>
+
+<p>Observe that it is possible to retrieve the second field as a string instead of a symbol using <code>"*"</code> as the data type specifier,</p>
+<pre><code class="q">q)(&quot;J*F&quot;; &quot;,&quot;) 0: read0 `:/data/Simple.csv
+1001          1002          1004
+&quot;DBT12345678&quot; &quot;EQT98765432&quot; &quot;CCR00000001&quot;
+98.6          24.7          121.23
+</code></pre>
+
+<p>Specify <em>D</em> as an enlisted char when the first record contains a separated list of names. Subsequent records are read as data specified by the types in <em>L<sub>t</sub></em>. The result is a table in which the column names are taken from the first record.</p>
+<p>Say we have a comma-separated file <code>/data/Titles.csv</code> having records,</p>
+<pre><code class="q">id,ticker,price
+1001,DBT12345678,98.6
+1002,EQT98765432,24.7
+1004,CCR00000001,121.23
+</code></pre>
+
+<p>Reading with an enlisted <code>","</code> delimiter results in a table.</p>
+<pre><code class="q">q)(&quot;JSF&quot;; enlist &quot;,&quot;) 0: `:/data/Titles.csv
+id  ticker       price
+-----------------------
+1001 DBT12345678 98.6
+1002 EQT98765432 24.7
+1004 CCR00000001 121.23
+</code></pre>
+
+<h3 id="1153-key-value-records">11.5.3 Key-Value Records<a class="headerlink" href="../11_IO.1#1153-key-value-records" title="Permanent link">&para;</a></h3>
+<p>The operator <code>0:</code> can also be used to process text representing key-value pairs. In this situation, the left operand is a three-character string P<sub>f</sub> that specifies the pair format. The first char of P<sub>f</sub> can be "S" to indicate the key is a string or "I" to indicate the key is an integer. The second char indicates the key-value separator. The third char indicates the pair delimiter.</p>
+<p>The following examples illustrate various combinations in P<sub>f</sub>.</p>
+<pre><code class="q">q)&quot;S=;&quot; 0: &quot;one=1;two=2;three=3&quot;
+one two three
+,&quot;1&quot; ,&quot;2&quot; ,&quot;3&quot;
+q)&quot;S:/&quot; 0: &quot;one:1/two:2/three:3&quot;
+_
+q)&quot;I=;&quot; 0: &quot;1=one;2=two;3=three&quot;
+_
+</code></pre>
+
+<p>Again it is easy to make the result into a table.</p>
+<pre><code class="q">q)flip `k`v!&quot;I=;&quot; 0: &quot;1=one;2=two;3=three&quot;
+k v
+---------
+1 &quot;one&quot;
+2 &quot;two&quot;
+3 &quot;three&quot;
+</code></pre>
+
+<h2 id="116-interprocess-communication">11.6 Interprocess Communication<a class="headerlink" href="../11_IO.1#116-interprocess-communication" title="Permanent link">&para;</a></h2>
+<p>The ease with which a q process can communicate with another q process residing on the network is one of the most impressive features of q. We shall cover all the basics of interprocess communication (IPC) so that you can follow the section on callbacks in <a href="../1_Q_Shock_and_Awe.1">Chapter 1 – <em>Q Shock and Awe</em></a>.</p>
+<p>We shall use the following terminology. The process that initiates the communication is called the <em>client</em>, while the process receiving and processing requests is the <em>server</em>. The server process can be on the same machine, the same network, a different network or on the Internet, so long as it is accessible. The communication can be <em>synchronous</em> (wait for a result to be returned) or <em>asynchronous</em> (don’t wait and no result returned).</p>
+<p>The only way to learn IPC is to do it, and the easiest way to do this is to set up two processes on the same machine. We recommend you use the machine running your q sessions for this tutorial, provided it will allow a port to be opened. In what follows, we shall assume that a server q process has been started on a machine with an open port.</p>
+<pre><code>&gt;q -p 5042
+q)
+</code></pre>
+
+<p>The client process is a separate q process running on the same machine.</p>
+<pre><code>&gt;q
+q)
+</code></pre>
+
+<h3 id="1161-communication-handle">11.6.1 Communication Handle<a class="headerlink" href="../11_IO.1#1161-communication-handle" title="Permanent link">&para;</a></h3>
+<p>Symbolic communication handles look similar to file handles but they specify resources on the network. A communication handle has the form,</p>
+<p><code>`:</code>[<em>server</em>]<code>:</code><em>port</em></p>
+<p>Here the bracketed expression represents an optional server machine identifier and <em>port</em> is a port number. An omitted server specification, or one of the form <code>localhost</code>, refers to the machine on which the originating q session lives. The following both refer to port 5042 on the same machine as the q session in which they are entered.</p>
+<pre><code class="q">q)`::5042
+_
+q)`:localhost:5042
+_
+</code></pre>
+
+<p>You can refer to a machine on the network by name. For example, on the author’s laptop the following is equivalent to the two previous network handles.</p>
+<pre><code class="q">q)`:aerowing:5042
+_
+</code></pre>
+
+<p>You can use the IP address of a machine.</p>
+<pre><code class="q">q)`:198.162.0.2:5042
+_
+</code></pre>
+
+<p>Finally, you can also use a URL.</p>
+<pre><code class="q">q)`:www.myurl.com:5042
+_
+</code></pre>
+
+<h3 id="1162-opening-a-connection-handle">11.6.2 Opening a Connection Handle<a class="headerlink" href="../11_IO.1#1162-opening-a-connection-handle" title="Permanent link">&para;</a></h3>
+<p>As with a file handle, apply <code>hopen</code> to a communication handle to obtain an open <em>connection handle</em> that is used as a function. As before, the value is an int that is traditionally stored in the variable <code>h</code>. Also as with file I/O, the behavior of this function differs between using the original positive handle or its negation.</p>
+<p>Let’s see how this works with our two sessions. (You did start them, didn’t you?). Remember, the session that opened port 5042 is the server; the other session is the client. In the <strong>client</strong> session, open a handle to the server and store it in <code>h</code>, then apply <code>h</code> to the string as shown. Finally close the connection handle.</p>
+<pre><code class="q">q)h:hopen `::5042
+q)h &quot;a:6*7&quot;
+q)h &quot;a&quot;
+42
+q)hclose h
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Whitespace between <code>h</code> and the quoted string is optional, as this is simply function juxtaposition. We include it for readability.</p>
+</div>
+<p>As you have no doubt realized, the application of <code>h</code> sent the string to the server to be evaluated. On the server, we see,</p>
+<pre><code class="q">q)a
+42
+</code></pre>
+
+<p>How cool is that?</p>
+<h3 id="1163-remote-execution">11.6.3 Remote Execution<a class="headerlink" href="../11_IO.1#1163-remote-execution" title="Permanent link">&para;</a></h3>
+<p>We have seen that when you open a connection to a q process, you have the full capability of that process available remotely. Apply the connection handle to any q expression in a string and it will be evaluated on the server. As you contemplate the IPC Zen, a dark cloud passes over your tranquility. You realize that, by default, the server is wide open.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Allowing quoted q strings to be executed on a server makes the server susceptible to all manner of breaches. Good practice does not permit this on a production server. You can mitigate this by having your server process accept only requests whose first item is a symbol (see below), which you should verify is the name of a function you have decided to expose.</p>
+</div>
+<p>An alternative format for remote execution is to apply the connection handler to a list of the form</p>
+<p><code>(</code><em>f</em><code>;</code><em>arg<sub>1</sub></em><code>;</code><em>arg<sub>2</sub></em><code>;...)</code></p>
+<p>Here <em>f</em> is a client-side expression that evaluates to a map that will be applied on the server. It can be:</p>
+<ul>
+<li>The value of, or variable associated to, a map on the <strong>client</strong></li>
+<li>The symbolic name of a map on the <strong>server</strong>.</li>
+</ul>
+<p>We use the term <em>map</em> here to be any q expression that can be evaluated as function application – e.g., a list on an index, a dictionary on a key or a function on an argument. Most commonly <em>f</em> is a function</p>
+<p>The remaining items <em>arg<sub>1</sub></em>, <em>arg<sub>2</sub></em>, … are optional values sent along to the server for the evaluation. These are arguments when <code>f</code> is a function, indices when it is a list, or keys when it is a dictionary.</p>
+<p>Application of the connection handle to such a list sends the list to the server where it is evaluated. Any result is sent back to the client, where it is presented as the result of the connection handle application. By simply applying the naked handle, this sequence of steps is <strong>synchronous</strong>, meaning that execution of the q session on the client blocks until the result of the server evaluation is returned.</p>
+<p>Our examples will cover the case when <code>f</code> is of function type since that is most common. We first consider the first case when <code>f</code> is a map on the client side. In this situation the function (list, dictionary, etc.) is actually transported to the server along with the supplied arguments, where it is applied.</p>
+<p>On the client in our two-session setup:</p>
+<pre><code class="q">q)h:hopen`::5042 / client
+q)h ({x*y}; 6; 7)
+42
+q)f:{x*y}
+q)h (f; 6; 7)
+42
+</code></pre>
+
+<p>Before you get too enamored of this form, we point out the limitations that disqualify it from production use. First, global variables referred to in the transported function will need to be present remotely in the exact contexts in effect when the function was defined. This can be avoided by restricting <code>f</code> to be a pure function that does not refer to any global entities. More damning is:</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Allowing a function to be sent to the server for remote execution is as dangerous as sending quoted q strings. The function can access resources on the server and instigate an attack. Good practice does not permit this in production environments.</p>
+</div>
+<p>The remaining format for remote execution can be made safe for production environments. The function to be executed remotely must already be defined on the server and you pass its name and arguments via the connection handle.</p>
+<p>On the server,</p>
+<pre><code class="q">q)g:{x*y} / server
+</code></pre>
+
+<p>On the client,</p>
+<pre><code class="q">q)h (`g; 6; 7) / client
+42
+</code></pre>
+
+<p>Now consider the case when the remote function performs an operation on a table and returns the result. This is the q analogue of a remote stored procedure. For example, suppose <code>t</code> and <code>f</code> are defined on the server as,</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:1 2 3) / server
+q)f:{[x] select c2 from t where c1=x}
+</code></pre>
+
+<p>Now “call” the function <code>f</code> remotely from the client.</p>
+<pre><code class="q">q)h (`f; `b) / client
+c2
+--
+2
+</code></pre>
+
+<p>The difference from SQL stored procedures is that the remote procedure can be <strong>any</strong> q function on the server, making the full power of q available remotely.</p>
+<h3 id="1164-synchronous-and-asynchronous-messages">11.6.4 Synchronous and Asynchronous Messages<a class="headerlink" href="../11_IO.1#1164-synchronous-and-asynchronous-messages" title="Permanent link">&para;</a></h3>
+<p>The IPC in the previous sections was <strong>synchronous</strong>, meaning that upon application of the connection handle, the client process blocks, waiting for a result from the server before proceeding. The value returned from the server becomes the return value of the open handle application.</p>
+<p>Under the covers, IPC is implemented as messages passed over an open connection between q processes. When the <strong>positive</strong> open handle is applied to an argument, the message passing is <strong>synchronous</strong>, meaning that the following steps occur in sequence.</p>
+<ul>
+<li>The client sends a message containing the argument(s) of the handle application to the server and waits for a return message.</li>
+<li>The server receives the message, interprets it as the appropriate function application and obtains the result.</li>
+<li>The server sends a message containing the result back to the client.</li>
+<li>The client receives the result and resumes execution from the point it left off.</li>
+</ul>
+<p>When a client sends multiple messages to a server in synchronous message passing, the next message is not sent until the result of the previous message is received. Consequently the messages always arrive at the server in the order in which they are sent. Also, the results from the server arrive back at the client in the order in which the original messages were sent.</p>
+<p>It is also possible to perform asynchronous IPC in q. In this case the message is sent to the server and execution on the client continues immediately. In particular, there is no return value from the server. This is useful to initiate a task on the server when you don’t care about the result. For example, you could initiate a long running operation, or you could send a message that the server will route to other processes.</p>
+<p>Use the negation of the open connection handle to send an <strong>asynchronous</strong> message to the server. Let’s define an instrumented function on the server to demonstrate what is happening.</p>
+<pre><code class="q">q)sq:{0N!x*x} / server
+</code></pre>
+
+<p>Now invoke <code>sq</code> asynchronously from the client</p>
+<pre><code class="q">q)neg[h] (`sq; 5) / client
+q)
+</code></pre>
+
+<p>You will observe 25 displayed on the server console. Also, the client session returns immediately with no return value. The expression on the console actually has a nil value <code>::</code> that is suppressed by the console display.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>When sending asynchronous messages, always send an empty “chaser” message immediately before applying <code>hclose</code> to the open handle. If you do not do this, buffered messages may not be sent when the connection is closed.</p>
+</div>
+<p>In order to convince ourselves that the client actually does return immediately without waiting for a return from the server, we wrap the client expression in a function. Observe that the client continues with the next statement.</p>
+<pre><code class="q">q){neg[h] (`sq.; 5); 42}[] / client
+42
+</code></pre>
+
+<p>Because a q session is single threaded by default, the server will process messages in the order in which they are received. However, in asynchronous messaging there is no guarantee that the messages arrive at the server in the order in which they are sent. It can be difficult to observe indeterminancy in simple examples, but you must assume that it will occur in practice.</p>
+<h3 id="1165-processing-messages">11.6.5 Processing Messages<a class="headerlink" href="../11_IO.1#1165-processing-messages" title="Permanent link">&para;</a></h3>
+<p>Assuming that you have passed the server either a function from the client side or the name of a function on the server side, the appropriate function is evaluated on the server. During evaluation, the communication handle of the remote process is available in the system variable <code>.z.w</code> ( “who” called). For an asynchronous call, this can be used to send messages back to the server during the function application on the server.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Both the client and the server have connection handles when a connection between them is opened. However, these handles are assigned independently and their int values are not equal in general.</p>
+</div>
+<p>Here is a simple example showing how to use <code>.z.w</code> to send a message back to the client. On the server, we define a function that displays its received parameter and then asynchronously calls <code>mycallback</code> with the passed argument incremented.</p>
+<pre><code class="q">q)f:{show &quot;Received &quot;,string x; neg[.z.w] (`mycallback; x+1)}
+</code></pre>
+
+<p>On the client we define <code>mycallback</code> to display its parameter on the console. Then we make an asynchronous call to the function <code>f</code> on the server with an argument of 42.</p>
+<pre><code class="q">q)mycallback:{show &quot;Returned &quot;,string x;}
+q)neg[h] (`f; 42)
+q)&quot;Returned 43&quot;
+</code></pre>
+
+<p>The result is that <code>"Received 42"</code> is displayed on the server console and <code>"Returned 43"</code> is displayed on the client console. Congratulations! We have just invented callbacks in q.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When performing asynchronous messaging, always use <code>neg[.z.w]</code> to ensure that all messages are asynchronous. Otherwise you will get a deadlock as each process waits for the other.</p>
+</div>
+<p>You can override the default behavior of message processing in q by assigning your own handler(s) to the appropriate system variables. Assign your function to the variable <code>.z.pg</code> to trap and process synchronous messages and to <code>.z.ps</code> for asynchronous messages. The names end in ‘g’ and ‘s’ because synchronous processing has "get" semantics and asynchronous processing has "set" semantics.</p>
+<p>In the following we set the asynchronous handler to a trivial function, essentially ignoring asynchronous calls.</p>
+<p>On the server,</p>
+<pre><code class="q">q).z.ps:{show &quot;ignore&quot;} / server
+</code></pre>
+
+<p>On the client send an <strong>asynchronous</strong> message.</p>
+<pre><code class="q">q)neg[h] &quot;6*7&quot; / client
+</code></pre>
+
+<p>This results in <code>"ignore"</code> being displayed on the server console.</p>
+<p>Now we set the synchronous handler to a function that only accepts “safe” remote calls by function name. It then performs a protected evaluation on the function with the arguments passed, thus ensuring that a failed application does not hang the server.</p>
+<p>On the server,</p>
+<pre><code class="q">q).z.pg:{$[-11h=type first x; .[value first x; 1_x; ::]; `unsupported]}
+</code></pre>
+
+<p>Now send <strong>synchronous</strong> messages from the client.</p>
+<pre><code class="q">q)h (`sq; 5) / client
+25
+q)h (`sq; `5)
+&quot;type&quot;
+q)h &quot;6*7&quot;
+`unsupported
+q)h ({x*y};6;7)
+`unsupported
+</code></pre>
+
+<p>You can also specify handlers to be called upon connection open and close by assigning functions to the system variables <code>.z.po</code> and <code>.z.pc</code>, respectively. The connection handle of the sending process is passed as the lone argument to the functions assigned to <code>.z.po</code> and to <code>.z.pc</code>.</p>
+<p>Here is a simple example that tracks connections and allows client processes to register callbacks with the server. Start a fresh q session on the server and open port 5042. Create a keyed table called <code>Registry</code> and define a function that can be invoked remotely to register a callback. Attach a handler to <code>.z.po</code> that initializes a dummy entry in <code>Registry</code> for the connection being opened and attach a handler to <code>.z.pc</code> to remove the record when a connection is closed.</p>
+<pre><code class="q">q)Registry:([zw:`int$()] callback:`symbol$())
+q)register:{[cb] `Registry upsert (.z.w; cb);}
+q).z.po:{`Registry upsert (x; `unregistered);}
+q .z.pc:{delete from `Registry where zw=x;}
+</code></pre>
+
+<p>Start a fresh q session on the client and connect to the server.</p>
+<pre><code class="q">q)h:hopen`::5042 / client
+</code></pre>
+
+<p>We check that an item has been entered into <code>Registry</code> on the server.</p>
+<pre><code class="q">q)Registry / server
+zw| callback
+--| ------------
+6 | unregistered
+</code></pre>
+
+<p>Next we register the name of a callback function from the client. Note the asynchronous message.</p>
+<pre><code class="q">q)neg[h] (`register; `mycallback) / client
+</code></pre>
+
+<p>Again we check <code>Registry</code> on the server and observe that our callback name has indeed been registered.</p>
+<pre><code class="q">q)Registry / server
+zw| callback
+--| ----------
+6 | mycallback
+</code></pre>
+
+<p>Finally, we close the connection on the client.</p>
+<pre><code class="q">q)hclose h / client
+</code></pre>
+
+<p>And observe that the client has been automatically unregistered.</p>
+<pre><code class="q">q).z.pg:{show x 0; show x 1; ; string value 1_x 0}
+zw| callback
+--| --------
+</code></pre>
+
+<h3 id="1166-remote-queries">11.6.6 Remote Queries<a class="headerlink" href="../11_IO.1#1166-remote-queries" title="Permanent link">&para;</a></h3>
+<p>In this section, we demonstrate how to execute q-sql queries against a remote server. First, we splay a table to stand for a time-series database. We use the <code>mktrades</code> script that we created in <a href="../9_Queries_q-sql.1#931-syntax">§9.3.1</a> to create a trades table with 1,000,000 rows and then splay it to disk.</p>
+<pre><code class="q">q)trade:mktrades[`aapl`goog`ibm; 1000000]
+q)(`:/db/trade/) set .Q.en[`:/db;]
+_
+</code></pre>
+
+<p>Now start a fresh server process (the server), open a port, say 5042, and map the splayed trade table into memory. Check that the mapping succeeded by running a query.</p>
+<pre><code class="q">q)\p 5042 / server
+q)\l /db
+q)select from trade where dt=2015.01.01,sym=`ibm
+dt         tm           sym qty  px
+---------------------------------------
+2015.01.01 00:00:01.796 ibm 7080 218.74
+2015.01.01 00:00:10.581 ibm 3250 206.88
+..
+</code></pre>
+
+<p>Leave the server process running and start another fresh process (the client), open a connection to the server and send the same query to the server for remote execution.</p>
+<pre><code class="q">q)h:hopen`::5042 / client
+q)h &quot;select from trade where dt=2015.01.01,sym=`ibm&quot;
+dt         tm           sym qty  px
+---------------------------------------
+2015.01.01 00:00:01.796 ibm 7080 218.74
+2015.01.01 00:00:10.581 ibm 3250 206.88
+..
+</code></pre>
+
+<p>We have already pointed out that allowing remote execution of arbitrary strings is bad practice because it exposes the server to injection attack. So here is a simplistic example of a “safe” function that can be used as a stored procedure. It takes a symbolic table name, a list of symbolic column names for the result and a date range for the where phrase. Enter on the server:</p>
+<pre><code class="q">q)extract:{[tn;cnms;dtrng] ?[tn;enlist (within;`dt; dtrng);0b;cnms!cnms]}
+</code></pre>
+
+<p>Now on the client we (synchronously) call the stored procedure by name with appropriate arguments.</p>
+<pre><code class="q">q)h (`extract;`trade;`dt`tm`sym`qty`px;2015.01.01 2015.01.02)
+dt         tm           sym   qty  px
+----------------------------------------
+2015.01.01 00:00:01.194 aapl  6770 94.62
+2015.01.01 00:00:01.796 ibm   7080 218.74
+..
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>In an actual application you would validate the input parameters and wrap the core evaluation in protected evaluation to trap unanticipated errors. You would also want to implement an entitlements system based on LDAP.</p>
+</div>
+<h2 id="117-http-and-web-sockets">11.7 HTTP and Web sockets<a class="headerlink" href="../11_IO.1#117-http-and-web-sockets" title="Permanent link">&para;</a></h2>
+<h3 id="1171-http-connections">11.7.1 HTTP Connections<a class="headerlink" href="../11_IO.1#1171-http-connections" title="Permanent link">&para;</a></h3>
+<p>When you open a port in a q session, by default that session serves HTTP requests. To demonstrate this, start a q session and open a port, say 5042. Then bring up a relatively recent browser on the same machine (the author uses Chrome) and enter the following URL</p>
+<pre><code>http://localhost:5042/?6\*7
+</code></pre>
+
+<p>You should see 42 in the browser page display.</p>
+<p>You can trap HTTP GET and POST traffic by assigning functions to the system variables <code>.z.ph</code> and <code>.z.pp</code> respectively. The default handler for <code>.z.ph</code> is to evaluate the content of the first item of the passed argument.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>There is no default handler for <code>.z.pp</code>.</p>
+</div>
+<p>Here is a simple example that duplicates the default GET processing and shows the two items of its list argument. Define the following handler on the server process opened previously. It displays the two items of the input list then executes the first after removing the leading <code>?</code> and then returns the result as a string.</p>
+<pre><code class="q">q).z.ph:{show x 0; show x 1; ; string value 1_x 0} / server
+</code></pre>
+
+<p>Now enter the following from a browser on the same machine.</p>
+<pre><code>http://localhost:5042/?6*7
+</code></pre>
+
+<p>The server will display,</p>
+<pre><code class="q">q)&quot;?6*7&quot;
+Host            | &quot;localhost:5042&quot;
+Connection      | &quot;keep-alive&quot;
+Cache-Control   | &quot;max-age=0&quot;
+Accept          | &quot;text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,\*/\*;q=0.8&quot;
+User-Agent      | &quot;Mozilla/5.0 (Macintosh; Intel Mac OS X 10\_9\_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.89 Safari/537.36&quot;
+Accept-Encoding | &quot;gzip, deflate, sdch&quot;
+Accept-Language | &quot;en-US,en;q=0.8&quot;
+</code></pre>
+
+<p>And the browser page displays “42”.</p>
+<h3 id="1172-basic-websockets">11.7.2 Basic WebSockets<a class="headerlink" href="../11_IO.1#1172-basic-websockets" title="Permanent link">&para;</a></h3>
+<p>WebSockets is a network protocol that upgrades an initial HTTP handshake into a TCP/IP socket connection. It was initially used to enhance communication capability between browsers and web servers but it can be used for general client-server applications. Once the WebSocket connection is established, either the client or server can message the other; in particular, this provides the capability for the server to push data to the client.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>As of this writing (Sep 2015) q implements only asynchronous messaging in WebSockets.</p>
+</div>
+<p>In this section we show the basic mechanism for establishing a WebSocket connection between a browser and a q process acting as the server. We use Chrome for the examples but recent versions of Internet Explorer are now WebSockets-capable and should work similarly.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the examples of this section we assume basic familiarity with HTML5 and JavaScript.</p>
+</div>
+<p>We begin with an extremely simple HTML page with a button that, when clicked, displays the answer to life, the universe and everything. Save the following as a text file <code>sample0.html</code> in a location accessible to your browser.</p>
+<pre><code class="html">&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;script&gt;
+  function sayN(n) {
+    document.getElementById('answer').textContent = n;
+  }
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1 style='font-size:200px' id='answer'&gt;&lt;/h1&gt;
+  &lt;button onclick='sayN(42)'&gt;get the answer&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>In our case we saved the file to <code>/pages/sample0.html</code> on the local drive, so we enter the following URL in the browser:</p>
+<pre><code>file:///pages/sample0.html
+</code></pre>
+
+<p>You should see a page with a single button labeled “get the answer”. Click the button and you will see the answer in a very large font.</p>
+<p>Now we enhance this basic page to connect to a q process via WebSockets and retrieve the answer from q. Save the following script as <code>sample1.html</code>. We explain it below.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For simplicity in the example, we have placed a copy of <code>c.js</code> in the pages directory. You should modify this to reflect its location in your installation.</p>
+</div>
+<pre><code class="html">&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;script src=&quot;c.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+var serverurl = &quot;//localhost:5042/&quot;,
+  c = connect(),
+  ws;
+function connect() {
+    if (&quot;WebSocket&quot; in window) {
+        ws = new WebSocket(&quot;ws:&quot; + serverurl);
+        ws.binaryType=&quot;arraybuffer&quot;;
+        ws.onopen=function(e){
+            ws.send(serialize({ payload: &quot;What is the meaning of life?&quot; }));
+        };
+        ws.onclose=function(e){
+        };
+        ws.onmessage=function(e){
+            sayN(deserialize(e.data));
+        };
+        ws.onerror=function(e) {window.alert(&quot;WS Error&quot;) };
+    } else alert(&quot;WebSockets not supported on your browser.&quot;);
+}
+function sayN(n) {
+    document.getElementById('answer').textContent = n;
+}
+&lt;/script&gt;
+</code></pre>
+
+<p>This script first declares the script <code>c.js</code>, which is required for using q WebSockets.</p>
+<p>The script then defines JavaScript variables</p>
+<ul>
+<li><code>serverurl</code> to hold the URL of our q service</li>
+<li><code>c</code> to hold the connection object returned by the <code>connect</code> function</li>
+<li><code>ws</code> to hold a WebSocket object.</li>
+</ul>
+<p>The function <code>connect()</code> is where the WebSocket action happens.</p>
+<ul>
+<li>It first tests to see if <code>WebSocket</code> is in the window, meaning that the browser supports WebSockets. If so, it makes the connection to the server; otherwise it displays an error alert.</li>
+<li>The first step in the connection is to create a WebSocket object by connecting to the specified server URL, and storing the result in <code>ws</code>.</li>
+<li>Then set the <code>binaryType</code> field in <code>ws</code> to the value needed by the q sockets code.</li>
+</ul>
+<p>Now we assign handlers for the main WebSockets events.</p>
+<ul>
+<li>The open handler serializes (into q form) a JavaScript object with a <code>payload</code> field and then sends it to the server. Consequently when a connection is opened, we immediately ask the server the meaning of life.</li>
+<li>The close handler is empty.</li>
+<li>The message handler deserializes the data field of the parameter <code>e</code> and applies the <code>sayN</code> function to display the result on the page.</li>
+<li>The error handler displays an alert page with the error message.</li>
+</ul>
+<p>The <code>sayN</code> function locates the <code>answer</code> field on the page and places the text of its argument there. Finally, the script defines a simple HTML element answer.</p>
+<p>In contrast, the server side q code is blissfully short. Start a fresh q session, open port 5042 and set the WebSockets handler <code>.z.ws</code> to a function that will be invoked to handle WebSockets messages.</p>
+<pre><code class="q">q)\p 5042
+q).z.ws:{0N!-9!x; neg[.z.w] -8!42}
+</code></pre>
+
+<p>The handler first deserializes its parameter and displays it to the console for debugging, at which point we have no further use for it in this example. Then it serializes the answer to the question asked by the browser and <strong>asynchronously</strong> sends it back to the browser. That’s all there is to it!</p>
+<p>Now point the browser to,</p>
+<pre><code>file:///pages/sample1.html
+</code></pre>
+
+<p>and you will see the answer displayed on the page. At this point you are equipped to follow <a href="../1_Q_Shock_and_Awe.1#119-interprocess-communication-101">§1.19</a> in <em>Q Shock and Awe</em>.</p>
+<h3 id="1173-pushing-data-to-the-browser">11.7.3 Pushing Data to the Browser<a class="headerlink" href="../11_IO.1#1173-pushing-data-to-the-browser" title="Permanent link">&para;</a></h3>
+<p>In ordinary Web applications, the browser initiates interaction with the server. It sends a request to a specific URL on the server and the server replies with the requested page or data. Each such interaction is self-contained and is synchronous in that the browser waits for the server response.</p>
+<p>In WebSockets the browser initiates the connection, but once the WebSocket request for protocol upgrade is successful, the browser – i.e., client – and the server are on equal footing. Either side can send messages. Moreover, in the current q implementation of WebSockets all interaction is asynchronous. Given that most current browsers and the default q session are both single-threaded, you don’t have to worry about races and deadlocks but you do have to set up callbacks.</p>
+<p>In this section we demonstrate how the q server can push data to the browser, beginning with the browser script. Actually this script is a simplification of <code>sample1.html</code> in that we remove the initial call to the server upon open; everything else remains the same. The key point is that the <code>onmessage</code> handler will be called every time data is received, resulting in the data being displayed on the screen. Save the following as <code>sample2.html</code>.</p>
+<pre><code class="html">&lt;!doctype html&gt;
+&lt;html&gt;
+&lt;head&gt;
+&lt;script src=&quot;c.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+var serverurl = &quot;//localhost:4242/&quot;,
+    c = connect(),
+    ws;
+function connect() {
+    if (&quot;WebSocket&quot; in window) {
+        ws = new WebSocket(&quot;ws:&quot; + serverurl);
+        ws.binaryType=&quot;arraybuffer&quot;;
+        ws.onopen=function(e){
+        };
+        ws.onclose=function(e){
+        };
+        ws.onmessage=function(e){
+            sayN(deserialize(e.data));
+        };
+        ws.onerror=function(e) {window.alert(&quot;WS Error&quot;) };
+    } else alert(&quot;WebSockets not supported on your browser.&quot;);
+}
+function toQ(x) { ws.send(serialize({ payload: x })); }
+function sayN(n) {
+    document.getElementById('answer').textContent = n;
+}
+&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1 style='font-size:200px' id='answer'&gt;&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+<p>And now for the q side. You can enter the following in the console of a fresh q session; or you can save it as a script and load it with <code>\l</code>.</p>
+<pre><code class="q">q)\p 5042
+q)answer:42
+q).z.po:{`requestor set x; system &quot;t 1000&quot;;}
+q).z.ts:{neg[requestor] -8!answer;; answer+:1;}
+</code></pre>
+
+<p>Here is what’s happening in the q code.</p>
+<ul>
+<li>First we open the port and initialize the <code>answer</code> variable.</li>
+<li>Then we set the connection open handler to store the client <code>.z.w</code> value of its parameter into the global requestor and start the system timer firing every 1000 milliseconds. Note that this only happens <strong>after</strong> the browser initiates a connection.</li>
+<li>Finally, we set the timer handler to send an asynchronous message containing the serialized value of answer and then increment answer.</li>
+</ul>
+<p>Now point the browser to</p>
+<pre><code>file:///pages/sample2.html
+</code></pre>
+
+<p>and you will see the answer ticking every second on the page</p>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../10_Execution_Control/index.html" title="10. Execution Control" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                10. Execution Control
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../12_Workspace_Organization.1" title="12. Workspace Organization" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                12. Workspace Organization
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            ©2015 Jeffry A. Borror / q4m LLC. Kx® and kdb+ are registered trademarks of Kx Systems, Inc., a subsidiary of First Derivatives plc.
+          </div>
+        
+        powered by
+        <a href="http://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.b438e6c5.js"></script>
+      
+      <script>app.initialize({version:"0.17.3",url:{base:".."}})</script>
+      
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+      
+        <script src="https://tracker.mrpfd.com/tracker.js"></script>
+      
+        <script src="http://code.kx.com/scripts/googleanalytics.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+        <script src="https://use.fontawesome.com/3dbf29ed12.js"></script>
+      
+        <script src="http://code.kx.com/scripts/prism.js"></script>
+      
+    
+    
+      
+    
+  </body>
+</html>

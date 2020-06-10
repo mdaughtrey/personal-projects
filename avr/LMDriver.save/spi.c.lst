@@ -1,0 +1,224 @@
+
+spi.o:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000166  00000000  00000000  00000034  2**0
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .data         00000000  00000000  00000000  0000019a  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  2 .bss          00000005  00000000  00000000  0000019a  2**0
+                  ALLOC
+  3 .stab         0000051c  00000000  00000000  0000019c  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  4 .stabstr      000007db  00000000  00000000  000006b8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+Disassembly of section .text:
+
+00000000 <__vector_12>:
+u08 spiEvent = 0;
+
+
+ISR(SIG_SPI)
+{
+   0:	1f 92       	push	r1
+   2:	0f 92       	push	r0
+   4:	0f b6       	in	r0, 0x3f	; 63
+   6:	0f 92       	push	r0
+   8:	11 24       	eor	r1, r1
+   a:	2f 93       	push	r18
+   c:	3f 93       	push	r19
+   e:	8f 93       	push	r24
+  10:	9f 93       	push	r25
+  12:	af 93       	push	r26
+  14:	bf 93       	push	r27
+  16:	ef 93       	push	r30
+  18:	ff 93       	push	r31
+  1a:	cf 93       	push	r28
+  1c:	df 93       	push	r29
+  1e:	cd b7       	in	r28, 0x3d	; 61
+  20:	de b7       	in	r29, 0x3e	; 62
+    mosiBuffer[mosiHead++] = SPDR;
+  22:	30 91 00 00 	lds	r19, 0x0000
+  26:	83 2f       	mov	r24, r19
+  28:	99 27       	eor	r25, r25
+  2a:	ee e4       	ldi	r30, 0x4E	; 78
+  2c:	f0 e0       	ldi	r31, 0x00	; 0
+  2e:	20 81       	ld	r18, Z
+  30:	fc 01       	movw	r30, r24
+  32:	e0 50       	subi	r30, 0x00	; 0
+  34:	f0 40       	sbci	r31, 0x00	; 0
+  36:	20 83       	st	Z, r18
+  38:	83 2f       	mov	r24, r19
+  3a:	8f 5f       	subi	r24, 0xFF	; 255
+  3c:	80 93 00 00 	sts	0x0000, r24
+    mosiHead &= (MOSIBUFFERSIZE - 1);
+  40:	80 91 00 00 	lds	r24, 0x0000
+  44:	87 70       	andi	r24, 0x07	; 7
+  46:	80 93 00 00 	sts	0x0000, r24
+    spiEvent = 1;
+  4a:	81 e0       	ldi	r24, 0x01	; 1
+  4c:	80 93 00 00 	sts	0x0000, r24
+    if (SPSR & _BV(SPIF))
+  50:	ed e4       	ldi	r30, 0x4D	; 77
+  52:	f0 e0       	ldi	r31, 0x00	; 0
+  54:	80 81       	ld	r24, Z
+  56:	88 23       	and	r24, r24
+  58:	04 f4       	brge	.+0      	; 0x5a <__vector_12+0x5a>
+    {
+        SPDR = 0xaa;
+  5a:	ee e4       	ldi	r30, 0x4E	; 78
+  5c:	f0 e0       	ldi	r31, 0x00	; 0
+  5e:	8a ea       	ldi	r24, 0xAA	; 170
+  60:	80 83       	st	Z, r24
+        return;
+  62:	00 c0       	rjmp	.+0      	; 0x64 <__vector_12+0x64>
+    }
+    if (misoHead != misoTail)
+  64:	90 91 00 00 	lds	r25, 0x0000
+  68:	80 91 00 00 	lds	r24, 0x0000
+  6c:	98 17       	cp	r25, r24
+  6e:	01 f0       	breq	.+0      	; 0x70 <__vector_12+0x70>
+    {
+        SPDR = misoBuffer[misoTail++];
+  70:	ae e4       	ldi	r26, 0x4E	; 78
+  72:	b0 e0       	ldi	r27, 0x00	; 0
+  74:	20 91 00 00 	lds	r18, 0x0000
+  78:	82 2f       	mov	r24, r18
+  7a:	99 27       	eor	r25, r25
+  7c:	fc 01       	movw	r30, r24
+  7e:	e0 50       	subi	r30, 0x00	; 0
+  80:	f0 40       	sbci	r31, 0x00	; 0
+  82:	80 81       	ld	r24, Z
+  84:	8c 93       	st	X, r24
+  86:	82 2f       	mov	r24, r18
+  88:	8f 5f       	subi	r24, 0xFF	; 255
+  8a:	80 93 00 00 	sts	0x0000, r24
+        misoTail &= (MISOBUFFERSIZE - 1);
+  8e:	80 91 00 00 	lds	r24, 0x0000
+  92:	87 70       	andi	r24, 0x07	; 7
+  94:	80 93 00 00 	sts	0x0000, r24
+  98:	df 91       	pop	r29
+  9a:	cf 91       	pop	r28
+  9c:	ff 91       	pop	r31
+  9e:	ef 91       	pop	r30
+  a0:	bf 91       	pop	r27
+  a2:	af 91       	pop	r26
+  a4:	9f 91       	pop	r25
+  a6:	8f 91       	pop	r24
+  a8:	3f 91       	pop	r19
+  aa:	2f 91       	pop	r18
+  ac:	0f 90       	pop	r0
+  ae:	0f be       	out	0x3f, r0	; 63
+  b0:	0f 90       	pop	r0
+  b2:	1f 90       	pop	r1
+  b4:	18 95       	reti
+
+000000b6 <spi_init>:
+    }
+}
+
+void spi_init(void)
+{
+  b6:	cf 93       	push	r28
+  b8:	df 93       	push	r29
+  ba:	cd b7       	in	r28, 0x3d	; 61
+  bc:	de b7       	in	r29, 0x3e	; 62
+  be:	21 97       	sbiw	r28, 0x01	; 1
+  c0:	0f b6       	in	r0, 0x3f	; 63
+  c2:	f8 94       	cli
+  c4:	de bf       	out	0x3e, r29	; 62
+  c6:	0f be       	out	0x3f, r0	; 63
+  c8:	cd bf       	out	0x3d, r28	; 61
+    volatile char IOReg;
+    DDRB |= _BV(PB3); 		/* Enable MISO for output */
+  ca:	a4 e2       	ldi	r26, 0x24	; 36
+  cc:	b0 e0       	ldi	r27, 0x00	; 0
+  ce:	e4 e2       	ldi	r30, 0x24	; 36
+  d0:	f0 e0       	ldi	r31, 0x00	; 0
+  d2:	80 81       	ld	r24, Z
+  d4:	88 60       	ori	r24, 0x08	; 8
+  d6:	8c 93       	st	X, r24
+    PRR &= ~_BV(PRSPI);		/* Turn on the SPI module */
+  d8:	a4 e6       	ldi	r26, 0x64	; 100
+  da:	b0 e0       	ldi	r27, 0x00	; 0
+  dc:	e4 e6       	ldi	r30, 0x64	; 100
+  de:	f0 e0       	ldi	r31, 0x00	; 0
+  e0:	80 81       	ld	r24, Z
+  e2:	8b 7f       	andi	r24, 0xFB	; 251
+  e4:	8c 93       	st	X, r24
+
+    SPDR = 0;
+  e6:	ee e4       	ldi	r30, 0x4E	; 78
+  e8:	f0 e0       	ldi	r31, 0x00	; 0
+  ea:	10 82       	st	Z, r1
+    IOReg = SPSR;
+  ec:	ed e4       	ldi	r30, 0x4D	; 77
+  ee:	f0 e0       	ldi	r31, 0x00	; 0
+  f0:	80 81       	ld	r24, Z
+  f2:	89 83       	std	Y+1, r24	; 0x01
+    IOReg = SPDR;
+  f4:	ee e4       	ldi	r30, 0x4E	; 78
+  f6:	f0 e0       	ldi	r31, 0x00	; 0
+  f8:	80 81       	ld	r24, Z
+  fa:	89 83       	std	Y+1, r24	; 0x01
+    SPCR = _BV(SPE) | _BV(SPIE);		/* Enable SPI interrupts, MSB first */
+  fc:	ec e4       	ldi	r30, 0x4C	; 76
+  fe:	f0 e0       	ldi	r31, 0x00	; 0
+ 100:	80 ec       	ldi	r24, 0xC0	; 192
+ 102:	80 83       	st	Z, r24
+ 104:	21 96       	adiw	r28, 0x01	; 1
+ 106:	0f b6       	in	r0, 0x3f	; 63
+ 108:	f8 94       	cli
+ 10a:	de bf       	out	0x3e, r29	; 62
+ 10c:	0f be       	out	0x3f, r0	; 63
+ 10e:	cd bf       	out	0x3d, r28	; 61
+ 110:	df 91       	pop	r29
+ 112:	cf 91       	pop	r28
+ 114:	08 95       	ret
+
+00000116 <miso_push>:
+}
+
+void miso_push(u08 data)
+{
+ 116:	cf 93       	push	r28
+ 118:	df 93       	push	r29
+ 11a:	cd b7       	in	r28, 0x3d	; 61
+ 11c:	de b7       	in	r29, 0x3e	; 62
+ 11e:	21 97       	sbiw	r28, 0x01	; 1
+ 120:	0f b6       	in	r0, 0x3f	; 63
+ 122:	f8 94       	cli
+ 124:	de bf       	out	0x3e, r29	; 62
+ 126:	0f be       	out	0x3f, r0	; 63
+ 128:	cd bf       	out	0x3d, r28	; 61
+ 12a:	89 83       	std	Y+1, r24	; 0x01
+    cli();
+ 12c:	f8 94       	cli
+    misoBuffer[misoHead++] = data;
+ 12e:	20 91 00 00 	lds	r18, 0x0000
+ 132:	82 2f       	mov	r24, r18
+ 134:	99 27       	eor	r25, r25
+ 136:	fc 01       	movw	r30, r24
+ 138:	e0 50       	subi	r30, 0x00	; 0
+ 13a:	f0 40       	sbci	r31, 0x00	; 0
+ 13c:	89 81       	ldd	r24, Y+1	; 0x01
+ 13e:	80 83       	st	Z, r24
+ 140:	82 2f       	mov	r24, r18
+ 142:	8f 5f       	subi	r24, 0xFF	; 255
+ 144:	80 93 00 00 	sts	0x0000, r24
+    misoHead &= (MISOBUFFERSIZE - 1);
+ 148:	80 91 00 00 	lds	r24, 0x0000
+ 14c:	87 70       	andi	r24, 0x07	; 7
+ 14e:	80 93 00 00 	sts	0x0000, r24
+    sei();
+ 152:	78 94       	sei
+ 154:	21 96       	adiw	r28, 0x01	; 1
+ 156:	0f b6       	in	r0, 0x3f	; 63
+ 158:	f8 94       	cli
+ 15a:	de bf       	out	0x3e, r29	; 62
+ 15c:	0f be       	out	0x3f, r0	; 63
+ 15e:	cd bf       	out	0x3d, r28	; 61
+ 160:	df 91       	pop	r29
+ 162:	cf 91       	pop	r28
+ 164:	08 95       	ret

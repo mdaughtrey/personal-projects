@@ -1,0 +1,88 @@
+# Clock-style countdown display
+init:
+    ivar min1 53 
+    ivar min2 57
+    ivar sec1 53
+    ivar sec2 57
+    ivar zero 48
+    sconst enableCustom "c\x041111"
+    sconst show "s\x04"
+    
+#    sconst dotsOn "x220x240"
+#    sconst dotsOff "X220X240"
+
+    sconst dots0 "x200"
+    sconst dots1 "X200x210"
+    sconst dots2 "X210x220"
+    sconst dots3 "X220x230"
+    sconst dots4 "X230x240"
+    sconst dots5 "X240x250"
+    sconst dots6 "X250x260"
+    sconst dots7 "X260"
+
+    semit enableCustom
+
+main:
+# update the display
+    semit show
+    iemit min1
+    iemit min2
+    iemit sec1
+    iemit sec2
+
+# light chaser
+    semit dots0
+    pausems 140
+    semit dots1
+    pausems 140
+    semit dots2
+    pausems 140
+    semit dots3
+    pausems 140
+    semit dots4
+    pausems 140
+    semit dots5
+    pausems 140
+    semit dots6
+    pausems 140
+    semit dots7
+    pausems 140
+
+# Decrement seconds 2, if > 0 then back to main else test for seconds 1 rollover
+    ivar tmp sec2
+    sub tmp zero
+    jz tmp decSec1
+    dec sec2
+    jump main
+
+# Decrement seconds 1, if > 0 then back to main else test for mins 2 rollover
+decSec1:
+    ivar sec2 57
+    ivar tmp sec1
+    sub tmp zero
+    jz tmp decMin2
+    dec sec1
+    jump main
+
+# Decrement minutes 2, if > 0 then back to main else test for mins 1 rollover
+decMin2:
+    ivar sec1 53
+    ivar tmp min2
+    sub tmp zero
+    jz tmp decMin1
+    dec min2
+    jump main
+
+# Decrement minutes 1, rollover if needed
+decMin1:
+    ivar min2 57
+    ivar tmp min1
+    sub tmp zero
+    jz  tmp rollOver
+    dec min1
+    jump main
+
+rollOver:
+    ivar min1 53
+    jump main
+

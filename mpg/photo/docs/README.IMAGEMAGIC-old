@@ -1,0 +1,79 @@
+Installing Image Magick (or other perl modules) without root permissions
+-----------------------------------------------------------------------
+In many circumstances, you may not have root access on the server where you
+need to have Image Magick installed.  Here is what was required to it up on my server, 
+which I will include in case anyone is setting it up similarly on their server.  Many 
+thanks to Stephen Soltesz for graciously helping me get this running.
+
+NOTE: On my particular server, I did not have the JPEG libraries that are commonly 
+installed on most systems.  I read the README that came with Image Magick where there 
+is a link to the FREE jpegsrc.v6b.tar.gz JPEG library.  I installed it using the same 
+prefix used to install this script.  You will probably not have to do this step, but 
+if you get errors loading JPEG libraries after the install then try this.
+
+upload the .gz to your webspace, probably under cgi-bin.   The name of files or 
+directories will probably differ from what I have here but you can get the idea.
+ 
+fire up a telnet (or ssh) shell to your domain, and :
+ 
+        $ cd  /www/mikespice/cgi-bin
+You should probably create a directory called local/ to use 
+        $ mkdir local/
+        $ mv /pathto/ImageMagick-5.2.6.tar.gz /www/mikespice/cgi-bin/local
+
+        $ gzip -d ImageMagick-5.2.6.tar.gz
+        $ tar -xof ImageMagick-5.2.6.tar
+        $ cd ImageMagick-5.2.6/
+ 
+In the configuration step, I disabled a lot of stuff I know I dont need in this site. 
+I will only be working with .jpg and wanted a small install so I used the 
+shared libs, etc, etc. You can review these settings, but the important one is the 
+--prefix and --without-perl 
+
+this is the configure line used for ImageMagick:
+
+
+If you dont care about space, all you really need is the --prefix , LDFLAGS,
+and CPPFLAGS options.  More than likely, you will want the other stuff so that
+it doesn't fill up your entire account!
+
+../configure --prefix=$HOME/www/cgi-bin/local --with-modules --disable-static 
+--enable-shared --without-perl --without-dps --without-hdf 
+--without-ttf --without-tiff --without-jbig --without-xml --without-lcms 
+--without-fpx LDFLAGS=-L$HOME/www/cgi-bin/local/lib 
+CPPFLAGS=-I$HOME/www/cgi-bin/local/include 
+ 
+        $ make
+        $ make test
+        $ make install
+ 
+        $ cd PerlMagick
+        $ perl Makefile.PL PREFIX=$HOME/www/cgi-bin/local
+        $ make
+        $ make test
+        $ make install
+ 
+then you can cleanup a little:
+ 
+        $ cd $HOME/www/cgi-bin
+        $ rm ImageMagick-5_2_4_tar
+ 
+your perl scripts will now need a lines like these to work:
+
+        use lib "/home/mikespice/www/cgi-bin/local/lib/perl5/site_perl/";
+        use Image::Magick ;
+
+        I use the following at the top of My Photo Gallery:
+        use lib "/home/username/www/cgi-bin/local/lib/site_perl/5.6.0/i686-linux/"; #ImageMagick
+        use lib "/home/username/www/cgi-bin/local/lib/site_perl/"; #Image::Info and IO::String
+
+
+With all of this said and done, my installation was about 3.2MB
+
+If these do not work, you may want to search the newsgroups.  I could try to help you
+but I am not sure if I could be much help.
+
+Good Luck,
+Mike Spiceland
+mike@fuzzymonkey.org
+www.fuzzymonke.org
