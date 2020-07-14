@@ -2,15 +2,15 @@
 #define _SCREENS_H
 
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
-#include "sensor.h"
+#include "SparkFunMPU9250-DMP.h"
 
 class Screen
 {
     protected:
         TFT_eSPI * m_tft;
-        MPU9250 * m_imu;
+        MPU9250_DMP * m_imu;
     public:
-        Screen (TFT_eSPI * tft, MPU9250 * imu) : m_tft(tft), m_imu(imu) {}
+        Screen (TFT_eSPI * tft, MPU9250_DMP * imu) : m_tft(tft), m_imu(imu) {}
         virtual void in (void) = 0;
         virtual void out (void)  = 0;
         virtual void loop (void) = 0;
@@ -28,9 +28,9 @@ class IMU
             return ((i-in)/(ix-in))*(ox-on)+on;
         }
     public:
-        IMU() : m_imuXRange({-0.4314, 1.6202}),
-        m_imuYRange({-1.3550, 0.7074}),
-        m_imuZRange({-1.9759, 0.5992}) {}
+        IMU() : m_imuXRange({-1.1, 1.1}),
+        m_imuYRange({-1.1, 1.1}),
+        m_imuZRange({-2.0, 1.0}) {}
 };
 
 class FreeFontsDemo : public Screen
@@ -39,7 +39,7 @@ class FreeFontsDemo : public Screen
         uint8_t m_count;
         const GFXfont ** m_freeFonts;
     public:
-        FreeFontsDemo (TFT_eSPI * tft, MPU9250 * imu, const GFXfont ** freeFonts) : Screen(tft,imu), m_freeFonts(freeFonts) {}
+        FreeFontsDemo (TFT_eSPI * tft, MPU9250_DMP * imu, const GFXfont ** freeFonts) : Screen(tft,imu), m_freeFonts(freeFonts) {}
         void in (void)
         {
             m_count = 0;
@@ -74,7 +74,7 @@ class IMUStats : public Screen
         float m_imuAZMax;
 
     public:
-        IMUStats (TFT_eSPI * tft, MPU9250 * imu) : Screen(tft,imu),
+        IMUStats (TFT_eSPI * tft, MPU9250_DMP * imu) : Screen(tft,imu),
         m_imuAXMin(0.0),
         m_imuAXMax(0.0),
         m_imuAYMin(0.0),
@@ -85,30 +85,42 @@ class IMUStats : public Screen
         void in (void)
         {
             m_tft->setTextColor(TFT_GREEN, TFT_BLACK);
+            m_imu->setSensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
+            m_imu->setGyroFSR(2000); // Set gyro to 2000 dps
+            m_imu->setAccelFSR(2); // Set accel to +/-2g
+            m_imu->setLPF(5); // Set LPF corner frequency to 5Hz
+            m_imu->setSampleRate(10); // Set sample rate to 10Hz
+            m_imu->setCompassSampleRate(10); // Set mag rate to 10Hz
         }
         void out (void) {};
         void loop (void)
         {
             char buff[128];
-            readMPU9250(*m_imu);
+  //          readMPU9250(*m_imu);
+            if (!m_imu->dataReady())
+            {
+                delay(200);
+                return;
+            }
+            m_imu->update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
             m_tft->fillScreen(TFT_BLACK);
             m_tft->drawString(buff, 0, 16);
 
-            m_imuAXMin = std::min(m_imuAXMin, m_imu->ax); 
-            m_imuAXMax = std::max(m_imuAXMax, m_imu->ax); 
+            m_imuAXMin = std::min(m_imuAXMin, m_imu->calcAccel(m_imu->ax)); 
+            m_imuAXMax = std::max(m_imuAXMax, m_imu->calcAccel(m_imu->ax)); 
  
-            m_imuAYMin = std::min(m_imuAYMin, m_imu->ay); 
-            m_imuAYMax = std::max(m_imuAYMax, m_imu->ay); 
+            m_imuAYMin = std::min(m_imuAYMin, m_imu->calcAccel(m_imu->ay)); 
+            m_imuAYMax = std::max(m_imuAYMax, m_imu->calcAccel(m_imu->ay)); 
  
-            m_imuAZMin = std::min(m_imuAZMin, m_imu->az); 
-            m_imuAZMax = std::max(m_imuAZMax, m_imu->az); 
+            m_imuAZMin = std::min(m_imuAZMin, m_imu->calcAccel(m_imu->az)); 
+            m_imuAZMax = std::max(m_imuAZMax, m_imu->calcAccel(m_imu->az)); 
  
             m_tft->fillScreen(TFT_BLACK);
-            snprintf(buff, sizeof(buff), "X %.4f  %.4f  %.4f", m_imuAXMin, m_imu->ax, m_imuAXMax);
+            snprintf(buff, sizeof(buff), "X %.4f  %.4f  %.4f", m_imuAXMin, m_imu->calcAccel(m_imu->ax), m_imuAXMax);
             m_tft->drawString(buff, 0, 16);
-            snprintf(buff, sizeof(buff), "Y %.4f  %.4f  %.4f", m_imuAYMin, m_imu->ay, m_imuAYMax);
+            snprintf(buff, sizeof(buff), "Y %.4f  %.4f  %.4f", m_imuAYMin, m_imu->calcAccel(m_imu->ay), m_imuAYMax);
             m_tft->drawString(buff, 0, 32);
-            snprintf(buff, sizeof(buff), "Z %.4f  %.4f  %.4f", m_imuAZMin, m_imu->az, m_imuAZMax);
+            snprintf(buff, sizeof(buff), "Z %.4f  %.4f  %.4f", m_imuAZMin, m_imu->calcAccel(m_imu->az), m_imuAZMax);
             m_tft->drawString(buff, 0, 48);
             delay(200);
         }
@@ -117,7 +129,7 @@ class IMUStats : public Screen
 class NormIMU : public Screen, public IMU
 {
     public:
-        NormIMU (TFT_eSPI * tft, MPU9250 * imu) : Screen(tft,imu)
+        NormIMU (TFT_eSPI * tft, MPU9250_DMP * imu) : Screen(tft,imu)
         {}
 
         void in (void) 
@@ -131,12 +143,19 @@ class NormIMU : public Screen, public IMU
         void loop (void)
         {
             char buff[128];
-            readMPU9250(*m_imu);
-            float x = norm(m_imu->ax, m_imuXRange[0], m_imuXRange[1], -10.0, 10.0);
+            //readMPU9250(*m_imu);
+            if (!m_imu->dataReady())
+            {
+                delay(20);
+                return;
+            }
+            m_imu->update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
+
+            float x = norm(m_imu->calcAccel(m_imu->ax), m_imuXRange[0], m_imuXRange[1], -10.0, 10.0);
             snprintf(buff, sizeof(buff), "X %.4f", x);
             m_tft->fillScreen(TFT_BLUE);
             m_tft->drawString(buff, 0, 16);
-            float y = norm(m_imu->ay, m_imuYRange[0], m_imuYRange[1], -10.0, 10.0);
+            float y = norm(m_imu->calcAccel(m_imu->ay), m_imuYRange[0], m_imuYRange[1], -10.0, 10.0);
             snprintf(buff, sizeof(buff), "Y %.4f", y);
             m_tft->drawString(buff, 0, 24);
             delay(200);
@@ -149,7 +168,7 @@ class Sketch : public Screen, public IMU
         int16_t m_dotX;
         int16_t m_dotY;
     public:
-        Sketch (TFT_eSPI * tft, MPU9250 * imu) : Screen(tft,imu)
+        Sketch (TFT_eSPI * tft, MPU9250_DMP * imu) : Screen(tft,imu)
         {}
         void in (void)
         {
@@ -161,9 +180,16 @@ class Sketch : public Screen, public IMU
         void out (void) {}
         void loop (void)
         {
-            readMPU9250(*m_imu);
-            float x = norm(m_imu->ax, m_imuXRange[0], m_imuXRange[1], -10.0, 10.0);
-            float y = norm(m_imu->ay, m_imuYRange[0], m_imuYRange[1], -10.0, 10.0);
+            //readMPU9250(*m_imu);
+            if (!m_imu->dataReady())
+            {
+                delay(20);
+                return;
+            }
+            m_imu->update(UPDATE_ACCEL | UPDATE_GYRO | UPDATE_COMPASS);
+
+            float x = norm(m_imu->calcAccel(m_imu->ax), m_imuXRange[0], m_imuXRange[1], -10.0, 10.0);
+            float y = norm(m_imu->calcAccel(m_imu->ay), m_imuYRange[0], m_imuYRange[1], -10.0, 10.0);
             m_dotX -= (int)x;
             m_dotY += (int)y;
             m_dotY = std::min(m_dotY, m_tft->width());
@@ -180,9 +206,11 @@ class TextSelection : public Screen, public IMU
 {
     protected:
         uint8_t m_current;
+	uint8_t m_count;
+	int8_t m_xofs;
         const String m_alpha;
     public:
-        TextSelection (TFT_eSPI * tft, MPU9250 * imu); 
+        TextSelection (TFT_eSPI * tft, MPU9250_DMP * imu); 
         void in (void);
         void out (void); 
         void loop (void); 
