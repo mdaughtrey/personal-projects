@@ -1,9 +1,0 @@
-start:
-    svar outs "t\x04abc"
-    ivar decit 2
-init:
-    ivar outi 255
-    ivar assignto decit
-main:
-    sub outi decit 
-    jump main

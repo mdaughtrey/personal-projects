@@ -1,5 +1,0 @@
-sconst avar "t\x04abcd"
-main:
-    semit avar
-    pauses 1
-    jump main
