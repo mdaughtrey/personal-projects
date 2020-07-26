@@ -1,3 +1,0 @@
-#!/bin/bash
-minicom -F -b 9600 -D/dev/ttyS14
-
