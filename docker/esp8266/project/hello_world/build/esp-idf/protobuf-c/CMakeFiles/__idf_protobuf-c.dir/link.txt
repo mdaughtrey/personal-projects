@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libprotobuf-c.a  CMakeFiles/__idf_protobuf-c.dir/protobuf-c/protobuf-c/protobuf-c.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libprotobuf-c.a

@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libesp-tls.a  CMakeFiles/__idf_esp-tls.dir/esp_tls.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libesp-tls.a

@@ -1,0 +1,467 @@
+warning: adding embedded git repository: arduino/arduino-cli/eink/t5/trash/e-Paper
+hint: You've added another git repository inside your current repository.
+hint: Clones of the outer repository will not contain the contents of
+hint: the embedded repository and will not know how to obtain it.
+hint: If you meant to add a submodule, use:
+hint: 
+hint: 	git submodule add <url> arduino/arduino-cli/eink/t5/trash/e-Paper
+hint: 
+hint: If you added this path by mistake, you can remove it from the
+hint: index with:
+hint: 
+hint: 	git rm --cached arduino/arduino-cli/eink/t5/trash/e-Paper
+hint: 
+hint: See "git help submodule" for more information.
+warning: adding embedded git repository: esp32/einkdev/micropython-waveshare-epaper
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/axtls/axtlswrap/axtlswrap.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/axtls/config/axhttpd.aip.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/axtls/config/axtls.rc.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/axtls/httpd/kepler-1.1-snapshot-20070521-1825.tar.gz.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/axtls/ssl/test/comodo.sha384.cer.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/axtls/ssl/test/ms_iis.cer.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/lwip/doc/doxygen/generate.bat.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/programs/pkey/rsa_priv.txt.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/programs/pkey/rsa_pub.txt.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/scripts/data_files/vs2010-app-template.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/scripts/data_files/vs2010-main-template.vcxproj.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/scripts/data_files/vs2010-sln-template.sln.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/scripts/data_files/vs6-app-template.dsp.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/scripts/data_files/vs6-main-template.dsp.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/scripts/data_files/vs6-workspace-template.dsw.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/tests/data_files/bitstring-in-dn.pem.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/aescrypt2.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/benchmark.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/cert_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/cert_req.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/cert_write.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/crl_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/crypt_and_hash.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/dh_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/dh_genprime.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/dh_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/dtls_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/dtls_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ecdh_curve25519.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ecdsa.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_entropy.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_key.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_random_ctr_drbg.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_random_havege.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/generic_sum.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/hello.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/key_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/key_app_writer.vcxproj.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/mbedTLS.sln.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/mbedTLS.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/mini_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/mpi_demo.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/pem2der.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_decrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_encrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_sign.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_verify.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/query_compile_time_config.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/req_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_decrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_encrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_genkey.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_sign.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_sign_pss.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_verify.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_verify_pss.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/selftest.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_cert_test.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_client1.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_client2.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_fork_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_mail_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_server2.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/strerror.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/udp_proxy.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/mbedtls/visualc/VS2010/zeroize.vcxproj.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mynewt-nimble/nimble/host/pts/tpg/94654-20170317-085122560.tpg.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/mynewt-nimble/nimble/host/pts/tpg/94654-20170317-085441153.pts.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp32/einkdev/upython_src/micropython-1.12/lib/nrfx/doc/generate_html_doc.bat.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/audio/audio.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/cdc/cdc.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_host.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_host.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/hid/hid.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/hid/hid_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/hid/hid_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/hid/hid_host.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/hid/hid_host.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/midi/midi.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/midi/midi_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/midi/midi_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/msc/msc.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/msc/msc_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/msc/msc_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/msc/msc_host.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/class/msc/msc_host.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/common/tusb_common.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/common/tusb_compiler.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/common/tusb_error.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/common/tusb_fifo.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/common/tusb_fifo.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/common/tusb_timeout.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/common/tusb_types.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/device/dcd.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/device/usbd.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/device/usbd.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/device/usbd_control.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/host/ehci/ehci.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/host/hcd.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/host/hub.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/host/hub.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/host/ohci/ohci.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/host/ohci/ohci.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/host/usbh.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/osal/osal.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/osal/osal_none.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/tusb.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/tusb.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/src/tusb_option.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp32/einkdev/upython_src/micropython-1.12/lib/tinyusb/test/vendor/ceedling/docs/UnityAssertionsCheatSheetSuitableforPrintingandPossiblyFraming.pdf.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/axtls/axtlswrap/axtlswrap.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/axtls/config/axhttpd.aip.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/axtls/config/axtls.rc.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/axtls/httpd/kepler-1.1-snapshot-20070521-1825.tar.gz.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/axtls/ssl/test/comodo.sha384.cer.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/axtls/ssl/test/ms_iis.cer.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/lwip/doc/doxygen/generate.bat.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/programs/pkey/rsa_priv.txt.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/programs/pkey/rsa_pub.txt.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/scripts/data_files/vs2010-app-template.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/scripts/data_files/vs2010-main-template.vcxproj.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/scripts/data_files/vs2010-sln-template.sln.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/scripts/data_files/vs6-app-template.dsp.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/scripts/data_files/vs6-main-template.dsp.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/scripts/data_files/vs6-workspace-template.dsw.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/tests/data_files/bitstring-in-dn.pem.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/aescrypt2.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/benchmark.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/cert_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/cert_req.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/cert_write.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/crl_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/crypt_and_hash.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/dh_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/dh_genprime.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/dh_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/dtls_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/dtls_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ecdh_curve25519.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ecdsa.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_entropy.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_key.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_random_ctr_drbg.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/gen_random_havege.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/generic_sum.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/hello.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/key_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/key_app_writer.vcxproj.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/mbedTLS.sln.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/mbedTLS.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/mini_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/mpi_demo.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/pem2der.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_decrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_encrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_sign.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/pk_verify.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/query_compile_time_config.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/req_app.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_decrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_encrypt.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_genkey.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_sign.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_sign_pss.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_verify.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/rsa_verify_pss.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/selftest.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_cert_test.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_client1.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_client2.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_fork_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_mail_client.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_server.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/ssl_server2.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/strerror.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/udp_proxy.vcxproj.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/mbedtls/visualc/VS2010/zeroize.vcxproj.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mynewt-nimble/nimble/host/pts/tpg/94654-20170317-085122560.tpg.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/mynewt-nimble/nimble/host/pts/tpg/94654-20170317-085441153.pts.
+The file will have its original line endings in your working directory
+warning: LF will be replaced by CRLF in esp8266/qclock/micropython-1.12/lib/nrfx/doc/generate_html_doc.bat.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/audio/audio.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/cdc/cdc.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_host.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/cdc/cdc_host.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/hid/hid.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/hid/hid_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/hid/hid_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/hid/hid_host.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/hid/hid_host.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/midi/midi.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/midi/midi_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/midi/midi_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/msc/msc.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/msc/msc_device.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/msc/msc_device.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/msc/msc_host.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/class/msc/msc_host.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/common/tusb_common.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/common/tusb_compiler.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/common/tusb_error.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/common/tusb_fifo.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/common/tusb_fifo.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/common/tusb_timeout.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/common/tusb_types.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/device/dcd.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/device/usbd.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/device/usbd.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/device/usbd_control.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/host/ehci/ehci.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/host/hcd.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/host/hub.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/host/hub.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/host/ohci/ohci.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/host/ohci/ohci.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/host/usbh.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/osal/osal.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/osal/osal_none.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/tusb.c.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/tusb.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/src/tusb_option.h.
+The file will have its original line endings in your working directory
+warning: CRLF will be replaced by LF in esp8266/qclock/micropython-1.12/lib/tinyusb/test/vendor/ceedling/docs/UnityAssertionsCheatSheetSuitableforPrintingandPossiblyFraming.pdf.
+The file will have its original line endings in your working directory

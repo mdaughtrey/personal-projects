@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libcjson.a  CMakeFiles/__idf_cjson.dir/cJSON/cJSON_Utils.c.obj CMakeFiles/__idf_cjson.dir/cJSON/test.c.obj CMakeFiles/__idf_cjson.dir/cJSON/cJSON.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libcjson.a

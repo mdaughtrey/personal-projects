@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libmain.a  CMakeFiles/__idf_main.dir/user_main.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libmain.a

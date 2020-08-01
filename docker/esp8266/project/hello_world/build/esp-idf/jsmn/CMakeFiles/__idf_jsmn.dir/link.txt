@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libjsmn.a  CMakeFiles/__idf_jsmn.dir/src/jsmn.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libjsmn.a

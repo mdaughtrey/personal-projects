@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libnvs_flash.a  CMakeFiles/__idf_nvs_flash.dir/src/nvs_pagemanager.cpp.obj CMakeFiles/__idf_nvs_flash.dir/src/nvs_storage.cpp.obj CMakeFiles/__idf_nvs_flash.dir/src/nvs_page.cpp.obj CMakeFiles/__idf_nvs_flash.dir/src/nvs_api.cpp.obj CMakeFiles/__idf_nvs_flash.dir/src/nvs_types.cpp.obj CMakeFiles/__idf_nvs_flash.dir/src/nvs_item_hash_list.cpp.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libnvs_flash.a
