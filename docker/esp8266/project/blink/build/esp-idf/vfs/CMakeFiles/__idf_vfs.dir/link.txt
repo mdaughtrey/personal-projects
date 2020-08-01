@@ -1,2 +1,0 @@
-/tools/toolchain/bin/xtensa-lx106-elf-ar qc libvfs.a  CMakeFiles/__idf_vfs.dir/port/ioctl.c.obj CMakeFiles/__idf_vfs.dir/port/fcntl.c.obj
-/tools/toolchain/bin/xtensa-lx106-elf-ranlib libvfs.a
