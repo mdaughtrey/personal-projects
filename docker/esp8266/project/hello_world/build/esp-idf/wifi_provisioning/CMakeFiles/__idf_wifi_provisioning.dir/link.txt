@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libwifi_provisioning.a  CMakeFiles/__idf_wifi_provisioning.dir/src/wifi_config.c.obj CMakeFiles/__idf_wifi_provisioning.dir/proto-c/wifi_config.pb-c.c.obj CMakeFiles/__idf_wifi_provisioning.dir/proto-c/wifi_constants.pb-c.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libwifi_provisioning.a

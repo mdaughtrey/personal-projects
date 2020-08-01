@@ -1,0 +1,12 @@
+# DESCRIPTION: Verilator output: Timestamp data for --skip-identical.  Delete at will.
+C "--cc myspi.v --exe sim_main.cpp"
+S   8183448 14297101  1585362675   727962903  1585263101           0 "/usr/local/bin/verilator_bin"
+S      3159  8130201  1585362633   279352196  1585362633   279352196 "myspi.v"
+T     12668  8130310  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi.cpp"
+T      3903  8130308  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi.h"
+T      1765  8130319  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi.mk"
+T       539  8130268  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi__Syms.cpp"
+T       781  8130306  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi__Syms.h"
+T       220  8130346  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi__ver.d"
+T         0        0  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi__verFiles.dat"
+T      1310  8130313  1585413713   712459663  1585413713   712459663 "obj_dir/Vmyspi_classes.mk"

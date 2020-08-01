@@ -1,0 +1,46 @@
+start
+4
+0: init
+20: CS Low
+tosend: 1
+iSPIMOSI :0
+40: CLK High
+rxBit 1 rxAccum 0 rxFinal 0
+60: CLK Low
+tosend: 0
+iSPIMOSI :0
+80: CLK High
+rxBit 2 rxAccum 0 rxFinal 0
+100: CLK Low
+tosend: 0
+iSPIMOSI :0
+120: CLK High
+rxBit 3 rxAccum 0 rxFinal 0
+140: CLK Low
+tosend: 0
+iSPIMOSI :0
+160: CLK High
+rxBit 4 rxAccum 0 rxFinal 0
+180: CLK Low
+tosend: 0
+iSPIMOSI :0
+200: CLK High
+rxBit 5 rxAccum 0 rxFinal 0
+220: CLK Low
+tosend: 0
+iSPIMOSI :0
+240: CLK High
+rxBit 6 rxAccum 0 rxFinal 0
+260: CLK Low
+tosend: 0
+iSPIMOSI :0
+280: CLK High
+rxBit 7 rxAccum 0 rxFinal 0
+300: CLK Low
+tosend: 0
+iSPIMOSI :0
+320: CLK High
+rxBit 0 rxAccum 0 rxFinal 0
+340: CLK Low
+380: CS High
+402: Done

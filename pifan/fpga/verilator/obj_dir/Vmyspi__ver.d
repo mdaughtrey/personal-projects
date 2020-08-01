@@ -1,0 +1,1 @@
+obj_dir/Vmyspi.cpp obj_dir/Vmyspi.h obj_dir/Vmyspi.mk obj_dir/Vmyspi__Syms.cpp obj_dir/Vmyspi__Syms.h obj_dir/Vmyspi__ver.d obj_dir/Vmyspi_classes.mk  : /usr/local/bin/verilator_bin /usr/local/bin/verilator_bin myspi.v 

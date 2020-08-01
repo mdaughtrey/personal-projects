@@ -1,0 +1,1 @@
+cmd='/tools/cmake-3.5.2-Linux-x86_64/bin/cmake;-DSDKCONFIG=/build/sdkconfig;-DIDF_PATH=/tools/ESP8266_RTOS_SDK;-DIDF_TARGET=esp8266;-DPYTHON_DEPS_CHECKED=1;-DEXTRA_COMPONENT_DIRS=/tools/ESP8266_RTOS_SDK/components/bootloader;-DLEGACY_INCLUDE_COMMON_HEADERS=;-GUnix Makefiles;/tools/ESP8266_RTOS_SDK/components/bootloader/subproject'

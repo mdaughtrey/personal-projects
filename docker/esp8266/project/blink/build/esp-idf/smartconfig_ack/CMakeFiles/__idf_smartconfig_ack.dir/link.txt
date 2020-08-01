@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libsmartconfig_ack.a  CMakeFiles/__idf_smartconfig_ack.dir/smartconfig_ack.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libsmartconfig_ack.a

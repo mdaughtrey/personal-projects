@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libspi_ram.a  CMakeFiles/__idf_spi_ram.dir/spi_ram_fifo.c.obj CMakeFiles/__idf_spi_ram.dir/spi_ram.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libspi_ram.a

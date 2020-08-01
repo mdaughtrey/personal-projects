@@ -1,0 +1,2 @@
+Pair
+sdptool browse local 

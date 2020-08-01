@@ -1,0 +1,27 @@
+soc/esp32/ledc_periph.o: \
+ /opt/esp/idf/components/soc/soc/esp32/ledc_periph.c \
+ /opt/esp/idf/components/soc/soc/include/soc/ledc_periph.h \
+ /opt/esp/idf/components/soc/soc/esp32/include/soc/ledc_reg.h \
+ /opt/esp/idf/components/soc/soc/esp32/include/soc/soc.h \
+ /opt/esp/idf/components/esp_common/include/esp_assert.h \
+ /opt/esp/idf/components/esp_common/include/esp_bit_defs.h \
+ /opt/esp/idf/components/soc/soc/esp32/include/soc/ledc_struct.h \
+ /opt/esp/idf/components/soc/soc/esp32/include/soc/ledc_caps.h \
+ /opt/esp/idf/components/soc/soc/esp32/include/soc/gpio_sig_map.h
+
+/opt/esp/idf/components/soc/soc/include/soc/ledc_periph.h:
+
+/opt/esp/idf/components/soc/soc/esp32/include/soc/ledc_reg.h:
+
+/opt/esp/idf/components/soc/soc/esp32/include/soc/soc.h:
+
+/opt/esp/idf/components/esp_common/include/esp_assert.h:
+
+/opt/esp/idf/components/esp_common/include/esp_bit_defs.h:
+
+/opt/esp/idf/components/soc/soc/esp32/include/soc/ledc_struct.h:
+
+/opt/esp/idf/components/soc/soc/esp32/include/soc/ledc_caps.h:
+
+/opt/esp/idf/components/soc/soc/esp32/include/soc/gpio_sig_map.h:
+/opt/esp/idf/components/soc/soc/esp32/ledc_periph.c:

@@ -1,0 +1,983 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+APA106	modules/apa106.py	/^class APA106(NeoPixel):$/;"	c
+APP_LD_ARGS	Makefile	/^APP_LD_ARGS =$/;"	m
+BAT_CHARGE	boards/TINYPICO/modules/tinypico.py	/^BAT_CHARGE = const(34)$/;"	v
+BAT_VOLTAGE	boards/TINYPICO/modules/tinypico.py	/^BAT_VOLTAGE = const(35)$/;"	v
+BAUD	Makefile	/^BAUD ?= 460800$/;"	m
+BGR	boards/TINYPICO/modules/dotstar.py	/^BGR = (2, 1, 0)$/;"	v
+BLOCK_SIZE_BYTES	esp32_partition.c	38;"	d	file:
+BOARD	Makefile	/^BOARD ?= GENERIC$/;"	m
+BOARD_DIR	Makefile	/^BOARD_DIR ?= boards\/$(BOARD)$/;"	m
+BOOTLOADER_LDFLAGS	Makefile	/^BOOTLOADER_LDFLAGS =$/;"	m
+BOOTLOADER_LIBS	Makefile	/^BOOTLOADER_LIBS =$/;"	m
+BOOTLOADER_LIB_ALL	Makefile	/^BOOTLOADER_LIB_ALL =$/;"	m
+BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ	Makefile	/^BOOTLOADER_LIB_BOOTLOADER_SUPPORT_OBJ = $(addprefix $(BUILD)\/bootloader\/$(ESPCOMP)\/,\\$/;"	m
+BOOTLOADER_LIB_DIR	Makefile	/^BOOTLOADER_LIB_DIR = $(BUILD)\/bootloader$/;"	m
+BOOTLOADER_LIB_LOG_OBJ	Makefile	/^BOOTLOADER_LIB_LOG_OBJ = $(addprefix $(BUILD)\/bootloader\/$(ESPCOMP)\/,\\$/;"	m
+BOOTLOADER_LIB_MAIN_OBJ	Makefile	/^BOOTLOADER_LIB_MAIN_OBJ = $(addprefix $(BUILD)\/bootloader\/$(ESPCOMP)\/,\\$/;"	m
+BOOTLOADER_LIB_MICRO_ECC_OBJ	Makefile	/^BOOTLOADER_LIB_MICRO_ECC_OBJ = $(addprefix $(BUILD)\/bootloader\/$(ESPCOMP)\/,\\$/;"	m
+BOOTLOADER_LIB_SOC_OBJ	Makefile	/^BOOTLOADER_LIB_SOC_OBJ = $(addprefix $(BUILD)\/bootloader\/$(ESPCOMP)\/soc\/,\\$/;"	m
+BOOTLOADER_LIB_SPI_FLASH_OBJ	Makefile	/^BOOTLOADER_LIB_SPI_FLASH_OBJ = $(addprefix $(BUILD)\/bootloader\/$(ESPCOMP)\/,\\$/;"	m
+BOOTLOADER_OBJ_ALL	Makefile	/^BOOTLOADER_OBJ_ALL = \\$/;"	m
+BOOTLOADER_OBJ_DIRS	Makefile	/^BOOTLOADER_OBJ_DIRS = $(sort $(dir $(BOOTLOADER_OBJ_ALL)))$/;"	m
+BRG	boards/TINYPICO/modules/dotstar.py	/^BRG = (2, 0, 1)$/;"	v
+BUILD	Makefile	/^BUILD ?= build-$(BOARD)$/;"	m
+BUILD_ESPIDF_LIB	Makefile	/^BUILD_ESPIDF_LIB = $(BUILD)\/esp-idf$/;"	m
+BYTES_PER_WORD	mpconfigport.h	223;"	d
+CFLAGS	Makefile	/^$(BUILD)\/$(ESPCOMP)\/freertos\/%.o: CFLAGS = $(CFLAGS_BASE) -I. -I$(BUILD) $(INC_ESPCOMP) -I$(ESPCOMP)\/freertos\/include\/freertos -D_ESP_FREERTOS_INTERNAL$/;"	m
+CFLAGS	Makefile	/^$(BUILD)\/$(ESPCOMP)\/freertos\/portasm.o: CFLAGS = $(CFLAGS_ASM)$/;"	m
+CFLAGS	Makefile	/^$(BUILD)\/$(ESPCOMP)\/freertos\/xtensa_context.o: CFLAGS = $(CFLAGS_ASM)$/;"	m
+CFLAGS	Makefile	/^$(BUILD)\/$(ESPCOMP)\/freertos\/xtensa_intr_asm.o: CFLAGS = $(CFLAGS_ASM)$/;"	m
+CFLAGS	Makefile	/^$(BUILD)\/$(ESPCOMP)\/freertos\/xtensa_vector_defaults.o: CFLAGS = $(CFLAGS_ASM)$/;"	m
+CFLAGS	Makefile	/^$(BUILD)\/$(ESPCOMP)\/freertos\/xtensa_vectors.o: CFLAGS = $(CFLAGS_ASM)$/;"	m
+CFLAGS	Makefile	/^CFLAGS = $(CFLAGS_BASE) $(INC) $(INC_ESPCOMP)$/;"	m
+CFLAGS_ASM	Makefile	/^CFLAGS_ASM = -I$(BUILD) -I$(ESPCOMP)\/esp32\/include -I$(ESPCOMP)\/soc\/esp32\/include -I$(ESPCOMP)\/freertos\/include\/freertos -I. -I$(ESPCOMP)\/xtensa\/include -I$(ESPCOMP)\/xtensa\/esp32\/include -I$(ESPCOMP)\/esp_common\/include$/;"	m
+CFLAGS_ASM	Makefile	/^CFLAGS_ASM = -I$(BUILD) -I$(ESPCOMP)\/esp32\/include -I$(ESPCOMP)\/soc\/esp32\/include -I$(ESPCOMP)\/freertos\/include\/freertos -I.$/;"	m
+CFLAGS_BASE	Makefile	/^CFLAGS_BASE = -std=gnu99 $(CFLAGS_COMMON) -DMBEDTLS_CONFIG_FILE='"mbedtls\/esp_config.h"' -DHAVE_CONFIG_H$/;"	m
+CFLAGS_COMMON	Makefile	/^CFLAGS_COMMON = -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields \\$/;"	m
+COPT	Makefile	/^COPT = -O0$/;"	m
+CROSS_COMPILE	Makefile	/^CROSS_COMPILE ?= xtensa-esp32-elf-$/;"	m
+CXXFLAGS	Makefile	/^CXXFLAGS = -std=gnu++11 $(CFLAGS_COMMON) $(INC) $(INC_ESPCOMP)$/;"	m
+DAC1	boards/TINYPICO/modules/tinypico.py	/^DAC1 = const(25)$/;"	v
+DAC2	boards/TINYPICO/modules/tinypico.py	/^DAC2 = const(26)$/;"	v
+DEBUG	machine_sdcard.c	39;"	d	file:
+DEBUG_printf	machine_sdcard.c	41;"	d	file:
+DEBUG_printf	machine_sdcard.c	43;"	d	file:
+DOTSTAR_CLK	boards/TINYPICO/modules/tinypico.py	/^DOTSTAR_CLK = const(12)$/;"	v
+DOTSTAR_DATA	boards/TINYPICO/modules/tinypico.py	/^DOTSTAR_DATA = const(2)$/;"	v
+DOTSTAR_PWR	boards/TINYPICO/modules/tinypico.py	/^DOTSTAR_PWR = const(13)$/;"	v
+DRIVERS_SRC_C	Makefile	/^DRIVERS_SRC_C = $(addprefix drivers\/,\\$/;"	m
+DotStar	boards/TINYPICO/modules/dotstar.py	/^class DotStar:$/;"	c
+ESP32_PARTITION_BOOT	esp32_partition.c	/^    ESP32_PARTITION_BOOT,$/;"	e	enum:__anon6	file:
+ESP32_PARTITION_RUNNING	esp32_partition.c	/^    ESP32_PARTITION_RUNNING,$/;"	e	enum:__anon6	file:
+ESPCOMP	Makefile	/^ESPCOMP = $(ESPIDF)\/components$/;"	m
+ESPCOMP_KCONFIGS	Makefile	/^ESPCOMP_KCONFIGS = $(shell find $(ESPCOMP) -name Kconfig)$/;"	m
+ESPCOMP_KCONFIGS_PROJBUILD	Makefile	/^ESPCOMP_KCONFIGS_PROJBUILD = $(shell find $(ESPCOMP) -name Kconfig.projbuild)$/;"	m
+ESPIDF	Makefile	/^ESPIDF = $(IDF_PATH)$/;"	m
+ESPIDF_APP_TRACE_O	Makefile	/^ESPIDF_APP_TRACE_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/app_trace\/*.c))$/;"	m
+ESPIDF_APP_UPDATE_O	Makefile	/^ESPIDF_APP_UPDATE_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/app_update\/*.c))$/;"	m
+ESPIDF_BOOTLOADER_SUPPORT_O	Makefile	/^ESPIDF_BOOTLOADER_SUPPORT_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_BT_NIMBLE_O	Makefile	/^ESPIDF_BT_NIMBLE_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_CURHASH	Makefile	/^ESPIDF_CURHASH := $(shell git -C $(ESPIDF) show -s --pretty=format:'%H')$/;"	m
+ESPIDF_CXX_O	Makefile	/^ESPIDF_CXX_O = $(patsubst %.cpp,%.o,$(wildcard $(ESPCOMP)\/cxx\/*.cpp))$/;"	m
+ESPIDF_DRIVER_O	Makefile	/^ESPIDF_DRIVER_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/driver\/*.c))$/;"	m
+ESPIDF_EFUSE_O	Makefile	/^ESPIDF_EFUSE_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_ESP32_O	Makefile	/^ESPIDF_ESP32_O = \\$/;"	m
+ESPIDF_ESP_COMMON_O	Makefile	/^ESPIDF_ESP_COMMON_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/esp_common\/src\/*.c))$/;"	m
+ESPIDF_ESP_ETH_O	Makefile	/^ESPIDF_ESP_ETH_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/esp_eth\/src\/*.c))$/;"	m
+ESPIDF_ESP_EVENT_O	Makefile	/^ESPIDF_ESP_EVENT_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/esp_event\/*.c))$/;"	m
+ESPIDF_ESP_RINGBUF_O	Makefile	/^ESPIDF_ESP_RINGBUF_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/esp_ringbuf\/*.c))$/;"	m
+ESPIDF_ESP_WIFI_O	Makefile	/^ESPIDF_ESP_WIFI_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/esp_wifi\/src\/*.c))$/;"	m
+ESPIDF_ETHERNET_O	Makefile	/^ESPIDF_ETHERNET_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_FREERTOS_O	Makefile	/^ESPIDF_FREERTOS_O = \\$/;"	m
+ESPIDF_HEAP_O	Makefile	/^ESPIDF_HEAP_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/heap\/*.c))$/;"	m
+ESPIDF_JSON_O	Makefile	/^ESPIDF_JSON_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/json\/cJSON\/cJSON*.c))$/;"	m
+ESPIDF_LOG_O	Makefile	/^ESPIDF_LOG_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/log\/*.c))$/;"	m
+ESPIDF_LWIP_O	Makefile	/^ESPIDF_LWIP_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_MBEDTLS_O	Makefile	/^ESPIDF_MBEDTLS_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_MDNS_O	Makefile	/^ESPIDF_MDNS_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/mdns\/*.c))$/;"	m
+ESPIDF_NEWLIB_O	Makefile	/^ESPIDF_NEWLIB_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/newlib\/*.c))$/;"	m
+ESPIDF_NVS_FLASH_O	Makefile	/^ESPIDF_NVS_FLASH_O = $(patsubst %.cpp,%.o,$(wildcard $(ESPCOMP)\/nvs_flash\/src\/*.cpp))$/;"	m
+ESPIDF_PTHREAD_O	Makefile	/^ESPIDF_PTHREAD_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/pthread\/*.c))$/;"	m
+ESPIDF_SDMMC_O	Makefile	/^ESPIDF_SDMMC_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/sdmmc\/*.c))$/;"	m
+ESPIDF_SMARTCONFIG_ACK_O	Makefile	/^ESPIDF_SMARTCONFIG_ACK_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/smartconfig_ack\/*.c))$/;"	m
+ESPIDF_SOC_O	Makefile	/^ESPIDF_SOC_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_SPI_FLASH_O	Makefile	/^ESPIDF_SPI_FLASH_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/spi_flash\/*.c))$/;"	m
+ESPIDF_SUPHASH_V3	Makefile	/^ESPIDF_SUPHASH_V3 := 6ccb4cf5b7d1fdddb8c2492f9cbc926abaf230df$/;"	m
+ESPIDF_SUPHASH_V4	Makefile	/^ESPIDF_SUPHASH_V4 := 310beae373446ceb9a4ad9b36b5428d7fdf2705f$/;"	m
+ESPIDF_TCPIP_ADAPTER_O	Makefile	/^ESPIDF_TCPIP_ADAPTER_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/tcpip_adapter\/*.c))$/;"	m
+ESPIDF_ULP_O	Makefile	/^ESPIDF_ULP_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/ulp\/*.c))$/;"	m
+ESPIDF_VFS_O	Makefile	/^ESPIDF_VFS_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/vfs\/*.c))$/;"	m
+ESPIDF_WPA_SUPPLICANT_O	Makefile	/^ESPIDF_WPA_SUPPLICANT_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPIDF_XTENSA_DEBUG_MODULE_O	Makefile	/^ESPIDF_XTENSA_DEBUG_MODULE_O = $(patsubst %.c,%.o,$(wildcard $(ESPCOMP)\/xtensa-debug-module\/*.c))$/;"	m
+ESPIDF_XTENSA_O	Makefile	/^ESPIDF_XTENSA_O = $(patsubst %.c,%.o,\\$/;"	m
+ESPTOOL	Makefile	/^ESPTOOL ?= $(ESPCOMP)\/esptool_py\/esptool\/esptool.py$/;"	m
+ESP_EXCEPTIONS	modnetwork.c	111;"	d	file:
+EXTMOD_SRC_C	Makefile	/^EXTMOD_SRC_C = $(addprefix extmod\/,\\$/;"	m
+FLASH_FREQ	Makefile	/^FLASH_FREQ ?= 40m$/;"	m
+FLASH_FREQ	boards/GENERIC_D2WD/mpconfigboard.mk	/^FLASH_FREQ = 40m$/;"	m
+FLASH_FREQ	boards/TINYPICO/mpconfigboard.mk	/^FLASH_FREQ = 80m$/;"	m
+FLASH_MODE	Makefile	/^FLASH_MODE ?= dio$/;"	m
+FLASH_MODE	boards/GENERIC_D2WD/mpconfigboard.mk	/^FLASH_MODE = dio$/;"	m
+FLASH_SIZE	Makefile	/^FLASH_SIZE ?= 4MB$/;"	m
+FLASH_SIZE	boards/GENERIC_D2WD/mpconfigboard.mk	/^FLASH_SIZE = 2MB$/;"	m
+FROZEN_MANIFEST	Makefile	/^FROZEN_MANIFEST ?= boards\/manifest.py$/;"	m
+FROZEN_MANIFEST	boards/TINYPICO/mpconfigboard.mk	/^FROZEN_MANIFEST ?= $(BOARD_DIR)\/manifest.py$/;"	m
+GBR	boards/TINYPICO/modules/dotstar.py	/^GBR = (1, 2, 0)$/;"	v
+GIT_SUBMODULES	Makefile	/^GIT_SUBMODULES = lib\/berkeley-db-1.xx$/;"	m
+GPIO_PULL_DOWN	machine_pin.c	43;"	d	file:
+GPIO_PULL_HOLD	machine_pin.c	45;"	d	file:
+GPIO_PULL_UP	machine_pin.c	44;"	d	file:
+GRB	boards/TINYPICO/modules/dotstar.py	/^GRB = (1, 0, 2)$/;"	v
+I2C_0_DEFAULT_SCL	machine_i2c.c	34;"	d	file:
+I2C_0_DEFAULT_SDA	machine_i2c.c	35;"	d	file:
+I2C_1_DEFAULT_SCL	machine_i2c.c	36;"	d	file:
+I2C_1_DEFAULT_SDA	machine_i2c.c	37;"	d	file:
+I2C_DEFAULT_TIMEOUT_US	machine_i2c.c	39;"	d	file:
+I2C_SCL	boards/TINYPICO/modules/tinypico.py	/^I2C_SCL = const(22)$/;"	v
+I2C_SDA	boards/TINYPICO/modules/tinypico.py	/^I2C_SDA = const(21)$/;"	v
+IDF_VER	Makefile	/^IDF_VER := $(shell git -C $(ESPIDF) describe)$/;"	m
+INCLUDED_MPHALPORT_H	mphalport.h	30;"	d
+INT_FMT	mpconfigport.h	263;"	d
+LDFLAGS	Makefile	/^LDFLAGS = -nostdlib -Map=$(@:.elf=.map) --cref$/;"	m
+LDGEN_FRAGMENTS	Makefile	/^LDGEN_FRAGMENTS = $(shell find $(ESPCOMP) -name "*.lf")$/;"	m
+LDGEN_LIBRARIES	Makefile	/^LDGEN_LIBRARIES=$(foreach lib,$(LIB_ESPIDF),$(BUILD_ESPIDF_LIB)\/$(lib)\/lib$(lib).a)$/;"	m
+LDGEN_SECTIONS_INFO	Makefile	/^LDGEN_SECTIONS_INFO = $(foreach lib,$(LIB_ESPIDF),$(BUILD_ESPIDF_LIB)\/$(lib)\/lib$(lib).a.sections_info)$/;"	m
+LDGEN_SECTION_INFOS	Makefile	/^LDGEN_SECTION_INFOS = $(BUILD_ESPIDF_LIB)\/ldgen.section_infos$/;"	m
+LED_START	boards/TINYPICO/modules/dotstar.py	/^LED_START = 0b11100000  # Three "1" bits, followed by 5 brightness bits$/;"	v
+LIB	Makefile	/^LIB = $(foreach lib,$(LIB_ESPIDF),$(BUILD_ESPIDF_LIB)\/$(lib)\/lib$(lib).a)$/;"	m
+LIBC_LIBM	Makefile	/^LIBC_LIBM = $(ESPCOMP)\/newlib\/lib\/libc-psram-workaround.a $(ESPCOMP)\/newlib\/lib\/libm-psram-workaround.a$/;"	m
+LIBC_LIBM	Makefile	/^LIBC_LIBM = $(ESPCOMP)\/newlib\/lib\/libc.a $(ESPCOMP)\/newlib\/lib\/libm.a$/;"	m
+LIBGCC_FILE_NAME	Makefile	/^LIBGCC_FILE_NAME = $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)$/;"	m
+LIBSTDCXX_FILE_NAME	Makefile	/^LIBSTDCXX_FILE_NAME = $(shell $(CXX) $(CXXFLAGS) -print-file-name=libstdc++.a)$/;"	m
+LIB_ESPIDF	Makefile	/^LIB_ESPIDF =$/;"	m
+LIB_SRC_C	Makefile	/^LIB_SRC_C = $(addprefix lib\/,\\$/;"	m
+MACHINE_HW_SPI_STATE_DEINIT	machine_hw_spi.c	/^        MACHINE_HW_SPI_STATE_DEINIT$/;"	e	enum:_machine_hw_spi_obj_t::__anon1	file:
+MACHINE_HW_SPI_STATE_INIT	machine_hw_spi.c	/^        MACHINE_HW_SPI_STATE_INIT,$/;"	e	enum:_machine_hw_spi_obj_t::__anon1	file:
+MACHINE_HW_SPI_STATE_NONE	machine_hw_spi.c	/^        MACHINE_HW_SPI_STATE_NONE,$/;"	e	enum:_machine_hw_spi_obj_t::__anon1	file:
+MACHINE_WAKE_DEEPSLEEP	modmachine.h	/^    MACHINE_WAKE_DEEPSLEEP=0x04$/;"	e	enum:__anon2
+MACHINE_WAKE_SLEEP	modmachine.h	/^    MACHINE_WAKE_SLEEP=0x02,$/;"	e	enum:__anon2
+MDNS_LOCAL_SUFFIX	modsocket.c	73;"	d	file:
+MDNS_QUERY_TIMEOUT_MS	modsocket.c	72;"	d	file:
+MEM_MAGIC	machine_rtc.c	65;"	d	file:
+MICROPY_ALLOC_PATH_MAX	mpconfigport.h	19;"	d
+MICROPY_BEGIN_ATOMIC_SECTION	mpconfigport.h	234;"	d
+MICROPY_BLUETOOTH_NIMBLE	Makefile	/^MICROPY_BLUETOOTH_NIMBLE = 1$/;"	m
+MICROPY_CAN_OVERRIDE_BUILTINS	mpconfigport.h	56;"	d
+MICROPY_COMP_MODULE_CONST	mpconfigport.h	26;"	d
+MICROPY_COMP_TRIPLE_TUPLE_ASSIGN	mpconfigport.h	27;"	d
+MICROPY_CPYTHON_COMPAT	mpconfigport.h	48;"	d
+MICROPY_EMIT_XTENSAWIN	mpconfigport.h	23;"	d
+MICROPY_ENABLE_EMERGENCY_EXCEPTION_BUF	mpconfigport.h	38;"	d
+MICROPY_ENABLE_FINALISER	mpconfigport.h	36;"	d
+MICROPY_ENABLE_GC	mpconfigport.h	35;"	d
+MICROPY_ENABLE_SCHEDULER	mpconfigport.h	59;"	d
+MICROPY_ENABLE_SOURCE_LINE	mpconfigport.h	44;"	d
+MICROPY_END_ATOMIC_SECTION	mpconfigport.h	235;"	d
+MICROPY_ERROR_REPORTING	mpconfigport.h	45;"	d
+MICROPY_EVENT_POLL_HOOK	mpconfigport.h	244;"	d
+MICROPY_EVENT_POLL_HOOK	mpconfigport.h	253;"	d
+MICROPY_FATFS_ENABLE_LFN	mpconfigport.h	166;"	d
+MICROPY_FATFS_LFN_CODE_PAGE	mpconfigport.h	169;"	d
+MICROPY_FATFS_MAX_SS	mpconfigport.h	168;"	d
+MICROPY_FATFS_RPATH	mpconfigport.h	167;"	d
+MICROPY_FLOAT_IMPL	mpconfigport.h	47;"	d
+MICROPY_HELPER_REPL	mpconfigport.h	40;"	d
+MICROPY_HW_BOARD_NAME	boards/GENERIC/mpconfigboard.h	1;"	d
+MICROPY_HW_BOARD_NAME	boards/GENERIC_D2WD/mpconfigboard.h	1;"	d
+MICROPY_HW_BOARD_NAME	boards/GENERIC_SPIRAM/mpconfigboard.h	1;"	d
+MICROPY_HW_BOARD_NAME	boards/TINYPICO/mpconfigboard.h	1;"	d
+MICROPY_HW_ENABLE_MDNS_QUERIES	mpconfigport.h	275;"	d
+MICROPY_HW_ENABLE_MDNS_RESPONDER	mpconfigport.h	279;"	d
+MICROPY_HW_ENABLE_SDCARD	mpconfigport.h	152;"	d
+MICROPY_HW_MCU_NAME	boards/GENERIC/mpconfigboard.h	2;"	d
+MICROPY_HW_MCU_NAME	boards/GENERIC_D2WD/mpconfigboard.h	2;"	d
+MICROPY_HW_MCU_NAME	boards/GENERIC_SPIRAM/mpconfigboard.h	2;"	d
+MICROPY_HW_MCU_NAME	boards/TINYPICO/mpconfigboard.h	2;"	d
+MICROPY_HW_RTC_USER_MEM_MAX	machine_rtc.c	60;"	d	file:
+MICROPY_HW_SOFTSPI_MAX_BAUDRATE	mpconfigport.h	154;"	d
+MICROPY_HW_SOFTSPI_MIN_DELAY	mpconfigport.h	153;"	d
+MICROPY_INCLUDED_ESP32_MACHINE_RTC_H	machine_rtc.h	29;"	d
+MICROPY_INCLUDED_ESP32_MODESP32_H	modesp32.h	2;"	d
+MICROPY_INCLUDED_ESP32_MODMACHINE_H	modmachine.h	2;"	d
+MICROPY_INCLUDED_ESP32_MODNETWORK_H	modnetwork.h	27;"	d
+MICROPY_INCLUDED_ESP32_MPTHREADPORT_H	mpthreadport.h	29;"	d
+MICROPY_INCLUDED_ESP32_UART_H	uart.h	29;"	d
+MICROPY_KBD_EXCEPTION	mpconfigport.h	39;"	d
+MICROPY_LONGINT_IMPL	mpconfigport.h	43;"	d
+MICROPY_MAKE_POINTER_CALLABLE	mpconfigport.h	224;"	d
+MICROPY_MODULE_BUILTIN_INIT	mpconfigport.h	51;"	d
+MICROPY_MODULE_FROZEN_MPY	mpconfigport.h	54;"	d
+MICROPY_MODULE_FROZEN_STR	mpconfigport.h	53;"	d
+MICROPY_MODULE_WEAK_LINKS	mpconfigport.h	52;"	d
+MICROPY_NLR_SETJMP	mpconfigport.h	16;"	d
+MICROPY_OBJ_REPR	mpconfigport.h	15;"	d
+MICROPY_OPT_COMPUTED_GOTO	mpconfigport.h	30;"	d
+MICROPY_OPT_MPZ_BITWISE	mpconfigport.h	31;"	d
+MICROPY_PERSISTENT_CODE_LOAD	mpconfigport.h	22;"	d
+MICROPY_PORT_BUILTINS	mpconfigport.h	179;"	d
+MICROPY_PORT_BUILTIN_MODULES	mpconfigport.h	193;"	d
+MICROPY_PORT_ROOT_POINTERS	mpconfigport.h	215;"	d
+MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE	mpconfigport.h	210;"	d
+MICROPY_PORT_ROOT_POINTER_BLUETOOTH_NIMBLE	mpconfigport.h	212;"	d
+MICROPY_PY_ALL_SPECIAL_METHODS	mpconfigport.h	81;"	d
+MICROPY_PY_ARRAY	mpconfigport.h	96;"	d
+MICROPY_PY_ARRAY_SLICE_ASSIGN	mpconfigport.h	97;"	d
+MICROPY_PY_ATTRTUPLE	mpconfigport.h	98;"	d
+MICROPY_PY_BLUETOOTH	Makefile	/^MICROPY_PY_BLUETOOTH ?= 1$/;"	m
+MICROPY_PY_BLUETOOTH_DEFAULT_NAME	mpconfigport.h	163;"	d
+MICROPY_PY_BLUETOOTH_RANDOM_ADDR	mpconfigport.h	162;"	d
+MICROPY_PY_BTREE	Makefile	/^MICROPY_PY_BTREE = 1$/;"	m
+MICROPY_PY_BUILTINS_BYTEARRAY	mpconfigport.h	71;"	d
+MICROPY_PY_BUILTINS_COMPILE	mpconfigport.h	82;"	d
+MICROPY_PY_BUILTINS_ENUMERATE	mpconfigport.h	83;"	d
+MICROPY_PY_BUILTINS_EXECFILE	mpconfigport.h	84;"	d
+MICROPY_PY_BUILTINS_FILTER	mpconfigport.h	85;"	d
+MICROPY_PY_BUILTINS_FROZENSET	mpconfigport.h	76;"	d
+MICROPY_PY_BUILTINS_HELP	mpconfigport.h	91;"	d
+MICROPY_PY_BUILTINS_HELP_MODULES	mpconfigport.h	93;"	d
+MICROPY_PY_BUILTINS_HELP_TEXT	mpconfigport.h	92;"	d
+MICROPY_PY_BUILTINS_INPUT	mpconfigport.h	88;"	d
+MICROPY_PY_BUILTINS_MEMORYVIEW	mpconfigport.h	72;"	d
+MICROPY_PY_BUILTINS_MIN_MAX	mpconfigport.h	89;"	d
+MICROPY_PY_BUILTINS_NOTIMPLEMENTED	mpconfigport.h	87;"	d
+MICROPY_PY_BUILTINS_POW3	mpconfigport.h	90;"	d
+MICROPY_PY_BUILTINS_PROPERTY	mpconfigport.h	77;"	d
+MICROPY_PY_BUILTINS_RANGE_ATTRS	mpconfigport.h	78;"	d
+MICROPY_PY_BUILTINS_REVERSED	mpconfigport.h	86;"	d
+MICROPY_PY_BUILTINS_ROUND_INT	mpconfigport.h	79;"	d
+MICROPY_PY_BUILTINS_SET	mpconfigport.h	73;"	d
+MICROPY_PY_BUILTINS_SLICE	mpconfigport.h	74;"	d
+MICROPY_PY_BUILTINS_SLICE_ATTRS	mpconfigport.h	75;"	d
+MICROPY_PY_BUILTINS_STR_CENTER	mpconfigport.h	68;"	d
+MICROPY_PY_BUILTINS_STR_PARTITION	mpconfigport.h	69;"	d
+MICROPY_PY_BUILTINS_STR_SPLITLINES	mpconfigport.h	70;"	d
+MICROPY_PY_BUILTINS_STR_UNICODE	mpconfigport.h	67;"	d
+MICROPY_PY_BUILTINS_TIMEOUTERROR	mpconfigport.h	80;"	d
+MICROPY_PY_CMATH	mpconfigport.h	105;"	d
+MICROPY_PY_COLLECTIONS	mpconfigport.h	99;"	d
+MICROPY_PY_COLLECTIONS_DEQUE	mpconfigport.h	100;"	d
+MICROPY_PY_COLLECTIONS_ORDEREDDICT	mpconfigport.h	101;"	d
+MICROPY_PY_DESCRIPTORS	mpconfigport.h	65;"	d
+MICROPY_PY_FRAMEBUF	mpconfigport.h	160;"	d
+MICROPY_PY_FUNCTION_ATTRS	mpconfigport.h	64;"	d
+MICROPY_PY_GC	mpconfigport.h	106;"	d
+MICROPY_PY_IO	mpconfigport.h	107;"	d
+MICROPY_PY_IO_BUFFEREDWRITER	mpconfigport.h	111;"	d
+MICROPY_PY_IO_BYTESIO	mpconfigport.h	110;"	d
+MICROPY_PY_IO_FILEIO	mpconfigport.h	109;"	d
+MICROPY_PY_IO_IOBASE	mpconfigport.h	108;"	d
+MICROPY_PY_MACHINE	mpconfigport.h	143;"	d
+MICROPY_PY_MACHINE_I2C	mpconfigport.h	146;"	d
+MICROPY_PY_MACHINE_I2C_MAKE_NEW	mpconfigport.h	147;"	d
+MICROPY_PY_MACHINE_PIN_MAKE_NEW	mpconfigport.h	144;"	d
+MICROPY_PY_MACHINE_PULSE	mpconfigport.h	145;"	d
+MICROPY_PY_MACHINE_SPI	mpconfigport.h	148;"	d
+MICROPY_PY_MACHINE_SPI_LSB	mpconfigport.h	150;"	d
+MICROPY_PY_MACHINE_SPI_MAKE_NEW	mpconfigport.h	151;"	d
+MICROPY_PY_MACHINE_SPI_MSB	mpconfigport.h	149;"	d
+MICROPY_PY_MATH	mpconfigport.h	102;"	d
+MICROPY_PY_MATH_ISCLOSE	mpconfigport.h	104;"	d
+MICROPY_PY_MATH_SPECIAL_FUNCTIONS	mpconfigport.h	103;"	d
+MICROPY_PY_MICROPYTHON_MEM_INFO	mpconfigport.h	95;"	d
+MICROPY_PY_OS_DUPTERM	mpconfigport.h	142;"	d
+MICROPY_PY_STRUCT	mpconfigport.h	112;"	d
+MICROPY_PY_STR_BYTES_CMP_WARN	mpconfigport.h	66;"	d
+MICROPY_PY_SYS	mpconfigport.h	113;"	d
+MICROPY_PY_SYS_EXIT	mpconfigport.h	116;"	d
+MICROPY_PY_SYS_MAXSIZE	mpconfigport.h	114;"	d
+MICROPY_PY_SYS_MODULES	mpconfigport.h	115;"	d
+MICROPY_PY_SYS_PLATFORM	mpconfigport.h	272;"	d
+MICROPY_PY_SYS_STDFILES	mpconfigport.h	117;"	d
+MICROPY_PY_SYS_STDIO_BUFFER	mpconfigport.h	118;"	d
+MICROPY_PY_THREAD	mpconfigport.h	122;"	d
+MICROPY_PY_THREAD_GIL	mpconfigport.h	123;"	d
+MICROPY_PY_THREAD_GIL_VM_DIVISOR	mpconfigport.h	124;"	d
+MICROPY_PY_UBINASCII	mpconfigport.h	138;"	d
+MICROPY_PY_UBINASCII_CRC32	mpconfigport.h	139;"	d
+MICROPY_PY_UCRYPTOLIB	mpconfigport.h	137;"	d
+MICROPY_PY_UCTYPES	mpconfigport.h	127;"	d
+MICROPY_PY_UERRNO	mpconfigport.h	119;"	d
+MICROPY_PY_UHASHLIB	mpconfigport.h	134;"	d
+MICROPY_PY_UHASHLIB_SHA1	mpconfigport.h	135;"	d
+MICROPY_PY_UHASHLIB_SHA256	mpconfigport.h	136;"	d
+MICROPY_PY_UHEAPQ	mpconfigport.h	132;"	d
+MICROPY_PY_UJSON	mpconfigport.h	129;"	d
+MICROPY_PY_URANDOM	mpconfigport.h	140;"	d
+MICROPY_PY_URANDOM_EXTRA_FUNCS	mpconfigport.h	141;"	d
+MICROPY_PY_URE	mpconfigport.h	130;"	d
+MICROPY_PY_URE_SUB	mpconfigport.h	131;"	d
+MICROPY_PY_USELECT	mpconfigport.h	120;"	d
+MICROPY_PY_USOCKET_EVENTS	mpconfigport.h	161;"	d
+MICROPY_PY_USOCKET_EVENTS_HANDLER	mpconfigport.h	238;"	d
+MICROPY_PY_USOCKET_EVENTS_HANDLER	mpconfigport.h	240;"	d
+MICROPY_PY_USSL	Makefile	/^MICROPY_PY_USSL = 0$/;"	m
+MICROPY_PY_USSL	mpconfigport.h	155;"	d
+MICROPY_PY_USSL_FINALISER	mpconfigport.h	157;"	d
+MICROPY_PY_UTIMEQ	mpconfigport.h	133;"	d
+MICROPY_PY_UTIME_MP_HAL	mpconfigport.h	121;"	d
+MICROPY_PY_UWEBSOCKET	mpconfigport.h	158;"	d
+MICROPY_PY_UZLIB	mpconfigport.h	128;"	d
+MICROPY_PY_WEBREPL	mpconfigport.h	159;"	d
+MICROPY_PY___FILE__	mpconfigport.h	94;"	d
+MICROPY_QSTR_EXTRA_POOL	mpconfigport.h	55;"	d
+MICROPY_READER_VFS	mpconfigport.h	34;"	d
+MICROPY_REPL_AUTO_INDENT	mpconfigport.h	42;"	d
+MICROPY_REPL_EMACS_KEYS	mpconfigport.h	41;"	d
+MICROPY_SCHEDULER_DEPTH	mpconfigport.h	60;"	d
+MICROPY_SSL_AXTLS	Makefile	/^MICROPY_SSL_AXTLS = 0$/;"	m
+MICROPY_SSL_MBEDTLS	mpconfigport.h	156;"	d
+MICROPY_STACK_CHECK	mpconfigport.h	37;"	d
+MICROPY_STREAMS_NON_BLOCK	mpconfigport.h	49;"	d
+MICROPY_STREAMS_POSIX_API	mpconfigport.h	50;"	d
+MICROPY_USE_INTERNAL_ERRNO	mpconfigport.h	57;"	d
+MICROPY_USE_INTERNAL_PRINTF	mpconfigport.h	58;"	d
+MICROPY_VFS	mpconfigport.h	61;"	d
+MICROPY_VFS_FAT	Makefile	/^MICROPY_VFS_FAT = 1$/;"	m
+MICROPY_VFS_LFS2	Makefile	/^MICROPY_VFS_LFS2 = 1$/;"	m
+MICROPY_WARNINGS	mpconfigport.h	46;"	d
+MODNETWORK_INCLUDE_CONSTANTS	modnetwork.c	58;"	d	file:
+MP_DEEPSLEEP_RESET	modmachine.c	/^    MP_DEEPSLEEP_RESET,$/;"	e	enum:__anon7	file:
+MP_HAL_PIN_FMT	mphalport.h	66;"	d
+MP_HARD_RESET	modmachine.c	/^    MP_HARD_RESET,$/;"	e	enum:__anon7	file:
+MP_HW_SPI_MAX_XFER_BITS	machine_hw_spi.c	40;"	d	file:
+MP_HW_SPI_MAX_XFER_BYTES	machine_hw_spi.c	39;"	d	file:
+MP_PLAT_COMMIT_EXEC	mpconfigport.h	227;"	d
+MP_PLAT_PRINT_STRN	mpconfigport.h	225;"	d
+MP_PWRON_RESET	modmachine.c	/^    MP_PWRON_RESET = 1,$/;"	e	enum:__anon7	file:
+MP_SOFT_RESET	modmachine.c	/^    MP_SOFT_RESET$/;"	e	enum:__anon7	file:
+MP_SSIZE_MAX	mpconfigport.h	228;"	d
+MP_STATE_PORT	mpconfigport.h	204;"	d
+MP_TASK_COREID	mphalport.h	39;"	d
+MP_TASK_PRIORITY	main.c	62;"	d	file:
+MP_TASK_STACK_LEN	main.c	64;"	d	file:
+MP_TASK_STACK_SIZE	main.c	63;"	d	file:
+MP_THREAD_DEFAULT_STACK_SIZE	mpthreadport.c	44;"	d	file:
+MP_THREAD_MIN_STACK_SIZE	mpthreadport.c	43;"	d	file:
+MP_THREAD_PRIORITY	mpthreadport.c	45;"	d	file:
+MP_WDT_RESET	modmachine.c	/^    MP_WDT_RESET,$/;"	e	enum:__anon7	file:
+NeoPixel	modules/neopixel.py	/^class NeoPixel:$/;"	c
+OBJ	Makefile	/^OBJ = $(OBJ_MP)$/;"	m
+OBJDUMP	Makefile	/^OBJDUMP = $(CROSS_COMPILE)objdump$/;"	m
+OBJ_ESPIDF	Makefile	/^OBJ_ESPIDF =$/;"	m
+OBJ_ESPIDF_DIRS	Makefile	/^OBJ_ESPIDF_DIRS = $(sort $(dir $(OBJ_ESPIDF))) $(BUILD_ESPIDF_LIB) $(addprefix $(BUILD_ESPIDF_LIB)\/,$(LIB_ESPIDF))$/;"	m
+OBJ_MP	Makefile	/^OBJ_MP =$/;"	m
+OFFSET_APPLICATION	makeimg.py	/^OFFSET_APPLICATION = 0x10000$/;"	v
+OFFSET_BOOTLOADER	makeimg.py	/^OFFSET_BOOTLOADER = 0x1000$/;"	v
+OFFSET_PARTITIONS	makeimg.py	/^OFFSET_PARTITIONS = 0x8000$/;"	v
+ORDER	modules/apa106.py	/^    ORDER = (0, 1, 2, 3)$/;"	v	class:APA106
+ORDER	modules/neopixel.py	/^    ORDER = (1, 0, 2, 3)$/;"	v	class:NeoPixel
+PART_SRC	Makefile	/^PART_SRC ?= partitions.csv$/;"	m
+PART_SRC	boards/GENERIC_D2WD/mpconfigboard.mk	/^PART_SRC = partitions-2MiB.csv$/;"	m
+PHY_LAN8720	modnetwork.h	/^enum { PHY_LAN8720, PHY_TLK110 };$/;"	e	enum:__anon4
+PHY_TLK110	modnetwork.h	/^enum { PHY_LAN8720, PHY_TLK110 };$/;"	e	enum:__anon4
+PORT	Makefile	/^PORT ?= \/dev\/ttyUSB0$/;"	m
+PPP_CLOSE_TIMEOUT_MS	network_ppp.c	46;"	d	file:
+PWFREQ	machine_pwm.c	51;"	d	file:
+PWMODE	machine_pwm.c	53;"	d	file:
+PWRES	machine_pwm.c	55;"	d	file:
+PWTIMER	machine_pwm.c	57;"	d	file:
+PYPARSING_VERSION	Makefile	/^PYPARSING_VERSION = $(shell python3 -c 'import pyparsing; print(pyparsing.__version__)')$/;"	m
+PYTHON2	Makefile	/^PYTHON2 ?= python2$/;"	m
+QS	modnetwork.c	563;"	d	file:
+QS	modnetwork.c	700;"	d	file:
+QSTR_DEFS	Makefile	/^QSTR_DEFS = qstrdefsport.h$/;"	m
+QSTR_GLOBAL_DEPENDENCIES	Makefile	/^QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)\/mpconfigboard.h$/;"	m
+QSTR_GLOBAL_REQUIREMENTS	Makefile	/^QSTR_GLOBAL_REQUIREMENTS = $(SDKCONFIG_H)$/;"	m
+RBG	boards/TINYPICO/modules/dotstar.py	/^RBG = (0, 2, 1)$/;"	v
+RGB	boards/TINYPICO/modules/dotstar.py	/^RGB = (0, 1, 2)$/;"	v
+RTC_IS_VALID_EXT_PIN	modesp32.h	27;"	d
+RTC_LAST_EXT_PIN	modesp32.h	26;"	d
+RTC_VALID_EXT_PINS	modesp32.h	4;"	d
+SDCARD_CARD_FLAGS_CARD_INIT_DONE	machine_sdcard.c	70;"	d	file:
+SDCARD_CARD_FLAGS_HOST_INIT_DONE	machine_sdcard.c	69;"	d	file:
+SDKCONFIG_COMBINED	Makefile	/^SDKCONFIG_COMBINED = $(BUILD)\/sdkconfig.combined$/;"	m
+SDKCONFIG_H	Makefile	/^SDKCONFIG_H = $(BUILD)\/sdkconfig.h$/;"	m
+SET_CONFIG_PIN	machine_sdcard.c	101;"	d	file:
+SOCKET_POLL_US	modsocket.c	71;"	d	file:
+SPI_CLK	boards/TINYPICO/modules/tinypico.py	/^SPI_CLK = const(18)$/;"	v
+SPI_MISO	boards/TINYPICO/modules/tinypico.py	/^SPI_MISO = const(19)$/;"	v
+SPI_MOSI	boards/TINYPICO/modules/tinypico.py	/^SPI_MOSI = const(23)$/;"	v
+SRC_C	Makefile	/^SRC_C = \\$/;"	m
+START_HEADER_SIZE	boards/TINYPICO/modules/dotstar.py	/^START_HEADER_SIZE = 4$/;"	v
+STAT_CONNECTING	modnetwork.c	/^    STAT_CONNECTING = 1001,$/;"	e	enum:__anon5	file:
+STAT_GOT_IP	modnetwork.c	/^    STAT_GOT_IP     = 1010,$/;"	e	enum:__anon5	file:
+STAT_IDLE	modnetwork.c	/^    STAT_IDLE       = 1000,$/;"	e	enum:__anon5	file:
+TIMER_DIVIDER	machine_timer.c	40;"	d	file:
+TIMER_FLAGS	machine_timer.c	45;"	d	file:
+TIMER_INTR_SEL	machine_timer.c	39;"	d	file:
+TIMER_SCALE	machine_timer.c	43;"	d	file:
+UINT_FMT	mpconfigport.h	262;"	d
+USOCKET_EVENTS_DIVISOR	modsocket.c	95;"	d	file:
+_SECTOR_SIZE	machine_sdcard.c	72;"	d	file:
+__enter__	boards/TINYPICO/modules/dotstar.py	/^    def __enter__(self):$/;"	m	class:DotStar	file:
+__exit__	boards/TINYPICO/modules/dotstar.py	/^    def __exit__(self, exception_type, exception_value, traceback):$/;"	m	class:DotStar	file:
+__getitem__	boards/TINYPICO/modules/dotstar.py	/^    def __getitem__(self, index):$/;"	m	class:DotStar	file:
+__getitem__	modules/neopixel.py	/^    def __getitem__(self, index):$/;"	m	class:NeoPixel	file:
+__init__	boards/TINYPICO/modules/dotstar.py	/^    def __init__(self, spi, n, *, brightness=1.0, auto_write=True,$/;"	m	class:DotStar
+__init__	modules/neopixel.py	/^    def __init__(self, pin, n, bpp=3, timing=1):$/;"	m	class:NeoPixel
+__len__	boards/TINYPICO/modules/dotstar.py	/^    def __len__(self):$/;"	m	class:DotStar	file:
+__repr__	boards/TINYPICO/modules/dotstar.py	/^    def __repr__(self):$/;"	m	class:DotStar	file:
+__setitem__	boards/TINYPICO/modules/dotstar.py	/^    def __setitem__(self, index, val):$/;"	m	class:DotStar	file:
+__setitem__	modules/neopixel.py	/^    def __setitem__(self, index, val):$/;"	m	class:NeoPixel	file:
+_esp32_partition_obj_t	esp32_partition.c	/^typedef struct _esp32_partition_obj_t {$/;"	s	file:
+_esp32_pwm_obj_t	machine_pwm.c	/^typedef struct _esp32_pwm_obj_t {$/;"	s	file:
+_esp32_rmt_obj_t	esp32_rmt.c	/^typedef struct _esp32_rmt_obj_t {$/;"	s	file:
+_esp32_ulp_obj_t	esp32_ulp.c	/^typedef struct _esp32_ulp_obj_t {$/;"	s	file:
+_esp_exceptions	modnetwork.c	/^NORETURN void _esp_exceptions(esp_err_t e) {$/;"	f
+_lan_if_obj_t	network_lan.c	/^typedef struct _lan_if_obj_t {$/;"	s	file:
+_machine_hw_i2c_obj_t	machine_i2c.c	/^typedef struct _machine_hw_i2c_obj_t {$/;"	s	file:
+_machine_hw_spi_obj_t	machine_hw_spi.c	/^typedef struct _machine_hw_spi_obj_t {$/;"	s	file:
+_machine_pin_irq_obj_t	machine_pin.c	/^typedef struct _machine_pin_irq_obj_t {$/;"	s	file:
+_machine_pin_obj_t	machine_pin.c	/^typedef struct _machine_pin_obj_t {$/;"	s	file:
+_machine_rtc_obj_t	machine_rtc.c	/^typedef struct _machine_rtc_obj_t {$/;"	s	file:
+_machine_timer_obj_t	machine_timer.c	/^typedef struct _machine_timer_obj_t {$/;"	s	file:
+_machine_uart_obj_t	machine_uart.c	/^typedef struct _machine_uart_obj_t {$/;"	s	file:
+_machine_wdt_obj_t	machine_wdt.c	/^typedef struct _machine_wdt_obj_t {$/;"	s	file:
+_madc_obj_t	machine_adc.c	/^typedef struct _madc_obj_t {$/;"	s	file:
+_mdac_obj_t	machine_dac.c	/^typedef struct _mdac_obj_t {$/;"	s	file:
+_mp_thread_mutex_t	mpthreadport.h	/^typedef struct _mp_thread_mutex_t {$/;"	s
+_mtp_obj_t	machine_touchpad.c	/^typedef struct _mtp_obj_t {$/;"	s	file:
+_parity_name	machine_uart.c	/^STATIC const char *_parity_name[] = {"None", "1", "0"};$/;"	v
+_ppp_if_obj_t	network_ppp.c	/^typedef struct _ppp_if_obj_t {$/;"	s	file:
+_sdcard_obj_t	machine_sdcard.c	/^typedef struct _sdcard_obj_t {$/;"	s	file:
+_set_item	boards/TINYPICO/modules/dotstar.py	/^    def _set_item(self, index, value):$/;"	m	class:DotStar
+_socket_getaddrinfo	modsocket.c	/^STATIC void _socket_getaddrinfo(const mp_obj_t addrtuple, struct addrinfo **resp) {$/;"	f
+_socket_getaddrinfo2	modsocket.c	/^static int _socket_getaddrinfo2(const mp_obj_t host, const mp_obj_t portx, struct addrinfo **resp) {$/;"	f	file:
+_socket_getaddrinfo3	modsocket.c	/^static int _socket_getaddrinfo3(const char *nodename, const char *servname,$/;"	f	file:
+_socket_obj_t	modsocket.c	/^typedef struct _socket_obj_t {$/;"	s	file:
+_socket_read_data	modsocket.c	/^STATIC mp_uint_t _socket_read_data(mp_obj_t self_in, void *buf, size_t size,$/;"	f
+_socket_recvfrom	modsocket.c	/^mp_obj_t _socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in,$/;"	f
+_socket_send	modsocket.c	/^int _socket_send(socket_obj_t *sock, const char *data, size_t datalen) {$/;"	f
+_socket_settimeout	modsocket.c	/^void _socket_settimeout(socket_obj_t *sock, uint64_t timeout_ms) {$/;"	f
+_thread_t	mpthreadport.c	/^typedef struct _thread_t {$/;"	s	file:
+_wlan_if_obj_t	modnetwork.c	/^typedef struct _wlan_if_obj_t {$/;"	s	file:
+active	machine_pwm.c	/^    uint8_t active;$/;"	m	struct:_esp32_pwm_obj_t	file:
+active	network_lan.c	/^    bool active;$/;"	m	struct:_lan_if_obj_t	file:
+active	network_ppp.c	/^    bool active;$/;"	m	struct:_ppp_if_obj_t	file:
+adc1_id	machine_adc.c	/^    adc1_channel_t adc1_id;$/;"	m	struct:_madc_obj_t	file:
+adc_bit_width	machine_adc.c	/^STATIC uint8_t adc_bit_width;$/;"	v
+app_main	main.c	/^void app_main(void) {$/;"	f
+arg	mpthreadport.c	/^    void *arg;              \/\/ thread Python args, a GC root pointer$/;"	m	struct:_thread_t	file:
+base	esp32_partition.c	/^    mp_obj_base_t base;$/;"	m	struct:_esp32_partition_obj_t	file:
+base	esp32_rmt.c	/^    mp_obj_base_t base;$/;"	m	struct:_esp32_rmt_obj_t	file:
+base	esp32_ulp.c	/^    mp_obj_base_t base;$/;"	m	struct:_esp32_ulp_obj_t	file:
+base	machine_adc.c	/^    mp_obj_base_t base;$/;"	m	struct:_madc_obj_t	file:
+base	machine_dac.c	/^    mp_obj_base_t base;$/;"	m	struct:_mdac_obj_t	file:
+base	machine_hw_spi.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+base	machine_i2c.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_hw_i2c_obj_t	file:
+base	machine_pin.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_pin_irq_obj_t	file:
+base	machine_pin.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_pin_obj_t	file:
+base	machine_pwm.c	/^    mp_obj_base_t base;$/;"	m	struct:_esp32_pwm_obj_t	file:
+base	machine_rtc.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_rtc_obj_t	file:
+base	machine_sdcard.c	/^    mp_obj_base_t base;$/;"	m	struct:_sdcard_obj_t	file:
+base	machine_timer.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_timer_obj_t	file:
+base	machine_touchpad.c	/^    mp_obj_base_t base;$/;"	m	struct:_mtp_obj_t	file:
+base	machine_uart.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_uart_obj_t	file:
+base	machine_wdt.c	/^    mp_obj_base_t base;$/;"	m	struct:_machine_wdt_obj_t	file:
+base	modnetwork.c	/^    mp_obj_base_t base;$/;"	m	struct:_wlan_if_obj_t	file:
+base	modsocket.c	/^    mp_obj_base_t base;$/;"	m	struct:_socket_obj_t	file:
+base	network_lan.c	/^    mp_obj_base_t base;$/;"	m	struct:_lan_if_obj_t	file:
+base	network_ppp.c	/^    mp_obj_base_t base;$/;"	m	struct:_ppp_if_obj_t	file:
+baudrate	machine_hw_spi.c	/^    uint32_t baudrate;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+bdev	modules/flashbdev.py	/^bdev = Partition.find(Partition.TYPE_DATA, label='vfs')$/;"	v
+bdev	modules/flashbdev.py	/^bdev = bdev[0] if bdev else None$/;"	v
+bits	machine_hw_spi.c	/^    uint8_t bits;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+bits	machine_uart.c	/^    uint8_t bits;$/;"	m	struct:_machine_uart_obj_t	file:
+ble_host_task	nimble.c	/^STATIC void ble_host_task(void *param) {$/;"	f
+brightness	boards/TINYPICO/modules/dotstar.py	/^    def brightness(self):$/;"	m	class:DotStar
+brightness	boards/TINYPICO/modules/dotstar.py	/^    def brightness(self, brightness):$/;"	m	class:DotStar
+buffer	mpthreadport.h	/^    StaticSemaphore_t buffer;$/;"	m	struct:_mp_thread_mutex_t
+callback	machine_timer.c	/^    mp_obj_t callback;$/;"	m	struct:_machine_timer_obj_t	file:
+card	machine_sdcard.c	/^    sdmmc_card_t card;$/;"	m	struct:_sdcard_obj_t	file:
+chan_gpio	machine_pwm.c	/^STATIC int chan_gpio[LEDC_CHANNEL_MAX];$/;"	v
+channel	machine_pwm.c	/^    uint8_t channel;$/;"	m	struct:_esp32_pwm_obj_t	file:
+channel_id	esp32_rmt.c	/^    uint8_t channel_id;$/;"	m	struct:_esp32_rmt_obj_t	file:
+check_bootsec	modules/inisetup.py	/^def check_bootsec():$/;"	f
+check_esp_err	esp32_partition.c	/^static inline void check_esp_err(esp_err_t e) {$/;"	f	file:
+check_esp_err	esp32_rmt.c	/^STATIC esp_err_t check_esp_err(esp_err_t code) {$/;"	f
+check_esp_err	machine_sdcard.c	/^STATIC esp_err_t check_esp_err(esp_err_t code) {$/;"	f
+check_esp_err	machine_timer.c	/^STATIC esp_err_t check_esp_err(esp_err_t code) {$/;"	f
+check_for_exceptions	modsocket.c	/^static inline void check_for_exceptions(void) {$/;"	f	file:
+clean_close	network_ppp.c	/^    volatile bool clean_close;$/;"	m	struct:_ppp_if_obj_t	file:
+client_task_handle	network_ppp.c	/^    volatile TaskHandle_t client_task_handle;$/;"	m	struct:_ppp_if_obj_t	file:
+clock_div	esp32_rmt.c	/^    uint8_t clock_div;$/;"	m	struct:_esp32_rmt_obj_t	file:
+compile_cxx	Makefile	/^define compile_cxx$/;"	m
+connected	network_ppp.c	/^    bool connected;$/;"	m	struct:_ppp_if_obj_t	file:
+cts	machine_uart.c	/^    int8_t cts;$/;"	m	struct:_machine_uart_obj_t	file:
+cur_offset	makeimg.py	/^        cur_offset = offset$/;"	v
+cur_offset	makeimg.py	/^cur_offset = OFFSET_BOOTLOADER$/;"	v
+dac_id	machine_dac.c	/^    dac_channel_t dac_id;$/;"	m	struct:_mdac_obj_t	file:
+data	makeimg.py	/^            data = fin.read()$/;"	v
+deinit	boards/TINYPICO/modules/dotstar.py	/^    def deinit(self):$/;"	m	class:DotStar
+domain	modsocket.c	/^    uint8_t domain;$/;"	m	struct:_socket_obj_t	file:
+dotstar_color_wheel	boards/TINYPICO/modules/tinypico.py	/^def dotstar_color_wheel(wheel_pos):$/;"	f
+esp32_hall_sensor	modesp32.c	/^STATIC mp_obj_t esp32_hall_sensor(void) {$/;"	f
+esp32_help_text	help.c	/^const char esp32_help_text[] =$/;"	v
+esp32_module	modesp32.c	/^const mp_obj_module_t esp32_module = {$/;"	v
+esp32_module_globals_table	modesp32.c	/^STATIC const mp_rom_map_elem_t esp32_module_globals_table[] = {$/;"	v
+esp32_partition_find	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_find(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+esp32_partition_get_next_update	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_get_next_update(mp_obj_t self_in) {$/;"	f
+esp32_partition_info	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_info(mp_obj_t self_in) {$/;"	f
+esp32_partition_ioctl	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {$/;"	f
+esp32_partition_locals_dict_table	esp32_partition.c	/^STATIC const mp_rom_map_elem_t esp32_partition_locals_dict_table[] = {$/;"	v
+esp32_partition_make_new	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {$/;"	f
+esp32_partition_new	esp32_partition.c	/^STATIC esp32_partition_obj_t *esp32_partition_new(const esp_partition_t *part) {$/;"	f
+esp32_partition_obj_t	esp32_partition.c	/^} esp32_partition_obj_t;$/;"	t	typeref:struct:_esp32_partition_obj_t	file:
+esp32_partition_print	esp32_partition.c	/^STATIC void esp32_partition_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+esp32_partition_readblocks	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_readblocks(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp32_partition_set_boot	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_set_boot(mp_obj_t self_in) {$/;"	f
+esp32_partition_type	esp32_partition.c	/^const mp_obj_type_t esp32_partition_type = {$/;"	v
+esp32_partition_writeblocks	esp32_partition.c	/^STATIC mp_obj_t esp32_partition_writeblocks(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp32_pwm_deinit	machine_pwm.c	/^STATIC mp_obj_t esp32_pwm_deinit(mp_obj_t self_in) {$/;"	f
+esp32_pwm_duty	machine_pwm.c	/^STATIC mp_obj_t esp32_pwm_duty(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp32_pwm_freq	machine_pwm.c	/^STATIC mp_obj_t esp32_pwm_freq(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp32_pwm_init	machine_pwm.c	/^STATIC mp_obj_t esp32_pwm_init(size_t n_args,$/;"	f
+esp32_pwm_init_helper	machine_pwm.c	/^STATIC void esp32_pwm_init_helper(esp32_pwm_obj_t *self,$/;"	f
+esp32_pwm_locals_dict_table	machine_pwm.c	/^STATIC const mp_rom_map_elem_t esp32_pwm_locals_dict_table[] = {$/;"	v
+esp32_pwm_make_new	machine_pwm.c	/^STATIC mp_obj_t esp32_pwm_make_new(const mp_obj_type_t *type,$/;"	f
+esp32_pwm_obj_t	machine_pwm.c	/^} esp32_pwm_obj_t;$/;"	t	typeref:struct:_esp32_pwm_obj_t	file:
+esp32_pwm_print	machine_pwm.c	/^STATIC void esp32_pwm_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+esp32_raw_temperature	modesp32.c	/^STATIC mp_obj_t esp32_raw_temperature(void) {$/;"	f
+esp32_rmt_clock_div	esp32_rmt.c	/^STATIC mp_obj_t esp32_rmt_clock_div(mp_obj_t self_in) {$/;"	f
+esp32_rmt_deinit	esp32_rmt.c	/^STATIC mp_obj_t esp32_rmt_deinit(mp_obj_t self_in) {$/;"	f
+esp32_rmt_locals_dict_table	esp32_rmt.c	/^STATIC const mp_rom_map_elem_t esp32_rmt_locals_dict_table[] = {$/;"	v
+esp32_rmt_loop	esp32_rmt.c	/^STATIC mp_obj_t esp32_rmt_loop(mp_obj_t self_in, mp_obj_t loop) {$/;"	f
+esp32_rmt_make_new	esp32_rmt.c	/^STATIC mp_obj_t esp32_rmt_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {$/;"	f
+esp32_rmt_obj_t	esp32_rmt.c	/^} esp32_rmt_obj_t;$/;"	t	typeref:struct:_esp32_rmt_obj_t	file:
+esp32_rmt_print	esp32_rmt.c	/^STATIC void esp32_rmt_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+esp32_rmt_source_freq	esp32_rmt.c	/^STATIC mp_obj_t esp32_rmt_source_freq(mp_obj_t self_in) {$/;"	f
+esp32_rmt_type	esp32_rmt.c	/^const mp_obj_type_t esp32_rmt_type = {$/;"	v
+esp32_rmt_wait_done	esp32_rmt.c	/^STATIC mp_obj_t esp32_rmt_wait_done(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+esp32_rmt_write_pulses	esp32_rmt.c	/^STATIC mp_obj_t esp32_rmt_write_pulses(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+esp32_ulp_load_binary	esp32_ulp.c	/^STATIC mp_obj_t esp32_ulp_load_binary(mp_obj_t self_in, mp_obj_t load_addr_in, mp_obj_t program_binary_in) {$/;"	f
+esp32_ulp_locals_dict_table	esp32_ulp.c	/^STATIC const mp_rom_map_elem_t esp32_ulp_locals_dict_table[] = {$/;"	v
+esp32_ulp_make_new	esp32_ulp.c	/^STATIC mp_obj_t esp32_ulp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+esp32_ulp_obj	esp32_ulp.c	/^STATIC const esp32_ulp_obj_t esp32_ulp_obj = {{&esp32_ulp_type}};$/;"	v
+esp32_ulp_obj_t	esp32_ulp.c	/^} esp32_ulp_obj_t;$/;"	t	typeref:struct:_esp32_ulp_obj_t	file:
+esp32_ulp_run	esp32_ulp.c	/^STATIC mp_obj_t esp32_ulp_run(mp_obj_t self_in, mp_obj_t entry_point_in) {$/;"	f
+esp32_ulp_set_wakeup_period	esp32_ulp.c	/^STATIC mp_obj_t esp32_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_index_in, mp_obj_t period_us_in) {$/;"	f
+esp32_ulp_type	esp32_ulp.c	/^const mp_obj_type_t esp32_ulp_type = {$/;"	v
+esp32_ulp_type	esp32_ulp.c	/^const mp_obj_type_t esp32_ulp_type;$/;"	v
+esp32_wake_on_ext0	modesp32.c	/^STATIC mp_obj_t esp32_wake_on_ext0(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+esp32_wake_on_ext1	modesp32.c	/^STATIC mp_obj_t esp32_wake_on_ext1(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+esp32_wake_on_touch	modesp32.c	/^STATIC mp_obj_t esp32_wake_on_touch(const mp_obj_t wake) {$/;"	f
+esp_active	modnetwork.c	/^STATIC mp_obj_t esp_active(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp_config	modnetwork.c	/^STATIC mp_obj_t esp_config(size_t n_args, const mp_obj_t *args, mp_map_t *kwargs) {$/;"	f
+esp_config_obj	modnetwork.h	/^MP_DECLARE_CONST_FUN_OBJ_KW(esp_config_obj);$/;"	v
+esp_connect	modnetwork.c	/^STATIC mp_obj_t esp_connect(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+esp_disconnect	modnetwork.c	/^STATIC mp_obj_t esp_disconnect(mp_obj_t self_in) {$/;"	f
+esp_exceptions	modnetwork.c	/^static inline void esp_exceptions(esp_err_t e) {$/;"	f	file:
+esp_flash_erase	modesp.c	/^STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {$/;"	f
+esp_flash_read	modesp.c	/^STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t buf_in) {$/;"	f
+esp_flash_size	modesp.c	/^STATIC mp_obj_t esp_flash_size(void) {$/;"	f
+esp_flash_user_start	modesp.c	/^STATIC mp_obj_t esp_flash_user_start(void) {$/;"	f
+esp_flash_write	modesp.c	/^STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, mp_obj_t buf_in) {$/;"	f
+esp_gpio_matrix_in	modesp.c	/^STATIC mp_obj_t esp_gpio_matrix_in(mp_obj_t pin, mp_obj_t sig, mp_obj_t inv) {$/;"	f
+esp_gpio_matrix_out	modesp.c	/^STATIC mp_obj_t esp_gpio_matrix_out(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp_ifconfig	modnetwork.c	/^STATIC mp_obj_t esp_ifconfig(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp_ifconfig_obj	modnetwork.h	/^MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(esp_ifconfig_obj);$/;"	v
+esp_initialize	modnetwork.c	/^STATIC mp_obj_t esp_initialize() {$/;"	f
+esp_isconnected	modnetwork.c	/^STATIC mp_obj_t esp_isconnected(mp_obj_t self_in) {$/;"	f
+esp_module	modesp.c	/^const mp_obj_module_t esp_module = {$/;"	v
+esp_module_globals_table	modesp.c	/^STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {$/;"	v
+esp_native_code_commit	main.c	/^void *esp_native_code_commit(void *buf, size_t len, void *reloc) {$/;"	f
+esp_neopixel_write	espneopixel.c	/^void IRAM_ATTR esp_neopixel_write(uint8_t pin, uint8_t *pixels, uint32_t numBytes, uint8_t timing) {$/;"	f
+esp_neopixel_write_	modesp.c	/^STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf, mp_obj_t timing) {$/;"	f
+esp_osdebug	modesp.c	/^STATIC mp_obj_t esp_osdebug(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp_phy_mode	modnetwork.c	/^STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp_scan	modnetwork.c	/^STATIC mp_obj_t esp_scan(mp_obj_t self_in) {$/;"	f
+esp_socket_getaddrinfo	modsocket.c	/^STATIC mp_obj_t esp_socket_getaddrinfo(size_t n_args, const mp_obj_t *args) {$/;"	f
+esp_socket_initialize	modsocket.c	/^STATIC mp_obj_t esp_socket_initialize() {$/;"	f
+esp_status	modnetwork.c	/^STATIC mp_obj_t esp_status(size_t n_args, const mp_obj_t *args) {$/;"	f
+event_handler	modnetwork.c	/^static esp_err_t event_handler(void *ctx, system_event_t *event) {$/;"	f	file:
+events_callback	modsocket.c	/^    mp_obj_t events_callback;$/;"	m	struct:_socket_obj_t	file:
+events_next	modsocket.c	/^    struct _socket_obj_t *events_next;$/;"	m	struct:_socket_obj_t	typeref:struct:_socket_obj_t::_socket_obj_t	file:
+exception_from_errno	modsocket.c	/^NORETURN static void exception_from_errno(int _errno) {$/;"	f	file:
+ext0_level	machine_rtc.h	/^    bool ext0_level : 1;$/;"	m	struct:__anon3
+ext0_pin	machine_rtc.h	/^    int8_t ext0_pin;   \/\/ just the pin#, -1 == None$/;"	m	struct:__anon3
+ext0_wake_types	machine_rtc.h	/^    wake_type_t ext0_wake_types;$/;"	m	struct:__anon3
+ext1_level	machine_rtc.h	/^    bool ext1_level : 1;$/;"	m	struct:__anon3
+ext1_pins	machine_rtc.h	/^    uint64_t ext1_pins; \/\/ set bit == pin#$/;"	m	struct:__anon3
+ext_thread_entry	mpthreadport.c	/^STATIC void *(*ext_thread_entry)(void*) = NULL;$/;"	v
+fd	modsocket.c	/^    int fd;$/;"	m	struct:_socket_obj_t	file:
+file_out	makeimg.py	/^file_out = sys.argv[4]$/;"	v
+files_in	makeimg.py	/^files_in = [$/;"	v
+fill	boards/TINYPICO/modules/dotstar.py	/^    def fill(self, color):$/;"	m	class:DotStar
+fill	modules/neopixel.py	/^    def fill(self, color):$/;"	m	class:NeoPixel
+firstbit	machine_hw_spi.c	/^    uint8_t firstbit;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+flags	machine_sdcard.c	/^    mp_int_t flags;$/;"	m	struct:_sdcard_obj_t	file:
+freertos_entry	mpthreadport.c	/^STATIC void freertos_entry(void *arg) {$/;"	f
+fs_corrupted	modules/inisetup.py	/^def fs_corrupted():$/;"	f
+gc_collect	gccollect.c	/^void gc_collect(void) {$/;"	f
+gc_collect_inner	gccollect.c	/^static void gc_collect_inner(int level) {$/;"	f	file:
+gen_espidf_lib_rule	Makefile	/^define gen_espidf_lib_rule$/;"	m
+gen_sections_info_rule	Makefile	/^define gen_sections_info_rule$/;"	m
+get_battery_charging	boards/TINYPICO/modules/tinypico.py	/^def get_battery_charging():$/;"	f
+get_battery_voltage	boards/TINYPICO/modules/tinypico.py	/^def get_battery_voltage():$/;"	f
+get_fattime	fatfs_port.c	/^DWORD get_fattime(void) {$/;"	f
+get_lan	network_lan.c	/^STATIC mp_obj_t get_lan(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+get_lan_obj	modnetwork.h	/^MP_DECLARE_CONST_FUN_OBJ_KW(get_lan_obj);$/;"	v
+get_wlan	modnetwork.c	/^STATIC mp_obj_t get_wlan(size_t n_args, const mp_obj_t *args) {$/;"	f
+go_deepsleep	boards/TINYPICO/modules/tinypico.py	/^def go_deepsleep(t):$/;"	f
+gpio_id	machine_adc.c	/^    gpio_num_t gpio_id;$/;"	m	struct:_madc_obj_t	file:
+gpio_id	machine_dac.c	/^    gpio_num_t gpio_id;$/;"	m	struct:_mdac_obj_t	file:
+gpio_id	machine_touchpad.c	/^    gpio_num_t gpio_id;$/;"	m	struct:_mtp_obj_t	file:
+group	machine_timer.c	/^    mp_uint_t group;$/;"	m	struct:_machine_timer_obj_t	file:
+handle	machine_timer.c	/^    intr_handle_t handle;$/;"	m	struct:_machine_timer_obj_t	file:
+handle	mpthreadport.h	/^    SemaphoreHandle_t handle;$/;"	m	struct:_mp_thread_mutex_t
+host	machine_hw_spi.c	/^    spi_host_device_t host;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+host	machine_sdcard.c	/^    sdmmc_host_t host;$/;"	m	struct:_sdcard_obj_t	file:
+id	machine_pin.c	/^    gpio_num_t id;$/;"	m	struct:_machine_pin_irq_obj_t	file:
+id	machine_pin.c	/^    gpio_num_t id;$/;"	m	struct:_machine_pin_obj_t	file:
+id	mpthreadport.c	/^    TaskHandle_t id;        \/\/ system id of thread$/;"	m	struct:_thread_t	file:
+if_id	modnetwork.c	/^    int if_id;$/;"	m	struct:_wlan_if_obj_t	file:
+if_id	network_lan.c	/^    int if_id; \/\/ MUST BE FIRST to match wlan_if_obj_t$/;"	m	struct:_lan_if_obj_t	file:
+inactiveWaitSem	network_ppp.c	/^    SemaphoreHandle_t inactiveWaitSem;$/;"	m	struct:_ppp_if_obj_t	file:
+index	machine_timer.c	/^    mp_uint_t index;$/;"	m	struct:_machine_timer_obj_t	file:
+init_lan_rmii	network_lan.c	/^STATIC void init_lan_rmii() {$/;"	f
+initialized	network_lan.c	/^    bool initialized;$/;"	m	struct:_lan_if_obj_t	file:
+invert	machine_uart.c	/^    uint32_t invert;        \/\/ lines to invert$/;"	m	struct:_machine_uart_obj_t	file:
+items	esp32_rmt.c	/^    rmt_item32_t* items;$/;"	m	struct:_esp32_rmt_obj_t	file:
+lan_active	network_lan.c	/^STATIC mp_obj_t lan_active(size_t n_args, const mp_obj_t *args) {$/;"	f
+lan_if_locals_dict_table	network_lan.c	/^STATIC const mp_rom_map_elem_t lan_if_locals_dict_table[] = {$/;"	v
+lan_if_obj_t	network_lan.c	/^} lan_if_obj_t;$/;"	t	typeref:struct:_lan_if_obj_t	file:
+lan_if_type	network_lan.c	/^const mp_obj_type_t lan_if_type = {$/;"	v
+lan_if_type	network_lan.c	/^const mp_obj_type_t lan_if_type;$/;"	v
+lan_isconnected	network_lan.c	/^STATIC mp_obj_t lan_isconnected(mp_obj_t self_in) {$/;"	f
+lan_obj	network_lan.c	/^STATIC lan_if_obj_t lan_obj = {{&lan_if_type}, ESP_IF_ETH, false, false};$/;"	v
+lan_status	network_lan.c	/^STATIC mp_obj_t lan_status(mp_obj_t self_in) {$/;"	f
+link_func	network_lan.c	/^    eth_phy_check_link_func link_func;$/;"	m	struct:_lan_if_obj_t	file:
+lwip_accept	modsocket.c	62;"	d	file:
+lwip_bind	modsocket.c	60;"	d	file:
+lwip_close	modsocket.c	68;"	d	file:
+lwip_fnctl	modsocket.c	64;"	d	file:
+lwip_listen	modsocket.c	61;"	d	file:
+lwip_recvfrom	modsocket.c	65;"	d	file:
+lwip_sendto	modsocket.c	67;"	d	file:
+lwip_setsockopt	modsocket.c	63;"	d	file:
+lwip_write	modsocket.c	66;"	d	file:
+machine_adc_type	machine_adc.c	/^const mp_obj_type_t machine_adc_type = {$/;"	v
+machine_dac_type	machine_dac.c	/^const mp_obj_type_t machine_dac_type = {$/;"	v
+machine_deepsleep	modmachine.c	/^STATIC mp_obj_t machine_deepsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_disable_irq	modmachine.c	/^STATIC mp_obj_t machine_disable_irq(void) {$/;"	f
+machine_enable_irq	modmachine.c	/^STATIC mp_obj_t machine_enable_irq(mp_obj_t state_in) {$/;"	f
+machine_freq	modmachine.c	/^STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {$/;"	f
+machine_hw_i2c_init	machine_i2c.c	/^STATIC void machine_hw_i2c_init(machine_hw_i2c_obj_t *self, uint32_t freq, uint32_t timeout_us, bool first_init) {$/;"	f
+machine_hw_i2c_make_new	machine_i2c.c	/^mp_obj_t machine_hw_i2c_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {$/;"	f
+machine_hw_i2c_obj	machine_i2c.c	/^STATIC machine_hw_i2c_obj_t machine_hw_i2c_obj[I2C_NUM_MAX];$/;"	v
+machine_hw_i2c_obj_t	machine_i2c.c	/^} machine_hw_i2c_obj_t;$/;"	t	typeref:struct:_machine_hw_i2c_obj_t	file:
+machine_hw_i2c_p	machine_i2c.c	/^STATIC const mp_machine_i2c_p_t machine_hw_i2c_p = {$/;"	v
+machine_hw_i2c_print	machine_i2c.c	/^STATIC void machine_hw_i2c_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+machine_hw_i2c_transfer	machine_i2c.c	/^int machine_hw_i2c_transfer(mp_obj_base_t *self_in, uint16_t addr, size_t n, mp_machine_i2c_buf_t *bufs, unsigned int flags) {$/;"	f
+machine_hw_i2c_type	machine_i2c.c	/^STATIC const mp_obj_type_t machine_hw_i2c_type = {$/;"	v
+machine_hw_i2c_type	machine_i2c.c	/^STATIC const mp_obj_type_t machine_hw_i2c_type;$/;"	v
+machine_hw_spi_deinit	machine_hw_spi.c	/^STATIC void machine_hw_spi_deinit(mp_obj_base_t *self_in) {$/;"	f
+machine_hw_spi_deinit_internal	machine_hw_spi.c	/^STATIC void machine_hw_spi_deinit_internal(machine_hw_spi_obj_t *self) {$/;"	f
+machine_hw_spi_init	machine_hw_spi.c	/^STATIC void machine_hw_spi_init(mp_obj_base_t *self_in, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_hw_spi_init_internal	machine_hw_spi.c	/^STATIC void machine_hw_spi_init_internal($/;"	f
+machine_hw_spi_make_new	machine_hw_spi.c	/^mp_obj_t machine_hw_spi_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {$/;"	f
+machine_hw_spi_obj	machine_hw_spi.c	/^STATIC machine_hw_spi_obj_t machine_hw_spi_obj[2];$/;"	v
+machine_hw_spi_obj_t	machine_hw_spi.c	/^} machine_hw_spi_obj_t;$/;"	t	typeref:struct:_machine_hw_spi_obj_t	file:
+machine_hw_spi_p	machine_hw_spi.c	/^STATIC const mp_machine_spi_p_t machine_hw_spi_p = {$/;"	v
+machine_hw_spi_print	machine_hw_spi.c	/^STATIC void machine_hw_spi_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+machine_hw_spi_transfer	machine_hw_spi.c	/^STATIC void machine_hw_spi_transfer(mp_obj_base_t *self_in, size_t len, const uint8_t *src, uint8_t *dest) {$/;"	f
+machine_hw_spi_type	machine_hw_spi.c	/^const mp_obj_type_t machine_hw_spi_type = {$/;"	v
+machine_idle	modmachine.c	/^STATIC mp_obj_t machine_idle(void) {$/;"	f
+machine_lightsleep	modmachine.c	/^STATIC mp_obj_t machine_lightsleep(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_module_globals_table	modmachine.c	/^STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {$/;"	v
+machine_pin_call	machine_pin.c	/^STATIC mp_obj_t machine_pin_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+machine_pin_get_id	machine_pin.c	/^gpio_num_t machine_pin_get_id(mp_obj_t pin_in) {$/;"	f
+machine_pin_irq	machine_pin.c	/^STATIC mp_obj_t machine_pin_irq(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_pin_irq_call	machine_pin.c	/^STATIC mp_obj_t machine_pin_irq_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+machine_pin_irq_locals_dict_table	machine_pin.c	/^STATIC const mp_rom_map_elem_t machine_pin_irq_locals_dict_table[] = {$/;"	v
+machine_pin_irq_obj_t	machine_pin.c	/^} machine_pin_irq_obj_t;$/;"	t	typeref:struct:_machine_pin_irq_obj_t	file:
+machine_pin_irq_object	machine_pin.c	/^STATIC const machine_pin_irq_obj_t machine_pin_irq_object[] = {$/;"	v
+machine_pin_irq_object	machine_pin.c	/^STATIC const machine_pin_irq_obj_t machine_pin_irq_object[];$/;"	v
+machine_pin_irq_trigger	machine_pin.c	/^STATIC mp_obj_t machine_pin_irq_trigger(size_t n_args, const mp_obj_t *args) {$/;"	f
+machine_pin_irq_type	machine_pin.c	/^STATIC const mp_obj_type_t machine_pin_irq_type = {$/;"	v
+machine_pin_irq_type	machine_pin.c	/^STATIC const mp_obj_type_t machine_pin_irq_type;$/;"	v
+machine_pin_isr_handler	machine_pin.c	/^STATIC void machine_pin_isr_handler(void *arg) {$/;"	f
+machine_pin_locals_dict_table	machine_pin.c	/^STATIC const mp_rom_map_elem_t machine_pin_locals_dict_table[] = {$/;"	v
+machine_pin_obj	machine_pin.c	/^STATIC const machine_pin_obj_t machine_pin_obj[] = {$/;"	v
+machine_pin_obj_init	machine_pin.c	/^STATIC mp_obj_t machine_pin_obj_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {$/;"	f
+machine_pin_obj_init_helper	machine_pin.c	/^STATIC mp_obj_t machine_pin_obj_init_helper(const machine_pin_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_pin_obj_t	machine_pin.c	/^} machine_pin_obj_t;$/;"	t	typeref:struct:_machine_pin_obj_t	file:
+machine_pin_off	machine_pin.c	/^STATIC mp_obj_t machine_pin_off(mp_obj_t self_in) {$/;"	f
+machine_pin_on	machine_pin.c	/^STATIC mp_obj_t machine_pin_on(mp_obj_t self_in) {$/;"	f
+machine_pin_print	machine_pin.c	/^STATIC void machine_pin_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+machine_pin_type	machine_pin.c	/^const mp_obj_type_t machine_pin_type = {$/;"	v
+machine_pin_value	machine_pin.c	/^STATIC mp_obj_t machine_pin_value(size_t n_args, const mp_obj_t *args) {$/;"	f
+machine_pins_deinit	machine_pin.c	/^void machine_pins_deinit(void) {$/;"	f
+machine_pins_init	machine_pin.c	/^void machine_pins_init(void) {$/;"	f
+machine_pwm_type	machine_pwm.c	/^const mp_obj_type_t machine_pwm_type = {$/;"	v
+machine_reset	modmachine.c	/^STATIC mp_obj_t machine_reset(void) {$/;"	f
+machine_reset_cause	modmachine.c	/^STATIC mp_obj_t machine_reset_cause(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_rtc_config	machine_rtc.c	/^machine_rtc_config_t machine_rtc_config = {$/;"	v
+machine_rtc_config_t	machine_rtc.h	/^} machine_rtc_config_t;$/;"	t	typeref:struct:__anon3
+machine_rtc_datetime	machine_rtc.c	/^STATIC mp_obj_t machine_rtc_datetime(mp_uint_t n_args, const mp_obj_t *args) {$/;"	f
+machine_rtc_datetime_helper	machine_rtc.c	/^STATIC mp_obj_t machine_rtc_datetime_helper(mp_uint_t n_args, const mp_obj_t *args) {$/;"	f
+machine_rtc_init	machine_rtc.c	/^STATIC mp_obj_t machine_rtc_init(mp_obj_t self_in, mp_obj_t date) {$/;"	f
+machine_rtc_locals_dict_table	machine_rtc.c	/^STATIC const mp_rom_map_elem_t machine_rtc_locals_dict_table[] = {$/;"	v
+machine_rtc_make_new	machine_rtc.c	/^STATIC mp_obj_t machine_rtc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+machine_rtc_memory	machine_rtc.c	/^STATIC mp_obj_t machine_rtc_memory(mp_uint_t n_args, const mp_obj_t *args) {$/;"	f
+machine_rtc_obj	machine_rtc.c	/^STATIC const machine_rtc_obj_t machine_rtc_obj = {{&machine_rtc_type}};$/;"	v
+machine_rtc_obj_t	machine_rtc.c	/^} machine_rtc_obj_t;$/;"	t	typeref:struct:_machine_rtc_obj_t	file:
+machine_rtc_type	machine_rtc.c	/^const mp_obj_type_t machine_rtc_type = {$/;"	v
+machine_sdcard_ioctl	machine_sdcard.c	/^STATIC mp_obj_t machine_sdcard_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t arg_in) {$/;"	f
+machine_sdcard_locals_dict_table	machine_sdcard.c	/^STATIC const mp_rom_map_elem_t machine_sdcard_locals_dict_table[] = {$/;"	v
+machine_sdcard_make_new	machine_sdcard.c	/^STATIC mp_obj_t machine_sdcard_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+machine_sdcard_readblocks	machine_sdcard.c	/^STATIC mp_obj_t machine_sdcard_readblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {$/;"	f
+machine_sdcard_type	machine_sdcard.c	/^const mp_obj_type_t machine_sdcard_type = {$/;"	v
+machine_sdcard_type	machine_sdcard.c	/^const mp_obj_type_t machine_sdcard_type;$/;"	v
+machine_sdcard_writeblocks	machine_sdcard.c	/^STATIC mp_obj_t machine_sdcard_writeblocks(mp_obj_t self_in, mp_obj_t block_num, mp_obj_t buf) {$/;"	f
+machine_sleep_helper	modmachine.c	/^STATIC mp_obj_t machine_sleep_helper(wake_type_t wake_type, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_timer_deinit	machine_timer.c	/^STATIC mp_obj_t machine_timer_deinit(mp_obj_t self_in) {$/;"	f
+machine_timer_deinit_all	machine_timer.c	/^void machine_timer_deinit_all(void) {$/;"	f
+machine_timer_disable	machine_timer.c	/^STATIC void machine_timer_disable(machine_timer_obj_t *self) {$/;"	f
+machine_timer_enable	machine_timer.c	/^STATIC void machine_timer_enable(machine_timer_obj_t *self) {$/;"	f
+machine_timer_init	machine_timer.c	/^STATIC mp_obj_t machine_timer_init(mp_uint_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {$/;"	f
+machine_timer_init_helper	machine_timer.c	/^STATIC mp_obj_t machine_timer_init_helper(machine_timer_obj_t *self, mp_uint_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_timer_isr	machine_timer.c	/^STATIC void machine_timer_isr(void *self_in) {$/;"	f
+machine_timer_locals_dict_table	machine_timer.c	/^STATIC const mp_rom_map_elem_t machine_timer_locals_dict_table[] = {$/;"	v
+machine_timer_make_new	machine_timer.c	/^STATIC mp_obj_t machine_timer_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+machine_timer_obj_t	machine_timer.c	/^} machine_timer_obj_t;$/;"	t	typeref:struct:_machine_timer_obj_t	file:
+machine_timer_print	machine_timer.c	/^STATIC void machine_timer_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+machine_timer_type	machine_timer.c	/^const mp_obj_type_t machine_timer_type = {$/;"	v
+machine_timer_type	machine_timer.c	/^const mp_obj_type_t machine_timer_type;$/;"	v
+machine_timer_value	machine_timer.c	/^STATIC mp_obj_t machine_timer_value(mp_obj_t self_in) {$/;"	f
+machine_touchpad_type	machine_touchpad.c	/^const mp_obj_type_t machine_touchpad_type = {$/;"	v
+machine_uart_any	machine_uart.c	/^STATIC mp_obj_t machine_uart_any(mp_obj_t self_in) {$/;"	f
+machine_uart_deinit	machine_uart.c	/^STATIC mp_obj_t machine_uart_deinit(mp_obj_t self_in) {$/;"	f
+machine_uart_init	machine_uart.c	/^STATIC mp_obj_t machine_uart_init(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {$/;"	f
+machine_uart_init_helper	machine_uart.c	/^STATIC void machine_uart_init_helper(machine_uart_obj_t *self, size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_uart_ioctl	machine_uart.c	/^STATIC mp_uint_t machine_uart_ioctl(mp_obj_t self_in, mp_uint_t request, mp_uint_t arg, int *errcode) {$/;"	f
+machine_uart_locals_dict_table	machine_uart.c	/^STATIC const mp_rom_map_elem_t machine_uart_locals_dict_table[] = {$/;"	v
+machine_uart_make_new	machine_uart.c	/^STATIC mp_obj_t machine_uart_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+machine_uart_obj_t	machine_uart.c	/^} machine_uart_obj_t;$/;"	t	typeref:struct:_machine_uart_obj_t	file:
+machine_uart_print	machine_uart.c	/^STATIC void machine_uart_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+machine_uart_read	machine_uart.c	/^STATIC mp_uint_t machine_uart_read(mp_obj_t self_in, void *buf_in, mp_uint_t size, int *errcode) {$/;"	f
+machine_uart_sendbreak	machine_uart.c	/^STATIC mp_obj_t machine_uart_sendbreak(mp_obj_t self_in) {$/;"	f
+machine_uart_type	machine_uart.c	/^const mp_obj_type_t machine_uart_type = {$/;"	v
+machine_uart_write	machine_uart.c	/^STATIC mp_uint_t machine_uart_write(mp_obj_t self_in, const void *buf_in, mp_uint_t size, int *errcode) {$/;"	f
+machine_unique_id	modmachine.c	/^STATIC mp_obj_t machine_unique_id(void) {$/;"	f
+machine_wake_reason	modmachine.c	/^STATIC mp_obj_t machine_wake_reason(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {$/;"	f
+machine_wdt_feed	machine_wdt.c	/^STATIC mp_obj_t machine_wdt_feed(mp_obj_t self_in) {$/;"	f
+machine_wdt_locals_dict_table	machine_wdt.c	/^STATIC const mp_rom_map_elem_t machine_wdt_locals_dict_table[] = {$/;"	v
+machine_wdt_make_new	machine_wdt.c	/^STATIC mp_obj_t machine_wdt_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {$/;"	f
+machine_wdt_obj_t	machine_wdt.c	/^} machine_wdt_obj_t;$/;"	t	typeref:struct:_machine_wdt_obj_t	file:
+machine_wdt_type	machine_wdt.c	/^const mp_obj_type_t machine_wdt_type = {$/;"	v
+machine_wdt_type	machine_wdt.c	/^const mp_obj_type_t machine_wdt_type;$/;"	v
+madc_atten	machine_adc.c	/^STATIC mp_obj_t madc_atten(mp_obj_t self_in, mp_obj_t atten_in) {$/;"	f
+madc_locals_dict_table	machine_adc.c	/^STATIC const mp_rom_map_elem_t madc_locals_dict_table[] = {$/;"	v
+madc_make_new	machine_adc.c	/^STATIC mp_obj_t madc_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,$/;"	f
+madc_obj	machine_adc.c	/^STATIC const madc_obj_t madc_obj[] = {$/;"	v
+madc_obj_t	machine_adc.c	/^} madc_obj_t;$/;"	t	typeref:struct:_madc_obj_t	file:
+madc_print	machine_adc.c	/^STATIC void madc_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+madc_read	machine_adc.c	/^STATIC mp_obj_t madc_read(mp_obj_t self_in) {$/;"	f
+madc_read_u16	machine_adc.c	/^STATIC mp_obj_t madc_read_u16(mp_obj_t self_in) {$/;"	f
+madc_width	machine_adc.c	/^STATIC mp_obj_t madc_width(mp_obj_t cls_in, mp_obj_t width_in) {$/;"	f
+mbedtls_debug_set_threshold	main.c	/^void mbedtls_debug_set_threshold(int threshold) {$/;"	f
+mdac_locals_dict_table	machine_dac.c	/^STATIC const mp_rom_map_elem_t mdac_locals_dict_table[] = {$/;"	v
+mdac_make_new	machine_dac.c	/^STATIC mp_obj_t mdac_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,$/;"	f
+mdac_obj	machine_dac.c	/^STATIC const mdac_obj_t mdac_obj[] = {$/;"	v
+mdac_obj_t	machine_dac.c	/^} mdac_obj_t;$/;"	t	typeref:struct:_mdac_obj_t	file:
+mdac_print	machine_dac.c	/^STATIC void mdac_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kind_t kind) {$/;"	f
+mdac_write	machine_dac.c	/^STATIC mp_obj_t mdac_write(mp_obj_t self_in, mp_obj_t value_in) {$/;"	f
+mdc_pin	network_lan.c	/^    uint8_t mdc_pin;$/;"	m	struct:_lan_if_obj_t	file:
+mdio_pin	network_lan.c	/^    uint8_t mdio_pin;$/;"	m	struct:_lan_if_obj_t	file:
+mdns_initialised	modnetwork.c	/^static bool mdns_initialised = false;$/;"	v	file:
+miso	machine_hw_spi.c	/^    int8_t miso;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+mosi	machine_hw_spi.c	/^    int8_t mosi;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+mp_bluetooth_nimble_port_deinit	nimble.c	/^void mp_bluetooth_nimble_port_deinit(void) {$/;"	f
+mp_bluetooth_nimble_port_postinit	nimble.c	/^void mp_bluetooth_nimble_port_postinit(void) {$/;"	f
+mp_bluetooth_nimble_port_preinit	nimble.c	/^void mp_bluetooth_nimble_port_preinit(void) {$/;"	f
+mp_bluetooth_nimble_port_start	nimble.c	/^void mp_bluetooth_nimble_port_start(void) {$/;"	f
+mp_builtin_open	mpconfigport.h	175;"	d
+mp_builtin_open_obj	mpconfigport.h	176;"	d
+mp_hal_delay_ms	mphalport.c	/^void mp_hal_delay_ms(uint32_t ms) {$/;"	f
+mp_hal_delay_us	mphalport.c	/^void mp_hal_delay_us(uint32_t us) {$/;"	f
+mp_hal_delay_us_fast	mphalport.h	53;"	d
+mp_hal_get_pin_obj	mphalport.h	69;"	d
+mp_hal_pin_input	mphalport.h	/^static inline void mp_hal_pin_input(mp_hal_pin_obj_t pin) {$/;"	f
+mp_hal_pin_name	mphalport.h	71;"	d
+mp_hal_pin_obj_t	mphalport.h	67;"	d
+mp_hal_pin_od_high	mphalport.h	/^static inline void mp_hal_pin_od_high(mp_hal_pin_obj_t pin) {$/;"	f
+mp_hal_pin_od_low	mphalport.h	/^static inline void mp_hal_pin_od_low(mp_hal_pin_obj_t pin) {$/;"	f
+mp_hal_pin_open_drain	mphalport.h	/^static inline void mp_hal_pin_open_drain(mp_hal_pin_obj_t pin) {$/;"	f
+mp_hal_pin_output	mphalport.h	/^static inline void mp_hal_pin_output(mp_hal_pin_obj_t pin) {$/;"	f
+mp_hal_pin_read	mphalport.h	/^static inline int mp_hal_pin_read(mp_hal_pin_obj_t pin) {$/;"	f
+mp_hal_pin_write	mphalport.h	/^static inline void mp_hal_pin_write(mp_hal_pin_obj_t pin, int v) {$/;"	f
+mp_hal_quiet_timing_enter	mphalport.h	57;"	d
+mp_hal_quiet_timing_exit	mphalport.h	58;"	d
+mp_hal_stdin_rx_chr	mphalport.c	/^int mp_hal_stdin_rx_chr(void) {$/;"	f
+mp_hal_stdio_poll	mphalport.c	/^uintptr_t mp_hal_stdio_poll(uintptr_t poll_flags) {$/;"	f
+mp_hal_stdout_tx_str	mphalport.c	/^void mp_hal_stdout_tx_str(const char *str) {$/;"	f
+mp_hal_stdout_tx_strn	mphalport.c	/^void mp_hal_stdout_tx_strn(const char *str, uint32_t len) {$/;"	f
+mp_hal_stdout_tx_strn_cooked	mphalport.c	/^void mp_hal_stdout_tx_strn_cooked(const char *str, size_t len) {$/;"	f
+mp_hal_ticks_cpu	mphalport.h	/^__attribute__((always_inline)) static inline uint32_t mp_hal_ticks_cpu(void) {$/;"	f
+mp_hal_ticks_ms	mphalport.c	/^uint32_t mp_hal_ticks_ms(void) {$/;"	f
+mp_hal_ticks_us	mphalport.c	/^uint32_t mp_hal_ticks_us(void) {$/;"	f
+mp_hal_wake_main_task_from_isr	mphalport.c	/^void mp_hal_wake_main_task_from_isr(void) {$/;"	f
+mp_import_stat	mpconfigport.h	174;"	d
+mp_int_t	mpconfigport.h	/^typedef int32_t mp_int_t; \/\/ must be pointer size$/;"	t
+mp_main_task_handle	mphalport.c	/^TaskHandle_t mp_main_task_handle;$/;"	v
+mp_module_machine	modmachine.c	/^const mp_obj_module_t mp_module_machine = {$/;"	v
+mp_module_network	modnetwork.c	/^const mp_obj_module_t mp_module_network = {$/;"	v
+mp_module_network_globals_table	modnetwork.c	/^STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {$/;"	v
+mp_module_socket_globals_table	modsocket.c	/^STATIC const mp_rom_map_elem_t mp_module_socket_globals_table[] = {$/;"	v
+mp_module_usocket	modsocket.c	/^const mp_obj_module_t mp_module_usocket = {$/;"	v
+mp_obj_get_pin	mphalport.h	70;"	d
+mp_off_t	mpconfigport.h	/^typedef long mp_off_t;$/;"	t
+mp_pin_make_new	machine_pin.c	/^mp_obj_t mp_pin_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+mp_task	main.c	/^void mp_task(void *pvParameter) {$/;"	f
+mp_thread_create	mpthreadport.c	/^void mp_thread_create(void *(*entry)(void*), void *arg, size_t *stack_size) {$/;"	f
+mp_thread_create_ex	mpthreadport.c	/^void mp_thread_create_ex(void *(*entry)(void*), void *arg, size_t *stack_size, int priority, char *name) {$/;"	f
+mp_thread_deinit	mpthreadport.c	/^void mp_thread_deinit(void) {$/;"	f
+mp_thread_finish	mpthreadport.c	/^void mp_thread_finish(void) {$/;"	f
+mp_thread_gc_others	mpthreadport.c	/^void mp_thread_gc_others(void) {$/;"	f
+mp_thread_get_state	mpthreadport.c	/^mp_state_thread_t *mp_thread_get_state(void) {$/;"	f
+mp_thread_init	mpthreadport.c	/^void mp_thread_init(void *stack, uint32_t stack_len) {$/;"	f
+mp_thread_mutex_init	mpthreadport.c	/^void mp_thread_mutex_init(mp_thread_mutex_t *mutex) {$/;"	f
+mp_thread_mutex_lock	mpthreadport.c	/^int mp_thread_mutex_lock(mp_thread_mutex_t *mutex, int wait) {$/;"	f
+mp_thread_mutex_t	mpthreadport.h	/^} mp_thread_mutex_t;$/;"	t	typeref:struct:_mp_thread_mutex_t
+mp_thread_mutex_unlock	mpthreadport.c	/^void mp_thread_mutex_unlock(mp_thread_mutex_t *mutex) {$/;"	f
+mp_thread_set_state	mpthreadport.c	/^void mp_thread_set_state(void *state) {$/;"	f
+mp_thread_start	mpthreadport.c	/^void mp_thread_start(void) {$/;"	f
+mp_type_fileio	mpconfigport.h	170;"	d
+mp_type_textio	mpconfigport.h	171;"	d
+mp_uint_t	mpconfigport.h	/^typedef uint32_t mp_uint_t; \/\/ must be pointer size$/;"	t
+mtp_config	machine_touchpad.c	/^STATIC mp_obj_t mtp_config(mp_obj_t self_in, mp_obj_t value_in) {$/;"	f
+mtp_locals_dict_table	machine_touchpad.c	/^STATIC const mp_rom_map_elem_t mtp_locals_dict_table[] = {$/;"	v
+mtp_make_new	machine_touchpad.c	/^STATIC mp_obj_t mtp_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw,$/;"	f
+mtp_obj_t	machine_touchpad.c	/^} mtp_obj_t;$/;"	t	typeref:struct:_mtp_obj_t	file:
+mtp_read	machine_touchpad.c	/^STATIC mp_obj_t mtp_read(mp_obj_t self_in) {$/;"	f
+next	machine_timer.c	/^    struct _machine_timer_obj_t *next;$/;"	m	struct:_machine_timer_obj_t	typeref:struct:_machine_timer_obj_t::_machine_timer_obj_t	file:
+next	mpthreadport.c	/^    struct _thread_t *next;$/;"	m	struct:_thread_t	typeref:struct:_thread_t::_thread_t	file:
+nlr_jump_fail	main.c	/^void nlr_jump_fail(void *val) {$/;"	f
+num_items	esp32_rmt.c	/^    mp_uint_t num_items;$/;"	m	struct:_esp32_rmt_obj_t	file:
+os_dupterm_notify	moduos.c	/^STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {$/;"	f
+os_module_globals_table	moduos.c	/^STATIC const mp_rom_map_elem_t os_module_globals_table[] = {$/;"	v
+os_uname	moduos.c	/^STATIC mp_obj_t os_uname(void) {$/;"	f
+os_uname_info_fields	moduos.c	/^STATIC const qstr os_uname_info_fields[] = {$/;"	v
+os_urandom	moduos.c	/^STATIC mp_obj_t os_urandom(mp_obj_t num) {$/;"	f
+parity	machine_uart.c	/^    uint8_t parity;$/;"	m	struct:_machine_uart_obj_t	file:
+part	esp32_partition.c	/^    const esp_partition_t *part;$/;"	m	struct:_esp32_partition_obj_t	file:
+pcb	network_ppp.c	/^    ppp_pcb *pcb;$/;"	m	struct:_ppp_if_obj_t	file:
+peer_closed	modsocket.c	/^    bool peer_closed;$/;"	m	struct:_socket_obj_t	file:
+period	machine_timer.c	/^    uint64_t period;$/;"	m	struct:_machine_timer_obj_t	file:
+phase	machine_hw_spi.c	/^    uint8_t phase;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+phy_addr	network_lan.c	/^    uint8_t phy_addr;$/;"	m	struct:_lan_if_obj_t	file:
+phy_power_enable	network_lan.c	/^STATIC void phy_power_enable(bool enable) {$/;"	f
+phy_power_pin	network_lan.c	/^    int8_t phy_power_pin;$/;"	m	struct:_lan_if_obj_t	file:
+phy_type	network_lan.c	/^    uint8_t phy_type;$/;"	m	struct:_lan_if_obj_t	file:
+pin	esp32_rmt.c	/^    gpio_num_t pin;$/;"	m	struct:_esp32_rmt_obj_t	file:
+pin	machine_pwm.c	/^    gpio_num_t pin;$/;"	m	struct:_esp32_pwm_obj_t	file:
+pin_ioctl	machine_pin.c	/^STATIC mp_uint_t pin_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {$/;"	f
+pin_or_int	machine_sdcard.c	/^STATIC gpio_num_t pin_or_int(const mp_obj_t arg) {$/;"	f
+pin_pin_p	machine_pin.c	/^STATIC const mp_pin_p_t pin_pin_p = {$/;"	v
+polarity	machine_hw_spi.c	/^    uint8_t polarity;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+port	machine_i2c.c	/^    i2c_port_t port : 8;$/;"	m	struct:_machine_hw_i2c_obj_t	file:
+power_func	network_lan.c	/^    eth_phy_power_enable_func power_func;$/;"	m	struct:_lan_if_obj_t	file:
+ppp_active	network_ppp.c	/^STATIC mp_obj_t ppp_active(size_t n_args, const mp_obj_t *args) {$/;"	f
+ppp_connect_py	network_ppp.c	/^STATIC mp_obj_t ppp_connect_py(size_t n_args, const mp_obj_t *args, mp_map_t *kw_args) {$/;"	f
+ppp_delete	network_ppp.c	/^STATIC mp_obj_t ppp_delete(mp_obj_t self_in) {$/;"	f
+ppp_if_locals_dict_table	network_ppp.c	/^STATIC const mp_rom_map_elem_t ppp_if_locals_dict_table[] = {$/;"	v
+ppp_if_obj_t	network_ppp.c	/^} ppp_if_obj_t;$/;"	t	typeref:struct:_ppp_if_obj_t	file:
+ppp_if_type	network_ppp.c	/^const mp_obj_type_t ppp_if_type = {$/;"	v
+ppp_if_type	network_ppp.c	/^const mp_obj_type_t ppp_if_type;$/;"	v
+ppp_ifconfig	network_ppp.c	/^STATIC mp_obj_t ppp_ifconfig(size_t n_args, const mp_obj_t *args) {$/;"	f
+ppp_isconnected	network_ppp.c	/^STATIC mp_obj_t ppp_isconnected(mp_obj_t self_in) {$/;"	f
+ppp_make_new	network_ppp.c	/^STATIC mp_obj_t ppp_make_new(mp_obj_t stream) {$/;"	f
+ppp_make_new_obj	modnetwork.h	/^MP_DECLARE_CONST_FUN_OBJ_1(ppp_make_new_obj);$/;"	v
+ppp_output_callback	network_ppp.c	/^static u32_t ppp_output_callback(ppp_pcb *pcb, u8_t *data, u32_t len, void *ctx) {$/;"	f	file:
+ppp_status	network_ppp.c	/^STATIC mp_obj_t ppp_status(mp_obj_t self_in) {$/;"	f
+ppp_status_cb	network_ppp.c	/^static void ppp_status_cb(ppp_pcb *pcb, int err_code, void *ctx) {$/;"	f	file:
+pppif	network_ppp.c	/^    struct netif pppif;$/;"	m	struct:_ppp_if_obj_t	typeref:struct:_ppp_if_obj_t::netif	file:
+pppos_client_task	network_ppp.c	/^static void pppos_client_task(void *self_in) {$/;"	f	file:
+print_supported_git_hash	Makefile	/^define print_supported_git_hash$/;"	m
+proto	modsocket.c	/^    uint8_t proto;$/;"	m	struct:_socket_obj_t	file:
+pwm_init	machine_pwm.c	/^STATIC void pwm_init(void) {$/;"	f
+pwm_inited	machine_pwm.c	/^STATIC bool pwm_inited = false;$/;"	v
+ready	mpthreadport.c	/^    int ready;              \/\/ whether the thread is ready and running$/;"	m	struct:_thread_t	file:
+repeat	machine_timer.c	/^    mp_uint_t repeat;$/;"	m	struct:_machine_timer_obj_t	file:
+require_if	modnetwork.c	/^STATIC void require_if(mp_obj_t wlan_if, int if_no) {$/;"	f
+reset_reason_t	modmachine.c	/^} reset_reason_t;$/;"	t	typeref:enum:__anon7	file:
+retries	modsocket.c	/^    unsigned int retries;$/;"	m	struct:_socket_obj_t	file:
+rtc_user_mem_data	machine_rtc.c	/^RTC_DATA_ATTR uint8_t rtc_user_mem_data[MICROPY_HW_RTC_USER_MEM_MAX];$/;"	v
+rtc_user_mem_len	machine_rtc.c	/^RTC_DATA_ATTR uint16_t rtc_user_mem_len;$/;"	v
+rtc_user_mem_magic	machine_rtc.c	/^RTC_DATA_ATTR uint32_t rtc_user_mem_magic;$/;"	v
+rts	machine_uart.c	/^    int8_t rts;$/;"	m	struct:_machine_uart_obj_t	file:
+rx	machine_uart.c	/^    int8_t rx;$/;"	m	struct:_machine_uart_obj_t	file:
+rxbuf	machine_uart.c	/^    uint16_t rxbuf;$/;"	m	struct:_machine_uart_obj_t	file:
+sck	machine_hw_spi.c	/^    int8_t sck;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+scl	machine_i2c.c	/^    gpio_num_t scl : 8;$/;"	m	struct:_machine_hw_i2c_obj_t	file:
+sd_deinit	machine_sdcard.c	/^STATIC mp_obj_t sd_deinit(mp_obj_t self_in) {$/;"	f
+sd_info	machine_sdcard.c	/^STATIC mp_obj_t sd_info(mp_obj_t self_in) {$/;"	f
+sda	machine_i2c.c	/^    gpio_num_t sda : 8;$/;"	m	struct:_machine_hw_i2c_obj_t	file:
+sdcard_card_obj_t	machine_sdcard.c	/^} sdcard_card_obj_t;$/;"	t	typeref:struct:_sdcard_obj_t	file:
+sdcard_ensure_card_init	machine_sdcard.c	/^STATIC esp_err_t sdcard_ensure_card_init(sdcard_card_obj_t *self, bool force) {$/;"	f
+set_dotstar_power	boards/TINYPICO/modules/tinypico.py	/^def set_dotstar_power(state):$/;"	f
+set_freq	machine_pwm.c	/^STATIC int set_freq(int newval) {$/;"	f
+setup	modules/inisetup.py	/^def setup():$/;"	f
+show	boards/TINYPICO/modules/dotstar.py	/^    def show(self):$/;"	m	class:DotStar
+socket_accept	modsocket.c	/^STATIC mp_obj_t socket_accept(const mp_obj_t arg0) {$/;"	f
+socket_bind	modsocket.c	/^STATIC mp_obj_t socket_bind(const mp_obj_t arg0, const mp_obj_t arg1) {$/;"	f
+socket_connect	modsocket.c	/^STATIC mp_obj_t socket_connect(const mp_obj_t arg0, const mp_obj_t arg1) {$/;"	f
+socket_fileno	modsocket.c	/^STATIC mp_obj_t socket_fileno(const mp_obj_t arg0) {$/;"	f
+socket_listen	modsocket.c	/^STATIC mp_obj_t socket_listen(const mp_obj_t arg0, const mp_obj_t arg1) {$/;"	f
+socket_locals_dict_table	modsocket.c	/^STATIC const mp_rom_map_elem_t socket_locals_dict_table[] = {$/;"	v
+socket_make_new	modsocket.c	/^STATIC mp_obj_t socket_make_new(const mp_obj_type_t *type_in, size_t n_args, size_t n_kw, const mp_obj_t *args) {$/;"	f
+socket_makefile	modsocket.c	/^STATIC mp_obj_t socket_makefile(size_t n_args, const mp_obj_t *args) {$/;"	f
+socket_obj_t	modsocket.c	/^} socket_obj_t;$/;"	t	typeref:struct:_socket_obj_t	file:
+socket_recv	modsocket.c	/^STATIC mp_obj_t socket_recv(mp_obj_t self_in, mp_obj_t len_in) {$/;"	f
+socket_recvfrom	modsocket.c	/^STATIC mp_obj_t socket_recvfrom(mp_obj_t self_in, mp_obj_t len_in) {$/;"	f
+socket_send	modsocket.c	/^STATIC mp_obj_t socket_send(const mp_obj_t arg0, const mp_obj_t arg1) {$/;"	f
+socket_sendall	modsocket.c	/^STATIC mp_obj_t socket_sendall(const mp_obj_t arg0, const mp_obj_t arg1) {$/;"	f
+socket_sendto	modsocket.c	/^STATIC mp_obj_t socket_sendto(mp_obj_t self_in, mp_obj_t data_in, mp_obj_t addr_in) {$/;"	f
+socket_setblocking	modsocket.c	/^STATIC mp_obj_t socket_setblocking(const mp_obj_t arg0, const mp_obj_t arg1) {$/;"	f
+socket_setsockopt	modsocket.c	/^STATIC mp_obj_t socket_setsockopt(size_t n_args, const mp_obj_t *args) {$/;"	f
+socket_settimeout	modsocket.c	/^STATIC mp_obj_t socket_settimeout(const mp_obj_t arg0, const mp_obj_t arg1) {$/;"	f
+socket_stream_ioctl	modsocket.c	/^STATIC mp_uint_t socket_stream_ioctl(mp_obj_t self_in, mp_uint_t request, uintptr_t arg, int *errcode) {$/;"	f
+socket_stream_p	modsocket.c	/^STATIC const mp_stream_p_t socket_stream_p = {$/;"	v
+socket_stream_read	modsocket.c	/^STATIC mp_uint_t socket_stream_read(mp_obj_t self_in, void *buf, mp_uint_t size, int *errcode) {$/;"	f
+socket_stream_write	modsocket.c	/^STATIC mp_uint_t socket_stream_write(mp_obj_t self_in, const void *buf, mp_uint_t size, int *errcode) {$/;"	f
+socket_type	modsocket.c	/^STATIC const mp_obj_type_t socket_type = {$/;"	v
+spi	machine_hw_spi.c	/^    spi_device_handle_t spi;$/;"	m	struct:_machine_hw_spi_obj_t	file:
+stack	mpthreadport.c	/^    void *stack;            \/\/ pointer to the stack$/;"	m	struct:_thread_t	file:
+stack_len	mpthreadport.c	/^    size_t stack_len;       \/\/ number of words in the stack$/;"	m	struct:_thread_t	file:
+state	machine_hw_spi.c	/^    } state;$/;"	m	struct:_machine_hw_spi_obj_t	typeref:enum:_machine_hw_spi_obj_t::__anon1	file:
+stdin_ringbuf	mphalport.c	/^ringbuf_t stdin_ringbuf = {stdin_ringbuf_array, sizeof(stdin_ringbuf_array)};$/;"	v
+stdin_ringbuf_array	mphalport.c	/^STATIC uint8_t stdin_ringbuf_array[256];$/;"	v
+stop	machine_uart.c	/^    uint8_t stop;$/;"	m	struct:_machine_uart_obj_t	file:
+stream	network_ppp.c	/^    mp_obj_t stream;$/;"	m	struct:_ppp_if_obj_t	file:
+thread	mpthreadport.c	/^STATIC thread_t *thread = NULL; \/\/ root pointer, handled by mp_thread_gc_others$/;"	v
+thread_entry0	mpthreadport.c	/^STATIC thread_t thread_entry0;$/;"	v
+thread_mutex	mpthreadport.c	/^STATIC mp_thread_mutex_t thread_mutex;$/;"	v
+thread_t	mpthreadport.c	/^} thread_t;$/;"	t	typeref:struct:_thread_t	file:
+time_localtime	modutime.c	/^STATIC mp_obj_t time_localtime(size_t n_args, const mp_obj_t *args) {$/;"	f
+time_mktime	modutime.c	/^STATIC mp_obj_t time_mktime(mp_obj_t tuple) {$/;"	f
+time_module_globals_table	modutime.c	/^STATIC const mp_rom_map_elem_t time_module_globals_table[] = {$/;"	v
+time_time	modutime.c	/^STATIC mp_obj_t time_time(void) {$/;"	f
+timeout	machine_uart.c	/^    uint16_t timeout;       \/\/ timeout waiting for first char (in ms)$/;"	m	struct:_machine_uart_obj_t	file:
+timeout_char	machine_uart.c	/^    uint16_t timeout_char;  \/\/ timeout waiting between chars (in ms)$/;"	m	struct:_machine_uart_obj_t	file:
+timer_cfg	machine_pwm.c	/^STATIC ledc_timer_config_t timer_cfg = {$/;"	v
+touchpad_id	machine_touchpad.c	/^    touch_pad_t touchpad_id;$/;"	m	struct:_mtp_obj_t	file:
+touchpad_obj	machine_touchpad.c	/^STATIC const mtp_obj_t touchpad_obj[] = {$/;"	v
+tx	machine_uart.c	/^    int8_t tx;$/;"	m	struct:_machine_uart_obj_t	file:
+txbuf	machine_uart.c	/^    uint16_t txbuf;$/;"	m	struct:_machine_uart_obj_t	file:
+type	modsocket.c	/^    uint8_t type;$/;"	m	struct:_socket_obj_t	file:
+uart_init	uart.c	/^void uart_init(void) {$/;"	f
+uart_irq_handler	uart.c	/^STATIC void IRAM_ATTR uart_irq_handler(void *arg) {$/;"	f
+uart_num	machine_uart.c	/^    uart_port_t uart_num;$/;"	m	struct:_machine_uart_obj_t	file:
+uart_stream_p	machine_uart.c	/^STATIC const mp_stream_p_t uart_stream_p = {$/;"	v
+uos_module	moduos.c	/^const mp_obj_module_t uos_module = {$/;"	v
+usocket_events_add	modsocket.c	/^STATIC void usocket_events_add(socket_obj_t *sock) {$/;"	f
+usocket_events_deinit	modsocket.c	/^void usocket_events_deinit(void) {$/;"	f
+usocket_events_divisor	modsocket.c	/^STATIC uint8_t usocket_events_divisor;$/;"	v
+usocket_events_handler	modsocket.c	/^void usocket_events_handler(void) {$/;"	f
+usocket_events_head	modsocket.c	/^STATIC socket_obj_t *usocket_events_head;$/;"	v
+usocket_events_remove	modsocket.c	/^STATIC void usocket_events_remove(socket_obj_t *sock) {$/;"	f
+utime_module	modutime.c	/^const mp_obj_module_t utime_module = {$/;"	v
+vPortCleanUpTCB	mpthreadport.c	/^void vPortCleanUpTCB(void *tcb) {$/;"	f
+vfs	modules/_boot.py	/^    vfs = inisetup.setup()$/;"	v
+vprintf_null	main.c	/^int vprintf_null(const char *format, va_list ap) {$/;"	f
+wake_on_touch	machine_rtc.h	/^    bool wake_on_touch : 1;$/;"	m	struct:__anon3
+wake_type_t	modmachine.h	/^} wake_type_t;$/;"	t	typeref:enum:__anon2
+wdt_default	machine_wdt.c	/^STATIC machine_wdt_obj_t wdt_default = {{&machine_wdt_type}};$/;"	v
+wifi_sta_connect_requested	modnetwork.c	/^static bool wifi_sta_connect_requested = false;$/;"	v	file:
+wifi_sta_connected	modnetwork.c	/^static bool wifi_sta_connected = false;$/;"	v	file:
+wifi_sta_disconn_reason	modnetwork.c	/^static uint8_t wifi_sta_disconn_reason = 0;$/;"	v	file:
+wifi_started	modnetwork.c	/^static bool wifi_started = false;$/;"	v	file:
+wlan_ap_obj	modnetwork.c	/^STATIC const wlan_if_obj_t wlan_ap_obj = {{&wlan_if_type}, WIFI_IF_AP};$/;"	v
+wlan_if_locals_dict_table	modnetwork.c	/^STATIC const mp_rom_map_elem_t wlan_if_locals_dict_table[] = {$/;"	v
+wlan_if_obj_t	modnetwork.c	/^} wlan_if_obj_t;$/;"	t	typeref:struct:_wlan_if_obj_t	file:
+wlan_if_type	modnetwork.c	/^const mp_obj_type_t wlan_if_type = {$/;"	v
+wlan_if_type	modnetwork.c	/^const mp_obj_type_t wlan_if_type;$/;"	v
+wlan_sta_obj	modnetwork.c	/^STATIC const wlan_if_obj_t wlan_sta_obj = {{&wlan_if_type}, WIFI_IF_STA};$/;"	v
+write	modules/neopixel.py	/^    def write(self):$/;"	m	class:NeoPixel

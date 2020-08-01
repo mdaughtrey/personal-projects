@@ -1,0 +1,2 @@
+/tools/toolchain/bin/xtensa-lx106-elf-ar qc libesp_https_ota.a  CMakeFiles/__idf_esp_https_ota.dir/src/esp_https_ota.c.obj
+/tools/toolchain/bin/xtensa-lx106-elf-ranlib libesp_https_ota.a

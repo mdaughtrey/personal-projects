@@ -1,0 +1,160 @@
+time="2020-06-28T22:22:35Z" level=info msg="Config file not found, using default values"
+time="2020-06-28T22:22:35Z" level=info msg="arduino-cli version 0.10.0"
+time="2020-06-28T22:22:35Z" level=info msg="Checking if CLI is Bundled into the IDE"
+time="2020-06-28T22:22:35Z" level=info msg="Loading hardware from: /root/.arduino15/packages"
+time="2020-06-28T22:22:35Z" level=info msg="Loading package builtin from: /root/.arduino15/packages/builtin"
+time="2020-06-28T22:22:35Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:22:35Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:22:35Z" level=info msg="Loaded tool" tool="builtin:ctags@5.8-arduino11"
+time="2020-06-28T22:22:35Z" level=info msg="Loaded tool" tool="builtin:serial-discovery@1.0.0"
+time="2020-06-28T22:22:35Z" level=info msg="Loading package esp32 from: /root/.arduino15/packages/esp32/hardware"
+time="2020-06-28T22:22:35Z" level=info msg="Loaded platform" platform="esp32:esp32@1.0.4"
+time="2020-06-28T22:22:35Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:22:35Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:22:35Z" level=info msg="Loaded tool" tool="esp32:esptool_py@2.6.1"
+time="2020-06-28T22:22:35Z" level=info msg="Loaded tool" tool="esp32:mkspiffs@0.2.3"
+time="2020-06-28T22:22:35Z" level=info msg="Loaded tool" tool="esp32:xtensa-esp32-elf-gcc@1.22.0-80-g6c4433a-5.2.0"
+time="2020-06-28T22:22:35Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:22:35Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:35Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:22:35Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:22:35Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:22:35Z" level=trace msg="Compile /personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/{MIN}.ino for esp32:esp32:ttgo-t1 started"
+time="2020-06-28T22:22:35Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:35Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:35Z" level=info msg="Searching tools required for board esp32:esp32:ttgo-t1"
+time="2020-06-28T22:22:35Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:22:35Z" level=info msg="Adding libraries dir" dir=/personal-projects/libdeps location=user
+time="2020-06-28T22:22:35Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:22:35Z" level=error msg="Error during build: unable to stat Sketch location: stat /personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/{MIN}.ino: no such file or directory"
+time="2020-06-28T22:22:44Z" level=info msg="Config file not found, using default values"
+time="2020-06-28T22:22:44Z" level=info msg="arduino-cli version 0.10.0"
+time="2020-06-28T22:22:44Z" level=info msg="Checking if CLI is Bundled into the IDE"
+time="2020-06-28T22:22:44Z" level=info msg="Loading hardware from: /root/.arduino15/packages"
+time="2020-06-28T22:22:44Z" level=info msg="Loading package builtin from: /root/.arduino15/packages/builtin"
+time="2020-06-28T22:22:44Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:22:44Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:22:44Z" level=info msg="Loaded tool" tool="builtin:ctags@5.8-arduino11"
+time="2020-06-28T22:22:44Z" level=info msg="Loaded tool" tool="builtin:serial-discovery@1.0.0"
+time="2020-06-28T22:22:44Z" level=info msg="Loading package esp32 from: /root/.arduino15/packages/esp32/hardware"
+time="2020-06-28T22:22:44Z" level=info msg="Loaded platform" platform="esp32:esp32@1.0.4"
+time="2020-06-28T22:22:44Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:22:44Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:22:44Z" level=info msg="Loaded tool" tool="esp32:esptool_py@2.6.1"
+time="2020-06-28T22:22:44Z" level=info msg="Loaded tool" tool="esp32:mkspiffs@0.2.3"
+time="2020-06-28T22:22:44Z" level=info msg="Loaded tool" tool="esp32:xtensa-esp32-elf-gcc@1.22.0-80-g6c4433a-5.2.0"
+time="2020-06-28T22:22:44Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:22:44Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:44Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:22:44Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:22:44Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:22:44Z" level=trace msg="Compile /personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/.ino for esp32:esp32:ttgo-t1 started"
+time="2020-06-28T22:22:44Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:44Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:44Z" level=info msg="Searching tools required for board esp32:esp32:ttgo-t1"
+time="2020-06-28T22:22:44Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:22:44Z" level=info msg="Adding libraries dir" dir=/personal-projects/libdeps location=user
+time="2020-06-28T22:22:44Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:22:44Z" level=error msg="Error during build: unable to stat Sketch location: stat /personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/.ino: no such file or directory"
+time="2020-06-28T22:22:58Z" level=info msg="Config file not found, using default values"
+time="2020-06-28T22:22:58Z" level=info msg="arduino-cli version 0.10.0"
+time="2020-06-28T22:22:58Z" level=info msg="Checking if CLI is Bundled into the IDE"
+time="2020-06-28T22:22:58Z" level=info msg="Loading hardware from: /root/.arduino15/packages"
+time="2020-06-28T22:22:58Z" level=info msg="Loading package builtin from: /root/.arduino15/packages/builtin"
+time="2020-06-28T22:22:58Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:22:58Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:22:58Z" level=info msg="Loaded tool" tool="builtin:ctags@5.8-arduino11"
+time="2020-06-28T22:22:58Z" level=info msg="Loaded tool" tool="builtin:serial-discovery@1.0.0"
+time="2020-06-28T22:22:58Z" level=info msg="Loading package esp32 from: /root/.arduino15/packages/esp32/hardware"
+time="2020-06-28T22:22:58Z" level=info msg="Loaded platform" platform="esp32:esp32@1.0.4"
+time="2020-06-28T22:22:58Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:22:58Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:22:58Z" level=info msg="Loaded tool" tool="esp32:esptool_py@2.6.1"
+time="2020-06-28T22:22:58Z" level=info msg="Loaded tool" tool="esp32:mkspiffs@0.2.3"
+time="2020-06-28T22:22:58Z" level=info msg="Loaded tool" tool="esp32:xtensa-esp32-elf-gcc@1.22.0-80-g6c4433a-5.2.0"
+time="2020-06-28T22:22:58Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:22:58Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:58Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:22:58Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:22:58Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:22:58Z" level=trace msg="Compile /personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino for esp32:esp32:ttgo-t1 started"
+time="2020-06-28T22:22:58Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:58Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:22:58Z" level=info msg="Searching tools required for board esp32:esp32:ttgo-t1"
+time="2020-06-28T22:22:58Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:22:58Z" level=info msg="Adding libraries dir" dir=/personal-projects/libdeps location=user
+time="2020-06-28T22:22:58Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:22:58Z" level=info msg="Resolving include Wire.h for arch esp32"
+time="2020-06-28T22:22:58Z" level=info msg="  found better lib" lib=Wire prio=5E8
+time="2020-06-28T22:23:00Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.bin to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.bin
+time="2020-06-28T22:23:00Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.partitions.bin to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.partitions.bin
+time="2020-06-28T22:23:00Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.elf to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.elf
+time="2020-06-28T22:23:00Z" level=trace msg="Compile min.ino for esp32:esp32:ttgo-t1 successful"
+time="2020-06-28T22:35:56Z" level=info msg="Config file not found, using default values"
+time="2020-06-28T22:35:56Z" level=info msg="arduino-cli version 0.10.0"
+time="2020-06-28T22:35:56Z" level=info msg="Checking if CLI is Bundled into the IDE"
+time="2020-06-28T22:35:56Z" level=info msg="Loading hardware from: /root/.arduino15/packages"
+time="2020-06-28T22:35:56Z" level=info msg="Loading package builtin from: /root/.arduino15/packages/builtin"
+time="2020-06-28T22:35:56Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:35:56Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:35:56Z" level=info msg="Loaded tool" tool="builtin:ctags@5.8-arduino11"
+time="2020-06-28T22:35:56Z" level=info msg="Loaded tool" tool="builtin:serial-discovery@1.0.0"
+time="2020-06-28T22:35:56Z" level=info msg="Loading package esp32 from: /root/.arduino15/packages/esp32/hardware"
+time="2020-06-28T22:35:56Z" level=info msg="Loaded platform" platform="esp32:esp32@1.0.4"
+time="2020-06-28T22:35:56Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:35:56Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:35:56Z" level=info msg="Loaded tool" tool="esp32:esptool_py@2.6.1"
+time="2020-06-28T22:35:56Z" level=info msg="Loaded tool" tool="esp32:mkspiffs@0.2.3"
+time="2020-06-28T22:35:56Z" level=info msg="Loaded tool" tool="esp32:xtensa-esp32-elf-gcc@1.22.0-80-g6c4433a-5.2.0"
+time="2020-06-28T22:35:56Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:35:56Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:35:56Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:35:56Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:35:56Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:35:56Z" level=trace msg="Compile /personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino for esp32:esp32:ttgo-t1 started"
+time="2020-06-28T22:35:56Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:35:56Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:35:56Z" level=info msg="Searching tools required for board esp32:esp32:ttgo-t1"
+time="2020-06-28T22:35:56Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:35:56Z" level=info msg="Adding libraries dir" dir=/personal-projects/libdeps location=user
+time="2020-06-28T22:35:56Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:35:56Z" level=info msg="Resolving include Wire.h for arch esp32"
+time="2020-06-28T22:35:56Z" level=info msg="  found better lib" lib=Wire prio=5E8
+time="2020-06-28T22:35:58Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.bin to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.bin
+time="2020-06-28T22:35:58Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.partitions.bin to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.partitions.bin
+time="2020-06-28T22:35:58Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.elf to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.elf
+time="2020-06-28T22:35:58Z" level=trace msg="Compile min.ino for esp32:esp32:ttgo-t1 successful"
+time="2020-06-28T22:36:09Z" level=info msg="Config file not found, using default values"
+time="2020-06-28T22:36:09Z" level=info msg="arduino-cli version 0.10.0"
+time="2020-06-28T22:36:09Z" level=info msg="Checking if CLI is Bundled into the IDE"
+time="2020-06-28T22:36:09Z" level=info msg="Loading hardware from: /root/.arduino15/packages"
+time="2020-06-28T22:36:09Z" level=info msg="Loading package builtin from: /root/.arduino15/packages/builtin"
+time="2020-06-28T22:36:09Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:36:09Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/builtin/tools"
+time="2020-06-28T22:36:09Z" level=info msg="Loaded tool" tool="builtin:ctags@5.8-arduino11"
+time="2020-06-28T22:36:09Z" level=info msg="Loaded tool" tool="builtin:serial-discovery@1.0.0"
+time="2020-06-28T22:36:09Z" level=info msg="Loading package esp32 from: /root/.arduino15/packages/esp32/hardware"
+time="2020-06-28T22:36:09Z" level=info msg="Loaded platform" platform="esp32:esp32@1.0.4"
+time="2020-06-28T22:36:09Z" level=info msg="Checking existence of 'tools' path: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:36:09Z" level=info msg="Loading tools from dir: /root/.arduino15/packages/esp32/tools"
+time="2020-06-28T22:36:09Z" level=info msg="Loaded tool" tool="esp32:esptool_py@2.6.1"
+time="2020-06-28T22:36:09Z" level=info msg="Loaded tool" tool="esp32:mkspiffs@0.2.3"
+time="2020-06-28T22:36:09Z" level=info msg="Loaded tool" tool="esp32:xtensa-esp32-elf-gcc@1.22.0-80-g6c4433a-5.2.0"
+time="2020-06-28T22:36:09Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:36:09Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:36:09Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:36:09Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:36:09Z" level=info msg="inventory.Store.ConfigFileUsed() /root/.arduino15/inventory.yaml"
+time="2020-06-28T22:36:09Z" level=trace msg="Compile /personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino for esp32:esp32:ttgo-t1 started"
+time="2020-06-28T22:36:09Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:36:09Z" level=info msg="current best: esp32:esp32@1.0.4" bundle=false managed=true version=1.0.4
+time="2020-06-28T22:36:09Z" level=info msg="Searching tools required for board esp32:esp32:ttgo-t1"
+time="2020-06-28T22:36:09Z" level=info msg="Adding libraries dir" dir=/root/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries location=platform
+time="2020-06-28T22:36:09Z" level=info msg="Adding libraries dir" dir=/personal-projects/libdeps location=user
+time="2020-06-28T22:36:09Z" level=info msg="Adding libraries dir" dir=/root/Arduino/libraries location=user
+time="2020-06-28T22:36:09Z" level=info msg="Resolving include Wire.h for arch esp32"
+time="2020-06-28T22:36:09Z" level=info msg="  found better lib" lib=Wire prio=5E8
+time="2020-06-28T22:36:11Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.bin to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.bin
+time="2020-06-28T22:36:11Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.partitions.bin to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.partitions.bin
+time="2020-06-28T22:36:11Z" level=debug msg="copying sketch build output" from=/tmp/arduino-sketch-6B5AFFBFD05B3777F583C540F889F397/min.ino.elf to=/personal-projects/arduino/arduino-cli/LilyGo-T-Wristband/min/min.ino.esp32.esp32.ttgo-t1.elf
+time="2020-06-28T22:36:11Z" level=trace msg="Compile min.ino for esp32:esp32:ttgo-t1 successful"
