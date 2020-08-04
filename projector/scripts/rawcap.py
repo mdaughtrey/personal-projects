@@ -133,15 +133,9 @@ def stop(port):
 
 def frame(port, num):
     global lastTension
-<<<<<<< HEAD
     if (tension[num] != lastTension) & (num < (len(tension) - 1)):
         lastTension = tension[num]
         port.write('-{}T'.format(tension[num]).encode('utf-8'))
-=======
-    if tension[num] != lastTension:
-        lastTension = tension[num]
-        port.write('{}T'.format(tension[num]).encode('utf-8'))
->>>>>>> 39da4ec1825214e7f11a6eaae2bb8cee88ff1f06
         logger.debug("Set tension {}".format(lastTension))
 
     if False == config.nofilm:

@@ -1,10 +1,6 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 PROJECT=fm131
-=======
-PROJECT=fm128
->>>>>>> 39da4ec1825214e7f11a6eaae2bb8cee88ff1f06
 
 #CONTROLLER=vproj
 CONTROLLER=DESKTOP-TOJK787
