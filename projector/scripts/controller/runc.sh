@@ -1,6 +1,10 @@
 #!/bin/bash
 
+<<<<<<< HEAD
 PROJECT=fm128
+=======
+PROJECT=fm131
+>>>>>>> 39da4ec1825214e7f11a6eaae2bb8cee88ff1f06
 TYPE=8mm
 #TYPE=super8
 ROOTOFALL=/media/sf_vproj/scans/
@@ -122,9 +126,15 @@ rebuild2()
 case "$1" in 
     run) run ;;
     mode) setmode $2 ;;
+<<<<<<< HEAD
     title) ../gentitle.sh -r ${ROOTOFALL} -p ${PROJECT} -u ac ;;
     gen) use=${2:-ac}
         ../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use} ;;
+=======
+    title) bash -x ../gentitle.sh -r ${ROOTOFALL} -p ${PROJECT} -u ac ;;
+    gen) use=${2:-ac}
+        ../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use}  ;;
+>>>>>>> 39da4ec1825214e7f11a6eaae2bb8cee88ff1f06
         #../gencontent.sh -r ${ROOTOFALL} -p ${PROJECT} -u ${use} >/dev/null 2>&1;;
     initdb) initdb | sqlite3 ${ROOTOFALL}/${PROJECT}/${PROJECT}db ;;
     resetpc) sqlreset precrop ;;

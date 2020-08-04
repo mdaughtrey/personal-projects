@@ -1,0 +1,5 @@
+. /usr/local/bin/z/z.sh
+cp /personal-projects/bin/vimrc ~/.vimrc
+cp /personal-projects/bin/tmux.conf ~/.tmux.conf
+export PATH=${PATH}:/usr/local/bin/z
+
