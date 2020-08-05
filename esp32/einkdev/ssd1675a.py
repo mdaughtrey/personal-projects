@@ -11,6 +11,41 @@ import ubinascii
 
 
 class SSD1675A:
+    #_START_SEQUENCE = (
+    #b"\x12\x80\x02"  # Software reset, 2ms delay
+    #b"\x74\x01\x54"  # set analog block control
+    #b"\x7e\x01\x3b"  # set digital block control
+    #b"\x01\x03\xfa\x01\x00"  # driver output control
+    #b"\x11\x01\x03"  # Data entry sequence
+    #b"\x3c\x01\x03"  # Border color
+    #b"\x2c\x01\x70"  # Vcom Voltage
+    #b"\x03\x01\x15"  # Set gate voltage
+    #b"\x04\x03\x41\xa8\x32"  # Set source voltage
+    #b"\x3a\x01\x30"  # Set dummy line period
+    #b"\x3b\x01\x0a"  # Set gate line width
+    #b"\x32\x46\x80\x60\x40\x00\x00\x00\x00\x10\x60\x20\x00\x00\x00\x00\x80\x60\x40\x00\x00\x00\x00"
+    #b"\x10\x60\x20\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x03\x00\x00\x02\x09\x09\x00\x00"
+    #b"\x02\x03\x03\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    #b"\x00\x00\x00"  # LUT
+    #)
+
+    _START_SEQUENCE = [
+         bytearray([0x12]),  #, Software, reset,, 2ms, delay
+         bytearray([0x74, 0x54]),  #, set, analog, block, control
+         bytearray([0x7e, 0x3b]),  #, set, digital, block, control
+         bytearray([0x01, 0xfa, 0x01, 0x00]),  #, driver, output, control
+         bytearray([0x11, 0x03]),  #, Data, entry, sequence
+         bytearray([0x3c, 0x03]),  #, Border, color
+         bytearray([0x2c, 0x70]),  #, Vcom, Voltage
+         bytearray([0x03, 0x15]),  #, Set, gate, voltage
+         bytearray([0x04, 0x41, 0xa8, 0x32]),  #, Set, source, voltage
+         bytearray([0x3a, 0x30]),  #, Set, dummy, line, period
+         bytearray([0x3b, 0x0a]),  #, Set, gate, line, width
+         bytearray([0x32, 0x80, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00, 0x10, 0x60, 0x20, 0x00, 0x00, 0x00, 0x00, 0x80, 0x60, 0x40, 0x00, 0x00, 0x00, 0x00,
+          0x10, 0x60, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x03, 0x00, 0x00, 0x02, 0x09, 0x09, 0x00, 0x00,
+          0x02, 0x03, 0x03, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0x01, 0x00, 0x00]) #, LUT
+    ]
     def __init__(self, spi, cs_pin, dc_pin, busy_pin, reset_pin, width=296, height=128):
         self.width = width
         self.height = height
@@ -49,13 +84,20 @@ class SSD1675A:
 
         self._init_ssd1675a()
 
-    def write_cmd(self, cmd):
+    def write_cmd(self, cmd, data=None):
         #self.spi.init(baudrate=self.rate, polarity=0, phase=0)
         self.cs(1)
         self.dc(0)
         self.cs(0)
-        self.spi.write(bytearray([cmd]))
+        self.spi.write(cmd)
+        # test
+        if data:
+            self.dc(1)
+            self.write_data(data)
+        #
         self.cs(1)
+#        if data:
+#            self.write_data(data)
 
     def write_data(self, buf):
         #self.spi.init(baudrate=self.rate, polarity=0, phase=0)
@@ -65,73 +107,106 @@ class SSD1675A:
         self.spi.write(buf)
         self.cs(1)
 
-    def write(self, cmd, data=None):
-        #print(hex(cmd))
-        self.write_cmd(cmd)
-        if data:
-            #print(ubinascii.hexlify(data))
-            self.write_data(data)
+#    def write(self, cmd, data=None):
+#        #print(hex(cmd))
+#        self.write_cmd(cmd)
+#        if data:
+#            #print(ubinascii.hexlify(data))
+#            self.write_data(data)
 
     def _wait_busy(self):
         while self.busy.value():
             time.sleep_ms(10)
 
+    def _write_seq(self, seq):
+        self.cs(1)
+        self.dc(0)
+        self.cs(0)
+        print('Cmd byte {:02x}'.format(seq[0]))
+        self.spi.write(bytearray(seq[0]))
+        self._wait_busy()
+        if 1 < len(seq):
+            print('Data bytes {}'.format(' '.join(['{:02x}'.format(ii) for ii in seq[1:]])))
+            self.dc(1)
+            self.spi.write(seq[1:])
+            self._wait_busy()
+        self.cs(1)
+
     def _init_ssd1675a(self):
         self.hw_reset()
-        self.sw_reset()
-        self.write(0x74, b'\x54') # Set Analog Block Control
-        self.write(0x7E, b'\x3B') # Set Digital Block Control (Note! There was an error in spi_demo.c, cmd was 75)
-        self.write(0x01, b'\x27\x01\x00') # Set MUX as 296
-        self.write(0x3A, b'\x35') # Set 130Hz (0x25=100Hz, 0x07=150Hz) (Note! 130Hz isn't listed in datasheet...)
-        self.write(0x3B, b'\x04') # Set 130Hz (0x06=100Hz)
-        self.write(0x3C, b'\x33') # Border Waveform Control: Level Setting for VBD=VSH2, GS Transition for VBD=LUT3
-        self.write(0x11, b'\x03') # Data Entry Mode (increment x and y and update in x direction)
-        self.write(0x44, b'\x00\x0F') # set RAM x address start/end, in page 36. Start at 0x00, end at 0x0F(15+1)*8->128
-        self.write(0x45, b'\x00\x00\x27\x01') # set RAM y address start/end, in page 37. Start at 0x127, end at 0x00.
+        for seq in SSD1675A._START_SEQUENCE:
+            self._write_seq(seq)
+        #self.sw_reset()
+#        self.write_cmd(b'\x12')
+#        self._wait_busy()
+#        self.write_cmd(b'\x74', b'\x54')
+#        self.write_cmd(b'\x7e', b'\x3b')
+#        self.write_cmd(b'\x01')
+#        self.write_cmd(b'\x3a')
+#        self.write_cmd(b'\x3b')
+#        self.write_cmd(b'\x3c')
+#        self.write_cmd(b'\x11')
+#        self.write_cmd(b'\x44')
+#        self.write_cmd(b'\x45')
+#        self.write_cmd(b'\x4e')
+#        self.write_cmd(b'\x4f')
+#        self.write_cmd(b'\x24')
+#        self.write_cmd(b'\x11')
+#        self.write_cmd(b'\x44')
+#        self.write_cmd(b'\x45')
+#        self.write_cmd(b'\x4e')
+#        self.write_cmd(b'\x4f')
+#        self.write_cmd(b'\x26')
+#        self.write_cmd(b'\x22')
+#        self.write_cmd(b'\x20')
+#        self._wait_busy()
 
-        self.write(0x04, b'\x41\xA8\x32') # set VSH1/VSH2/VSL values: 15/5/-15 respectively
-        self.write(0x2C, b'\x68') # VCOM = -2.6V
-        self._write_lut()
 
-    def _write_lut(self):
-        ''' Not really sure what these values mean. See 6.7 in the datasheet. Values taken
-        from drewler's spi_demo.c code.'''
-        self.write(0x32, b'\x22\x11\x10\x00\x10\x00\x00\x11\x88\x80\x80\x80\x00\x00'
-                         b'\x6A\x9B\x9B\x9B\x9B\x00\x00\x6A\x9B\x9B\x9B\x9B\x00\x00'
-                         b'\x00\x00\x00\x00\x00\x00\x00\x04\x18\x04\x16\x01\x0A\x0A'
-                         b'\x0A\x0A\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04'
-                         b'\x04\x08\x3C\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+#        [self.write(x) for x in SSD1675A._START_SEQUENCE]
+#        self.write(SSD1675A._START_SEQUENCE)
 
-    def set_xy_window(self, xstart=0, xend=15, ystart=0, yend=295):
-        self.write(0x44, bytearray([xstart, xend])) # Set RAM x address start/end
-        self.write(0x45, bytearray([ystart, ystart >> 8, yend, yend >> 8])) # Set RAM y address start/end
+
+
+#    def _write_lut(self):
+#        ''' Not really sure what these values mean. See 6.7 in the datasheet. Values taken
+#        from drewler's spi_demo.c code.'''
+#        self.write(0x32, b'\x22\x11\x10\x00\x10\x00\x00\x11\x88\x80\x80\x80\x00\x00'
+#                         b'\x6A\x9B\x9B\x9B\x9B\x00\x00\x6A\x9B\x9B\x9B\x9B\x00\x00'
+#                         b'\x00\x00\x00\x00\x00\x00\x00\x04\x18\x04\x16\x01\x0A\x0A'
+#                         b'\x0A\x0A\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04'
+#                         b'\x04\x08\x3C\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+#
+    def set_xy_window(self, xstart=0, xend=296, ystart=0, yend=128):
+        self.write_cmd(b'\x44', bytearray([xstart, xend])) # Set RAM x address start/end
+        self.write_cmd(b'\x45', bytearray([ystart, ystart >> 8, yend, yend >> 8])) # Set RAM y address start/end
 
     def set_xy_counter(self, x, y):
-        self.write(0x4E, bytearray([x])) # Set RAM x address count
-        self.write(0x4F, bytearray([y, y>>8])) # Set RAM y address count
+        self.write_cmd(b'\x4E', bytearray([x])) # Set RAM x address count
+        self.write_cmd(b'\x4F', bytearray([y, y>>8])) # Set RAM y address count
 
     def clear(self):
-        self.set_xy_window()
+        self.set_xy_window(self.width, self.height)
         self.set_xy_counter(0, 0)
-        self.write(0x24, b'\xFF' * 4736)
-        self.write(0x20) # Update display
+        self.write_cmd(b'\x24', b'\xFF' * 100)
+        self.write_cmd(b'\x20') # Update display
         self._wait_busy()
 
-    def show(self, buffer):
-        self.set_xy_window(0, 0x0F, 0, 0x127)
-        self.set_xy_counter(0, 0)
-        self.write(0x24, buffer) # Write data
-        self.write(0x22, bytearray([0xC7]))
-        self.write(0x20) # Update display
-        self._wait_busy()
-
-    def sw_reset(self):
-        self.write(0x12) # SWRESET
-        self._wait_busy()
+#    def show(self, buffer):
+#        self.set_xy_window(0, 0x0F, 0, 0x127)
+#        self.set_xy_counter(0, 0)
+#        self.write_cmd(0x24, buffer) # Write data
+#        self.write_cmd(0x22, bytearray([0xC7]))
+#        self.write_cmd(0x20) # Update display
+#        self._wait_busy()
+#
+#    def sw_reset(self):
+#        self.write(0x12) # SWRESET
+#        self._wait_busy()
 
     def hw_reset(self):
         self.reset.value(0)
         time.sleep_ms(200)
         self.reset.value(1)
         time.sleep_ms(200)
+        self._wait_busy()
 

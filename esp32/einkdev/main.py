@@ -1,5 +1,5 @@
 #import epaper2in13
-import ssd1675a
+from  ssd1675a import SSD1675A
 import framebuf
 import machine
 import time
@@ -23,16 +23,17 @@ import time
 # DC IO17
 # CS IO5
 EWIDTH=212
-EHEIGHT=104
+EHEIGHT=128
 
 #pins = [machine.Pin(4, machine.Pin.OUT), machine.Pin(16, machine.Pin.OUT), machine.Pin(17, machine.Pin.OUT), machine.Pin(5, machine.Pin.OUT)]
 
 def main():
-    spi = machine.SPI(2, baudrate=2000000, sck=machine.Pin(18), mosi=machine.Pin(23))
+    spi = machine.SPI(2, baudrate=2000000, sck=machine.Pin(18, machine.Pin.OUT), mosi=machine.Pin(23, machine.Pin.OUT))
     #def __init__(self, spi, cs_pin, dc_pin, busy_pin, reset_pin, width=296, height=128):
-    e = ssd1675a.SSD1675A(spi, cs_pin=machine.Pin(5), dc_pin=machine.Pin(17),
+    e = SSD1675A(spi, cs_pin=machine.Pin(5), dc_pin=machine.Pin(17),
         busy_pin=machine.Pin(4), reset_pin=machine.Pin(16),
         width=EWIDTH, height=EHEIGHT)
+    e.clear()
 #    e.rect(20, 20, 100, 100, 1)
 #    e.show()
 
@@ -63,11 +64,11 @@ def main():
 ##    print("clear done")
 #    e.display_frame()
 #    print("display done")
-    buf = bytearray(EWIDTH, EHEIGHT // 8)
+#    buf = bytearray(EWIDTH, EHEIGHT // 8)
 #    buf = bytearray(e.height * e.width // 8)
-    fb = framebuf.FrameBuffer(buf, EHEIGHT, EWIDTH, framebuf.MONO_HLSB)
-    fb.text('Hello', 30, 0, 0)
-    e.show(buf)
+#    fb = framebuf.FrameBuffer(buf, EHEIGHT, EWIDTH, framebuf.MONO_HLSB)
+#    fb.text('Hello', 30, 0, 0)
+#    e.show(buf)
 #    e.set_frame_memory(buf, 0, 0, e.width, e.height)
 #    e.display_frame()
     print("Done")

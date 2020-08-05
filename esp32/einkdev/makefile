@@ -1,7 +1,8 @@
 PORT=/dev/ttyUSB0
 BAUD=115200
 UPFILE=main.py
-ALLFILES=main.py boot.py micropython-waveshare-epaper/epaper2in13.py ssd1675a.py
+#ALLFILES=main.py boot.py micropython-waveshare-epaper/epaper2in13.py ssd1675a.py
+ALLFILES=main.py boot.py ssd1675a.py
 #IMAGE=esp32spiram-idf4-20191220-v1.12.bin
 #IMAGE=tinypico-idf4-20191220-v1.12.bin
 IMAGE=esp32-idf4-20191220-v1.12.bin
