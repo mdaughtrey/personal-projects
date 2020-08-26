@@ -28,12 +28,12 @@ EHEIGHT=128
 #pins = [machine.Pin(4, machine.Pin.OUT), machine.Pin(16, machine.Pin.OUT), machine.Pin(17, machine.Pin.OUT), machine.Pin(5, machine.Pin.OUT)]
 
 def main():
-    spi = machine.SPI(2, baudrate=2000000, sck=machine.Pin(18, machine.Pin.OUT), mosi=machine.Pin(23, machine.Pin.OUT))
+    spi = machine.SPI(1, baudrate=2000000, sck=machine.Pin(18, machine.Pin.OUT), mosi=machine.Pin(23, machine.Pin.OUT)) # , polarity=0, phase=0)
     #def __init__(self, spi, cs_pin, dc_pin, busy_pin, reset_pin, width=296, height=128):
     e = SSD1675A(spi, cs_pin=machine.Pin(5), dc_pin=machine.Pin(17),
         busy_pin=machine.Pin(4), reset_pin=machine.Pin(16),
         width=EWIDTH, height=EHEIGHT)
-    e.clear()
+#    e.clear()
 #    e.rect(20, 20, 100, 100, 1)
 #    e.show()
 

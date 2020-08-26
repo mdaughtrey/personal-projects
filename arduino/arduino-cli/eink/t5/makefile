@@ -1,16 +1,20 @@
-#LIBS=--libraries 
+
 TAGFILE=${PWD}/TAGS
 PORT=/dev/ttyUSB0
-#BOARD=esp32:esp32:esp32
 BOARD=esp32:esp32:esp32wrover
-#MYSKETCH=${PWD}/main
+#MYSKETCH=LilyGo-T5-ink-series-master/LilyGo_T5_V2.3
+MYSKETCH=bluemouth
 #MYSKETCH=${PWD}/demo
-MYSKETCH=${PWD}/gxepd
+#MYSKETCH=${PWD}/gxepd
 FLAGS=--log-file acli.log --log-level trace
+# Board JSON
+# https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
 
-#BP=--build-properties build.extra_flags=-DLOAD_FONT2 
-#   --build-properties build.extra_flags=-DLOAD_FONT4
-#BP=--build-properties build.extra_flags=-DLOAD_GFXFF
+# T5 Ink Series
+# https://github.com/Xinyuan-LilyGO/LilyGo-T5-ink-series
+# GxEPD lib
+# https://github.com/ZinggJM/GxEPD
+
 
 all: c u
 
@@ -35,3 +39,4 @@ tags:
 	cd /root/Arduino/libraries
 	etags --append -f ${TAGFILE} --exclude=.py -R . --langmap=C++:.ino
 	cd -
+

@@ -11,24 +11,6 @@ import ubinascii
 
 
 class SSD1675A:
-    #_START_SEQUENCE = (
-    #b"\x12\x80\x02"  # Software reset, 2ms delay
-    #b"\x74\x01\x54"  # set analog block control
-    #b"\x7e\x01\x3b"  # set digital block control
-    #b"\x01\x03\xfa\x01\x00"  # driver output control
-    #b"\x11\x01\x03"  # Data entry sequence
-    #b"\x3c\x01\x03"  # Border color
-    #b"\x2c\x01\x70"  # Vcom Voltage
-    #b"\x03\x01\x15"  # Set gate voltage
-    #b"\x04\x03\x41\xa8\x32"  # Set source voltage
-    #b"\x3a\x01\x30"  # Set dummy line period
-    #b"\x3b\x01\x0a"  # Set gate line width
-    #b"\x32\x46\x80\x60\x40\x00\x00\x00\x00\x10\x60\x20\x00\x00\x00\x00\x80\x60\x40\x00\x00\x00\x00"
-    #b"\x10\x60\x20\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x03\x00\x00\x02\x09\x09\x00\x00"
-    #b"\x02\x03\x03\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-    #b"\x00\x00\x00"  # LUT
-    #)
-
     _START_SEQUENCE = [
          bytearray([0x12]),  #, Software, reset,, 2ms, delay
          bytearray([0x74, 0x54]),  #, set, analog, block, control
@@ -46,6 +28,27 @@ class SSD1675A:
           0x02, 0x03, 0x03, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
           0x01, 0x00, 0x00]) #, LUT
     ]
+
+    _START_SEQUENCE2 = [
+	bytearray([0x74, 0x54]), # Set Analog Block Control
+        bytearray([0x7E, 0x3B]), # Set Digital Block Control (Note! There was an error in spi_demo.c, cmd was 75)
+        bytearray([0x01, 0x27, 0x01, 0x00]), # Set MUX as 296
+        bytearray([0x3A, 0x35]), # Set 130Hz (0x25=100Hz, 0x07=150Hz) (Note! 130Hz isn't listed in datasheet...)
+        bytearray([0x3B, 0x04]), # Set 130Hz (0x06=100Hz)
+        bytearray([0x3C, 0x33]), # Border Waveform Control: Level Setting for VBD=VSH2, GS Transition for VBD=LUT3
+        bytearray([0x11, 0x03]), # Data Entry Mode (increment x and y and update in x direction)
+        bytearray([0x44, 0x00, 0x0F]), # set RAM x address start/end, in page 36. Start at 0x00, end at 0x0F(15+1)*8->128
+        bytearray([0x45, 0x00, 0x00, 0x27, 0x01]), # set RAM y address start/end, in page 37. Start at 0x127, end at 0x00.
+        bytearray([0x04, 0x41, 0xA8, 0x32]), # set VSH1/VSH2/VSL values: 15/5/-15 respectively
+        bytearray([0x2C, 0x68]), # VCOM = -2.6V
+	bytearray([0x32, 0x22, 0x11, 0x10, 0x00, 0x10, 0x00, 0x00, 0x11, 0x88, 0x80, 0x80, 0x80, 0x00, 0x00,
+                         0x6A, 0x9B, 0x9B, 0x9B, 0x9B, 0x00, 0x00, 0x6A, 0x9B, 0x9B, 0x9B, 0x9B, 0x00, 0x00,
+                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x18, 0x04, 0x16, 0x01, 0x0A, 0x0A,
+                         0x0A, 0x0A, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04,
+                         0x04, 0x08, 0x3C, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+	]
+
+
     def __init__(self, spi, cs_pin, dc_pin, busy_pin, reset_pin, width=296, height=128):
         self.width = width
         self.height = height
@@ -124,13 +127,16 @@ class SSD1675A:
         self.cs(0)
         print('Cmd byte {:02x}'.format(seq[0]))
         self.spi.write(bytearray(seq[0]))
+	self.cs(1)
         self._wait_busy()
+
         if 1 < len(seq):
             print('Data bytes {}'.format(' '.join(['{:02x}'.format(ii) for ii in seq[1:]])))
             self.dc(1)
+            self.cs(0)
             self.spi.write(seq[1:])
+            self.cs(1)
             self._wait_busy()
-        self.cs(1)
 
     def _init_ssd1675a(self):
         self.hw_reset()
