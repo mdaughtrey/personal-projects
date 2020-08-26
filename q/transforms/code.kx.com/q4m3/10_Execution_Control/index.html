@@ -1,0 +1,1302 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="Q for Mortals">
+      
+      
+        <link rel="canonical" href="index.html">
+      
+      
+        <meta name="author" content="Jeffry Borror">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-0.17.3, mkdocs-material-2.7.2">
+    
+    
+      
+        <title>10. Execution Control - Q for Mortals</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.8d40d89b.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+    
+    
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+      
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="http://code.kx.com/stylesheets/prism.css">
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="deep-orange">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <a href="index.html#10-execution-control" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="http://code.kx.com/q4m3" title="Q for Mortals" class="md-header-nav__button md-logo">
+          
+            <img src="../img/qfm3.jpg" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            
+              <span class="md-header-nav__topic">
+                Q for Mortals
+              </span>
+              <span class="md-header-nav__topic">
+                10. Execution Control
+              </span>
+            
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+            <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+            
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+        
+      </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    <span class="md-nav__button md-logo">
+      
+        <img src="../img/qfm3.jpg" width="48" height="48">
+      
+    </span>
+    Q for Mortals
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../redirect/index.html" title="code.kx.com" class="md-nav__link">
+      code.kx.com
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../index.html" title="Contents" class="md-nav__link">
+      Contents
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../preface/index.html" title="Preface" class="md-nav__link">
+      Preface
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../0_Overview/index.html" title="0. Overview" class="md-nav__link">
+      0. Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../1_Q_Shock_and_Awe.1" title="1. Q Shock and Awe" class="md-nav__link">
+      1. Q Shock and Awe
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../2_Basic_Data_Types_Atoms/index.html" title="2. Basic Data Types – Atoms" class="md-nav__link">
+      2. Basic Data Types – Atoms
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../3_Lists.1" title="3. Lists" class="md-nav__link">
+      3. Lists
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../4_Operators.1" title="4. Operators" class="md-nav__link">
+      4. Operators
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../5_Dictionaries.1" title="5. Dictionaries" class="md-nav__link">
+      5. Dictionaries
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../6_Functions.1" title="6. Functions" class="md-nav__link">
+      6. Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../7_Transforming_Data/index.html" title="7. Transforming Data" class="md-nav__link">
+      7. Transforming Data
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../8_Tables.1" title="8. Tables" class="md-nav__link">
+      8. Tables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../9_Queries_q-sql.1" title="9. Queries – q-sql" class="md-nav__link">
+      9. Queries – q-sql
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        10. Execution Control
+      </label>
+    
+    <a href="index.html" title="10. Execution Control" class="md-nav__link md-nav__link--active">
+      10. Execution Control
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="index.html#100-overview" title="10.0 Overview" class="md-nav__link">
+    10.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#101-control-flow" title="10.1 Control Flow" class="md-nav__link">
+    10.1 Control Flow
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#1011-basic-conditional-evaluation" title="10.1.1 Basic Conditional Evaluation" class="md-nav__link">
+    10.1.1 Basic Conditional Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1012-extended-conditional-evaluation" title="10.1.2 Extended Conditional Evaluation" class="md-nav__link">
+    10.1.2 Extended Conditional Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1013-vector-conditional-evaluation" title="10.1.3 Vector Conditional Evaluation" class="md-nav__link">
+    10.1.3 Vector Conditional Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1014-if" title="10.1.4 if" class="md-nav__link">
+    10.1.4 if
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1015-do" title="10.1.5 do" class="md-nav__link">
+    10.1.5 do
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1016-while" title="10.1.6 while" class="md-nav__link">
+    10.1.6 while
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1017-return-and-signal" title="10.1.7 Return and Signal" class="md-nav__link">
+    10.1.7 Return and Signal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1018-protected-evaluation" title="10.1.8 Protected Evaluation" class="md-nav__link">
+    10.1.8 Protected Evaluation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#102-debugging" title="10.2 Debugging" class="md-nav__link">
+    10.2 Debugging
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#103-scripts" title="10.3 Scripts" class="md-nav__link">
+    10.3 Scripts
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#1031-creating-and-loading-a-script" title="10.3.1 Creating and Loading a Script" class="md-nav__link">
+    10.3.1 Creating and Loading a Script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1032-blocks" title="10.3.2 Blocks" class="md-nav__link">
+    10.3.2 Blocks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1033-passing-parameters" title="10.3.3 Passing Parameters" class="md-nav__link">
+    10.3.3 Passing Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../11_IO.1" title="11. I/O" class="md-nav__link">
+      11. I/O
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../12_Workspace_Organization.1" title="12. Workspace Organization" class="md-nav__link">
+      12. Workspace Organization
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../13_Commands_and_System_Variables.1" title="13. Commands and System Variables" class="md-nav__link">
+      13. Commands and System Variables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../14_Introduction_to_Kdb+.1" title="14. Introduction to Kdb+" class="md-nav__link">
+      14. Introduction to Kdb+
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../A_Built-in_Functions.1" title="Appendix A. Built-in Functions" class="md-nav__link">
+      Appendix A. Built-in Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../B_Error_Messages/index.html" title="Appendix B. Error Messages" class="md-nav__link">
+      Appendix B. Error Messages
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../colophon/index.html" title="Colophon" class="md-nav__link">
+      Colophon
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="index.html#100-overview" title="10.0 Overview" class="md-nav__link">
+    10.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#101-control-flow" title="10.1 Control Flow" class="md-nav__link">
+    10.1 Control Flow
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#1011-basic-conditional-evaluation" title="10.1.1 Basic Conditional Evaluation" class="md-nav__link">
+    10.1.1 Basic Conditional Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1012-extended-conditional-evaluation" title="10.1.2 Extended Conditional Evaluation" class="md-nav__link">
+    10.1.2 Extended Conditional Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1013-vector-conditional-evaluation" title="10.1.3 Vector Conditional Evaluation" class="md-nav__link">
+    10.1.3 Vector Conditional Evaluation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1014-if" title="10.1.4 if" class="md-nav__link">
+    10.1.4 if
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1015-do" title="10.1.5 do" class="md-nav__link">
+    10.1.5 do
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1016-while" title="10.1.6 while" class="md-nav__link">
+    10.1.6 while
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1017-return-and-signal" title="10.1.7 Return and Signal" class="md-nav__link">
+    10.1.7 Return and Signal
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1018-protected-evaluation" title="10.1.8 Protected Evaluation" class="md-nav__link">
+    10.1.8 Protected Evaluation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#102-debugging" title="10.2 Debugging" class="md-nav__link">
+    10.2 Debugging
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="index.html#103-scripts" title="10.3 Scripts" class="md-nav__link">
+    10.3 Scripts
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="index.html#1031-creating-and-loading-a-script" title="10.3.1 Creating and Loading a Script" class="md-nav__link">
+    10.3.1 Creating and Loading a Script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1032-blocks" title="10.3.2 Blocks" class="md-nav__link">
+    10.3.2 Blocks
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="index.html#1033-passing-parameters" title="10.3.3 Passing Parameters" class="md-nav__link">
+    10.3.3 Passing Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="10-execution-control">10. Execution Control<a class="headerlink" href="index.html#10-execution-control" title="Permanent link">&para;</a></h1>
+<h2 id="100-overview">10.0 Overview<a class="headerlink" href="index.html#100-overview" title="Permanent link">&para;</a></h2>
+<p>Basic function application in q provides sequential evaluation of a series of expressions. In this chapter we demonstrate how to achieve non-sequential execution in q.</p>
+<h2 id="101-control-flow">10.1 Control Flow<a class="headerlink" href="index.html#101-control-flow" title="Permanent link">&para;</a></h2>
+<p>When writing vector operations in q, the cleanest code and best performance is obtained by avoiding loops and conditional execution. For those times when you simply must write iffy or loopy code, q has versions of the usual constructs.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Control flow constructs in this section involve branching in the byte code generated by the q interpreter. The offset of the branch destination is limited (currently to 255 byte codes), which means that the sequence of q expressions that can be contained in any part of <code>$</code>, <code>?</code>, <code>if</code>, <code>do</code>, or <code>while</code> must be short. At some point, insertion of one additional statement will break the camel’s back, resulting in a <code>'branch</code> error. This is q's way of rejecting bloated code. In this situation, factor code blocks into separate functions. Better yet, restructure your code.</p>
+</div>
+<h3 id="1011-basic-conditional-evaluation">10.1.1 Basic Conditional Evaluation<a class="headerlink" href="index.html#1011-basic-conditional-evaluation" title="Permanent link">&para;</a></h3>
+<p>Languages of C heritage have a form of in-line <em>if</em>, called conditional evaluation, of the form,</p>
+<p><em>expr<sub>cond</sub></em> ? <em>expr<sub>true</sub></em> : <em>expr<sub>false</sub></em></p>
+<p>where <em>expr<sub>cond</sub></em> is an expression that evaluates to a Boolean (or int in C and C++). The result of the expression is <em>expr<sub>true</sub></em> when <em>expr<sub>cond</sub></em> is true (or non-zero) and <em>expr<sub>false</sub></em> otherwise.</p>
+<p>The same effect can be achieved in q using the triadic overload of <code>$</code>.</p>
+<p>$[<em>expr<sub>cond</sub></em>; <em>expr<sub>true</sub></em>; <em>expr<sub>false</sub></em>]</p>
+<p>Here <em>expr<sub>cond</sub></em> is an expression that evaluates to a boolean <strong>atom</strong>. Analogous to C, the result of <em>expr<sub>cond</sub></em> can be any type whose underlying value is an integer. The result of the conditional is the evaluation of <em>expr<sub>true</sub></em> when <em>expr<sub>cond</sub></em> is not zero and <em>expr<sub>false</sub></em> if it is zero.</p>
+<pre><code class="q">q)$[1b;42;9*6]
+42
+q)$[0b;42;9*6]
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The conditional <code>$</code> is a function that always returns a value. It is good practice for expr<sub>true</sub> and expr<sub>false</sub> to have the same type. This is not enforced in q as it is in statically-typed functional languages.</p>
+</div>
+<p>The brackets in any q conditional do <strong>not</strong> create lexical scope. This means that variables created within the body exist in the same scope as the conditional. For example, in a fresh q session the variable <code>a</code> in the following is a global that persists outside the conditional.</p>
+<pre><code class="q">q)a
+'a
+q)$[1b;a:42;a:43]
+42
+q)a
+42
+</code></pre>
+
+<p>Although evaluation of function arguments in q is <a href="https://en.wikipedia.org/wiki/Eager_evaluation">eager</a>, evaluation of the expressions in the conditional is short circuited, meaning that only the one selected for return is evaluated. Again in a fresh q session,</p>
+<pre><code class="q">q)a
+'a
+q)b
+'b
+q)$[1b;a:42;b:43]
+42
+q)a
+42
+q)b
+'b
+</code></pre>
+
+<p>Observe that a test for zero in <em>expr<sub>cond</sub></em> is redundant: remove that test and reverse the order of the second and third arguments.</p>
+<pre><code class="q">q)z:0
+q)$[z=0;1.1;-1.1]
+1.1
+q)$[z;-1.1;1.1] / equivalent to previous
+1.1
+</code></pre>
+
+<p>In contrast with earlier versions of q, some null values are now acceptable for <em>expr<sub>cond</sub></em>. It is the same as testing for null with the operator <code>null</code>.</p>
+<pre><code class="q">q)v:0N
+q)$[v;`isnull;`notnull]
+`isnull
+q)$[null v;`isnull;`notnull]
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Float nulls do not work so the above is probably an accident and you should not count on it.</p>
+</div>
+<h3 id="1012-extended-conditional-evaluation">10.1.2 Extended Conditional Evaluation<a class="headerlink" href="index.html#1012-extended-conditional-evaluation" title="Permanent link">&para;</a></h3>
+<p>In languages of C heritage, the <em>if-else</em> statement has the form,</p>
+<pre><code class="c">if (expr_cond) {
+    statement_true1;
+    .
+    .
+    .
+}
+
+else {
+    statement_false1;
+    .
+    .
+    .
+}
+</code></pre>
+
+<p>where <code>expr_cond</code> is an expression that evaluates to a boolean (or int in C and C++). If the expression <code>expr_cond</code> is true (i.e., non-zero) the first sequence of statements in braces is executed; otherwise, the second sequence of statements in braces is executed.</p>
+<p>A similar effect can be achieved in q using an extended form of conditional evaluation with <code>$</code>.</p>
+<p><code>$[</code><em>expr<sub>cond</sub></em><code>; [</code><em>expr<sub>true1</sub></em><code>; …]; [</code><em>expr<sub>false1</sub></em><code>; …]]</code></p>
+<p>where <em>expr<sub>cond</sub></em> is an expression as in the basic conditional. When <em>expr<sub>cond</sub></em> evaluates to non-zero, the first bracketed sequence of expressions is evaluated in left-to-right order; otherwise, the second bracketed sequence of expressions is evaluated.</p>
+<pre><code class="q">q)v:42
+q)$[v=42; [a:6;b:7;`Everything]; [a:`Life;b:`the;c:`Universe;a,b,c]]
+`Everything
+q)$[v=43; [a:6;b:7;`everything]; [a:`Life;b:`the;c:`Universe;a,b,c]]
+`Life`the`Universe
+</code></pre>
+
+<p>The extended forms of the conditional are still functions with return values. If you are using them strictly for side effects, you are writing imperative, non-vector code and should consider VBA as an alternative.</p>
+<p>Languages of C heritage have a cascading form of if-else in which multiple tests can be made,</p>
+<pre><code class="c">if (expr_cond1) {
+    statement_true11;
+    .
+    .
+    .
+}
+else if (expr_condn) {
+    statement_truen1;
+    .
+    .
+    .
+}
+.
+.
+.
+else {
+    statement_false;
+    .
+    .
+    .
+}
+</code></pre>
+
+<p>In this construction, the <code>expr_cond<em>n</em></code> are evaluated consecutively until one is true (non-zero), at which point the associated block of statements is executed and the statement is complete. If none of the expressions passes, the final block of statements, called the <em>default</em> case, is executed.</p>
+<p>A similar effect can be achieved in q with another extended form of conditional execution.</p>
+<p><code>$[</code><em>expr<sub>cond1</sub></em><code>;</code><em>expr<sub>true1</sub></em><code>; …;</code><em>expr<sub>condn</sub></em><code>;</code><em>expr<sub>truen</sub></em><code>;</code><em>expr<sub>false</sub></em><code>]</code></p>
+<p>In this form, the conditional expressions are evaluated consecutively until one is non-zero, at which point the associated <em>expr<sub>true</sub></em> is evaluated and its result is returned. If none of the conditional expressions evaluates to non-zero, <em>expr<sub>false</sub></em> is evaluated and its result is returned. Observe that <em>expr<sub>false</sub></em> is the only expression that is not part of a pair, as it has no guarding conditional expression.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Any condition other than the first is only evaluated if all those prior to it have evaluated to zero. Otherwise put, a condition evaluating to non-zero short-circuits the evaluation of subsequent ones.
+<pre><code class="language-q">
+q)a:0
+q)$[a=0;`zero; a&gt;0;`pos; `neg]
+`zero
+q)a:42
+q)$[a=0;`zero; a&gt;0;`pos; `neg]
+_
+q)a:-42
+q)$[a=0;`zero; a&gt;0;`pos; `neg]
+_ 
+</code></pre></p>
+</div>
+<p>Finally, the previous extended form of conditional execution can be further extended by substituting a bracketed sequence of expressions for any <em>expr<sub>true</sub></em> or <em>expr<sub>false</sub></em>.</p>
+<pre><code class="q">$[expr_cond1;[expr_true11; …]; …;
+    expr_condn;[expr_truen1; …];
+    [expr_false1; …]]
+</code></pre>
+
+<p>If you use this, have the decency to align your code properly so that q coders can identify it as bogus q at a glance.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>After a brief Zen meditation, you realize that you can implement “switch” with a dictionary.</p>
+</div>
+<h3 id="1013-vector-conditional-evaluation">10.1.3 Vector Conditional Evaluation<a class="headerlink" href="index.html#1013-vector-conditional-evaluation" title="Permanent link">&para;</a></h3>
+<p>Triadic vector-conditional evaluation <code>?</code> has the form,</p>
+<p><code>?[</code><em>v<sub>b</sub></em><code>;</code><em>expr<sub>true</sub></em><code>;</code><em>expr<sub>false</sub></em><code>]</code></p>
+<p>where <em>v<sub>b</sub></em> is a simple boolean list and <em>expr<sub>true</sub></em> and <em>expr<sub>false</sub></em> are of the same type and are either atoms or vectors that conform to <em>v<sub>b</sub></em>. The result conforms to <em>v<sub>b</sub></em> and selects from <em>expr<sub>true</sub></em> in positions where <em>v<sub>b</sub></em> is 1b and <em>expr<sub>false</sub></em> in positions where <em>v<sub>b</sub></em> has 0b. All arguments of vector-conditional are fully executed. In other words, there is no short circuiting of evaluation.</p>
+<p>The following example chooses 42 for items in a list that are multiples of 3.</p>
+<pre><code class="q">q)L:til 10
+q)?[L mod 3; L; 42]
+42 1 2 42 4 5 42 7 8 42
+</code></pre>
+
+<p>Vector conditional is especially useful with table columns.</p>
+<pre><code class="q">q)t:([] c1:1.1 2.2 3.3; c2:10 20 30; c3:100 200 300)
+q)update mix:?[c1&gt;2.0; c3; c2] from t
+_
+</code></pre>
+
+<p>There are no extended forms of vector conditional. You can get a cascading effect by nesting vector conditional expressions but, like other conditionals, it is subject to the restriction that no internal code jump can exceed 255 byte codes. This limits the degree of nesting that can be used in practice. With <code>t</code> as above,</p>
+<pre><code class="q">q)update band:?[c2 within 5 15; 1; ?[c2 within 16 25; 2; 3]] from t
+_
+</code></pre>
+
+<h3 id="1014-if">10.1.4 if<a class="headerlink" href="index.html#1014-if" title="Permanent link">&para;</a></h3>
+<p>The imperative <code>if</code> statement conditionally evaluates a sequence of expressions. It is not a function and does not return a value. It has the form,</p>
+<p><code>if[</code><em>expr<sub>cond</sub></em><code>;</code><em>expr<sub>1</sub></em><code>; …;</code><em>expr<sub>n</sub></em><code>]</code></p>
+<p>The <em>expr<sub>cond</sub></em> is evaluated and if it is non-zero the expressions <em>expr<sub>1</sub></em> thru <em>expr<sub>n</sub></em> are evaluated in left-to-right order. As with other conditionals, the brackets do not create lexical scope, so variables defined in the body exist in the same scope as the <code>if</code>.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>There is no “else” to go with <code>if</code>. Should you find that this cramps your coding style, please see the previous recommendation about VBA.</p>
+</div>
+<p>Here is an example that creates two global variables and modifies one.</p>
+<pre><code class="q">q)a:42
+q)b:98.6
+q)if[a=42;x:6;y:7;b:a*b]
+q)x
+6
+q)y
+_
+q)b
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Well-written q code rarely needs <code>if</code>. One example of legitimate use is pre-checking function arguments to abort execution for bad values.</p>
+</div>
+<h3 id="1015-do">10.1.5 do<a class="headerlink" href="index.html#1015-do" title="Permanent link">&para;</a></h3>
+<p>The imperative <code>do</code> statement allows repeated execution of a block of statements. It has the form,</p>
+<p><code>do[</code><em>expr<sub>count</sub></em><code>;</code><em>expr<sub>1</sub></em><code>; …;</code><em>expr<sub>n</sub></em><code>]</code></p>
+<p>where <em>expr<sub>count</sub></em> must evaluate to an non-negative integer. The expressions <em>expr<sub>1</sub></em> thru <em>expr<sub>n</sub></em> are evaluated <em>expr<sub>count</sub></em> times in left-to-right order. Note that <code>do</code> is a statement, not a function, and does not have an explicit result.</p>
+<p>The following expression is a loopy computation of <em>n</em> factorial. It iterates <em>n</em> - 1 times, decrementing the factor <code>f</code> on each pass.</p>
+<pre><code class="q">q)n:5
+q)do[-1+f:r:n; r*:f-:1] / do not do this!
+q)r
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The best recommendation about usage of <code>do</code> is: Don’t!</p>
+</div>
+<p>The only legitimate use of <code>do</code> that the author has encountered is to time the execution of a q expression that runs too quickly for the timer to get an accurate reading, but this has been obviated by the enhanced <code>\t</code> command.</p>
+<pre><code class="q">q)\t v*v:til 1000000
+15
+q)\t do[100; v*v:til 1000000]
+677
+q)\t:100 v*v:til 1000000
+_
+</code></pre>
+
+<h3 id="1016-while">10.1.6 while<a class="headerlink" href="index.html#1016-while" title="Permanent link">&para;</a></h3>
+<p>The imperative <code>while</code> statement is an iterator of the form,</p>
+<p><code>while[</code><em>expr<sub>cond</sub></em><code>;</code><em>expr<sub>1</sub></em><code>; …;</code><em>expr<sub>n</sub></em><code>]</code></p>
+<p>where <em>expr<sub>cond</sub></em> is evaluated and the expressions <em>expr<sub>1</sub></em> thru <em>expr<sub>n</sub></em> are evaluated repeatedly in left-to-right order as long as <em>expr<sub>cond</sub></em> is non-zero. The <code>while</code> statement is not a function, does not have an explicit result and does not introduce lexical scope.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The author has never used <code>while</code> in actual code.</p>
+</div>
+<p>Here is loopy factorial redone with <code>while</code>.</p>
+<pre><code class="q">q)f:r:n:5
+q)while[f-:1;r*:f] / do not do this either!
+q)r
+120
+</code></pre>
+
+<h3 id="1017-return-and-signal">10.1.7 Return and Signal<a class="headerlink" href="index.html#1017-return-and-signal" title="Permanent link">&para;</a></h3>
+<p>Normal function application evaluates each expression in the function body in sequence and terminates after the last one. There are two mechanisms for ending the execution early: one indicates successful completion and the other signals abrupt termination.</p>
+<p>To terminate function application immediately and return a normal value, use an empty assignment – that is, <code>:</code> with the return value to its right and no variable to its left. For example, in the following instrumented function, application is terminated and the result is returned in the fourth expression. The final expression is never evaluated.</p>
+<pre><code class="q">q)f:{0N!&quot;Begin&quot;; a:x; b:y; :a*b; &quot;End&quot;}
+q)f[6;7]
+&quot;Begin&quot;
+42
+</code></pre>
+
+<p>To abort function execution immediately with an exception, use <em>signal</em>, which is single-quote <code>'</code>, with an error message to its right. The error message can be provided as a symbol or string.</p>
+<p>You too can return pithy error messages. For example, in the following function, execution will be aborted in the fourth expression. The final expression that assigns <code>c</code> is never evaluated.</p>
+<pre><code class="q">q)g:{0N!&quot;Begin&quot;; a:x; b:y; '&quot;End&quot;; a:b}
+q)g[6;7]
+&quot;Begin&quot;
+'End
+</code></pre>
+
+<p>A function issuing a signal causes the calling routine to fail and this will ripple all the way up the call chain unless protected evaluation is used to trap the exception. See the next section for details on protected evaluation.</p>
+<p>A legitimate use of the <code>if</code> statement is to terminate execution with an exception. The following snippet would typically reside inside a function body.</p>
+<pre><code class="q">{
+...
+if[a&lt;50; '&quot;Bad a&quot;];
+...
+}
+</code></pre>
+
+<h3 id="1018-protected-evaluation">10.1.8 Protected Evaluation<a class="headerlink" href="index.html#1018-protected-evaluation" title="Permanent link">&para;</a></h3>
+<p>Languages of C++ heritage have the concept of protected execution using try-catch. The idea is that an unexpected condition arising from any statement enclosed in the try portion does not abort the program. Instead, control transfers to the catch block, where the exception can be handled or passed up to the caller. This mechanism allows the call stack to be unwound gracefully.</p>
+<p>Q provides a similar capability using triadic forms of function application. Triadic <code>@</code> is used for monadic functions and triadic <code>.</code> is used for multivalent functions. The syntax is the same for both.</p>
+<p><code>@[</code><em>f<sub>mon</sub></em><code>;</code><em>a</em><code>;</code><em>expr<sub>fail</sub></em><code>]</code></p>
+<p><code>.[</code><em>f<sub>mul</sub></em><code>;</code><em>L<sub>args</sub></em><code>;</code><em>expr<sub>fail</sub></em><code>]</code></p>
+<p>Here <em>f<sub>mon</sub></em> is a monadic function, <em>a</em> is single argument, <em>f<sub>mul</sub></em> is a multivalent function, <em>L<sub>args</sub></em> is a list of arguments, and <em>expr<sub>fail</sub></em> is an expression or function. In both forms, the function is applied to its argument(s). Upon successful application, protected evaluation returns the result of the application. Should an exception arise, <em>expr<sub>fail</sub></em> is applied to the resulting error string.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can use protected evaluation to log error messages from exceptions that would otherwise crash your program.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>If the application of <em>expr<sub>fail</sub></em> results in an exception, the protected call itself will fail.</p>
+</div>
+<p>Here is a simple example of using protected evaluation. Suppose a user wishes to enter dynamic q expressions. You could place the expression in a string and pass it to <code>value</code> which is essentially the q interpreter. This is a huge security exposure and you should never do this in such a naïve fashion in a production system. Nonetheless, we could do it in a learning environment. The problem is that if the user types an invalid q expression, the generated exception will cause your application to halt. To avoid this, apply <code>value</code> with protected evaluation.</p>
+<pre><code class="q">q)s:&quot;6*7&quot;
+q)@[value; s; show]
+42
+q)s:&quot;6*`7&quot;
+q)@[value; s; show]
+&quot;type&quot;
+</code></pre>
+
+<p>Triadic <code>.</code> provides similar protected evaluation for multi-valent functions.</p>
+<pre><code class="q">q)prod:{x*y}
+q).[prod; (6;7); show]
+42
+q).[prod; (6;`7); show]
+&quot;type&quot;
+</code></pre>
+
+<h2 id="102-debugging">10.2 Debugging<a class="headerlink" href="index.html#102-debugging" title="Permanent link">&para;</a></h2>
+<p>Debugging in q harkens back to the bad old days, before the advent of debuggers and integrated development environments, when “real men” debugged by inserting <code>println</code> in their code. The q gods don't give debugging much consideration because their code always runs correctly the first time. There is no debugger, nor any notion of break points or tracing execution. Things aren't quite as bad as inserting print statements, but we mortals are certainly left to our own devices.</p>
+<p>When expression evaluation fails, the console displays a backtick followed by a short and often cryptic error message. This is followed by a dump of the failed operation and the offending values. Many errors manifest as either <code>'type</code> or <code>'length</code>, indicating an incompatibility in function arguments somewhere in the bowels of q. The challenge is to discover the root cause of the error.</p>
+<div class="admonition tip">
+<p class="admonition-title">Update</p>
+<p><a href="http://code.kx.com/q/ref/debug">Debugging</a> has become a bit easier since V3.5. <em>Ed.</em></p>
+</div>
+<p>Since q is interpreted, at any point in the execution of a program the entire runtime environment is accessible. If you think about it, an integrated debugger for a compiled language essentially simulates the interpreter environment. The debugger must go to great lengths to create the environment that is readily available in an interpreter.</p>
+<p>Let’s get real. Say you want to set a breakpoint in your q program. Easy: just insert a line that you know will fail – use an undefined name. For example, to pause execution before the last expression in the function <code>f</code> below, insert any undefined name there – “break” is commonly used.</p>
+<pre><code class="q">q)f:{a:x*x; b:y*y; a+b}
+q)f:{a:x*x; b:y*y; break; a+b}
+q)f[3;4]
+{a:x*x; b:y*y; break; a+b}
+'break
+q))
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Make sure the name you choose is not defined in local or global scope.</p>
+</div>
+<p>In a q session, you can tell that execution has been suspended by the extra parenthesis at the q prompt. At this point, you have the full power of the q console available to inspect the current state of your program.</p>
+<pre><code class="q">q))x
+3
+q))y
+4
+q))a
+_
+q))b
+_
+q))a+b
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Once you have finished your inspection and debugging, you should either return from the function with a value or abort execution using <code>\</code>. In either case, the extra <code>)</code> at the q prompt will disappear.
+<pre><code class="language-q">
+q)):abs
+25 
+</code></pre></p>
+</div>
+<p>A slightly more sophisticated technique allows you to continue execution after the break. Here we cause the break one level lower. A forced return entered at the console completes the breakpoint execution and continues execution of <code>f</code>.</p>
+<pre><code class="q">q)breakpoint:{break}
+q)f:{a:x*x; b:y*y; breakpoint[]; a+b}
+q)f[3;4]
+{break}
+'break
+q)):0 / arbitrary value is not used
+25
+</code></pre>
+
+<p>You can accomplish single-step tracing after suspended execution by copy/paste of one line at a time into the console. Admittedly this is pretty primitive but if you write well-factored q code there shouldn’t be too many lines to copy. This works well enough in practice that it is not a hindrance to finding and correcting bugs.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You will spend much more time trying to figure out why your q code is not doing what you want than the time spent doing manual debugging.</p>
+</div>
+<p>In a technique passed on by Simon Garland, you can get a useful display of relevant information when a function is suspended. Define a function, say <code>zs</code>, as follows,</p>
+<pre><code class="q">q)zs:{`d`P`L`G`D!(system&quot;d&quot;),v[1 2 3],enlist last v:value x}
+</code></pre>
+
+<p>This function takes another function as its argument and returns a dictionary with entries for the current directory, function parameters, local variables referenced, global variables referenced and the function definition. We demonstrate with a trivial example.</p>
+<pre><code class="q">q)b:7
+q)f:{a:6; x+a*b}
+q)f[`100] / this is an error
+{a:6; x+a*b}
+'type
++
+`100
+42
+q))show zs f
+d| `.
+P| ,`x
+L| ,`a
+G| ``b
+D| &quot;{a:6; x+a*b}”
+</code></pre>
+
+<p>This error dump is actually easy to read. The first line is the definition of the function that has failed. Following that is the error message <code>'type</code>. The operation that generated the error is <code>+</code> and the actual arguments follow. Then our <code>zs</code> gives a nice tabulation of the current context (the root namespace in this case), the parameters of <code>f</code>, the local variables of <code>f</code>, the global variables of <code>f</code> and finally its definition.</p>
+<p>A good place to start with <code>zs</code> when you have suspended execution is with the system variable <code>.z.s</code> that holds the suspended function itself.</p>
+<pre><code class="q">…
+q))zs .z.s
+_
+</code></pre>
+
+<h2 id="103-scripts">10.3 Scripts<a class="headerlink" href="index.html#103-scripts" title="Permanent link">&para;</a></h2>
+<p>A <em>script</em> is a q program stored in a text file with an extension of <code>.q</code> (or <code>.k</code> if you are writing k code). A script can contain any q expressions or commands. The contents of the script are parsed and evaluated sequentially from top to bottom. Global entities created during execution of the script exist in the workspace after the script is loaded and executed.</p>
+<h3 id="1031-creating-and-loading-a-script">10.3.1 Creating and Loading a Script<a class="headerlink" href="index.html#1031-creating-and-loading-a-script" title="Permanent link">&para;</a></h3>
+<p>You can create a script in any text editor and save it with a <code>.q</code> extension. For example, enter the following script that creates the <code>trades</code> table from Chapter 9.</p>
+<pre><code class="q">mktrades:{[tickers; sz]
+  dt:2015.01.01+sz?31;
+  tm:sz?24:00:00.000;
+  sym:sz?tickers;
+  qty:10*1+sz?1000;
+  px:90.0+(sz?2001)%100;
+  t:([] dt; tm; sym; qty; px);
+  t:`dt`tm xasc t;
+  t:update px:6*px from t where sym=`goog;
+  t:update px:2*px from t where sym=`ibm;
+  t}
+
+trades:mktrades[`aapl`goog`ibm; 1000000]
+</code></pre>
+
+<p>Now issue the following command to load and execute the script.</p>
+<pre><code class="q">q)\l /q4m/trades.q
+</code></pre>
+
+<p>Verify that the <code>trades</code> table has been created and the records have been inserted.</p>
+<pre><code class="q">q)count trades
+_
+</code></pre>
+
+<p>A script can be loaded at any time during a session using the <code>\l</code> command, called <em>load</em>. The load command can be executed programmatically using <code>system</code>. See <a href="../12_Workspace_Organization.1">Chapter 12</a> for more on commands.</p>
+<p>You can have q load a script on startup by placing its name after the call to the q executable on the operating system command line.</p>
+<pre><code class="q">$q /q4m/trades.q
+KDB+ 3.2 …
+q)
+q)count trades
+1000000
+</code></pre>
+
+<h3 id="1032-blocks">10.3.2 Blocks<a class="headerlink" href="index.html#1032-blocks" title="Permanent link">&para;</a></h3>
+<p>You can comment out a block of code (i.e., multiple lines) in a script by surrounding it with matching <code>/</code> and <code>\</code> with each at the beginning of its own line. An unmatched <code>\</code> at the beginning of a line exits the script.</p>
+<p>Here is a script that demonstrates block comments.</p>
+<pre><code class="q">a:42
+b:0
+/
+this is a block of
+comment text
+b:42
+and b will not be changed
+\
+a:43 / this line will be executed
+\
+nothing from here on will be executed
+b:44
+</code></pre>
+
+<p>Immediately after this script is loaded, <code>a</code> will be 43 and <code>b</code> will be 0.</p>
+<p>Multi-line expressions are permitted in a script but they have a special form.</p>
+<ul>
+<li>The first line must <strong>not</strong> be indented – i.e., it begins at the left of the line with no initial whitespace.</li>
+<li>Any continuation lines <strong>must</strong> be indented, meaning that there is at least one whitespace character at the beginning of the line.</li>
+<li>In particular, if you put the closing brace to a function definition on its own line, it <strong>must</strong> be indented. Do <strong>not</strong> use the common C style of aligning the closing brace with the function name.</li>
+<li>Empty lines and comment lines (beginning with <code>/</code>) are permitted anywhere.</li>
+</ul>
+<p>Table definition and function definition provide nice opportunities for splitting across multiple lines:</p>
+<ul>
+<li>A table can have line breaks after a closing square bracket <code>]</code> or after a semicolon separator <code>;</code></li>
+<li>A function can have line breaks after a closing square bracket <code>]</code> or after a comma separator <code>,</code>.</li>
+</ul>
+<h3 id="1033-passing-parameters">10.3.3 Passing Parameters<a class="headerlink" href="index.html#1033-passing-parameters" title="Permanent link">&para;</a></h3>
+<p>Parameters are passed to a q script at q startup similarly to <code>argv</code> command line parameters in C. Specifically, the system variable <code>.z.x</code> comprises a list of strings, each containing the character representation of an argument present on the command line that invoked the script. For example, let’s modify our <code>trades.q</code> script to pass the number of records to be created as a command line parameter. Note that we parse the passed string to an integer.</p>
+<pre><code class="q">mktrades:{[tickers; sz]
+  dt:2015.01.01+sz?31;
+  tm:sz?24:00:00.000;
+  sym:sz?tickers;
+  qty:10*1+sz?1000;
+  px:90.0+(sz?2001)%100;
+  t:([] dt; tm; sym; qty; px);
+  t:`dt`tm xasc t;
+  t:update px:6*px from t where sym=`goog;
+  t:update px:2*px from t where sym=`ibm;
+  t}
+
+size:&quot;I&quot;$.z.x 0
+
+trades:mktrades[`aapl`goog`ibm; size]
+</code></pre>
+
+<p>Now we invoke the script with the parameter 2000000.</p>
+<pre><code class="q">&gt;q /q4m/trades.q 2000000
+KDB+ 3.2 …
+q)count trades
+2000000
+</code></pre>
+
+<p>As of this writing (Sep 2015), parameters can be passed when a script is loaded at q startup but <strong>not</strong> when a script is loaded with <code>\l</code> or system “l”.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you put any extra space immediately after <code>\l</code> you will get an error.</p>
+</div>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../9_Queries_q-sql.1" title="9. Queries – q-sql" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                9. Queries – q-sql
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../11_IO.1" title="11. I/O" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                11. I/O
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            ©2015 Jeffry A. Borror / q4m LLC. Kx® and kdb+ are registered trademarks of Kx Systems, Inc., a subsidiary of First Derivatives plc.
+          </div>
+        
+        powered by
+        <a href="http://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.b438e6c5.js"></script>
+      
+      <script>app.initialize({version:"0.17.3",url:{base:".."}})</script>
+      
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+      
+        <script src="https://tracker.mrpfd.com/tracker.js"></script>
+      
+        <script src="http://code.kx.com/scripts/googleanalytics.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+        <script src="https://use.fontawesome.com/3dbf29ed12.js"></script>
+      
+        <script src="http://code.kx.com/scripts/prism.js"></script>
+      
+    
+    
+      
+    
+  </body>
+</html>

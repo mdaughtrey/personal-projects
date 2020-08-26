@@ -1,0 +1,904 @@
++ declare -ix TITLE_STREAM_FRAMES=200
++ SOFTWARE=/media/sf_vproj/scans/software/
++ FONT=/media/sf_vproj/scans/software//fonts/DroidSerif-BoldItalic.ttf
++ SEM=sem
++ use=no
++ getopts p:r:u: OPT
++ case $OPT in
++ fileroot=/media/sf_vproj/scans/
++ getopts p:r:u: OPT
++ case $OPT in
++ project=fm122
++ getopts p:r:u: OPT
++ case $OPT in
++ use=ac
++ getopts p:r:u: OPT
++ export imgroot=/media/sf_vproj/scans//fm122
++ imgroot=/media/sf_vproj/scans//fm122
++ export titleroot=/media/sf_vproj/scans//fm122/title
++ titleroot=/media/sf_vproj/scans//fm122/title
++ [[ '' == fm122 ]]
++ [[ '' == /media/sf_vproj/scans/ ]]
++ export -f oneTitleFrame
++ gentitles
++ read -a images
+++ getFirstImage
+++ case $use in
+++ IFS='|'
+++ select='select container,autocrop from picdata limit 1'
+++ sqlite3 -list /media/sf_vproj/scans//fm122/fm122db 'select container,autocrop from picdata limit 1'
+++ read container filename
+++ echo /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg
+++ read container filename
++ [[ ! -d /media/sf_vproj/scans//fm122/title ]]
++ let rowsize=200
++ let linecount=0
++ let translateX=0
++ let translateY=0
++ let pageIndex=0
+++ ls /media/sf_vproj/scans//fm122/title0.txt
++ for pageFile in $(ls $imgroot/title?.txt)
+++ cat /media/sf_vproj/scans//fm122/title0.txt
+++ read line
+++ font=
+++ [[ = == \= ]]
+++ (( rowsize-=rowsize/3 ))
+++ continue
+++ read line
+++ font=
+++ [[ = == \M\a\t\t\ \a\n\d\ \J\a\s\o\n ]]
+++ [[ '' == \M\a\t\t\ \a\n\d\ \J\a\s\o\n ]]
+++ convert -background transparent -stroke yellow -strokewidth 2 -fill blue -font /media/sf_vproj/scans/software//fonts/DroidSerif-BoldItalic.ttf -size x134 'label:Matt and Jason' /media/sf_vproj/scans//fm122/title/titleline_0.png
+++ (( translateY+=rowsize+20 ))
+++ echo -n ' -page +0+154 /media/sf_vproj/scans//fm122/title/titleline_0.png'
+++ (( linecount++ ))
+++ read line
+++ font=
+++ [[ = == \1\9\7\0 ]]
+++ [[ '' == \1\9\7\0 ]]
+++ convert -background transparent -stroke yellow -strokewidth 2 -fill blue -font /media/sf_vproj/scans/software//fonts/DroidSerif-BoldItalic.ttf -size x134 label:1970 /media/sf_vproj/scans//fm122/title/titleline_1.png
+++ (( translateY+=rowsize+20 ))
+++ echo -n ' -page +0+308 /media/sf_vproj/scans//fm122/title/titleline_1.png'
+++ (( linecount++ ))
+++ read line
+++ font=
+++ [[ = == '' ]]
+++ [[ '' == '' ]]
+++ (( translateY+=rowsize+20 ))
+++ continue
+++ read line
++ compositecmd=' -page +0+154 /media/sf_vproj/scans//fm122/title/titleline_0.png -page +0+308 /media/sf_vproj/scans//fm122/title/titleline_1.png'
++ compositecmd='convert  -page +0+154 /media/sf_vproj/scans//fm122/title/titleline_0.png -page +0+308 /media/sf_vproj/scans//fm122/title/titleline_1.png -background transparent -layers merge /media/sf_vproj/scans//fm122/title/titletext0.png'
++ convert -page +0+154 /media/sf_vproj/scans//fm122/title/titleline_0.png -page +0+308 /media/sf_vproj/scans//fm122/title/titleline_1.png -background transparent -layers merge /media/sf_vproj/scans//fm122/title/titletext0.png
++ (( pageIndex++ ))
++ firstfile=/media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg
++ geometry=($(identify -ping $firstfile  | cut -d' ' -f3 | sed 's/x/ /g'))
+++ identify -ping /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg
+++ sed 's/x/ /g'
+++ cut '-d ' -f3
++ let underlayW=1559
++ let underlayH=1172
++ let translateX=0
++ let translateY=0
+++ echo 'scale=0;200/1'
+++ bc
++ let pagePartition=200
++ let renderStart=0
++ let renderEnd=199
++ let pageIndex=0
++ (( renderStart < 199 ))
++ geometry=($(identify -ping $titleroot/titletext${pageIndex}.png  | cut -d' ' -f3 | sed 's/x/ /g'))
+++ identify -ping /media/sf_vproj/scans//fm122/title/titletext0.png
+++ cut '-d ' -f3
+++ sed 's/x/ /g'
++ let titleW=878
++ let titleH=288
++ let translateX=340
++ let translateY=442
+++ seq 0 199
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 0
+Title 0
++ sem -N0 --jobs 200% oneTitleFrame 0 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 1
+Title 1
++ sem -N0 --jobs 200% oneTitleFrame 1 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 2
+Title 2
++ sem -N0 --jobs 200% oneTitleFrame 2 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 3
+Title 3
++ sem -N0 --jobs 200% oneTitleFrame 3 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 4
+Title 4
++ sem -N0 --jobs 200% oneTitleFrame 4 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 5
+Title 5
++ sem -N0 --jobs 200% oneTitleFrame 5 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 6
+Title 6
++ sem -N0 --jobs 200% oneTitleFrame 6 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 7
+Title 7
++ sem -N0 --jobs 200% oneTitleFrame 7 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 8
+Title 8
++ sem -N0 --jobs 200% oneTitleFrame 8 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 9
+Title 9
++ sem -N0 --jobs 200% oneTitleFrame 9 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 10
+Title 10
++ sem -N0 --jobs 200% oneTitleFrame 10 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 11
+Title 11
++ sem -N0 --jobs 200% oneTitleFrame 11 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 12
+Title 12
++ sem -N0 --jobs 200% oneTitleFrame 12 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 13
+Title 13
++ sem -N0 --jobs 200% oneTitleFrame 13 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 14
+Title 14
++ sem -N0 --jobs 200% oneTitleFrame 14 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 15
+Title 15
++ sem -N0 --jobs 200% oneTitleFrame 15 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 16
+Title 16
++ sem -N0 --jobs 200% oneTitleFrame 16 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 17
+Title 17
++ sem -N0 --jobs 200% oneTitleFrame 17 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 18
+Title 18
++ sem -N0 --jobs 200% oneTitleFrame 18 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 19
+Title 19
++ sem -N0 --jobs 200% oneTitleFrame 19 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 20
+Title 20
++ sem -N0 --jobs 200% oneTitleFrame 20 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 21
+Title 21
++ sem -N0 --jobs 200% oneTitleFrame 21 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 22
+Title 22
++ sem -N0 --jobs 200% oneTitleFrame 22 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 23
+Title 23
++ sem -N0 --jobs 200% oneTitleFrame 23 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 24
+Title 24
++ sem -N0 --jobs 200% oneTitleFrame 24 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 25
+Title 25
++ sem -N0 --jobs 200% oneTitleFrame 25 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 26
+Title 26
++ sem -N0 --jobs 200% oneTitleFrame 26 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 27
+Title 27
++ sem -N0 --jobs 200% oneTitleFrame 27 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 28
+Title 28
++ sem -N0 --jobs 200% oneTitleFrame 28 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 29
+Title 29
++ sem -N0 --jobs 200% oneTitleFrame 29 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 30
+Title 30
++ sem -N0 --jobs 200% oneTitleFrame 30 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 31
+Title 31
++ sem -N0 --jobs 200% oneTitleFrame 31 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 32
+Title 32
++ sem -N0 --jobs 200% oneTitleFrame 32 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 33
+Title 33
++ sem -N0 --jobs 200% oneTitleFrame 33 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 34
+Title 34
++ sem -N0 --jobs 200% oneTitleFrame 34 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 35
+Title 35
++ sem -N0 --jobs 200% oneTitleFrame 35 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 36
+Title 36
++ sem -N0 --jobs 200% oneTitleFrame 36 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 37
+Title 37
++ sem -N0 --jobs 200% oneTitleFrame 37 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 38
+Title 38
++ sem -N0 --jobs 200% oneTitleFrame 38 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 39
+Title 39
++ sem -N0 --jobs 200% oneTitleFrame 39 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 40
+Title 40
++ sem -N0 --jobs 200% oneTitleFrame 40 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 41
+Title 41
++ sem -N0 --jobs 200% oneTitleFrame 41 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 42
+Title 42
++ sem -N0 --jobs 200% oneTitleFrame 42 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 43
+Title 43
++ sem -N0 --jobs 200% oneTitleFrame 43 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 44
+Title 44
++ sem -N0 --jobs 200% oneTitleFrame 44 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 45
+Title 45
++ sem -N0 --jobs 200% oneTitleFrame 45 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 46
+Title 46
++ sem -N0 --jobs 200% oneTitleFrame 46 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 47
+Title 47
++ sem -N0 --jobs 200% oneTitleFrame 47 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 48
+Title 48
++ sem -N0 --jobs 200% oneTitleFrame 48 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 49
+Title 49
++ sem -N0 --jobs 200% oneTitleFrame 49 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 50
+Title 50
++ sem -N0 --jobs 200% oneTitleFrame 50 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 51
+Title 51
++ sem -N0 --jobs 200% oneTitleFrame 51 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 52
+Title 52
++ sem -N0 --jobs 200% oneTitleFrame 52 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 53
+Title 53
++ sem -N0 --jobs 200% oneTitleFrame 53 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 54
+Title 54
++ sem -N0 --jobs 200% oneTitleFrame 54 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 55
+Title 55
++ sem -N0 --jobs 200% oneTitleFrame 55 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 56
+Title 56
++ sem -N0 --jobs 200% oneTitleFrame 56 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 57
+Title 57
++ sem -N0 --jobs 200% oneTitleFrame 57 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 58
+Title 58
++ sem -N0 --jobs 200% oneTitleFrame 58 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 59
+Title 59
++ sem -N0 --jobs 200% oneTitleFrame 59 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 60
+Title 60
++ sem -N0 --jobs 200% oneTitleFrame 60 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 61
+Title 61
++ sem -N0 --jobs 200% oneTitleFrame 61 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 62
+Title 62
++ sem -N0 --jobs 200% oneTitleFrame 62 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 63
+Title 63
++ sem -N0 --jobs 200% oneTitleFrame 63 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 64
+Title 64
++ sem -N0 --jobs 200% oneTitleFrame 64 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 65
+Title 65
++ sem -N0 --jobs 200% oneTitleFrame 65 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 66
+Title 66
++ sem -N0 --jobs 200% oneTitleFrame 66 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 67
+Title 67
++ sem -N0 --jobs 200% oneTitleFrame 67 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 68
+Title 68
++ sem -N0 --jobs 200% oneTitleFrame 68 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 69
+Title 69
++ sem -N0 --jobs 200% oneTitleFrame 69 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 70
+Title 70
++ sem -N0 --jobs 200% oneTitleFrame 70 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 71
+Title 71
++ sem -N0 --jobs 200% oneTitleFrame 71 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 72
+Title 72
++ sem -N0 --jobs 200% oneTitleFrame 72 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 73
+Title 73
++ sem -N0 --jobs 200% oneTitleFrame 73 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 74
+Title 74
++ sem -N0 --jobs 200% oneTitleFrame 74 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 75
+Title 75
++ sem -N0 --jobs 200% oneTitleFrame 75 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 76
+Title 76
++ sem -N0 --jobs 200% oneTitleFrame 76 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 77
+Title 77
++ sem -N0 --jobs 200% oneTitleFrame 77 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 78
+Title 78
++ sem -N0 --jobs 200% oneTitleFrame 78 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 79
+Title 79
++ sem -N0 --jobs 200% oneTitleFrame 79 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 80
+Title 80
++ sem -N0 --jobs 200% oneTitleFrame 80 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 81
+Title 81
++ sem -N0 --jobs 200% oneTitleFrame 81 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 82
+Title 82
++ sem -N0 --jobs 200% oneTitleFrame 82 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 83
+Title 83
++ sem -N0 --jobs 200% oneTitleFrame 83 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 84
+Title 84
++ sem -N0 --jobs 200% oneTitleFrame 84 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 85
+Title 85
++ sem -N0 --jobs 200% oneTitleFrame 85 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 86
+Title 86
++ sem -N0 --jobs 200% oneTitleFrame 86 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 87
+Title 87
++ sem -N0 --jobs 200% oneTitleFrame 87 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 88
+Title 88
++ sem -N0 --jobs 200% oneTitleFrame 88 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 89
+Title 89
++ sem -N0 --jobs 200% oneTitleFrame 89 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 90
+Title 90
++ sem -N0 --jobs 200% oneTitleFrame 90 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 91
+Title 91
++ sem -N0 --jobs 200% oneTitleFrame 91 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 92
+Title 92
++ sem -N0 --jobs 200% oneTitleFrame 92 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 93
+Title 93
++ sem -N0 --jobs 200% oneTitleFrame 93 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 94
+Title 94
++ sem -N0 --jobs 200% oneTitleFrame 94 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 95
+Title 95
++ sem -N0 --jobs 200% oneTitleFrame 95 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 96
+Title 96
++ sem -N0 --jobs 200% oneTitleFrame 96 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 97
+Title 97
++ sem -N0 --jobs 200% oneTitleFrame 97 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 98
+Title 98
++ sem -N0 --jobs 200% oneTitleFrame 98 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 99
+Title 99
++ sem -N0 --jobs 200% oneTitleFrame 99 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 100
+Title 100
++ sem -N0 --jobs 200% oneTitleFrame 100 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 101
+Title 101
++ sem -N0 --jobs 200% oneTitleFrame 101 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 102
+Title 102
++ sem -N0 --jobs 200% oneTitleFrame 102 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 103
+Title 103
++ sem -N0 --jobs 200% oneTitleFrame 103 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 104
+Title 104
++ sem -N0 --jobs 200% oneTitleFrame 104 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 105
+Title 105
++ sem -N0 --jobs 200% oneTitleFrame 105 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 106
+Title 106
++ sem -N0 --jobs 200% oneTitleFrame 106 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 107
+Title 107
++ sem -N0 --jobs 200% oneTitleFrame 107 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 108
+Title 108
++ sem -N0 --jobs 200% oneTitleFrame 108 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 109
+Title 109
++ sem -N0 --jobs 200% oneTitleFrame 109 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 110
+Title 110
++ sem -N0 --jobs 200% oneTitleFrame 110 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 111
+Title 111
++ sem -N0 --jobs 200% oneTitleFrame 111 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 112
+Title 112
++ sem -N0 --jobs 200% oneTitleFrame 112 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 113
+Title 113
++ sem -N0 --jobs 200% oneTitleFrame 113 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 114
+Title 114
++ sem -N0 --jobs 200% oneTitleFrame 114 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 115
+Title 115
++ sem -N0 --jobs 200% oneTitleFrame 115 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 116
+Title 116
++ sem -N0 --jobs 200% oneTitleFrame 116 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 117
+Title 117
++ sem -N0 --jobs 200% oneTitleFrame 117 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 118
+Title 118
++ sem -N0 --jobs 200% oneTitleFrame 118 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 119
+Title 119
++ sem -N0 --jobs 200% oneTitleFrame 119 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 120
+Title 120
++ sem -N0 --jobs 200% oneTitleFrame 120 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 121
+Title 121
++ sem -N0 --jobs 200% oneTitleFrame 121 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 122
+Title 122
++ sem -N0 --jobs 200% oneTitleFrame 122 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 123
+Title 123
++ sem -N0 --jobs 200% oneTitleFrame 123 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 124
+Title 124
++ sem -N0 --jobs 200% oneTitleFrame 124 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 125
+Title 125
++ sem -N0 --jobs 200% oneTitleFrame 125 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 126
+Title 126
++ sem -N0 --jobs 200% oneTitleFrame 126 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 127
+Title 127
++ sem -N0 --jobs 200% oneTitleFrame 127 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 128
+Title 128
++ sem -N0 --jobs 200% oneTitleFrame 128 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 129
+Title 129
++ sem -N0 --jobs 200% oneTitleFrame 129 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 130
+Title 130
++ sem -N0 --jobs 200% oneTitleFrame 130 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 131
+Title 131
++ sem -N0 --jobs 200% oneTitleFrame 131 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 132
+Title 132
++ sem -N0 --jobs 200% oneTitleFrame 132 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 133
+Title 133
++ sem -N0 --jobs 200% oneTitleFrame 133 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 134
+Title 134
++ sem -N0 --jobs 200% oneTitleFrame 134 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 135
+Title 135
++ sem -N0 --jobs 200% oneTitleFrame 135 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 136
+Title 136
++ sem -N0 --jobs 200% oneTitleFrame 136 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 137
+Title 137
++ sem -N0 --jobs 200% oneTitleFrame 137 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 138
+Title 138
++ sem -N0 --jobs 200% oneTitleFrame 138 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 139
+Title 139
++ sem -N0 --jobs 200% oneTitleFrame 139 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 140
+Title 140
++ sem -N0 --jobs 200% oneTitleFrame 140 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 141
+Title 141
++ sem -N0 --jobs 200% oneTitleFrame 141 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 142
+Title 142
++ sem -N0 --jobs 200% oneTitleFrame 142 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 143
+Title 143
++ sem -N0 --jobs 200% oneTitleFrame 143 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 144
+Title 144
++ sem -N0 --jobs 200% oneTitleFrame 144 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 145
+Title 145
++ sem -N0 --jobs 200% oneTitleFrame 145 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 146
+Title 146
++ sem -N0 --jobs 200% oneTitleFrame 146 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 147
+Title 147
++ sem -N0 --jobs 200% oneTitleFrame 147 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 148
+Title 148
++ sem -N0 --jobs 200% oneTitleFrame 148 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 149
+Title 149
++ sem -N0 --jobs 200% oneTitleFrame 149 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 150
+Title 150
++ sem -N0 --jobs 200% oneTitleFrame 150 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 151
+Title 151
++ sem -N0 --jobs 200% oneTitleFrame 151 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 152
+Title 152
++ sem -N0 --jobs 200% oneTitleFrame 152 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 153
+Title 153
++ sem -N0 --jobs 200% oneTitleFrame 153 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 154
+Title 154
++ sem -N0 --jobs 200% oneTitleFrame 154 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 155
+Title 155
++ sem -N0 --jobs 200% oneTitleFrame 155 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 156
+Title 156
++ sem -N0 --jobs 200% oneTitleFrame 156 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 157
+Title 157
++ sem -N0 --jobs 200% oneTitleFrame 157 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 158
+Title 158
++ sem -N0 --jobs 200% oneTitleFrame 158 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 159
+Title 159
++ sem -N0 --jobs 200% oneTitleFrame 159 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 160
+Title 160
++ sem -N0 --jobs 200% oneTitleFrame 160 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 161
+Title 161
++ sem -N0 --jobs 200% oneTitleFrame 161 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 162
+Title 162
++ sem -N0 --jobs 200% oneTitleFrame 162 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 163
+Title 163
++ sem -N0 --jobs 200% oneTitleFrame 163 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 164
+Title 164
++ sem -N0 --jobs 200% oneTitleFrame 164 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 165
+Title 165
++ sem -N0 --jobs 200% oneTitleFrame 165 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 166
+Title 166
++ sem -N0 --jobs 200% oneTitleFrame 166 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 167
+Title 167
++ sem -N0 --jobs 200% oneTitleFrame 167 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 168
+Title 168
++ sem -N0 --jobs 200% oneTitleFrame 168 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 169
+Title 169
++ sem -N0 --jobs 200% oneTitleFrame 169 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 170
+Title 170
++ sem -N0 --jobs 200% oneTitleFrame 170 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 171
+Title 171
++ sem -N0 --jobs 200% oneTitleFrame 171 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 172
+Title 172
++ sem -N0 --jobs 200% oneTitleFrame 172 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 173
+Title 173
++ sem -N0 --jobs 200% oneTitleFrame 173 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 174
+Title 174
++ sem -N0 --jobs 200% oneTitleFrame 174 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 175
+Title 175
++ sem -N0 --jobs 200% oneTitleFrame 175 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 176
+Title 176
++ sem -N0 --jobs 200% oneTitleFrame 176 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 177
+Title 177
++ sem -N0 --jobs 200% oneTitleFrame 177 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 178
+Title 178
++ sem -N0 --jobs 200% oneTitleFrame 178 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 179
+Title 179
++ sem -N0 --jobs 200% oneTitleFrame 179 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 180
+Title 180
++ sem -N0 --jobs 200% oneTitleFrame 180 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 181
+Title 181
++ sem -N0 --jobs 200% oneTitleFrame 181 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 182
+Title 182
++ sem -N0 --jobs 200% oneTitleFrame 182 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 183
+Title 183
++ sem -N0 --jobs 200% oneTitleFrame 183 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 184
+Title 184
++ sem -N0 --jobs 200% oneTitleFrame 184 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 185
+Title 185
++ sem -N0 --jobs 200% oneTitleFrame 185 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 186
+Title 186
++ sem -N0 --jobs 200% oneTitleFrame 186 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 187
+Title 187
++ sem -N0 --jobs 200% oneTitleFrame 187 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 188
+Title 188
++ sem -N0 --jobs 200% oneTitleFrame 188 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 189
+Title 189
++ sem -N0 --jobs 200% oneTitleFrame 189 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 190
+Title 190
++ sem -N0 --jobs 200% oneTitleFrame 190 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 191
+Title 191
++ sem -N0 --jobs 200% oneTitleFrame 191 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 192
+Title 192
++ sem -N0 --jobs 200% oneTitleFrame 192 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 193
+Title 193
++ sem -N0 --jobs 200% oneTitleFrame 193 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 194
+Title 194
++ sem -N0 --jobs 200% oneTitleFrame 194 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 195
+Title 195
++ sem -N0 --jobs 200% oneTitleFrame 195 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 196
+Title 196
++ sem -N0 --jobs 200% oneTitleFrame 196 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 197
+Title 197
++ sem -N0 --jobs 200% oneTitleFrame 197 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 198
+Title 198
++ sem -N0 --jobs 200% oneTitleFrame 198 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ for renderIndex in `seq $renderStart $renderEnd`
++ echo Title 199
+Title 199
++ sem -N0 --jobs 200% oneTitleFrame 199 /media/sf_vproj/scans//fm122/001/autocrop/000063a.jpg 340 442 /media/sf_vproj/scans//fm122/title/titletext0.png /media/sf_vproj/scans//fm122/title
++ (( renderStart=199 ))
++ (( renderEnd+=200 ))
++ (( 399 > 199 ))
++ let renderEnd=199
++ (( renderStart < 199 ))
++ sem --wait

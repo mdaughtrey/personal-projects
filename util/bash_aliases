@@ -1,0 +1,7 @@
+alias home='cd /c/Users/matt'
+alias openscad='cd /c/Users/matt/Documents/openscad'
+<<<<<<< HEAD
+
+=======
+alias pp='cd /c/Users/matt/Documents/dev/personal-projects'
+>>>>>>> 39da4ec1825214e7f11a6eaae2bb8cee88ff1f06
