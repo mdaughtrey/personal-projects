@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+<script src="c.js"></script>
+<script>
+ var serverurl = "//localhost:5042/",
+     c = connect(),
+     ws;
+  function connect() {
+    if ("WebSocket" in window) {
+      ws = new WebSocket("ws:" + serverurl);
+      ws.binaryType="arraybuffer";
+      ws.onopen=function(e){
+        ws.send(serialize({ payload: "What is the meaning of life?" }));
+      };
+      ws.onclose=function(e){
+      };
+      ws.onmessage=function(e){
+        sayN(deserialize(e.data));
+      };
+      ws.onerror=function(e) {window.alert("WS Error") };
+    } else alert("WebSockets not supported on your browser.");
+  }
+  function sayN(n) {
+    document.getElementById('answer').textContent = n;
+  }
+</script>
+</head>
+<body>
+  <p>What is the meaning of life?</p>
+  <p id="answer" style="font-size: 10em"></p>
+</body>
+</html>
