@@ -1,4 +1,3 @@
-
 /*
     Video: https://www.youtube.com/watch?v=oCMOYS71NIU
     Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
@@ -24,6 +23,73 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+
+#define EPD 1
+#ifdef EPD
+#include <GxEPD.h>
+#include "SD.h"
+#include "SPI.h"
+#include <GxGDEH0213B72/GxGDEH0213B72.h>  // 2.13" b/w new panel
+
+#include "bitmap.h"
+#include "mouth1.h"
+#include "toothysmile.h"
+#include "hulk.h"
+
+#define GxGDEH0213B72_X_PIXELS 128
+#define GxGDEH0213B72_Y_PIXELS 250
+
+// FreeFonts from Adafruit_GFX
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMonoBold24pt7b.h>
+
+
+#include <GxIO/GxIO_SPI/GxIO_SPI.h>
+#include <GxIO/GxIO.h>
+
+#define SPI_MOSI 23
+#define SPI_MISO -1
+#define SPI_CLK 18
+
+#define ELINK_SS 5
+#define ELINK_BUSY 4
+#define ELINK_RESET 16
+#define ELINK_DC 17
+
+#define SDCARD_SS 13
+#define SDCARD_CLK 14
+#define SDCARD_MOSI 15
+#define SDCARD_MISO 2
+
+#define BUTTON_PIN 39
+
+typedef struct 
+{
+    const char * name;
+    const unsigned char * data;
+    const int width;
+    const int height;
+} Resource;
+
+Resource resources[] = {{"mouth1", mouth1_data, mouth1_width, mouth1_height},
+	{"bm", bm, bmwidth, bmheight},
+	{"toothysmile", toothysmile_data,  toothysmile_width, toothysmile_height},
+	{"hulk", hulk_data,  hulk_width, hulk_height}
+    };
+const int NumResources = sizeof(resources) / sizeof(resources[0]);
+
+GxIO_Class io(SPI, /*CS=5*/ ELINK_SS, /*DC=*/ ELINK_DC, /*RST=*/ ELINK_RESET);
+GxEPD_Class display(io, /*RST=*/ ELINK_RESET, /*BUSY=*/ ELINK_BUSY);
+
+SPIClass sdSPI(VSPI);
+
+
+const char *skuNum = "About Fucking Time";
+bool sdOK = false;
+int startX = 40, startY = 10;
+#endif // EPD
 
 BLEServer *pServer = NULL;
 BLECharacteristic * pTxCharacteristic;
@@ -52,15 +118,48 @@ class MyServerCallbacks: public BLEServerCallbacks {
 class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
+	if (rxValue.back() == '\n') rxValue.pop_back();
+	if (rxValue.back() == '\r') rxValue.pop_back();
 
       if (rxValue.length() > 0) {
-        Serial.println("*********");
-        Serial.print("Received Value: ");
-        for (int i = 0; i < rxValue.length(); i++)
-          Serial.print(rxValue[i]);
+	if (rxValue == "resources" )
+	{
+		pTxCharacteristic->setValue("res,mouth1,bm,toothysmile,hulk");
+		pTxCharacteristic->notify();
+		return;
+	}
+	for (int ii = 0; ii < NumResources; ii++)
+	{
+		char buffer[128];
+		sprintf(buffer, "Testing [%s] against [%s]", rxValue.c_str(), resources[ii].name);
+		Serial.println(buffer);
+		if (rxValue == resources[ii].name)
+		{
+		    Serial.println("Found a thing");
+		    display.fillScreen(GxEPD_WHITE);
+		    display.drawBitmap(resources[ii].data, 0, 0,  resources[ii].width, resources[ii].height, GxEPD_BLACK);
+		    display.update();
+		}
+	}
 
-        Serial.println();
-        Serial.println("*********");
+//	if (rxValue == "led0") {
+//	    display.fillScreen(GxEPD_WHITE);
+//	    display.drawBitmap(bm, 0, 0,  bmwidth, bmheight, GxEPD_BLACK);
+//	    display.update();
+//	}
+//	if (rxValue == "led1") {
+//	    display.fillScreen(GxEPD_WHITE);
+//	    display.drawBitmap(mouth1_data, 0, 0,  mouth1_width, mouth1_height, GxEPD_BLACK);
+//	    display.update();
+//	}
+
+//        Serial.println("*********");
+//        Serial.print("Received Value: ");
+//        for (int i = 0; i < rxValue.length(); i++)
+//          Serial.print(rxValue[i]);
+//
+//        Serial.println();
+//        Serial.println("*********");
       }
     }
 };
@@ -81,16 +180,16 @@ void setup() {
 
   // Create a BLE Characteristic
   pTxCharacteristic = pService->createCharacteristic(
-										CHARACTERISTIC_UUID_TX,
-										BLECharacteristic::PROPERTY_NOTIFY
-									);
-                      
+		  CHARACTERISTIC_UUID_TX,
+		  BLECharacteristic::PROPERTY_NOTIFY
+		  );
+
   pTxCharacteristic->addDescriptor(new BLE2902());
 
   BLECharacteristic * pRxCharacteristic = pService->createCharacteristic(
-											 CHARACTERISTIC_UUID_RX,
-											BLECharacteristic::PROPERTY_WRITE
-										);
+		  CHARACTERISTIC_UUID_RX,
+		  BLECharacteristic::PROPERTY_WRITE
+		  );
 
   pRxCharacteristic->setCallbacks(new MyCallbacks());
 
@@ -100,6 +199,43 @@ void setup() {
   // Start advertising
   pServer->getAdvertising()->start();
   Serial.println("Waiting a client connection to notify...");
+
+#ifdef EPD
+    SPI.begin(SPI_CLK, SPI_MISO, SPI_MOSI, ELINK_SS);
+    display.init(); // enable diagnostic output on Serial
+
+    display.setRotation(1);
+    display.fillScreen(GxEPD_WHITE);
+    display.setTextColor(GxEPD_BLACK);
+    display.setFont(&FreeMonoBold9pt7b);
+    display.setCursor(0, 0);
+
+    sdSPI.begin(SDCARD_CLK, SDCARD_MISO, SDCARD_MOSI, SDCARD_SS);
+
+    if (!SD.begin(SDCARD_SS, sdSPI)) {
+        sdOK = false;
+    } else {
+        sdOK = true;
+    }
+
+    display.fillScreen(GxEPD_WHITE);
+
+    display.drawBitmap(bm, 0, 0,  bmwidth, bmheight, GxEPD_BLACK);
+
+    //display.setCursor(display.width()  - display.width() / 2, display.height() - 35);
+//    display.setCursor(10, display.height() - 35);
+
+//   display.println(skuNum);
+
+//    display.setTextColor(GxEPD_BLACK);
+
+    display.update();
+
+    // goto sleep
+//    esp_sleep_enable_ext0_wakeup((gpio_num_t)BUTTON_PIN, LOW);
+
+ //   esp_deep_sleep_start();
+#endif // EPD
 }
 
 void loop() {
