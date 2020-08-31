@@ -1,4 +1,3 @@
-
 /*
     Video: https://www.youtube.com/watch?v=oCMOYS71NIU
     Based on Neil Kolban example for IDF: https://github.com/nkolban/esp32-snippets/blob/master/cpp_utils/tests/BLE%20Tests/SampleNotify.cpp
@@ -34,6 +33,8 @@
 
 #include "bitmap.h"
 #include "mouth1.h"
+#include "toothysmile.h"
+#include "hulk.h"
 
 #define GxGDEH0213B72_X_PIXELS 128
 #define GxGDEH0213B72_Y_PIXELS 250
@@ -72,8 +73,11 @@ typedef struct
     const int height;
 } Resource;
 
-Resource resources[2] = {{"mouth1", mouth1_data, mouth1_width, mouth1_height},
-	{"bm", bm, bmwidth, bmheight}};
+Resource resources[] = {{"mouth1", mouth1_data, mouth1_width, mouth1_height},
+	{"bm", bm, bmwidth, bmheight},
+	{"toothysmile", toothysmile_data,  toothysmile_width, toothysmile_height},
+	{"hulk", hulk_data,  hulk_width, hulk_height}
+    };
 const int NumResources = sizeof(resources) / sizeof(resources[0]);
 
 GxIO_Class io(SPI, /*CS=5*/ ELINK_SS, /*DC=*/ ELINK_DC, /*RST=*/ ELINK_RESET);
@@ -118,14 +122,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 	if (rxValue.back() == '\r') rxValue.pop_back();
 
       if (rxValue.length() > 0) {
-        Serial.println("Received Value: ");
-        for (int i = 0; i < rxValue.length(); i++)
-          Serial.print(rxValue[i]);
 	if (rxValue == "resources" )
 	{
-		pCharacteristic->setValue("mouth1,bm");
-		//pCharacteristic->notify();
-		Serial.println("Well I set it....\n");
+		pTxCharacteristic->setValue("res,mouth1,bm,toothysmile,hulk");
+		pTxCharacteristic->notify();
 		return;
 	}
 	for (int ii = 0; ii < NumResources; ii++)
