@@ -22,7 +22,3 @@ set ai
 set si
 set expandtab
 set vb t_vb=
-<<<<<<< HEAD
-=======
-set tags=tags;
->>>>>>> 39da4ec1825214e7f11a6eaae2bb8cee88ff1f06

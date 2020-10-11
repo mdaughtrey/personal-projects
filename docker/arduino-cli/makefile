@@ -9,6 +9,9 @@ no:
 run:
 	docker run -dh ${TAG} --device=/dev/ttyUSB0  -v ${HOME}/personal-projects:/personal-projects -w /personal-projects -it ${TAG}:latest
 
+runacm:
+	docker run -dh ${TAG} --device=/dev/ttyACM0  -v ${HOME}/personal-projects:/personal-projects -w /personal-projects -it ${TAG}:latest
+
 runnodev:
 	docker run -dh ${TAG} -v ${HOME}/personal-projects:/personal-projects -w /personal-projects -it ${TAG}:latest
 
