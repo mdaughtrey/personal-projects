@@ -13,31 +13,35 @@ NUMLEDS = 87
 gamma0 = [ 0, 0, 2, 13, 48, 114, 191, 247, 247, 191, 114, 48]
 #gamma0 = [ 0, 0, 0, 0, 0, 1, 2, 4, 7, 13, 21, 33, 48, 67, 89, 114, 138, 167, 191, 215, 233, 247, 252]
 gamma = gamma0 + gamma0[::-1]
-np = neopixel.NeoPixel(machine.Pin(2), NUMLEDS)
+
+# 12 servo pwer ->13 
+# 13 led power -> 12 
+# 14 servo control ->14 
+PinServoPower = 13 
+PinLedPower = 12 
+PinServo = 14 
+PinNeoPixel = 2
+
+np = neopixel.NeoPixel(machine.Pin(PinNeoPixel), NUMLEDS)
 
 #           M   T   W   T   F   S   S
 #servopos = [43, 37, 31, 25, 19, 11, 49]
 #servopos = [22, 19, 16, 13, 10, 7, 25]
 # 50 Hz
 servopos = [115, 95, 80, 65, 50, 30, 135]
-
-#sta_if = network.WLAN(network.STA_IF);
-
-# 12 servo pwer
-# 13 led power
-# 14 servo control
-smpower = machine.Pin(12, machine.Pin.OUT) # blue
-ledpower = machine.Pin(13, machine.Pin.OUT) # blue
+smpower = machine.Pin(PinServoPower, machine.Pin.OUT) # blue
+ledpower = machine.Pin(PinLedPower, machine.Pin.OUT) # blue
 
 #ledpower = machine.Pin(12, machine.Pin.OUT) # red
 #ledPWM = machine.PWM(ledpower)
 #ledPWM.freq(500)
 SERVOFREQ = 50
-lastDOW = 0
+lastDOW = -1 
 
 def log(msg):
-    open('log.txt', 'a').write('{}\n'.format(msg))
     print(msg)
+#    open('log.txt', 'a').write('{}\n'.format(msg))
+
 
 def setlocaltime():
     for ii in range(5):
@@ -78,7 +82,7 @@ def getthetime():
     if dow != lastDOW:
         smpower.on()
         utime.sleep(0.5)
-        servo = machine.PWM(machine.Pin(14))
+        servo = machine.PWM(machine.Pin(PinServo))
         servo.freq(SERVOFREQ)
         servo.duty(servopos[dow])
         log("Servo duty {}".format(servo.duty()))
@@ -97,17 +101,17 @@ def sweep():
 #    servo.freq(SERVOFREQ)
     smpower.on()
     utime.sleep(0.5)
-    servo = machine.PWM(machine.Pin(14))
+    servo = machine.PWM(machine.Pin(PinServo))
     servo.freq(SERVOFREQ)
-    for ii in servopos:
-        servo.duty(ii)
+    for ii in range(0, 7): 
+        servo.duty(servopos[ii])
         utime.sleep(1)
     servo.deinit()
     utime.sleep(0.5)
     smpower.off()
 
 def set(val):
-    servo = machine.PWM(machine.Pin(14))
+    servo = machine.PWM(machine.Pin(PinServo))
     servo.freq(SERVOFREQ)
     servo.duty(val)
     smpower.on()
@@ -115,14 +119,14 @@ def set(val):
     smpower.off()
 
 
-def toggle(pin):
-    mypin = machine.Pin(pin, machine.Pin.OUT) 
-    for ii in range(100):
-        mypin.on()
-        utime.sleep(0.5)
-        mypin.off()
-        utime.sleep(0.5)
-
+#def toggle(pin):
+#    mypin = machine.Pin(pin, machine.Pin.OUT) 
+#    for ii in range(100):
+#        mypin.on()
+#        utime.sleep(0.5)
+#        mypin.off()
+#        utime.sleep(0.5)
+#
 def nptest(vals):
     ledpower.on()
     utime.sleep(0.1)
