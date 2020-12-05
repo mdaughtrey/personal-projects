@@ -11,6 +11,7 @@ import math
 import multiprocessing
 import subprocess
 import pdb
+import psutil
 import re
 import os
 from glob import glob, iglob
@@ -131,11 +132,14 @@ def init(framenum):
     lastTension = tension[0]
 
     # start raspistill
-    global capture
-    pdb.set_trace()
-    capture = multiprocessing.Process(target = captureProc, args = [framenum])
-    capture.start()
-    logger.debug("raspistill PID is {}".format(capture.pid))
+    if 0 == config.raspid:
+        global capture
+        capture = multiprocessing.Process(target = captureProc, args = [framenum])
+        capture.start()
+
+        children = psutil.Process(capture.pid)
+        for proc in children:
+            logger.debug("child PID is {}".format())
 
     serPort = serial.Serial(SerialPort, 57600) # , timeout=1)
     logger.debug("Opening %s" % SerialPort)
@@ -177,7 +181,10 @@ def frame(port, num):
 #    pdb.set_trace()
     for ss,tag in ii:
         logger.debug("Frame {}/{} shutter {} tag {} tension {}".format(num, numframes, ss, tag, lastTension))
-        os.kill(capture.pid, signal.SIGUSR1)
+        if config.raspid:
+            os.kill(config.raspid, signal.SIGUSR1)
+        else:
+            os.kill(capture.pid, signal.SIGUSR1)
 
 
         #args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
