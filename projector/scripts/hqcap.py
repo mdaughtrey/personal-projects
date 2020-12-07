@@ -1,21 +1,21 @@
 #!/usr/bin/python3
 
+import argparse
+from glob import glob, iglob
 import logging
-import logging
-import signal
 from logging.handlers import RotatingFileHandler
-from logging.handlers import RotatingFileHandler
+import os
+import pdb
+import re
 import serial
+import signal
+import subprocess
+import sys
+import threading
 import time
 import math
-import multiprocessing
-import subprocess
-import pdb
-import psutil
-import re
-import os
-from glob import glob, iglob
-import argparse
+#import multiprocessing
+#import psutil
 from Tension import Tension
 
 #BIN='/usr/local/bin/raspiraw'
@@ -37,6 +37,7 @@ port = 0
 tension = list()
 lastTension = 0
 numframes = 0
+captureProc = None
 
 Geometry = {'geo0':' --mode 0', 
     'geo1':' --left 804 --top 225 --mode 0', 
@@ -103,22 +104,71 @@ def portWaitFor2(port, text1, text2):
         logger.debug("Matched on %s" % text2)
         return text2
 
-def captureProc(framenum):
+#def captureProc(framenum):
+#    outfile = "{}".format("{:s}/{:s}{:06d}a.png".format(config.dir, config.prefix, framenum))
+#    args = ['/usr/bin/raspistill','-v',
+#        '-e','png',
+#        '-q','100',
+#        '-t','0',
+#        '-s','-fs','0',
+#        '--nopreview',
+#        '--exposure','night',
+#        '--awb','off',
+#        '--shutter','10000',
+#        '-o','outfile']
+#    logger.debug("starting raspistill {}".format(' '.join(args)))
+#    proc = subprocess.run(args, capture_output=False)
+#    logger.debug("raspistill ends, rc {}".format(task.returncode))
+#    return proc
+
+def runCaptureProc(framenum):
     outfile = "{}".format("{:s}/{:s}{:06d}a.png".format(config.dir, config.prefix, framenum))
     args = ['/usr/bin/raspistill','-v',
         '-e','png',
         '-q','100',
         '-t','0',
-        '-s','-fs','0',
+        '-s',
+        '-ts',
+        #'-fs',f'{framenum:06d}',
         '--nopreview',
         '--exposure','night',
         '--awb','off',
         '--shutter','10000',
-        '-o','outfile']
+        '-o', outfile]
     logger.debug("starting raspistill {}".format(' '.join(args)))
-    task = subprocess.run(args)
-    logger.debug("raspistill ends, rc {}".format(task.returncode))
+    global captureProc
+    logger.debug("runCaptureProc: running")
+    #captureProc = subprocess.run(args, capture_output=True)
+    captureProc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    logger.debug("runCaptureProc: run started")
+    #logger.debug("runCaptureProc: run started {}".format(captureProc.stderr.read()))
 
+#def captureWaitFor(proc, text):
+#    accum = b''
+#    logger.debug("Waiting on %s" % text)
+#    while not text in accum:
+#        (out, err) = proc.communicate(timeout=1)
+#        accum += err
+#        logger.debug("Accumulating %s" % accum)
+#    logger.debug("Received %s" % text)
+#    return accum
+
+def captureWaitFor2(proc, text1, text2):
+    accum = b''
+    logger.debug("Waiting on %s or %s" % (text1, text2))
+    while not text1 in accum and not text2 in accum:
+        try:
+#            (out, err) = proc.communicate(timeout=1)
+            accum += proc.stderr.read1()
+        except:
+            logger.debug("captureWaitFor timeout")
+        logger.debug("Accumulating %s" % accum)
+    if text1 in accum:
+        logger.debug("Matched on %s" % text1)
+        return (0, text1)
+    if text2 in accum:
+        logger.debug("Matched on %s" % text2)
+        return (1, text2)
 
 def init(framenum):
     global tension
@@ -126,20 +176,38 @@ def init(framenum):
     global numframes
     (filmlength, numframes, tension) = t.feedstats(config.startdia, config.enddia)
     numframes += 1000
-    print("Length {}m, {} Frames".format(math.floor(filmlength/1000), numframes))
+    logger.debug("Length {}m, {} Frames".format(math.floor(filmlength/1000), numframes))
 
     global lastTension
     lastTension = tension[0]
 
     # start raspistill
     if 0 == config.raspid:
-        global capture
-        capture = multiprocessing.Process(target = captureProc, args = [framenum])
-        capture.start()
+        thread = threading.Thread(target = runCaptureProc, args = [framenum])
+        thread.daemon = True
+        thread.start()
+        time.sleep(3)
+        while captureProc is None:
+            logger.debug("Waiting for captureProc")
+            time.sleep(1)
 
-        children = psutil.Process(capture.pid)
-        for proc in children:
-            logger.debug("child PID is {}".format())
+        (which, text) = captureWaitFor2(captureProc, 
+            b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
+            b'Failed to run camera app')
+
+        logger.debug("Which {} text {}".format(which, text))
+        if which == 1:
+            logger.error("captureProc did not initialize [{}], exiting".format(text))
+            sys.exit(0)
+
+
+#        global capture
+#        capture = multiprocessing.Process(target = captureProc, args = [framenum])
+#        capture.start()
+#
+#        children = psutil.Process(capture.pid)
+#        for proc in children:
+#            logger.debug("child PID is {}".format())
 
     serPort = serial.Serial(SerialPort, 57600) # , timeout=1)
     logger.debug("Opening %s" % SerialPort)
@@ -184,7 +252,15 @@ def frame(port, num):
         if config.raspid:
             os.kill(config.raspid, signal.SIGUSR1)
         else:
-            os.kill(capture.pid, signal.SIGUSR1)
+            captureProc.send_signal(signal.SIGUSR1)
+            (which, text) = captureWaitFor2(captureProc, 
+                b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
+                b'Failed to run camera app')
+
+            logger.debug("Which {} text {}".format(which, text))
+            if which == 1:
+                logger.error("captureProc did not initialize [{}], exiting".format(text))
+                sys.exit(0)
 
 
         #args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
