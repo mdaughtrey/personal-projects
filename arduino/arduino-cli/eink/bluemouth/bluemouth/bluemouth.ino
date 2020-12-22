@@ -41,6 +41,8 @@
 #include "underbite.h"
 #include "hackaday.h"
 #include "1010logo.h"
+#include "pumpkin.h"
+#include "ghost.h"
 #endif // EPD
 
 typedef struct 
@@ -51,11 +53,13 @@ typedef struct
 
 Resource resources[] = {{"Grin1", Grin1_data},
     {"Gritted1", Gritted1_data},
-    {"overbite", overbite_data},
-    {"snarl", snarl_data},
-    {"underbite", underbite_data},
-    {"hackaday", hackaday_data},
-    {"1010logo", x1010logo_data}
+    {"Overbite", overbite_data},
+    {"Snarl", snarl_data},
+    {"Underbite", underbite_data},
+    {"Hackaday", hackaday_data},
+    {"1010logo", x1010logo_data},
+    {"Ghost", ghost_data},
+    {"Pumpkin", pumpkin_data},
     };
 const int NumResources = sizeof(resources) / sizeof(resources[0]);
 
@@ -98,7 +102,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     if (rxValue == "list" )
     {
         Serial.println("Sending list");
-        pTxCharacteristic->setValue("list,Grin1,Gritted1,overbite,snarl,underbite,hackaday,1010logo");
+        pTxCharacteristic->setValue("list,Grin1,Gritted1,Overbite,Snarl,Underbite,Hackaday,1010logo,Ghost,Pumpkin");
         pTxCharacteristic->notify();
         Serial.println("Notified list");
         return;
