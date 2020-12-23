@@ -26,6 +26,35 @@ Frame8mm = type('obj', (object,), {'w': roundIt(4.37 * PxPerMm8mm),
     'h': roundIt(3.28 * PxPerMm8mm)})
 
 
+def findExtents2(data):
+    (nrows, ncols) = data.shape
+#    arrfile = open("/tmp/%s%s.bin" % (tag, os.getpid()),"wb")
+#    arrfile.write(struct.pack("II", *data.shape))
+#    data.tofile(arrfile)
+#    arrfile.close()
+    w = np.zeros(dtype=np.uint8, shape=data.shape)
+    h = np.zeros(dtype=np.uint8, shape=data.shape)
+    area_max = (0,[])
+    for r in range(nrows):
+        for c in range(ncols):
+            if data[r][c] == 0:             # skip black pixels
+                continue
+            if r == 0:
+                h[r][c] = 1                 # new row, set left extent
+            else:
+                h[r][c] = h[r-1][c]+1       # 
+            if c == 0:
+                w[r][c] = 1
+            else:
+                w[r][c] = w[r][c-1]+1
+            minw = w[r][c]
+            for dh in range(h[r][c]):
+                minw = min(minw, w[r-dh][c])
+                area = (dh+1)*minw
+                if area > area_max[0]:
+                    area_max = (area, [(r-dh, c-minw+1, r, c)])
+    return area_max
+
 #def findExtents(tag, data):
 #    (nrows, ncols) = data.shape
 #    filename = "/tmp/%s%s.bin" % (tag, os.getpid())
@@ -43,8 +72,13 @@ def findSprockets(image):
     grey = image.convert('L')
     flattened = np.asarray(grey)
 #    flattened = scipy.misc.fromimage(imp, flatten = True).astype(np.uint8)
-    sprocket = ndimage.grey_erosion(flattened[:,:300], size=(25,25))
-#    if dodraw:
+    sliceL = 550
+    sliceR = 600
+    slice = ndimage.grey_erosion(flattened[:,sliceL:sliceR], size=(25,25))
+#    slice = sprocket[:,350:400]
+    if dodraw:
+        x = Image.fromarray(slice)
+        image.paste(x.convert(image.mode), (sliceL, 0, sliceL + x.size[0], x.size[1]))
 #        # left upper right lower
 #        crop = (0, 0, 300, image.size[0]-1)
 #        draw = ImageDraw.Draw(image)
@@ -52,28 +86,37 @@ def findSprockets(image):
 #        draw.rectangle(tuple(map(sum,(zip(crop, (1,1,-1,-1))))), outline='#ffffff', width=1)
 
     # get the darkest and lightest values, their midpoint is the threshold
-    darkest = ndimage.minimum(sprocket)
-    lightest = ndimage.maximum(sprocket)
-#    pdb.set_trace()
+    darkest = ndimage.minimum(slice)
+    lightest = ndimage.maximum(slice)
 
     threshold = darkest + (lightest - darkest)/2
-    sprocket[sprocket < threshold] = 0
-    sprocket[sprocket >= threshold] = 255
-    sprocketSlice = sprocket[:,50:200]
+    slice[slice < threshold] = 0
+    slice[slice >= threshold] = 255
+#    slice = sprocket[:,50:200]
 
-    if dodraw:
+    if dodraw: # sprocketslice
         # left upper right lower
-        crop = (540, 0, 640, image.size[0]-1)
+        rect = (sliceL, 0, sliceR, slice.shape[0]-1)
         draw = ImageDraw.Draw(image)
-        draw.rectangle(crop, outline='#0ff000', width=1)
-        draw.rectangle(tuple(map(sum,(zip(crop, (1,1,-1,-1))))), outline='#ffffff', width=1)
+        draw.rectangle(rect, outline='#0ff000', width=1)
+        draw.rectangle(tuple(map(sum,(zip(rect, (1,1,-1,-1))))), outline='#ffffff', width=1)
 
-#    upperSprocket = findExtents("upper_%s" % os.path.basename(filename), sprocketSlice[:550])
-#    lowerSprocket = findExtents("lower_%s" % os.path.basename(filename), sprocketSlice[1200:])
+    pdb.set_trace()
+    upperSprocket = findExtents2(slice[:1300])
+    lowerSprocket = findExtents2(slice[2300:])
+    if dodraw:
+#        rcrc
+        # left upper right lower
+        rect = [upperSprocket[1][0][x] for x in (1,0,3,2)]
+        rect = tuple(map(sum,(zip(rect, (sliceL,0,sliceL,0)))))
+        draw = ImageDraw.Draw(image)
+        draw.rectangle(rect, outline='#ff0000', width=1)
+        draw.rectangle(tuple(map(sum,(zip(rect, (1,1,-1,-1))))), outline='#ffffff', width=1)
 
     return image
 
-for file in glob('/media/sf_vproj/scans/hqtest/*.rgb'):
+#for file in glob('/media/sf_vproj/scans/hqtest/*.rgb'):
+for file in glob('/home/mattd/Documents/hqtest/*.rgb'):
     print(file)
     image = Image.frombytes('RGB', (4064, 3040),open(file,'rb').read())
     if dodraw:
