@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# Sensor modes
+# https://www.raspberrypi.org/documentation/raspbian/applications/camera.md
+
 import argparse
 from glob import glob, iglob
 import logging
@@ -17,6 +20,10 @@ import math
 #import multiprocessing
 #import psutil
 from Tension import Tension
+
+from picamera import PiCamera
+import warnings
+warnings.filterwarnings('default',category=DeprecationWarning)
 
 #BIN='/usr/local/bin/raspiraw'
 BIN="raspistill"
@@ -71,7 +78,13 @@ parser.add_argument('--single', dest='singleframe', action='store_true', default
 parser.add_argument('--startdia', dest='startdia', type=int, default=62, help='Feed spool starting diameter (mm)')
 parser.add_argument('--enddia', dest='enddia', type=int, default=35, help='Feed spool ending diameter (mm)')
 parser.add_argument('--raspid', dest='raspid', type=int, default=0, help='raspistill PID')
+parser.add_argument('--picamera', dest='picamera', action='store_true', default=False, help='use picamera lib')
+parser.add_argument('--picameracont', dest='picameracont', action='store_true', default=False, help='use picamera lib')
 config = parser.parse_args()
+
+if config.picamera or config.picameracont:
+    camera = PiCamera()
+    camera.resolution = (4056, 3040)
 
 def signal_handler(signal, frame):
     port.write(b' ')
@@ -122,24 +135,27 @@ def portWaitFor2(port, text1, text2):
 #    return proc
 
 def runCaptureProc(framenum):
-    outfile = "{}".format("{:s}/{:s}{:06d}a.png".format(config.dir, config.prefix, framenum))
-    args = ['/usr/bin/raspistill','-v',
+#    outfile = "{}".format("{:s}/%06da.png".format(config.dir))
+    outfile = "{:s}/%06da.png".format(config.dir)
+    #outfile = "{}".format("{:s}/{:s}{:06d}a.png".format(config.dir, config.prefix, framenum))
+#    outdir = "{}".format("{:s}/{:s}{:06d}a.png".format(config.dir, config.prefix, framenum))
+    capargs = ['/usr/bin/raspistill','-v',
         '-e','png',
         '-q','100',
         '-t','0',
         '-s',
-        '-ts',
-        #'-fs',f'{framenum:06d}',
-        '--nopreview',
+        '-fs', str(framenum),
         '--exposure','night',
-        '--awb','off',
-        '--shutter','10000',
+        '--awb','backlight',
+        '--shutter','1000',
+        '--width', '2028',
+        '--height', '1520',
         '-o', outfile]
-    logger.debug("starting raspistill {}".format(' '.join(args)))
+    logger.debug("starting raspistill {}".format(' '.join(capargs)))
     global captureProc
     logger.debug("runCaptureProc: running")
     #captureProc = subprocess.run(args, capture_output=True)
-    captureProc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    captureProc = subprocess.Popen(capargs, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=config.dir)
     logger.debug("runCaptureProc: run started")
     #logger.debug("runCaptureProc: run started {}".format(captureProc.stderr.read()))
 
@@ -183,22 +199,26 @@ def init(framenum):
 
     # start raspistill
     if 0 == config.raspid:
-        thread = threading.Thread(target = runCaptureProc, args = [framenum])
-        thread.daemon = True
-        thread.start()
-        time.sleep(3)
-        while captureProc is None:
-            logger.debug("Waiting for captureProc")
-            time.sleep(1)
+        if config.picamera or config.picameracont:
+            pass
+        else:
+            thread = threading.Thread(target = runCaptureProc, args = [framenum])
+            #runCaptureProc(framenum)
+            thread.daemon = True
+            thread.start()
+            time.sleep(3)
+            while captureProc is None:
+                logger.debug("Waiting for captureProc")
+                time.sleep(1)
 
-        (which, text) = captureWaitFor2(captureProc, 
-            b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
-            b'Failed to run camera app')
+            (which, text) = captureWaitFor2(captureProc, 
+                b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
+                b'Failed to run camera app')
 
-        logger.debug("Which {} text {}".format(which, text))
-        if which == 1:
-            logger.error("captureProc did not initialize [{}], exiting".format(text))
-            sys.exit(0)
+            logger.debug("Which {} text {}".format(which, text))
+            if which == 1:
+                logger.error("captureProc did not initialize [{}], exiting".format(text))
+                sys.exit(0)
 
 
 #        global capture
@@ -240,11 +260,31 @@ def frame(port, num):
     if False == config.nofilm:
         port.write(b'n')
         if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
-            return 1
+            logger.error("Frame init timed out [{}], exiting".format(text))
+            sys.exit(0)
+
     if config.singleframe:
         ii = zip([SHUTTER[1]], ['a'])
     else:
         ii = zip(SHUTTER, ['a','b','c'])
+
+    if config.picameracont:
+        pdb.set_trace()
+        outformat = "{:s}/{:s}{{counter:06d}}a.rgb".format(config.dir, config.prefix)
+        try:
+            camera.start_preview()
+            for filename in camera.capture_continuous(outformat, format='rgb'):
+                logger.debug("Captured {}".format(filename))
+                port.write(b'n')
+                if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
+                    camera.stop_preview()
+                    logger.error("Frame advance timed out [{}], exiting".format(text))
+                    return 1
+        except:
+            pass
+        camera.stop_preview()
+        return 0
+        
 
 #    pdb.set_trace()
     for ss,tag in ii:
@@ -252,15 +292,20 @@ def frame(port, num):
         if config.raspid:
             os.kill(config.raspid, signal.SIGUSR1)
         else:
-            captureProc.send_signal(signal.SIGUSR1)
-            (which, text) = captureWaitFor2(captureProc, 
-                b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
-                b'Failed to run camera app')
+            if config.picamera:
+                camera.start_preview()
+                camera.capture("{:s}/{:s}{:05d}a.png".format(config.dir, config.prefix, num))
+                camera.stop_preview()
+            else:
+                captureProc.send_signal(signal.SIGUSR1)
+                (which, text) = captureWaitFor2(captureProc, 
+                    b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
+                    b'Failed to run camera app')
 
-            logger.debug("Which {} text {}".format(which, text))
-            if which == 1:
-                logger.error("captureProc did not initialize [{}], exiting".format(text))
-                sys.exit(0)
+                logger.debug("Which {} text {}".format(which, text))
+                if which == 1:
+                    logger.error("captureProc did not initialize [{}], exiting".format(text))
+                    sys.exit(0)
 
 
         #args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
@@ -271,7 +316,8 @@ def frame(port, num):
 #        logger.debug(''.join(runargs))
 #        retcode = subprocess.call(''.join(runargs), shell=True, stderr=None)
 #        logger.debug("retcode %u" % retcode)
-#        open("{:s}/{:06d}{:s}.done".format(config.dir, num, tag), "w")
+        open("{:s}/{:06d}{:s}.done".format(config.dir, num, tag), "w")
+        
     return 0
 
 def exptestframe(port, num):
