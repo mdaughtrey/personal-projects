@@ -269,7 +269,7 @@ def frame(port, num):
         ii = zip(SHUTTER, ['a','b','c'])
 
     if config.picameracont:
-        pdb.set_trace()
+#        pdb.set_trace()
         outformat = "{:s}/{:s}{{counter:06d}}a.rgb".format(config.dir, config.prefix)
         try:
             camera.start_preview()
