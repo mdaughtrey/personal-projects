@@ -85,6 +85,8 @@ config = parser.parse_args()
 if config.picamera or config.picameracont:
     camera = PiCamera()
     camera.resolution = (4056, 3040)
+    camera.shutter_speed = 1000 # 1ms
+
 
 def signal_handler(signal, frame):
     port.write(b' ')
@@ -270,16 +272,24 @@ def frame(port, num):
 
     if config.picameracont:
 #        pdb.set_trace()
-        outformat = "{:s}/{:s}{{counter:06d}}a.rgb".format(config.dir, config.prefix)
+        outformat = '{:s}/{:s}{:06d}a.rgb'.format(config.dir, config.prefix, num)
+        writeto = open(outformat, 'wb')
         try:
             camera.start_preview()
-            for filename in camera.capture_continuous(outformat, format='rgb'):
+            #for filename in camera.capture_continuous(outformat, format='rgb'):
+            for filename in camera.capture_continuous(writeto, format='rgb'):
                 logger.debug("Captured {}".format(filename))
+                writeto.close()
                 port.write(b'n')
+
                 if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
                     camera.stop_preview()
                     logger.error("Frame advance timed out [{}], exiting".format(text))
                     return 1
+                num += 1
+                outformat = "{:s}/{:s}{:06d}a.rgb".format(config.dir, config.prefix, num)
+                writeto = open(outformat, 'w')
+
         except:
             pass
         camera.stop_preview()
@@ -342,9 +352,10 @@ def exptestframe(port, num):
 
 def main():
     os.makedirs(config.dir, exist_ok=True);
-    files = sorted(glob("{0}/{1}??????.done".format(config.dir, config.prefix)))
+    files = sorted(glob("{0}/{1}??????a.rgb".format(config.dir, config.prefix)))
+#    pdb.set_trace()
     if len(files):
-        frameNum = int(files[-1][-11:-5])
+        frameNum = int(files[-1][-11:-5]) + 1
     else:
         frameNum = 0
     logger.debug("Starting at frame {0}".format(frameNum))
