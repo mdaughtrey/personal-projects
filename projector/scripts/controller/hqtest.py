@@ -2,15 +2,25 @@
 
 from glob import glob, iglob
 from itertools import groupby
+import os
 from PIL import Image, ImageDraw
 import pdb
 import scipy
 from scipy import ndimage
 import numpy as np
+import cv2
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--project', required = True, dest='project', help='project name')
+parser.add_argument('--root', required = True, dest='root', help='rootdir')
+config = parser.parse_args()
 
 dodraw = False
+#dodraw = True
 # left upper right lower
-crop = (540, 530, 3036, 2484)
+#crop = (540, 530, 3036, 2484)
+crop = (540+70, 530+50, 3036-70, 2484-30-350)
 PxPerMm8mm = 488
 PxPerMmSuper8 = 391
 
@@ -19,11 +29,11 @@ SprocketSuper8 = type('obj', (object,), {'h': roundIt(.91 * PxPerMmSuper8),
     'w': roundIt(1.14 * PxPerMmSuper8)})
 FrameSuper8 = type('obj', (object,), {'w': roundIt(5.46 * PxPerMmSuper8),
     'h': roundIt(4.01 * PxPerMmSuper8)})
-
+2
 Sprocket8mm = type('obj', (object,), {'h': roundIt(1.83 * PxPerMm8mm),
     'w': roundIt(1.27 * PxPerMm8mm)})
 Frame8mm = type('obj', (object,), {'w': roundIt(4.5 * PxPerMm8mm),
-    'h': roundIt(3.8 * PxPerMm8mm)})
+    'h': roundIt(3.4 * PxPerMm8mm)})
 
 def findExtents(matrix):
     (nrows, ncols) = matrix.shape
@@ -73,7 +83,7 @@ def findSprockets(image):
     lowerSprocket = tupleAdd((sliceL, 2200, sliceL, 2200),
         findExtents(slice[2200:]))
     centerline = upperSprocket[3] + int((lowerSprocket[1] - upperSprocket[3])/2)
-    croprect = (sliceR+150, centerline - (Frame8mm.h/2), sliceR + Frame8mm.w + 200,
+    croprect = (sliceR+150+180, centerline - (Frame8mm.h/2) - 60, sliceR + Frame8mm.w + 150,
             centerline + (Frame8mm.h/2))
 
     if dodraw:
@@ -96,16 +106,31 @@ def findSprockets(image):
 
     return image
 
-#for file in glob('/media/sf_vproj/scans/hqtest/*.rgb'):
-for file in glob('/home/mattd/Documents/hqtest/*.rgb'):
-    print(file)
-    image = Image.frombytes('RGB', (4064, 3040),open(file,'rb').read())
-    if dodraw:
-        draw = ImageDraw.Draw(image)
-        draw.rectangle(crop, outline='#000000', width=1)
-        draw.rectangle(tupleAdd(crop, (-1,-1,1,1)), outline='#ffffff', width=1)
+def main():
+    dirnum = 0
+    while True:
+        target = f'{config.root}/{config.project}/{dirnum:03d}/'
+        print(f'Dir {target}', end='\n')
+        if not os.path.exists(target):
+            return 0
 
-    image = findSprockets(image)
-    image.save(file.replace('.rgb', '_cropped.png'))
-    #image.save(file.replace('.rgb', '_cropped.yuv2'))
+        dirnum += 1
+        for file in glob(f'{target}/*.rgb'):
+            print(file)
+            if os.path.exists(file.replace('.rgb', '_cropped.bmp')):
+                continue
+            image = Image.frombytes('RGB', (4064, 3040),open(file,'rb').read())
+            if dodraw:
+                draw = ImageDraw.Draw(image)
+                draw.rectangle(crop, outline='#000000', width=1)
+                draw.rectangle(tupleAdd(crop, (-1,-1,1,1)), outline='#ffffff', width=1)
+
+            image = findSprockets(image)
+            image.save(file.replace('.rgb', '_cropped.bmp'))
+
+main()
+#    pdb.set_trace()
+#    ycrcb = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2YCrCb)
+#    np.save("out", ycrcb)
+#    image.save(file.replace('.rgb', ''))
 #    image.convert('YCbCr').save(file.replace('.rgb', '_cropped.yuv'), format='YCbCr')
