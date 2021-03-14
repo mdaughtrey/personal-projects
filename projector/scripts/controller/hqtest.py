@@ -14,6 +14,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--project', required = True, dest='project', help='project name')
 parser.add_argument('--root', required = True, dest='root', help='rootdir')
+parser.add_argument('--format', required = True, dest='format', help='Output Format', default='png', choices = ['png', 'bmp'])
 config = parser.parse_args()
 
 dodraw = False
@@ -109,15 +110,20 @@ def findSprockets(image):
 def main():
     dirnum = 0
     while True:
-        target = f'{config.root}/{config.project}/{dirnum:03d}/'
-        print(f'Dir {target}', end='\n')
-        if not os.path.exists(target):
+        fromdir = f'{config.root}/{config.project}/{dirnum:03d}/'
+        print(f'Dir {fromdir}', end='\n')
+        if not os.path.exists(fromdir):
             return 0
+        pdb.set_trace()
+        if not os.path.exists('{}/{}/{}'.format(config.root, config.project, config.format)):
+            os.mkdir('{}/{}/{}'.format(config.root, config.project, config.format))
 
         dirnum += 1
-        for file in glob(f'{target}/*.rgb'):
+        for file in glob(f'{fromdir}/*.rgb'):
             print(file)
-            if os.path.exists(file.replace('.rgb', '_cropped.bmp')):
+            outfile = '{root}/{project}/{format}/{filename}'.format(root = config.root, project = config.project, format = config.format,
+                filename = os.path.split(file)[1].replace('.rgb', '_cropped.') + config.format)
+            if os.path.exists(outfile):
                 continue
             image = Image.frombytes('RGB', (4064, 3040),open(file,'rb').read())
             if dodraw:
@@ -126,7 +132,7 @@ def main():
                 draw.rectangle(tupleAdd(crop, (-1,-1,1,1)), outline='#ffffff', width=1)
 
             image = findSprockets(image)
-            image.save(file.replace('.rgb', '_cropped.bmp'))
+            image.save(outfile)
 
 main()
 #    pdb.set_trace()
