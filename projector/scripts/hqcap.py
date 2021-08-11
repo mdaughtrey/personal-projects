@@ -85,6 +85,8 @@ config = parser.parse_args()
 if config.picamera or config.picameracont:
     camera = PiCamera()
     camera.resolution = (4056, 3040)
+    camera.shutter_speed = 700 # 700us
+
 
 def signal_handler(signal, frame):
     port.write(b' ')
@@ -252,10 +254,13 @@ def stop(port):
 
 def frame(port, num):
     global lastTension
-    if (tension[num] != lastTension) & (num < (len(tension) - 1)):
-        lastTension = tension[num]
-        port.write('-{}T'.format(tension[num]).encode('utf-8'))
-        logger.debug("Set tension {}".format(lastTension))
+    try:
+        if (tension[num] != lastTension) & (num < (len(tension) - 1)):
+            lastTension = tension[num]
+            port.write('-{}T'.format(tension[num]).encode('utf-8'))
+            logger.debug("Set tension {}".format(lastTension))
+    except:
+        pass
 
     if False == config.nofilm:
         port.write(b'n')
@@ -263,49 +268,62 @@ def frame(port, num):
             logger.error("Frame init timed out [{}], exiting".format(text))
             sys.exit(0)
 
-    if config.singleframe:
-        ii = zip([SHUTTER[1]], ['a'])
-    else:
-        ii = zip(SHUTTER, ['a','b','c'])
+#    if config.singleframe:
+#        ii = zip([SHUTTER[1]], ['a'])
+#    else:
+#        ii = zip(SHUTTER, ['a','b','c'])
+#
+#    logger.debug("40")
 
     if config.picameracont:
-#        pdb.set_trace()
-        outformat = "{:s}/{:s}{{counter:06d}}a.rgb".format(config.dir, config.prefix)
+        outformat = '{:s}/{:s}{:06d}a.rgb'.format(config.dir, config.prefix, num)
+        writeto = open(outformat, 'wb')
         try:
             camera.start_preview()
-            for filename in camera.capture_continuous(outformat, format='rgb'):
+            #for filename in camera.capture_continuous(outformat, format='rgb'):
+            for filename in camera.capture_continuous(writeto, format='rgb'):
                 logger.debug("Captured {}".format(filename))
-                port.write(b'n')
-                if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
-                    camera.stop_preview()
-                    logger.error("Frame advance timed out [{}], exiting".format(text))
-                    return 1
+                writeto.close()
+#                logger.debug("1")
+#                port.write(b'n')
+#                logger.debug("2")
+
+#                if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
+#                    camera.stop_preview()
+#                    logger.error("Frame advance timed out [{}], exiting".format(text))
+#                    return 1
+#                logger.debug("3")
+#                num += 1
+#                logger.debug("4")
+#                outformat = "{:s}/{:s}{:06d}a.rgb".format(config.dir, config.prefix, num)
+#                logger.debug("5")
+#                writeto = open(outformat, 'w')
+#                logger.debug("6")
+
         except:
             pass
         camera.stop_preview()
         return 0
         
-
-#    pdb.set_trace()
-    for ss,tag in ii:
-        logger.debug("Frame {}/{} shutter {} tag {} tension {}".format(num, numframes, ss, tag, lastTension))
-        if config.raspid:
-            os.kill(config.raspid, signal.SIGUSR1)
-        else:
-            if config.picamera:
-                camera.start_preview()
-                camera.capture("{:s}/{:s}{:05d}a.png".format(config.dir, config.prefix, num))
-                camera.stop_preview()
-            else:
-                captureProc.send_signal(signal.SIGUSR1)
-                (which, text) = captureWaitFor2(captureProc, 
-                    b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
-                    b'Failed to run camera app')
-
-                logger.debug("Which {} text {}".format(which, text))
-                if which == 1:
-                    logger.error("captureProc did not initialize [{}], exiting".format(text))
-                    sys.exit(0)
+#    for ss,tag in ii:
+#        logger.debug("Frame {}/{} shutter {} tag {} tension {}".format(num, numframes, ss, tag, lastTension))
+#        if config.raspid:
+#            os.kill(config.raspid, signal.SIGUSR1)
+#        else:
+#            if config.picamera:
+#                camera.start_preview()
+#                camera.capture("{:s}/{:s}{:05d}a.png".format(config.dir, config.prefix, num))
+#                camera.stop_preview()
+#            else:
+#                captureProc.send_signal(signal.SIGUSR1)
+#                (which, text) = captureWaitFor2(captureProc, 
+#                    b'Waiting for SIGUSR1 to initiate capture and continue or SIGUSR2 to capture and exit',
+#                    b'Failed to run camera app')
+#
+#                logger.debug("Which {} text {}".format(which, text))
+#                if which == 1:
+#                    logger.error("captureProc did not initialize [{}], exiting".format(text))
+#                    sys.exit(0)
 
 
         #args1 = ''.join([BIN, " --header --i2c 0 --expus {0}".format(ss),
@@ -342,9 +360,10 @@ def exptestframe(port, num):
 
 def main():
     os.makedirs(config.dir, exist_ok=True);
-    files = sorted(glob("{0}/{1}??????.done".format(config.dir, config.prefix)))
+    files = sorted(glob("{0}/{1}??????a.rgb".format(config.dir, config.prefix)))
+#    pdb.set_trace()
     if len(files):
-        frameNum = int(files[-1][-11:-5])
+        frameNum = int(files[-1][-11:-5]) + 1
     else:
         frameNum = 0
     logger.debug("Starting at frame {0}".format(frameNum))
