@@ -85,7 +85,7 @@ config = parser.parse_args()
 if config.picamera or config.picameracont:
     camera = PiCamera()
     camera.resolution = (4056, 3040)
-    camera.shutter_speed = 800 # 800us
+    camera.shutter_speed = 700 # 700us
 
 
 def signal_handler(signal, frame):
@@ -254,11 +254,13 @@ def stop(port):
 
 def frame(port, num):
     global lastTension
-    logger.debug("10")
-    if (tension[num] != lastTension) & (num < (len(tension) - 1)):
-        lastTension = tension[num]
-        port.write('-{}T'.format(tension[num]).encode('utf-8'))
-        logger.debug("Set tension {}".format(lastTension))
+    try:
+        if (tension[num] != lastTension) & (num < (len(tension) - 1)):
+            lastTension = tension[num]
+            port.write('-{}T'.format(tension[num]).encode('utf-8'))
+            logger.debug("Set tension {}".format(lastTension))
+    except:
+        pass
 
     if False == config.nofilm:
         port.write(b'n')
@@ -282,9 +284,9 @@ def frame(port, num):
             for filename in camera.capture_continuous(writeto, format='rgb'):
                 logger.debug("Captured {}".format(filename))
                 writeto.close()
-                logger.debug("1")
-                port.write(b'n')
-                logger.debug("2")
+#                logger.debug("1")
+#                port.write(b'n')
+#                logger.debug("2")
 
 #                if b'{OIT:' == portWaitFor2(port, b'FRAMESTOP', b'{OIT:'):
 #                    camera.stop_preview()

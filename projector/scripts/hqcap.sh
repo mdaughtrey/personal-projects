@@ -24,6 +24,8 @@ PROJECT=$1
 #        '--shutter','10000',
 #        '-o','outfile']
 
-./hqcap.py --film=8mm --dev=/mnt/exthd --dir /mnt/exthd/${PROJECT} --startdia 55  --single --picameracont # --raspid ${CHILD}
+#./hqcap.py --film=8mm --dev=/mnt/exthd --dir /mnt/exthd/${PROJECT} --startdia 55  --single --picameracont # --raspid ${CHILD}
+./hqcap.py --film=8mm --dev=/mnt/exthd --dir /mnt/exthd/${PROJECT}  --single --picameracont # --raspid ${CHILD}
+#./hqcap3.py --frames=20 --film=8mm --dev=/mnt/exthd --dir /mnt/exthd/${PROJECT}  --noled --picameracont
 #echo Killing child process
 #kill $(jobs -p)
