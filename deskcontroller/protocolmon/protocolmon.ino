@@ -11,8 +11,10 @@ uint32_t data[SAMPLES];
 uint8_t tindex;
 uint32_t transAt;
 
-#define PIN_CLOCK 16
-#define PIN_DATA  14
+#define PIN_CLOCK_DESK 16
+#define PIN_DATA_DESK  14
+#define PIN_CLOCK_CTLR 12
+#define PIN_DATA_CTLR  13
 
 void setup() {
     Serial.begin(115200);
@@ -20,14 +22,17 @@ void setup() {
     data[0] = 0;
     transAt = micros();
     tindex = 0;
+//    pinMode(PIN_CLOCK_CTLR, OUTPUT);
+//    pinMode(PIN_DATA_CTLR, OUTPUT);
 }
 
 void loopclock()
 {
-    if (digitalRead(PIN_CLOCK) == bits.pClock) { return; }
+    if (digitalRead(PIN_CLOCK_DESK) == bits.pClock) { return; }
+    bits.pClock ^= 1;
+//    digitalWrite(PIN_CLOCK_CTLR, bits.pClock);
     data[tindex++] = micros() - transAt;
     transAt = micros();
-    bits.pClock ^= 1;
     if (tindex == SAMPLES)
     {
         for (tindex = 0; tindex < SAMPLES; tindex++)
@@ -41,7 +46,9 @@ void loopclock()
 
 void loopdata()
 {
-    if (digitalRead(PIN_DATA) == bits.pData) { return; }
+    if (digitalRead(PIN_DATA_DESK) == bits.pData) { return; }
+    bits.pData ^= 1;
+//    digitalWrite(PIN_DATA_CTLR, bits.pData);
 
     // If this is a 0->1 transition and pulseLen > 590ms, start a new block
     if (!bits.pData && ((micros() - transAt) > INTERFRAME))
@@ -57,21 +64,22 @@ void loopdata()
         }
     }
 
-    transAt = micros();
-    data[tindex] <<= 1;
-    data[tindex] |=(bits.pData);
-    bits.pData ^= 1;
+//    transAt = micros();
+//    data[tindex] <<= 1;
+//    data[tindex] |=(bits.pData);
+//    bits.pData ^= 1;
 }
 
 void loop()
 {
-    loopclock();
+//    loopclock();
+    loopdata();
 }
 
 
 // void loopmeasure() {
 // 
-//     if ((digitalRead(PIN_DATA) != bits.pData) && (tindex < SAMPLES))
+//     if ((digitalRead(PIN_DATA_DESK) != bits.pData) && (tindex < SAMPLES))
 //     {
 //         state16[tindex] = bits.pData;
 //         bits.pData ^= 1;

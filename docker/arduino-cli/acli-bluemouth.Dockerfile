@@ -21,7 +21,6 @@ RUN cd ~/acli && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cl
 ENV PATH=~/acli/bin:${PATH}
 RUN export PATH=~/acli/bin:${PATH}
 RUN mkdir -p ~/acli/Arduino/libraries
-##RUN cd /tmp && wget https://github.com/ZinggJM/GxEPD/archive/master.zip && unzip master.zip -d /root/Arduino/libraries && rm master.zip
 RUN cd ~/acli && wget https://github.com/ZinggJM/GxEPD/archive/master.zip && unzip master.zip -d ~/acli/Arduino/libraries && rm master.zip
 ##COPY ${PWD}/arduino-cli.yaml /root/.arduino15
 #COPY ${PWD}/arduino-cli.yaml /home/${USER}/.arduino15
@@ -35,11 +34,11 @@ RUN cd ~/.arduino15 && patch -p0 arduino-cli.yaml /tmp/arduino-cli.patch0
 RUN ~/acli/bin/arduino-cli core update-index
 RUN ~/acli/bin/arduino-cli core install esp8266:esp8266
 RUN ~/acli/bin/arduino-cli core install esp32:esp32
-#RUN git config --global user.email "mdaughtrey@gmail.com"
-#RUN git config --global user.name mdaughtrey
-#
-##COPY ${HOME}/personal-projects/bin/vimrc ~/.vimrc
-##COPY ${HOME}/personal-projects/bin/tmux.conf ~/.tmux.conf
+RUN git config --global user.email "mdaughtrey@gmail.com"
+RUN git config --global user.name mdaughtrey
+ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
+#COPY ~/personal-projects/bin/vimrc ~/.vimrc
+#COPY ~/personal-projects/bin/tmux.conf ~/.tmux.conf
 ## https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
 ## https://docs.espressif.com/projects/esp-idf/en/release-v3.0/get-started/linux-setup.html
 ##[https://arduino.esp8266.com/stable/package_esp8266com_index.json]

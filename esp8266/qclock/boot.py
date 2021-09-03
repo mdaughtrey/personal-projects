@@ -13,7 +13,7 @@ gc.collect()
 sta_if = network.WLAN(network.STA_IF);
 sta_if.active(True)
 sta_if.scan()                             # Scan for available access points
-sta_if.connect("Zooma223", "N0stromo") # Connect to an AP
+sta_if.connect("yfinity", "24HoursADay") # Connect to an AP
 sta_if.config(dhcp_hostname='qclock')
 while False == sta_if.isconnected():
     print("Waiting to connect")
