@@ -29,17 +29,13 @@ RUN ~/acli/bin/arduino-cli config init
 RUN ~/acli/bin/arduino-cli lib install 'Adafruit GFX Library'
 RUN ~/acli/bin/arduino-cli lib install 'Adafruit APDS9960 Library'
 RUN ~/acli/bin/arduino-cli lib install gxepd2
-RUN ~/acli/bin/arduino-cli lib install Adafruit_VL53L0X
 COPY arduino-cli.patch0 /tmp/arduino-cli.patch0
 RUN cd ~/.arduino15 && patch -p0 arduino-cli.yaml /tmp/arduino-cli.patch0
 RUN ~/acli/bin/arduino-cli core update-index
 RUN ~/acli/bin/arduino-cli core install esp8266:esp8266
 RUN ~/acli/bin/arduino-cli core install esp32:esp32
-RUN ~/acli/bin/arduino-cli core install rp2040:rp2040
 RUN git config --global user.email "mdaughtrey@gmail.com"
 RUN git config --global user.name mdaughtrey
-# https://roboticsbackend.com/arduino-stl-library/
-RUN cd ~/Arduino/libraries && git clone https://github.com/maniacbug/StandardCplusplus.git
 ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
 #COPY ~/personal-projects/bin/vimrc ~/.vimrc
 #COPY ~/personal-projects/bin/tmux.conf ~/.tmux.conf

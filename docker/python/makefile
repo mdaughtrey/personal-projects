@@ -1,13 +1,17 @@
-TAG=python
+TAG=python3
 
 run:
-	docker run -dh ${TAG} -it --expose 22 -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects ${TAG}:latest 
+	docker run -dh ${TAG} --name ${TAG} -it  -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects ${TAG}:latest 
 
 attach:
-	docker exec -it `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1 ` /bin/bash
+	docker attach ${TAG}
+
+#	docker exec -it `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1 ` /bin/bash
 
 stop:
-	docker stop `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1`
+	docker stop ${TAG}
+	docker rm ${TAG}
+#	docker stop `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1`
 
 tag:
 	docker tag ${TAG} mdaughtrey/projects:${TAG}

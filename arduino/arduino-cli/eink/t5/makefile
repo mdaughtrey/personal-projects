@@ -1,9 +1,9 @@
 
 TAGFILE=${PWD}/TAGS
 PORT=/dev/ttyUSB0
-BOARD=esp32:esp32:esp32wrover
+BOARD=esp32:esp32:esp32
 #MYSKETCH=LilyGo-T5-ink-series-master/LilyGo_T5_V2.3
-MYSKETCH=bluemouth
+MYSKETCH=GxEPD-master/examples/GxEPD_Example
 #MYSKETCH=${PWD}/demo
 #MYSKETCH=${PWD}/gxepd
 FLAGS=--log-file acli.log --log-level trace
