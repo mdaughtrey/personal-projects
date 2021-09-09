@@ -1,6 +1,7 @@
 PROJ=tofsensor
 PROJDIR=/personal-projects/arduino/tofsensor
 PORT=/dev/ttyACM0
+#PORT=/dev/serial/by-id/usb-Raspberry_Pi_PicoArduino_E660382823419835-if00
 PLATFORM=rp2040:rp2040:generic
 UF2=${PROJ}.ino.uf2
 BIN=${PROJ}.ino.bin
@@ -38,15 +39,15 @@ s:
 	screen ${PORT} 115200
 
 u:
-	stty -F /dev/ttyACM0 1200
-	bossac --port=${PORT} --usb-port=true -e -a  -w -v  ${BIN}
+#	stty -F /dev/ttyACM0 1200
+	bossac --port=${PORT}  -e -a  -w -v  ${BIN}
 
 mc: 	# mount and copy
 	./mntrp2040.sh
 	sudo cp  ${UF2} ${MOUNT}
 
 us:
-	- bossac --port=${PORT} --usb-port=true  -e -a  -w -v  ${BIN}
+	- bossac --port=${PORT} -w  ${BIN}
 	./mntrp2040.sh
 	sudo cp  ${UF2} ${MOUNT}
 #	while [ ! -d "/media/mattd/RPI-RP2" ]; do echo -n "."; sleep 1; done

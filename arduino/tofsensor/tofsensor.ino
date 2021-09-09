@@ -4,8 +4,6 @@ Adafruit_VL53L0X lox = Adafruit_VL53L0X();
 
 void setup() {
     Serial.begin(115200);
-    delay(1000);
-    pinMode(25, OUTPUT);
     while (!lox.begin())
     {
         Serial.println("VL53L0X Init fails");
@@ -15,10 +13,18 @@ void setup() {
 }
 
 void loop() {
-    Serial.println("Sure, whatever.");
-        digitalWrite(25, HIGH);
-        delay(500);
-        digitalWrite(25, LOW);
-        delay(500);
+    VL53L0X_RangingMeasurementData_t measure;
+    Serial.print("Reading...");
+    lox.rangingTest(&measure, false);
+    if (measure.RangeStatus != 4)
+    {
+        Serial.print(measure.RangeMilliMeter);
+        Serial.println("mm");
+    }
+    else
+    {
+        Serial.println("Out of range");
+    }
+    delay(100);
 }
 
