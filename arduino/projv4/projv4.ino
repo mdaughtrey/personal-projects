@@ -1,3 +1,6 @@
+#include "stepper.h"
+
+//Stepper stepper;
 // #include <WProgram.h>
 // 
 // #include <avrlibtypes.h>
@@ -8,118 +11,129 @@
 // 11: PD6 Reset
 //  8: PB0 Pretension
 //  4: PB4 Next
-#define PC_REWIND 3
-#define PD_RESET 6
-#define PB_PRETENSION 0
-#define PB_NEXT 4
-uint8_t pbState = 0xff;
-uint8_t pcState = 0xff;
-uint8_t pdState = 0xff;
+//#define PC_REWIND 3
+//#define PD_RESET 6
+//#define PB_PRETENSION 0
+//#define PB_NEXT 4
+//uint8_t pbState = 0xff;
+//uint8_t pcState = 0xff;
+//uint8_t pdState = 0xff;
+//
+//#define PB_LAMP 1
+//#define PIN_MOTOR 10  // PB2
+////#define PB_SIGTRIPLE 5
+//
+//#define PC_TENSIONSENSOR 0 // PC0
+//#define PC_OPTOINT 1 // PC1 PCINT9
+////#define PC_SHUTTER 2
+//
+////#define PD_SHUTTERREADY 7
+//#define OPTOINT_TIMEOUT 10000
+//
+//#define MOTOR_PRETENSION_NEXT 40 
+//#define MOTOR_PRETENSION_MAX 70 
+//#define MOTOR_PRETENSION_FF 20
+//#define MOTOR_REWIND_FAST 100 
+//#define MOTOR_REWIND_SLOW 70 
+//#define MOTOR_OFF 0 
+//#define PRETENSIONDELAY 200
+//#define LAMPDEFER 0
+//#define LAMP_TIMEOUT_MS 3000
+//#define NEXT_FRAME_TIMEOUT_MS 8000
+//#define SENSORTHRESHOLD 200
+//#define LAMP_OFF PORTB &= ~_BV(PB_LAMP)
+//#define LAMP_ON PORTB |= _BV(PB_LAMP)
+////#define SHUTTER_READY PIND & _BV(PD_SHUTTERREADY)
+//#define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
+////#define SHUTTERINT_ON { PCMSK2 |= _BV(PCINT22); PCICR |= _BV(PCIE2); }
+////#define SHUTTERINT_OFF { PCMSK2 &= ~_BV(PCINT22); PCICR &= ~_BV(PCIE2); }
+////#define OPTOINT_ON { PCMSK1 |= _BV(PCINT9; PCICR |= _BV(PCIE1); }
+////#define OPTOINT_OFF { PCMSK1 &= ~_BV(PCINT9; PCICR &= ~_BV(PCIE1); }
 
-#define PB_LAMP 1
-#define PIN_MOTOR 10  // PB2
-//#define PB_SIGTRIPLE 5
+// typedef enum
+// { 
+//         NONE = 0,           
+//         //FRAMESTOP,          
+//         SENSORSTART,        
+// //        OPTOINT_CHANGED,    
+//         STOPONFRAMEZERO,    
+//         PRETENSION,
+//         OPTOINT_HALF,       
+//         OPTOINT_FULL,       
+// //        OPTOINT_REVERSE,    
+// //        OPTOINT_FULL2
+// } WaitFor;
+// 
+// typedef enum
+// {
+//     FILM_NONE = 0,
+//     FILM_8MM,
+//     FILM_SUPER8
+// } FilmMode;
 
-#define PC_TENSIONSENSOR 0 // PC0
-#define PC_OPTOINT 1 // PC1 PCINT9
-//#define PC_SHUTTER 2
+//void setMotor(uint8_t set); void lampOn();
+//void lampOff();
+//void lampCheck();
+//void p4_reinit();
+//
+const char help[] = "Help:\n" \
+    "Some Help\r";
 
-//#define PD_SHUTTERREADY 7
-#define OPTOINT_TIMEOUT 10000
-
-#define MOTOR_PRETENSION_NEXT 40 
-#define MOTOR_PRETENSION_MAX 70 
-#define MOTOR_PRETENSION_FF 20
-#define MOTOR_REWIND_FAST 100 
-#define MOTOR_REWIND_SLOW 70 
-#define MOTOR_OFF 0 
-#define PRETENSIONDELAY 200
-#define LAMPDEFER 0
-#define LAMP_TIMEOUT_MS 3000
-#define NEXT_FRAME_TIMEOUT_MS 8000
-#define SENSORTHRESHOLD 200
-#define LAMP_OFF PORTB &= ~_BV(PB_LAMP)
-#define LAMP_ON PORTB |= _BV(PB_LAMP)
-//#define SHUTTER_READY PIND & _BV(PD_SHUTTERREADY)
-#define SENSORVALUEINIT { sensorValue = PINC & _BV(PC_OPTOINT); }
-//#define SHUTTERINT_ON { PCMSK2 |= _BV(PCINT22); PCICR |= _BV(PCIE2); }
-//#define SHUTTERINT_OFF { PCMSK2 &= ~_BV(PCINT22); PCICR &= ~_BV(PCIE2); }
-//#define OPTOINT_ON { PCMSK1 |= _BV(PCINT9; PCICR |= _BV(PCIE1); }
-//#define OPTOINT_OFF { PCMSK1 &= ~_BV(PCINT9; PCICR &= ~_BV(PCIE1); }
-
-typedef enum
-{ 
-        NONE = 0,           
-        //FRAMESTOP,          
-        SENSORSTART,        
-//        OPTOINT_CHANGED,    
-        STOPONFRAMEZERO,    
-        PRETENSION,
-        OPTOINT_HALF,       
-        OPTOINT_FULL,       
-//        OPTOINT_REVERSE,    
-//        OPTOINT_FULL2
-} WaitFor;
-
-typedef enum
-{
-    FILM_NONE = 0,
-    FILM_8MM,
-    FILM_SUPER8
-} FilmMode;
-
-void setMotor(uint8_t set); void lampOn();
-void lampOff();
-void lampCheck();
-void p4_reinit();
-
-uint16_t parameter = 0;
-volatile uint8_t intCount = 0;
-volatile uint8_t lastIntCount = 0;
-uint8_t verbose = 0;
-uint8_t motorPulse = 255;
-uint8_t pretension = MOTOR_PRETENSION_NEXT;
-volatile uint32_t optoIntTimeout;
-uint32_t cameraBusyTimeout;
-uint8_t sensorValue;
-uint8_t waitingFor(NONE);
+//uint16_t parameter = 0;
+//volatile uint8_t intCount = 0;
+//volatile uint8_t lastIntCount = 0;
+//uint8_t verbose = 0;
+//uint8_t motorPulse = 255;
+//uint8_t pretension = MOTOR_PRETENSION_NEXT;
+//volatile uint32_t optoIntTimeout;
+//uint32_t cameraBusyTimeout;
+//uint8_t sensorValue;
+//uint8_t waitingFor(NONE);
 uint8_t lastCommand;
-uint8_t filmMode = FILM_NONE;
-uint8_t stepperDelay = 1;
+//uint8_t filmMode = FILM_NONE;
+//uint8_t stepperDelay = 1;
 
-void setMotor(uint8_t set)
-{
-    motorPulse = set;
-//    analogWrite(PIN_MOTOR, motorPulse);
-}
+const int motorPin1 = 8;
+const int motorPin2 = 9;
+const int motorPin3 = 10;
+const int motorPin4 = 11;
+const int numSteps = 8;
+const int stepsLookup[8] = { 0b1000, 0b1100, 0b0100, 0b0110, 0b0010, 0b0011, 0b0001, 0b1001 };
+int stepCounter = 0;
 
-void lampOn()
-{
-//    LAMP_ON;
-}
-
-void lampOff()
-{
-//    LAMP_OFF;
-}
-
-#define NOTRANSITION 0
-#define FULLFRAME 1
-#define HALFFRAME 2
-
-uint8_t halfFrameTransition()
-{
-    sensorValue = !sensorValue;
-    optoIntTimeout = millis();
-    return HALFFRAME; // half frame transition
-}
-
-uint8_t fullFrameTransition()
-{
-    sensorValue = !sensorValue;
-    //optoIntTimeout = 0;
-    return FULLFRAME; // full frame transition
-}
+//jvoid setMotor(uint8_t set)
+//j{
+//j    motorPulse = set;
+//j//    analogWrite(PIN_MOTOR, motorPulse);
+//j}
+//j
+//jvoid lampOn()
+//j{
+//j//    LAMP_ON;
+//j}
+//j
+//jvoid lampOff()
+//j{
+//j//    LAMP_OFF;
+//j}
+//j
+//j#define NOTRANSITION 0
+//j#define FULLFRAME 1
+//j#define HALFFRAME 2
+//j
+//juint8_t halfFrameTransition()
+//j{
+//j    sensorValue = !sensorValue;
+//j    optoIntTimeout = millis();
+//j    return HALFFRAME; // half frame transition
+//j}
+//j
+//juint8_t fullFrameTransition()
+//j{
+//j    sensorValue = !sensorValue;
+//j    //optoIntTimeout = 0;
+//j    return FULLFRAME; // full frame transition
+//j}
 //
 // 0 = no transition
 // 1 = full frame
@@ -189,6 +203,7 @@ void setup ()
 { 
     Serial.begin(115200);
     Serial.println("setup");
+    Stepper::init();
 //    Serial.begin(57600);
 //    Serial.println("Init Start");
 //    lastCommand = 0;
@@ -226,11 +241,39 @@ bool buttonTest(uint8_t pins, uint8_t * state, uint8_t testBit)
     return false;
 }
 
-uint8_t lastState = 0;
+void handleCommand()
+{
+    lastCommand = Serial.read();
+    switch (lastCommand)
+    {
+        case 'l':
+            Stepper::ccw();
+            break;
+
+        case 'r':
+            Stepper::cw();
+            break;
+
+        case ' ':
+            Stepper::stop();
+            break;
+
+
+        default:
+            Serial.println(help);
+            break;
+    }
+}
+
+// uint8_t lastState = 0;
 void loop ()
 {
-	Serial.println("FRAMESTOP");
-	delay(1000);
+    if (Serial.available())
+    {
+        handleCommand();
+    }
+    Stepper::loop();
+}
 //  //    if(!lastState)
 //  //    {
 //  //        if(PINC & _BV(PC_OPTOINT)) { Serial.print("0"); lastState = 1; }
@@ -535,5 +578,5 @@ void loop ()
 //              }
 //              break;
 //      }
-    return;
-}
+//    return;
+//}

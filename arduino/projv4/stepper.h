@@ -1,17 +1,28 @@
-#ifndef INCLUDE_STEPPER
-#define INCLUDE_STEPPER
+//#ifndef INCLUDE_STEPPER
+//#define INCLUDE_STEPPER
 
-void stepperInit(void);
-//void stepperDelay(s08 delta);
-void stepperPoll(u08 stepDelay);
-void stepperStop(void);
-void stepperGo();
-void coilAForward(void);
-void coilABackward(void);
-void coilAOff(void);
-void coilBForward(void);
-void coilBBackward(void);
-void coilBOff(void);
+#include "AsyncStepperLib.h"
 
-#endif // INCLUDE_STEPPER
+namespace Stepper 
+//class Stepper
+{
+//public:
+//    Stepper();
+//    static Stepper * Get();
+    void setOutput(int step);
+    void rotateCW();
+    void rotateCCW();
+    void loop();
+    void ccw();
+    void cw();
+    void stop();
+    void clockwise();
+    void anticlockwise();
+//protected:
+//    AsyncStepper stepper1;
+    void init();
+}; // namespace Stepper
+
+
+//#endif // INCLUDE_STEPPER
 
