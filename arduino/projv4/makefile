@@ -4,6 +4,7 @@ PORT=/dev/ttyACM0
 PLATFORM=rp2040:rp2040:generic
 IMAGE=${PROJ}.ino.bin
 UF2=${PROJ}.ino.uf2
+ELF=${PROJ}.ino.elf
 ACLI=~/acli/bin/arduino-cli
 MOUNT=/media/rp2040
 
@@ -29,7 +30,7 @@ b:
 
 # Upload
 u: 
-	arduino-cli upload -p ${PORT}
+	${ACLI} upload  -b ${PLATFORM} -p ${PORT} -i  ${UF2}
 #	stty -F ${PORT} 1200
 #	bossac --port=${PORT} -e -w -v -b ${IMAGE}
 

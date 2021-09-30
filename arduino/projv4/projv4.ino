@@ -1,4 +1,14 @@
+#include <stdint.h>
 #include "stepper.h"
+// +-----------------------------------------------------
+// | X.xxxx G YORT Stepper
+// | X Gnd
+// | X B0 GP2
+// | X B1 GP3
+// | X B2 GP4
+// | X B3 GP5
+// +-----------------------------------------------------
+
 
 //Stepper stepper;
 // #include <WProgram.h>
@@ -79,6 +89,10 @@
 const char help[] = "Help:\n" \
     "Some Help\r";
 
+struct {
+    uint8_t stepDelay;
+    int param;
+} config;
 //uint16_t parameter = 0;
 //volatile uint8_t intCount = 0;
 //volatile uint8_t lastIntCount = 0;
@@ -90,16 +104,21 @@ const char help[] = "Help:\n" \
 //uint8_t sensorValue;
 //uint8_t waitingFor(NONE);
 uint8_t lastCommand;
+//uint8_t stepDelay;
 //uint8_t filmMode = FILM_NONE;
 //uint8_t stepperDelay = 1;
 
-const int motorPin1 = 8;
-const int motorPin2 = 9;
-const int motorPin3 = 10;
-const int motorPin4 = 11;
-const int numSteps = 8;
-const int stepsLookup[8] = { 0b1000, 0b1100, 0b0100, 0b0110, 0b0010, 0b0011, 0b0001, 0b1001 };
-int stepCounter = 0;
+// const int motorPin1 = 8;
+// const int motorPin2 = 9;
+// const int motorPin3 = 10;
+// const int motorPin4 = 11;
+// const int numSteps = 8;
+// const int stepsLookup[8] = { 0b1000, 0b1100, 0b0100, 0b0110, 0b0010, 0b0011, 0b0001, 0b1001 };
+// int stepCounter = 0;
+const uint8_t ButtonPin0 = 2;
+const uint8_t ButtonPin1 = 3;
+const uint8_t ButtonPin2 = 4;
+const uint8_t ButtonPin3 = 5;
 
 //jvoid setMotor(uint8_t set)
 //j{
@@ -139,8 +158,8 @@ int stepCounter = 0;
 // 1 = full frame
 // 2 = half frame
 //
-uint8_t isOptoTransition()
-{
+// uint8_t isOptoTransition()
+// {
 //    uint32_t now = millis();
 //    if (0 == optoIntTimeout)
 //    {
@@ -176,11 +195,11 @@ uint8_t isOptoTransition()
 //            return halfFrameTransition();
 //        }
 //    }
-    return 0; // no transition
-}
-
-void p4_reinit()
-{
+//    return 0; // no transition
+// }
+ 
+// void p4_reinit()
+// {
 //    uint8_t ii;
 ////    Serial.println("Reset");
 //    stepperInit();
@@ -197,13 +216,49 @@ void p4_reinit()
 //        lampOff();
 //        delay(80);
 //    }
+//}
+
+unsigned long isr1count;
+unsigned long isr2count;
+
+void isr1()
+{
+    isr1count++;
+}
+
+void isr2()
+{
+    isr2count++;
+}
+
+void encoder_init()
+{
+    pinMode(1, INPUT_PULLUP);
+    pinMode(2, INPUT_PULLUP);
+
+    isr1count = 0;
+    isr2count = 0;
+
+    attachInterrupt(digitalPinToInterrupt(1), isr1, FALLING);
+    attachInterrupt(digitalPinToInterrupt(2), isr2, FALLING);
+}
+
+void buttonInit()
+{
+    pinMode(ButtonPin0, INPUT_PULLUP);
+    pinMode(ButtonPin1, INPUT_PULLUP);
+    pinMode(ButtonPin2, INPUT_PULLUP);
+    pinMode(ButtonPin3, INPUT_PULLUP);
 }
 
 void setup ()
 { 
     Serial.begin(115200);
     Serial.println("setup");
-    Stepper::init();
+    config.stepDelay = 2;
+    stepper::init();
+    buttonInit();
+//    encoder_init();
 //    Serial.begin(57600);
 //    Serial.println("Init Start");
 //    lastCommand = 0;
@@ -226,19 +281,30 @@ void setup ()
 uint8_t lastReportedState(255);
 #endif // LOGSTATE
 
-bool buttonTest(uint8_t pins, uint8_t * state, uint8_t testBit)
+void buttonPoll()
 {
-//    if (!(pins & _BV(testBit)))
-//    {
-//        if (*state & _BV(testBit))
-//        { 
-//            *state &= ~_BV(testBit);
-//            return true;
-//        }
-//        return false;
-//    }
-//    *state |= _BV(testBit); 
-    return false;
+    if (0 == digitalRead(ButtonPin0))
+    {
+        Serial.println("Button0");
+    }
+    if (0 == digitalRead(ButtonPin1))
+    {
+        Serial.println("Button1");
+    }
+    if (0 == digitalRead(ButtonPin2))
+    {
+        Serial.println("Button2");
+    }
+    if (0 == digitalRead(ButtonPin3))
+    {
+        Serial.println("Button3");
+    }
+}
+
+void dumpConfig()
+{
+    Serial.print("stepDelay: "); Serial.println(config.stepDelay);
+    Serial.print("param: "); Serial.println(config.param);
 }
 
 void handleCommand()
@@ -246,20 +312,25 @@ void handleCommand()
     lastCommand = Serial.read();
     switch (lastCommand)
     {
-        case 'l':
-            Stepper::ccw();
-            break;
+        case '?': dumpConfig(); break;
+        case '-': config.param = 0;; break;
+        case ',': config.stepDelay--; break;
+        case '.': config.stepDelay++; break;
 
-        case 'r':
-            Stepper::cw();
-            break;
+        case '[': stepper::ccw(); break;
+        case ']': stepper::cw(); break;
 
+        case 'D': config.stepDelay = config.param; break; 
         case ' ':
-            Stepper::stop();
+            stepper::stop();
             break;
-
-
+ 
         default:
+            if (lastCommand >= '0' & lastCommand <= '9')
+            {
+                config.param *= 10;
+                config.param += lastCommand - '0';
+            }
             Serial.println(help);
             break;
     }
@@ -272,7 +343,15 @@ void loop ()
     {
         handleCommand();
     }
-    Stepper::loop();
+//    delay(10);
+    stepper::poll(config.stepDelay);
+    buttonPoll();
+    //Stepper::loop();
+//    Serial.print("ISR1: ");
+//    Serial.print(isr1count);
+//    Serial.print("ISR2: ");
+//    Serial.println(isr2count);
+
 }
 //  //    if(!lastState)
 //  //    {

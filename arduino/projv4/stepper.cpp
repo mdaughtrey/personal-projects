@@ -1,70 +1,68 @@
-#include "AsyncStepperLib.h"
-#include "stepper.h"
+#include <stdint.h>
+#include <Arduino.h>
 
-namespace Stepper {
-const int motorPin1 = 24;
-const int motorPin2 = 25;
-const int motorPin3 = 26;
-const int motorPin4 = 27;
-const int numSteps = 8;
-const int stepsLookup[8] = { 0b1000, 0b1100, 0b0100, 0b0110, 0b0010, 0b0011, 0b0001, 0b1001 };
-int stepCounter = 0;
-const int stepsPerRevolution = 4076;
-
-AsyncStepper stepper1(stepsPerRevolution, clockwise, anticlockwise);
-//void jumpCW()
-//{
-//    Stepper::Get()->clockwise();
-//}
-//
-//void jumpCCW()
-//{
-//    Stepper::Get()->anticlockwise();
-//}
-
-//Stepper::Stepper()
-//    : stepper1(stepsPerRevolution, Stepper::clockwise, Stepper::anticlockwise)
-////        [](Stepper *self) {Stepper::clockwise(self); },
-////        [](Stepper *self) {Stepper::anticlockwise(self); })
-//{
-//    init();
-//}
-
-void clockwise()
+namespace stepper
 {
-    stepCounter++;
-    if (stepCounter >= numSteps) stepCounter = 0;
-    setOutput(stepCounter);
+
+// const uint8_t pinControlF[] = { // Fullstep
+// 0b0000,
+// 0b0010,
+// 0b0100,
+// 0b0001,
+// 0b1000};
+
+const uint8_t pinControl[] = { // Halfstep
+0b0000,
+0b1010,
+0b0010,
+0b0110,
+0b0100,
+0b0101,
+0b0001,
+0b1001,
+0b1000};
+
+const uint8_t numControl = sizeof(pinControl)/sizeof(pinControl[0]);
+
+const int motorPin4 = 18;
+const int motorPin3 = 19;
+const int motorPin2 = 20;
+const int motorPin1 = 21;
+int8_t delta;
+uint8_t stepIndex;
+uint32_t lastMove;
+
+void poll(uint8_t stepDelay)
+{
+    if (((millis() - lastMove) < stepDelay) || !stepIndex)
+    {
+        return;
+    }
+
+    lastMove = millis();
+    digitalWrite(motorPin1, pinControl[stepIndex] & 0b0001);
+    digitalWrite(motorPin2, pinControl[stepIndex] & 0b0010);
+    digitalWrite(motorPin3, pinControl[stepIndex] & 0b0100);
+    digitalWrite(motorPin4, pinControl[stepIndex] & 0b1000);
+    stepIndex += delta;
+    if (stepIndex == numControl)
+    {
+        stepIndex = 1;
+    }
+    else if (stepIndex == 0)
+    {
+        stepIndex = numControl -1;
+    }
 }
 
-void anticlockwise()
+void stop(void)
 {
-    stepCounter--;
-    if (stepCounter < 0) stepCounter = numSteps - 1;
-    setOutput(stepCounter);
-}
-
-void setOutput(int step)
-{
-    digitalWrite(motorPin1, bitRead(stepsLookup[step], 0));
-    digitalWrite(motorPin2, bitRead(stepsLookup[step], 1));
-    digitalWrite(motorPin3, bitRead(stepsLookup[step], 2));
-    digitalWrite(motorPin4, bitRead(stepsLookup[step], 3));
-}
-
-// AsyncStepper stepper1(stepsPerRevolution,
-//         []() {clockwise(); },
-//         []() {anticlockwise(); }
-// );
-
-void rotateCW()
-{
-    stepper1.Rotate(90, AsyncStepper::CW, rotateCCW);
-}
-
-void rotateCCW()
-{
-    stepper1.Rotate(90, AsyncStepper::CCW, rotateCW);
+    digitalWrite(motorPin1, 0);
+    digitalWrite(motorPin2, 0);
+    digitalWrite(motorPin3, 0);
+    digitalWrite(motorPin4, 0);
+    delta = 0;
+    stepIndex = 0;
 }
 
 void init()
@@ -73,40 +71,25 @@ void init()
     pinMode(motorPin2, OUTPUT);
     pinMode(motorPin3, OUTPUT);
     pinMode(motorPin4, OUTPUT);
-
-    stepper1.SetSpeedRpm(10);
-//    stepper1.RotateContinuos(AsyncCCW);
+    stop();
+    lastMove = millis();
 }
 
 void cw()
 {
-    stepper1.RotateContinuos(AsyncStepper::CW);
+    delta = -1;
+    stepIndex = numControl - 1;
 }
 
 void ccw()
 {
-    stepper1.RotateContinuos(AsyncStepper::CCW);
+    delta = 1;
+    stepIndex = 1;
 }
 
-void stop()
-{
-    stepper1.Stop();
-}
-
-void loop()
-{
-    stepper1.Update();
-}
-
-// Statics
-//Stepper * Get()
-//{
-//    static Stepper * self;
-//    if (NULL == self)
-//    {
-//        self = new Stepper();
-//    }
-//    return self;
-//}
-
-} // namespace Stepper
+// void stepperGo()
+// {
+//     stepIndex = numControl - 1;
+// }
+//
+} // namespace stepper
