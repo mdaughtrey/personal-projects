@@ -1,21 +1,26 @@
 #include <stdint.h>
-//#include <iostream>
-//#include <string>
-//#include <sstream>
 #include "stepper.h"
 const char help[] = "Help:\n" \
     "Some Help\r";
 
+typedef enum
+{
+    NONE = 0,
+    HUNT
+} ZeroState;
+
 struct {
     uint8_t stepDelay;
-    uint8_t param;
-    uint8_t stopAt;
+     int8_t param;
+    uint8_t encoderLimit;
     uint8_t tension;
     uint8_t verbose;
+    int16_t  stepCount;
 } config;
 
 uint8_t lastCommand;
 uint8_t ledState;
+uint8_t zeroState;
 int ledTime = 0;
 
 const uint8_t ButtonPin0 = 2;
@@ -49,10 +54,9 @@ void isr1()
         encoderPos++;
     }
 
-    if (config.stopAt && (isr1count > config.stopAt))
+    if (config.encoderLimit && (encoderPos > config.encoderLimit))
     {
-//        detachInterrupt(digitalPinToInterrupt(EncoderPin0));
-        stepper::stop();
+        config.stepCount = 0;
     }
 }
 
@@ -63,13 +67,6 @@ void isr2()
     {
         encoderPos--;
     }
-//    if (config.stopAt && (isr1count > config.stopAt))
-//    {
-//        detachInterrupt(digitalPinToInterrupt(EncoderPin0));
-//        stepper::stop();
-//        config.stopAt = 0;
-//        isr1count %= config.stopAt;
-//    }
 }
 
 
@@ -78,8 +75,6 @@ void encoder_init()
     pinMode(EncoderPin0, INPUT_PULLUP);
     pinMode(EncoderPin1, INPUT_PULLUP);
 
-    isr1count = 0;
-    isr2count = 0;
     encoderPos = 0;
 }
 
@@ -111,7 +106,17 @@ void setup ()
     encoder_init();
     outputInit();
     ledState = 0;
+    zeroState = NONE;
+    config.stepCount = 0;
     pinMode(LedPin, OUTPUT);
+    attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, FALLING);
+    attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, FALLING);
+
+    for (uint8_t ii = 0; ii < 11; ii++)
+    {
+        lamp(ii % 2);
+        delay(100);
+    }
     Serial.println("{State:Ready}");
 }
 
@@ -147,12 +152,14 @@ void buttonPoll()
 void dumpConfig()
 {
     Serial.print("stepDelay: "); Serial.println(config.stepDelay);
-    Serial.print("stopAt: "); Serial.println(config.stopAt);
+    Serial.print("encoderLimit: "); Serial.println(config.encoderLimit);
+    Serial.print("stepCount: "); Serial.println(config.stepCount);
     Serial.print("param: "); Serial.println(config.param);
     Serial.print("isr1count: "); Serial.println(isr1count);
     Serial.print("isr2count: "); Serial.println(isr2count);
     Serial.print("encoderPos: "); Serial.println(encoderPos);
     Serial.print("tension: "); Serial.println(config.tension);
+    Serial.println("");
 }
 
 void handleCommand()
@@ -160,55 +167,62 @@ void handleCommand()
     lastCommand = Serial.read();
     switch (lastCommand)
     {
+        case 'i': setup(); break;
+        case 'c': config.param = 0; break;
+        case 'd': config.stepDelay = config.param;
+            config.param = 0;
+            break;
+
         case 'v': config.verbose = 1; break;
         case 'V': config.verbose = 0; break;
 
         case '?': dumpConfig(); break;
-        case '-': config.param = 0;; break;                     // reset input param
+        case '-': config.param *= -1;; break;                     // reset input param
 
-        case ']': config.stopAt = 1;
-            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, FALLING);
-            stepper::cw(); break;      // Jog forward
+        case '<': 
+            stepper::cw(); 
+            break;
 
-        case '[': config.stopAt = 1;
-            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, FALLING);
-            stepper::ccw(); break;     // Job back
+        case '>':
+            stepper::ccw(); 
+            break;
 
-//        case 'f': config.stopAt = 0; stepper::cw(); break;      // Continuous forward
-//        case 'b': config.stopAt = 0; stepper::ccw(); break;     // Continuous back
+        case '.': 
+            stepper::stop();
+            break;
 
-        case 'n': //config.stopAt = 27;
-            isr1count %= config.stopAt;
-            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, FALLING);
-            stepper::ccw(); break;     // Next
+        case 'n': 
+            encoderPos %= config.encoderLimit;
+            break;
 
-        case 'S':                                               // Stepper delay
-            config.stepDelay = config.param;
+        case 's':                                               // Stepper delay
+            config.stepCount = config.param;
             config.param = 0;
             break; 
 
-        case 'A':                                               // stop At
-            config.stopAt = config.param; 
-            isr1count = 0;
-            break;
+        case 'e':                                               // Stepper delay
+            config.encoderLimit = config.param;
+            config.param = 0;
+            break; 
 
         case 'm': // mark
             encoderPos = 0;
             break;
 
-        case ' ':                                               // Reset
-            detachInterrupt(digitalPinToInterrupt(EncoderPin0));
+        case ' ':
             stepper::stop();
             lamp(0);
             fan(0);
             rewindMotor(0);
             isr1count = 0;
-            config.stopAt = 0;
+            isr2count = 0;
+            config.stepCount = 0;
             break;
 
         case 't':                                               // rewind tension
             config.tension = config.param;
-            rewindMotor(config.param); 
+            config.param = 0;
+            rewindMotor(config.tension); 
             fan(1); 
             break;
 
@@ -217,8 +231,8 @@ void handleCommand()
         case 'l': lamp(1); break;                               // Lamp on
         case 'L': lamp(0); break;                               // Lamp off
 
-        case 'c': fan(1); break;                                // Cooling fan on
-        case 'L': fan(0); break;                                // Cooling fan off
+        case 'f': fan(1); break;                                // Cooling fan on
+        case 'F': fan(0); break;                                // Cooling fan off
         case 'z': zeroState = HUNT; break;
  
         default:                                                // Load parameters
@@ -233,11 +247,10 @@ void handleCommand()
 
 void zeroPoll()
 {
-    if (HUNT != zeroState) return;
+    if (NONE == zeroState) return;
     if (encoderPos > 1) stepper::ccw();
     else if (encoderPos < -1) stepper::cw();
     else zeroState = NONE;
-    break;
 }
 
 void ledPoll()
@@ -256,7 +269,14 @@ void loop ()
     {
         handleCommand();
     }
-    stepper::poll(config.stepDelay);
+    if (config.stepCount > 0)
+    {
+        config.stepCount -= stepper::poll(config.stepDelay);
+    }
+    if (config.stepCount < 0)
+    {
+        stepper::poll(config.stepDelay);
+    }
     buttonPoll();
     ledPoll();
     zeroPoll();
