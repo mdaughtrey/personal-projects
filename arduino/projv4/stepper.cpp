@@ -32,9 +32,13 @@ int8_t delta;
 uint8_t stepIndex;
 uint32_t lastMove;
 
+int8_t getdelta() { return delta; }
+uint8_t getstepindex() { return stepIndex; }
+uint32_t getlastmove() { return lastMove; }
+
 uint8_t poll(uint8_t stepDelay)
 {
-    if (((millis() - lastMove) < stepDelay) || !stepIndex)
+    if (((millis() - lastMove) < (uint32_t)stepDelay) | !stepIndex)
     {
         return 0;
     }
@@ -45,8 +49,6 @@ uint8_t poll(uint8_t stepDelay)
     digitalWrite(motorPin3, pinControl[stepIndex] & 0b0100);
     digitalWrite(motorPin4, pinControl[stepIndex] & 0b1000);
     stepIndex += delta;
-//    Serial.print("poll ");
-//    Serial.println(stepIndex);
     if (stepIndex == numControl)
     {
         stepIndex = 1;

@@ -30,6 +30,7 @@ RUN ~/acli/bin/arduino-cli lib install 'Adafruit GFX Library'
 RUN ~/acli/bin/arduino-cli lib install 'Adafruit APDS9960 Library'
 RUN ~/acli/bin/arduino-cli lib install gxepd2
 RUN ~/acli/bin/arduino-cli lib install Adafruit_VL53L0X
+RUN ~/acli/bin/arduino-cli lib install AsyncStepperLib
 COPY arduino-cli.patch0 /tmp/arduino-cli.patch0
 RUN cd ~/.arduino15 && patch -p0 arduino-cli.yaml /tmp/arduino-cli.patch0
 RUN ~/acli/bin/arduino-cli core update-index
@@ -40,7 +41,7 @@ RUN git config --global user.email "mdaughtrey@gmail.com"
 RUN git config --global user.name mdaughtrey
 # https://roboticsbackend.com/arduino-stl-library/
 RUN cd ~/Arduino/libraries && git clone https://github.com/maniacbug/StandardCplusplus.git
-ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
+#ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
 #COPY ~/personal-projects/bin/vimrc ~/.vimrc
 #COPY ~/personal-projects/bin/tmux.conf ~/.tmux.conf
 ## https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
