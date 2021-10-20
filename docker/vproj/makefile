@@ -7,7 +7,7 @@ all:
 	${DOCKER} build -f i${NAME}.Dockerfile --tag=${NAME} .
 
 run:
-	${DOCKER} run -dh ${NAME} --name ${NAME} --expose 22 -p5000:5000 -it -v ~/dev/personal-projects/:/personal-projects -v /mnt/p/vproj:/media/sf_vproj -v /mnt/c/:/c ${NAME}:latest 
+	${DOCKER} run -dh ${NAME} --name ${NAME} --expose 22 -p5000:5000 -it -v /mnt/c/vproj:/media/currentscan -v ~/dev/personal-projects/:/personal-projects -v /mnt/p/vproj:/media/sf_vproj -v /mnt/c/:/c ${NAME}:latest 
 
 attach:
 	docker attach ${NAME}
