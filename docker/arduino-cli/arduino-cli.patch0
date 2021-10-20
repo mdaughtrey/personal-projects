@@ -1,0 +1,13 @@
+--- arduino-cli.yaml	2021-08-15 15:24:31.000000000 +0000
++++ arduino-cli.yaml0	2021-08-15 16:07:05.258483177 +0000
+@@ -1,5 +1,8 @@
+ board_manager:
+-  additional_urls: []
++  additional_urls:
++    - https://arduino.esp8266.com/stable/package_esp8266com_index.json
++    - https://dl.espressif.com/dl/package_esp32_index.json
++    - https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+ daemon:
+   port: "50051"
+ directories:
+

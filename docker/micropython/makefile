@@ -1,12 +1,11 @@
-IMAGE=b163ddd353c9
-NAME=vproj
+NAME=micropython-esp8266
 DOCKER=docker
 
 all:
-	${DOCKER} build -f i${NAME}.Dockerfile --tag=${NAME} .
+	${DOCKER} build -f ${NAME}.Dockerfile --tag=${NAME} .
 
 run:
-	${DOCKER} run -dh ${NAME} --name ${NAME} --expose 22 -p5000:5000 -it -v /mnt/c/vproj:/media/currentscan -v ~/dev/personal-projects/:/personal-projects -v /mnt/p/vproj:/media/sf_vproj -v /mnt/c/:/c ${NAME}:latest 
+	${DOCKER} run -dh ${NAME} --name ${NAME} --expose 22 -it ${NAME}:latest 
 
 hqtest:
 	${DOCKER} run -dh ${NAME} --name ${NAME} -it -v ~/personal-projects/:/personal-projects -v ~/Documents/hqtest:/hqtest ${NAME}:latest 
@@ -19,11 +18,11 @@ stop:
 	${DOCKER} stop ${NAME}
 	${DOCKER} rm ${NAME}
 
-tag:
-	${DOCKER} tag ${IMAGE} mdaughtrey/projects:${TAG}
+#tag:
+#	${DOCKER} tag ${IMAGE} mdaughtrey/projects:${TAG}
 
 push:
 	${DOCKER} push mdaughtrey/projects:${TAG}
 
 build:
-	${DOCKER} build -f ${NAME}.Dockerfile . --tag=vproj 
+	${DOCKER} build -f ${NAME}.Dockerfile . --tag=${NAME}
