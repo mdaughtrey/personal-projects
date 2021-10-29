@@ -1,8 +1,6 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include "stepper.h"
-const char help[] = "Help:\n" \
-    "Some Help\r";
 
 typedef enum
 {
@@ -13,8 +11,10 @@ typedef enum
 
 struct {
     uint8_t stepDelay;
+    uint8_t slowstepdelay;
     int16_t param;
     uint16_t encoderLimit;
+    uint16_t slowEncoderThreshold;
     uint8_t tension;
     uint8_t verbose;
     int16_t stepCount;
@@ -51,6 +51,8 @@ void cw() { config.cw = 1; stepper::cw(); }
 void ccw() { config.cw = 0; stepper::ccw(); }
 void stepdelay() { config.stepDelay = config.param; config.param = 0;}
 void stepdelay(uint8_t sd) { config.stepDelay = sd; config.param = 0;}
+void slowstepdelay() { config.slowstepdelay = config.param; config.param = 0;}
+void slowstepdelay(uint8_t sd) { config.slowstepdelay = sd; config.param = 0;}
 void stepcount() { config.stepCount = config.param; config.param = 0; }
 void stepcount(int16_t sc) { config.stepCount = sc; config.param = 0; }
 void encoderStart() { config.encoderTime = millis(); }
@@ -83,6 +85,10 @@ void isr1()
 //        encoderPos--;
 //    }
 
+    if (config.slowEncoderThreshold && (encoderPos > config.slowEncoderThreshold))
+    {
+        stepcount(config.slowstepdelay);
+    }
     if (config.encoderLimit && (encoderPos > config.encoderLimit))
     {
         stepcount(0);
@@ -143,16 +149,21 @@ void outputInit()
 void setup ()
 { 
     Serial.begin(115200);
+    memset(&config, sizeof(config), 0);
     stepdelay(2);
+    slowstepdelay(2);
     stepper::init();
     buttonInit();
     encoder_init();
     outputInit();
     ledState = 0;
-    config.state = NONE;
     stepcount(0);
     config.rising = 1;
     ccw(); 
+    fan(0);
+    rewindMotor(0);
+    isr1count = 0;
+    isr2count = 0;
     pinMode(LedPin, OUTPUT);
     attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, config.rising ? RISING: FALLING);
     attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, config.rising ? RISING: FALLING);
@@ -168,37 +179,47 @@ void setup ()
 void buttonPoll()
 {
 
-    if (digitalRead(ButtonPin0) != buttonState[0])
+    if (digitalRead(ButtonPin0) != buttonState[0])  // Lamp
     {
-        Serial.print("Button 0: "); // Reset
+        if (buttonState[0])
+        {
+            lamp(1);
+        }
         buttonState[0] = !buttonState[0];
-        Serial.println(buttonState[0]);
     }
+
     if (digitalRead(ButtonPin1) != buttonState[1]) // Rewind
     {
-        Serial.print("Button 1: ");
+        if (buttonState[1])
+        {
+            rewindMotor(99); 
+            fan(1); 
+        }
         buttonState[1] = !buttonState[1];
-        Serial.println(buttonState[1]);
     }
-    if (digitalRead(ButtonPin2) != buttonState[2]) // 
+    if (digitalRead(ButtonPin2) != buttonState[2]) //  tension
     {
-        Serial.print("Button 2: ");
+        if (buttonState[2])
+        {
+            rewindMotor(33);
+        }
         buttonState[2] = !buttonState[2];
-        Serial.println(buttonState[2]);
-    }
-    if (digitalRead(ButtonPin3) != buttonState[3]) // 
+    } 
+    if (digitalRead(ButtonPin3) != buttonState[3]) //  Reset
     {
-        Serial.print("Button 3: ");
+        if (buttonState[3])
+        {
+            setup();
+        }
         buttonState[3] = !buttonState[3];
-        Serial.println(buttonState[3]);
     }
 }
 
 void dumpConfig(uint8_t th)
 {
     verbose(th, "-------------------------------\r\n");
-    verbose(th, "stepDelay: %u\r\nencoderLimit: %u\r\nstepcount: %d\r\nparam: %d\r\nisr1count: %u\r\nisr2count: %u\r\n",
-        config.stepDelay, config.encoderLimit, config.stepCount, config.param, isr1count, isr2count);
+    verbose(th, "stepDelay: %u\r\nslowstepdelay: %u\r\nencoderLimit: %u\r\nencoderSlowThreshold: %u\r\nstepcount: %d\r\nparam: %d\r\nisr1count: %u\r\nisr2count: %u\r\n",
+        config.stepDelay, config.slowstepdelay, config.encoderLimit, config.slowEncoderThreshold, config.stepCount, config.param, isr1count, isr2count);
 
     verbose(th, "encoderPos: %d\r\ntension: %d\r\nrising: %d\r\nencoderTO: %d\r\nencoderTime: %d\r\ncw: %d\r\nstate: %d\r\n",
         encoderPos, config.tension, config.rising, config.encoderTO, config.encoderTime, config.cw, config.state);
@@ -206,22 +227,34 @@ void dumpConfig(uint8_t th)
     verbose(th, "verbose: %d\r\n", config.verbose);
     verbose(th, "stepper::delta %d\r\nstepper::stepIndex %d\r\nstepper::lastMove %d\r\nmillis %d\r\n\r\n",
         stepper::getdelta(), stepper::getstepindex(), stepper::getlastmove(), millis());
+}
 
-
-//     Serial.print("stepDelay: "); Serial.println(config.stepDelay);
-//     Serial.print("encoderLimit: "); Serial.println(config.encoderLimit);
-//     Serial.print("stepCount: "); Serial.println(config.stepCount);
-//     Serial.print("param: "); Serial.println(config.param);
-//     Serial.print("isr1count: "); Serial.println(isr1count);
-//     Serial.print("isr2count: "); Serial.println(isr2count);
-//    Serial.print("encoderPos: "); Serial.println(encoderPos);
-//    Serial.print("tension: "); Serial.println(config.tension);
-//    Serial.print("rising: "); Serial.println(config.rising);
-//    Serial.print("encoderTO: "); Serial.println(config.encoderTO);
-//    Serial.print("encoderTime: "); Serial.println(config.encoderTime);
-//    Serial.print("cw: "); Serial.println(config.cw);
-//    Serial.print("state: "); Serial.println(config.state);
-//    Serial.println("");
+void help()
+{
+    Serial.println("?: dump config");
+    Serial.println("-: param *= -1");
+    Serial.println("<: step clockwise");
+    Serial.println(">: step counterclockwise");
+    Serial.println("c: param = 0");
+    Serial.println("d: step delay (param)");
+    Serial.println("D: slow step delay (param)");
+    Serial.println("e: encoder limit (param)");
+    Serial.println("E: slow encoder threshold (param)");
+    Serial.println("f: fan on");
+    Serial.println("F: fan off");
+    Serial.println("h: help");
+    Serial.println("<space>: reset config");
+    Serial.println("l: lamp on");
+    Serial.println("L: lamp off");
+    Serial.println("m: encoder pos = 0");
+    Serial.println("n: next (until encoderlimit)");
+    Serial.println("o: next timeout (param)");
+    Serial.println("r: ISR on rising/falling edge (param)");
+    Serial.println("s: stepcount (param)");
+    Serial.println("t: tension (param)");
+    Serial.println("T: tension 0");
+    Serial.println("v: verbose 0-2 (param)");
+    Serial.println("z: hunt");
 }
 
 void handleCommand()
@@ -241,18 +274,25 @@ void handleCommand()
 
         case 'c': config.param = 0; break;
         case 'd': stepdelay(); break;
+        case 'D': slowstepdelay(); break;
 
         case 'e':                                               // Stepper delay
             config.encoderLimit = config.param;
             config.param = 0;
             break; 
 
+        case 'E':
+            config.slowEncoderThreshold = config.param;
+            config.param = 0;
+            break;
+
         case 'f': fan(1); break;                                // Cooling fan on
         case 'F': fan(0); break;                                // Cooling fan off
+        case 'h': help(); break;
 
-        case 'i': setup(); break;
+        case ' ': setup(); break;
 
-        case 'l': lamp(1); break;                               // Lamp on
+        case 'l': lamp(1); fan(1); break;                               // Lamp on
         case 'L': lamp(0); break;                               // Lamp off
 
         case 'm': encoderPos = 0; break;
@@ -292,17 +332,17 @@ void handleCommand()
             stepcount(-1);
             break;
 
-        case ' ':
-            stepper::stop();
-            lamp(0);
-            fan(0);
-            rewindMotor(0);
-            isr1count = 0;
-            isr2count = 0;
-            stepcount(0);
-            config.state = NONE;
-            config.verbose = 0;
-            break;
+//         case ' ':
+//             stepper::stop();
+//             lamp(0);
+//             fan(0);
+//             rewindMotor(0);
+//             isr1count = 0;
+//             isr2count = 0;
+//             stepcount(0);
+//             config.state = NONE;
+//             config.verbose = 0;
+//             break;
  
         default:                                                // Load parameters
             if (lastCommand >= '0' & lastCommand <= '9')
