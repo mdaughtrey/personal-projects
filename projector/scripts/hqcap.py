@@ -236,8 +236,8 @@ def init(framenum):
     if serPort.isOpen():
         serPort.close()
     serPort.open()
-    serPort.write(b' ')
-    portWaitFor(serPort, b'{State:Ready}')
+#    serPort.write(b' ')
+#    portWaitFor(serPort, b'{State:Ready}')
     if False == config.noled:
         serPort.write(b'l')
 #    serPort.write(b'c%st' % {'8MM': 'd', 'SUPER8': 'D'}[FILMTYPE]) 
