@@ -3,6 +3,8 @@
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
+#include <list>
+#include <vector>
 
 const char WIFI_SSID[] = "yfinity";
 const char WIFI_PASS[] = "24HoursADay";
@@ -18,29 +20,19 @@ WiFiClient client;
 WS2812FX fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
 Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT);
 
+typedef Adafruit_MQTT_Subscribe Sub;
+typedef std::pair<Sub *, void (*)(Sub *) > SubPair; 
+
 auto subs = {
-    { Adafruit_MQTT_Subscribe(&mqtt, "/led"), [] (Adafruit_MQTT_Subscribe & sub) { digitalWrite(2, '0' == *sub.lastread ? LOW: HIGH); }},
-    { Adafruit_MQTT_Subscribe(&mqtt, "/leds"), [] (Adafruit_MQTT_Subscribe & sub) { fx.setMode(String((const char *)sub.lastread).toInt()); }},
-    { Adafruit_MQTT_Subscribe(&mqtt, "/speed"), [] (Adafruit_MQTT_Subscribe & sub) { fx.setSpeed(String((const char *)sub.lastread).toInt()); }},
-    { Adafruit_MQTT_Subscribe(&mqtt, "/bright"), [] (Adafruit_MQTT_Subscribe & sub) { fx.setBrightness(String((const char *)sub.lastread).toInt()); }}
+    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/led"),
+        [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); }),
+    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/leds"),
+        [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());}),
+    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/speed"),
+        [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); }),
+    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/bright"),
+        [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); })
 };
-
-
-//Adafruit_MQTT_Subscribe ledstate = Adafruit_MQTT_Subscribe(&mqtt, "/led");
-//Adafruit_MQTT_Subscribe leds = Adafruit_MQTT_Subscribe(&mqtt, "/leds");
-//Adafruit_MQTT_Subscribe speed = Adafruit_MQTT_Subscribe(&mqtt, "/speed");
-//Adafruit_MQTT_Subscribe bright = Adafruit_MQTT_Subscribe(&mqtt, "/bright");
-
-//void verbose(uint8_t threshold, const char * fmt, ...)
-// void flash2char(const __FlashStringHelper * ffmt, ...)
-// {
-// 	char fmt[256];
-// 	memset(fmt, '\0', sizeof(fmt));
-// 	strlcpy_P(fmt, (const char PROGMEM *)ffmt, sizeof(fmt));
-//     va_list args;
-//     va_start(args, ffmt);
-// 	verbose(fmt,  args);
-// }
 
 void verbose(const char * fmt, ...)
 {
@@ -162,18 +154,19 @@ void handleCommand()
             break;
 
         case 's':   // Subscribe to topic
-            rc = mqtt.subscribe(&ledstate);
-            verbose("ledstate subscribe rc %d\r\n", rc);
-            rc = mqtt.subscribe(&leds);
-            verbose("leds subscribe rc %d\r\n", rc);
-//            rc = client.connect(MQTT_SERVER, MQTT_PORT);
-//            verbose("client.connect %d\r\n", rc);
+            for (auto && [first,second]: subs)
+            {
+                rc = mqtt.subscribe(first);
+                verbose("ledstate subscribe rc %d\r\n", rc);
+            }
             break;
 
         case 'S':   // Unsubscribe from topic
-            rc = mqtt.unsubscribe(&ledstate);
-            rc = mqtt.unsubscribe(&leds);
-            verbose("unsubscribe rd %d\r\n", rc);
+            for (auto && [first, second]: subs)
+            {
+                rc = mqtt.unsubscribe(first);
+                verbose("unsubscribe rd %d\r\n", rc);
+            }
             break;
 
         case 'l': // LED on
@@ -186,45 +179,19 @@ void handleCommand()
     }
 }
 
-//uint32_t mqttping = 0;
-
 void mqttPing()
 {
     uint8_t mode;
 	if (!mqtt.connected()) return;
-//    if (millis() - mqttping > 5000)
-//	{
-//		if (!mqtt.ping())
-//		{
-//			mqtt.disconnect();
-//			mqtt.connect();
-//		}
-//        else
-//        {
-//            mqttping = millis();
-//        }
-//    }
     Adafruit_MQTT_Subscribe * sub;
     while (sub = mqtt.readSubscription(1))
     {
-        1G
-        if (sub == &ledstate)
+        for (auto && [first, second]: subs)
         {
-            verbose("ledstate %s\r\n", (char *)ledstate.lastread);
-            if ('0' == *ledstate.lastread)
+            if (sub == first)
             {
-                digitalWrite(2, HIGH);
+                second(first);
             }
-            else
-            {
-                digitalWrite(2, LOW);
-            }
-        }
-        if (sub == &leds)
-        {
-            mode = String((const char *)leds.lastread).toInt();
-            verbose("leds %d\r\n", mode);
-            fx.setMode(mode);
         }
 	}
 }
