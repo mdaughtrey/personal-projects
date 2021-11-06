@@ -31,6 +31,8 @@ RUN ~/acli/bin/arduino-cli lib install 'Adafruit APDS9960 Library'
 RUN ~/acli/bin/arduino-cli lib install gxepd2
 RUN ~/acli/bin/arduino-cli lib install Adafruit_VL53L0X
 RUN ~/acli/bin/arduino-cli lib install AsyncStepperLib
+RUN ~/acli/bin/arduino-cli lib install AsyncStepperLib 'Adafruit MQTT Library'
+RUN ~/acli/bin/arduino-cli lib install AsyncStepperLib WS2812FX
 COPY arduino-cli.patch0 /tmp/arduino-cli.patch0
 RUN cd ~/.arduino15 && patch -p0 arduino-cli.yaml /tmp/arduino-cli.patch0
 RUN ~/acli/bin/arduino-cli core update-index
