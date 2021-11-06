@@ -17,7 +17,7 @@ USER ${USER}
 RUN mkdir ~/acli
 RUN mkdir ~/tmp
 WORKDIR ~
-RUN cd ~/acli && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+rUN cd ~/acli && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 ENV PATH=~/acli/bin:${PATH}
 RUN export PATH=~/acli/bin:${PATH}
 RUN mkdir -p ~/acli/Arduino/libraries
