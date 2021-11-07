@@ -7,6 +7,7 @@
 #include <list>
 #include <vector>
 #include <string>
+#include <map>
 
 const char WIFI_SSID[] = "yfinity";
 const char WIFI_PASS[] = "24HoursADay";
@@ -48,6 +49,90 @@ void verbose(const char * fmt, ...)
     Serial.print(buffer);
 }
 
+#define CREDS_MAP
+#ifdef CREDS_MAP
+//typedef std::pair<std::string, std::string > CredPair;
+typedef std::map<std::string, std::string> Creds;
+//typedef std::vector<std::pair<std::vector<char>, std::vector<char> > > Creds;
+typedef Creds::iterator CredsIter;
+Creds creds;
+
+void serialize()
+{
+    if (creds.empty())
+    {
+        return;
+    }
+    int size = 0;
+    for (const auto & ii: creds)
+    {
+        size += ii.first.length() + ii.second.length();
+    }
+
+    if (size > 4000)
+    {
+        verbose("Cred size %d vs max 4096\r\n", size);
+        return;
+    }
+    std::vector<uint8_t> serout;
+    for (auto && [f, s]: creds)
+    {
+        serout.push_back((uint8_t)f.size());
+        serout.insert(serout.end(), f.begin(), f.end());
+        serout.push_back((uint8_t)s.size());
+        serout.insert(serout.end(), s.begin(), s.end());
+    }
+    verbose("Serialized to %d bytes\r\n", serout.size());
+    EEPROM.write(0, serout.size() >> 8);
+    EEPROM.write(1, serout.size() & 0xff);
+    for (int addr = 0; addr < serout.size(); addr++)
+    {
+        verbose("A %04x D %02X\r\n", addr, serout[addr]);
+        EEPROM.write(2 + addr, serout[addr]);
+    }
+    EEPROM.commit();
+}
+
+void deserialize()
+{
+    std::vector<uint8_t> serin;
+    std::string first("");
+    std::string second("");
+
+    int size(EEPROM.read(0) << 8 | EEPROM.read(1));
+    verbose("Size %d\r\n", size);
+    if (0 == size)
+    {
+        verbose("Cred store is empty\r\n");
+        return;
+    }
+    int ii;
+    for (ii = 0; ii < size; ii++)
+    {
+        serin.push_back(EEPROM.read(2+ii));
+    }
+    ii = 0;
+    while (size = serin[ii])
+    {
+        ii++;
+        if (first.empty())
+        {
+            first.assign(serin.begin() + ii, serin.begin() + ii + size);
+            verbose("first %s\r\n", first.c_str());
+        }
+        else if (second.empty())
+        {
+            second.assign(serin.begin() + ii, serin.begin() + ii + size);
+            verbose("second %s\r\n", second.c_str());
+            creds[first] = second;
+            first.clear();
+            second.clear();
+        }
+        ii += size;
+    }
+}
+#endif // CREDS_MAP
+#ifdef CREDS_LIST
 typedef std::pair<std::string, std::string > CredPair;
 typedef std::vector<CredPair> Creds;
 //typedef std::vector<std::pair<std::vector<char>, std::vector<char> > > Creds;
@@ -122,6 +207,7 @@ void deserialize()
         ii += size;
     }
 }
+#endif // CREDS_LIST
 
 void setup()
 {
@@ -171,9 +257,9 @@ void MQTT_connect() {
 }
 
 IPAddress addr;
-std::string ssid;
-std::string psk;
-std::string bssid;
+// std::string ssid;
+// std::string psk;
+// std::string bssid;
 
 void help()
 {
@@ -187,7 +273,7 @@ void help()
     verbose("e: set FX speed\r\n");
     verbose("f: set fx mode (param)\r\n");
 	verbose("h:	help\r\n");
-	verbose("w: Connect to Wifi\r\n");
+//	verbose("w: Connect to Wifi\r\n");
 	verbose("W: WPS Connect\r\n");
 	verbose("m: Connect to MQTT\r\n");
 	verbose("M: Disconnect from MQTT\r\n");
@@ -198,7 +284,7 @@ void help()
 	verbose("S: Unsubscribe from topic\r\n");
     verbose("t: save test creds to store\r\n");
 
-    verbose("SSID: %s\r\nPSK: %s\r\n", ssid.c_str(), psk.c_str());
+    verbose("SSID: %s\r\nPSK: %s\r\n", WiFi.SSID().c_str(), WiFi.psk().c_str());
 }
 
 
@@ -212,8 +298,13 @@ void handleCommand()
         case '-': param = 0; break;
 
         case 'a': // save WPS to store
-            creds.push_back(CredPair(std::string(ssid.c_str()),
-                std::string(psk.c_str())));
+#ifdef CREDS_LIST            
+            creds.push_back(CredPair(std::string(WiFi.SSID().c_str()),
+                std::string(WiFi.psk().c_str())));
+#endif // CREDS_LIST
+#ifdef CREDS_MAP
+            creds[WiFi.SSID().c_str()] = WiFi.psk().c_str();
+#endif
             serialize();
 //            EEPROM.commit();
             break;
@@ -242,10 +333,10 @@ void handleCommand()
 
         case 'l': // list stored netorks
             verbose("%d Stored Networks:\r\n", creds.size());
-            for (auto iter: creds)
+            for (auto && [f, s]: creds)
             {
-                verbose("SSID: %s ", iter.first.c_str());
-                verbose("PSK: %s\r\n", iter.second.c_str());
+                verbose("SSID: %s ", f.c_str());
+                verbose("PSK: %s\r\n", s.c_str());
             }
             break;
 
@@ -261,14 +352,11 @@ void handleCommand()
             for (auto ii = 0; ii < rc; ii++)
             {
                 verbose("%d: SSI: %s RSSI \r\n", ii, WiFi.SSID(ii), WiFi.RSSI(ii));
-                for (auto iter: creds)
+                auto iter = creds.find(WiFi.SSID(ii).c_str());
+                if (iter != creds.end())
                 {
-                    if (iter.first == WiFi.SSID(ii).c_str())
-                    {
-                        verbose("Matched on %s\r\n", WiFi.SSID(ii));
-                        ssid = iter.first;
-                        psk = iter.second;
-                    }
+                    verbose("Matched on %s/%s\r\n", iter->first.c_str(),
+                        iter->second.c_str());
                 }
             }
             break;
@@ -278,44 +366,56 @@ void handleCommand()
 			while(1);
 			break;
 
-        case 'w':  // Connect to Wifi
-            WiFi.begin(ssid.c_str(), psk.c_str());
-            while (WiFi.status() != WL_CONNECTED)
-            {
-                verbose("Connecting to %s\r\n", WIFI_SSID);
-                delay(500);
-            }
-            verbose("Connected as %s\r\n", WiFi.localIP().toString().c_str());
-            rc = WiFi.hostByName(MQTT_SERVER, addr);
-            verbose("hostByName rc %d\r\n", rc);
-            Serial.println(addr);
-//            verbose("%s is %s\r\n", addr.toString().c_str());
-            break;
+//         case 'w':  // Connect to Wifi
+//             WiFi.begin(ssid.c_str(), psk.c_str());
+//             while (WiFi.status() != WL_CONNECTED)
+//             {
+//                 verbose("Connecting to %s\r\n", WIFI_SSID);
+//                 delay(500);
+//             }
+//             verbose("Connected as %s\r\n", WiFi.localIP().toString().c_str());
+//             rc = WiFi.hostByName(MQTT_SERVER, addr);
+//             verbose("hostByName rc %d\r\n", rc);
+//             Serial.println(addr);
+//             break;
 
         case 'W':   // WPS
-//            verbose("WPS for network %d (%s)\r\n", param, creds->[param].first);
             rc = WiFi.beginWPSConfig();
-            verbose("WPSConfig rc %d\r\n", rc);
-            while (WiFi.status() != WL_CONNECTED)
+            verbose("WPSConfig rc %d, connecting to %s\r\n",
+                rc, WiFi.SSID());
+            if (WiFi.SSID() == "")
             {
-                verbose("Connecting to %s...\r\n", WiFi.SSID());
-                delay(500);
+                verbose("Timed out");
+                break;
             }
-            verbose("Connected as %s to %s\r\n",
-                WiFi.localIP().toString().c_str(), WiFi.SSID());
 
-            ssid = WiFi.SSID().c_str();
-            psk = WiFi.psk().c_str();
-            bssid = WiFi.BSSIDstr().c_str();
+            while (WiFi.psk() == "")
+            {
+                verbose("Waiting on PSK\r\n");
+                yield();
+                delay(1000);
+            }
 
-            verbose("SSID: %s\r\nPSK: %s\r\n, BSSID: %s\r\n",
-                ssid.c_str(), psk.c_str(), bssid.c_str());
+//            while (WiFi.status() != WL_CONNECTED)
+//            {
+//                verbose(".");
+//                delay(5000);
+//            }
+            verbose("\r\nConnected as %s to %s, psk %s\r\n",
+                WiFi.localIP().toString(), WiFi.SSID().c_str(), WiFi.psk().c_str());
+
+//            ssid = WiFi.SSID().c_str();
+//            psk = WiFi.psk().c_str();
+//            bssid = WiFi.BSSIDstr().c_str();
+
+//            verbose("SSID: %s\r\nPSK: %s\r\n, BSSID: %s\r\n",
+ ////               ssid.c_str(), psk.c_str(), bssid.c_str());
 
             for (auto ci: creds)
             {
-                if (ssid == std::string(ci.first.data()))
+                if (WiFi.SSID() == ci.first.data())
                 {
-                    verbose("Found %s\r\n", ssid.c_str());
+                    verbose("Found %s\r\n", WiFi.SSID());
                 }
             }
             break;
@@ -355,7 +455,12 @@ void handleCommand()
             break;
 
         case 't': // store test creds
+#ifdef CREDS_LIST
             creds.push_back(CredPair("TestSSID", "TestPSK"));
+#endif CREDS_LIST // CREDS_LIST
+#ifdef CREDS_MAP
+            creds["TestSSID"] = "TestPSK";
+#endif // CREDS_MAP
             serialize();
 //            EEPROM.commit();
             break;
