@@ -1,7 +1,7 @@
 PROJ=rgbledstrip
 PROJDIR=/personal-projects/arduino/rgbledstrip
-#PORT=/dev/ttyUSB0
-PORT=/dev/ttyS3
+PORT=/dev/ttyUSB0
+#PORT=/dev/ttyS3
 PLATFORM=esp8266:esp8266:generic
 IMAGE=${PROJ}.ino.bin
 UF2=${PROJ}.ino.uf2
@@ -10,12 +10,14 @@ ACLI=~/acli/bin/arduino-cli
 #MOUNT=/media/rp2040
 
 DOCKERNAME=acli
-DOCKER=docker.exe
-#DOCKER=docker
+#DOCKER=docker.exe
+DOCKER=docker
 
 #ENVTYPE := $(or $(origin WSLENV), "linux")
 ENVTYPE := $(or $(WSL_DISTRO_NAME), "linux")
 
+all: b u s
+	@echo Building	
 
 # Build remote
 br:

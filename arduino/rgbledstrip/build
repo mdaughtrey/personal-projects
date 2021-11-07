@@ -11,8 +11,6 @@ ACLI=~/acli/bin/arduino-cli
 #MOUNT=/media/rp2040
 
 DOCKERNAME=acli
-DOCKER=docker.exe
-#DOCKER=docker
 
 #ENVTYPE := $(or $(origin WSLENV), "linux")
 #ENVTYPE := $(or $(WSL_DISTRO_NAME), "linux")
@@ -22,9 +20,11 @@ setup()
     ENVTYPE=${WSL_DISTRO_NAME:-linux}
 	echo envtype is $ENVTYPE
     if [[ "linux" == "${ENVTYPE}" ]]; then
+        DOCKER=docker
         LOCALVOL=~/personal-projects
     else
         LOCALVOL=$(wslpath -w ~/personal-projects)
+        DOCKER=docker.exe
     fi
 }
 
