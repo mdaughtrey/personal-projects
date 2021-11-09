@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <WS2812FX.h>
+//#include <ESP8266WebServer.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
@@ -25,6 +26,8 @@ int16_t param;
 WiFiClient client;
 WS2812FX fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
 Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT);
+//ESP8266WebServer server(80);
+std::string hostname;
 
 typedef Adafruit_MQTT_Subscribe Sub;
 typedef std::pair<Sub *, void (*)(Sub *) > SubPair; 
@@ -59,37 +62,32 @@ Creds creds;
 
 void serialize()
 {
+    std::vector<uint8_t> serout;
+    serout.push_back(hostname.size());
+    serout.insert(serout.end(), hostname.begin(), hostname.end());
+     
     if (creds.empty())
     {
-        return;
+        serout.push_back(0);
     }
-    int size = 0;
-    for (const auto & ii: creds)
+    else
     {
-        size += ii.first.length() + ii.second.length();
-    }
-
-    if (size > 4000)
-    {
-        verbose("Cred size %d vs max 4096\r\n", size);
-        return;
-    }
-    std::vector<uint8_t> serout;
-    for (auto && [f, s]: creds)
-    {
-        serout.push_back((uint8_t)f.size());
-        serout.insert(serout.end(), f.begin(), f.end());
-        serout.push_back((uint8_t)s.size());
-        serout.insert(serout.end(), s.begin(), s.end());
+        for (auto && [f, s]: creds)
+        {
+            serout.push_back((uint8_t)f.size());
+            serout.insert(serout.end(), f.begin(), f.end());
+            serout.push_back((uint8_t)s.size());
+            serout.insert(serout.end(), s.begin(), s.end());
+        }
     }
     verbose("Serialized to %d bytes\r\n", serout.size());
+    for (auto iter: serout)
+    {
+        verbose("%02d ",iter);
+    }
+    verbose("\r\n");
     EEPROM.write(0, serout.size() >> 8);
     EEPROM.write(1, serout.size() & 0xff);
-//    for (int addr = 0; addr < serout.size(); addr++)
-//    {
-//        verbose("A %04x D %02X\r\n", addr, serout[addr]);
-//        EEPROM.write(2 + addr, serout[addr]);
-//    }
     EEPROM.commit();
 }
 
@@ -110,8 +108,12 @@ void deserialize()
     for (ii = 0; ii < size; ii++)
     {
         serin.push_back(EEPROM.read(2+ii));
+        verbose("%04d: %02x\r\n", 2+ii, serin.back());
     }
     ii = 0;
+    hostname.assign(serin.begin() + 1, serin.begin() + *serin.begin() + 1);
+    verbose("Loaded hostname %s\r\n", hostname.c_str());
+    ii += hostname.size() + 1;
     while (size = serin[ii])
     {
         ii++;
@@ -132,11 +134,21 @@ void deserialize()
     }
 }
 
+// void initWebServer()
+// {
+//     server.on("/", HTTP_GET, []() { server.send(200, "text/html", "<html><body>Hello</body></html>"); });
+//     server.on("/hostname", HTTP_POST, [](){ server.end(200); });
+//     server.on("/hostname", HTTP_GET, [](){ server.end(200, "text/html", hostname.c_str()); });
+//     server.on("/speed", HTTP_POST, [](){ server.end(200, "text/html", hostname.c_str()); });
+//     server.begin();
+// }
+
 void setup()
 {
     Serial.begin(115200);
-    //Serial.setDebugOutput(true);
     pinMode(2, OUTPUT);
+//    deserialize();
+//    connect();
 
     fx.init();
     fx.setBrightness(100);
@@ -145,12 +157,9 @@ void setup()
     fx.start();
 
     EEPROM.begin(4096);
-//    textParam.clear();
-//    textInput = false;
+//    initWebServer();
 
-    delay(2000);
-	verbose("Setup %s\r\n");
- //   Serial.println(__cplusplus);
+	verbose("Setup Done\r\n");
 }
 
 void MQTT_connect() {
@@ -206,6 +215,11 @@ void scanAndConnect()
         {
             verbose("Matched on %s/%s, connecting\r\n", iter->first.c_str(),
                     iter->second.c_str());
+            if (!hostname.empty())
+            {
+                verbose("Setting hostname %s\r\n", hostname.c_str());
+                WiFi.hostname(hostname.c_str());
+            }
             WiFi.begin(iter->first.c_str(), iter->second.c_str());
             while (WiFi.status() != WL_CONNECTED)
             {
@@ -242,8 +256,9 @@ void connect()
         yield();
     }
 
-    verbose("\r\nConnected as %s to %s, psk %s\r\n",
-        WiFi.localIP().toString(), WiFi.SSID().c_str(), WiFi.psk().c_str());
+    verbose("\r\nConnected as %s/%s to %s, psk %s\r\n",
+        WiFi.hostname().c_str(), WiFi.localIP().toString(),
+        WiFi.SSID().c_str(), WiFi.psk().c_str());
 }
 
 void listStoredNetworks()
@@ -276,17 +291,23 @@ Cmds cmds = {
     {'-', CmdPair("Clear param", [](){ param = 0; })},
     {'a', CmdPair("Save SSID/PSK to store", [](){ creds[WiFi.SSID().c_str()] = WiFi.psk().c_str(); serialize();})},
     {'A', CmdPair("Load SSIDS from store", [](){ deserialize(); })},
-    {'c', CmdPair("Clear store", [](){ EEPROM.write(0, 0); EEPROM.write(1, 0); EEPROM.commit();})},
+    {'C', CmdPair("Clear store", [](){ EEPROM.write(0, 0); EEPROM.write(1, 0); EEPROM.commit();})},
     {'d', CmdPair("LED on", [](){ digitalWrite(2, LOW); })},
     {'D', CmdPair("LED off", [](){ digitalWrite(2, HIGH); })},
     {'e', CmdPair("Set FX Speed", [](){ fx.setSpeed(param); })},
     {'f', CmdPair("Set FX Mode", [](){ fx.setMode(param); })},
     {'h', CmdPair("Help", [](){ help(); })},
+    {'H', CmdPair("Set hostname", [](){ 
+        hostname.assign("colorbar");
+        hostname += WiFi.macAddress().c_str();
+        hostname.erase(std::remove(hostname.begin(), hostname.end(), ':'), hostname.end());
+        verbose("Built hostname %s\r\n", hostname.c_str());
+    })},
     {'l', CmdPair("List stored networks", [](){ listStoredNetworks(); })},
     {'m', CmdPair("Connect to MQTT", [](){ mqttConnect(); })},
     {'M', CmdPair("Disconnect from MQTT", [](){ mqtt.disconnect(); })},
     {'n', CmdPair("Scan and connect", [](){  connect(); })},
-    {'r', CmdPair("Reset", [](){  while(1); })}
+    {'r', CmdPair("Reset", [](){  verbose("Resetting...\r\n"); while(1); })}
 };
 
 void help()
@@ -296,9 +317,12 @@ void help()
         verbose("%c: %s\r\n", first, second.first.c_str());
     }
 
+    verbose("Internal hostname %s\r\n", hostname.c_str());
     if (WiFi.isConnected())
     {
-        verbose("SSID: %s\r\nPSK: %s\r\n", WiFi.SSID().c_str(), WiFi.psk().c_str());
+        verbose("Hostname: %s\r\nSSID: %s\r\nPSK: %s\r\n", WiFi.hostname().c_str(),
+            WiFi.SSID().c_str(),
+            WiFi.psk().c_str());
     }
 }
 
@@ -346,4 +370,5 @@ void loop()
 	}
     mqttPing();
     fx.service();
+//    server.handleClient();
 }
