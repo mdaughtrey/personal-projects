@@ -1,46 +1,51 @@
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <WS2812FX.h>
-//#include <ESP8266WebServer.h>
+#include <ESP8266WebServer.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 #include <list>
 #include <vector>
 #include <string>
+#include <regex>
 #include <map>
 
-//const char MQTT_SERVER[] = "DESKTOP-TOJK787";
-//const char MQTT_SERVER[] = "pop-os";
-const char MQTT_SERVER[] = "mqtt.local";
-const int MQTT_PORT = 1883;
+const char * configpage="<!DOCTYPE html><html><head><title>{{hostname}} Configuration</title></head><body> <h2>{{hostname}} Configuration</h2><form action=\"/setconfig\"><table><tr><td><label for=\"hname\">Hostname:</label></td><td><input type=\"text\" id=\"hname\" name=\"hname\" value=\"{{hostname}}\"><br></td></tr><tr><td><label for=\"sname\">MQTT Server:</label></td><td><input type=\"text\" id=\"sname\" name=\"sname\" value=\"{{mqtt_server}}\"><br></td></tr><tr><td><label for=\"mport\">MQTT Port:</label></td><td><input type=\"numeric\" id=\"mport\" name=\"mport\" value=\"{{mqtt_port}}\"><br></td></tr></table><input type=\"submit\" value=\"Submit\"></form><p>The device will restart on submit.</p></body></html>";
 const uint8_t LED_COUNT = 8;
 const uint8_t LED_PIN = 4;
 
 int16_t param;
-//bool textInput;
-//std::string textParam;
-//std::string ssid;
-//std::string psk;
-
 WiFiClient client;
 WS2812FX fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
-Adafruit_MQTT_Client mqtt(&client, MQTT_SERVER, MQTT_PORT);
-//ESP8266WebServer server(80);
-std::string hostname;
+Adafruit_MQTT_Client * mqtt = 0;
+ESP8266WebServer server(80);
+std::string hostname = "none";
+std::string mqtt_server = "none";
+uint16_t mqtt_port = 1883;
+bool webactive;
 
 typedef Adafruit_MQTT_Subscribe Sub;
 typedef std::pair<Sub *, void (*)(Sub *) > SubPair; 
 
+const char * topic(const char * c)
+{
+	char buffer[128];
+	snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(), c);
+	return buffer;
+}
+
 auto subs = {
-    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/led"),
+    SubPair(new Adafruit_MQTT_Subscribe(mqtt, topic("led")),
         [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); }),
-    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/leds"),
+    SubPair(new Adafruit_MQTT_Subscribe(mqtt, topic("leds")),
         [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());}),
-    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/speed"),
+    SubPair(new Adafruit_MQTT_Subscribe(mqtt, topic("speed")),
         [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); }),
-    SubPair(new Adafruit_MQTT_Subscribe(&mqtt, "/bright"),
-        [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); })
+    SubPair(new Adafruit_MQTT_Subscribe(mqtt, topic("bright")),
+        [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); }),
+    SubPair(new Adafruit_MQTT_Subscribe(mqtt, topic("color")),
+        [] (Sub * sub) { fx.setColor(std::stoi((const char *)sub->lastread)); })
 };
 
 void verbose(const char * fmt, ...)
@@ -63,8 +68,14 @@ Creds creds;
 void serialize()
 {
     std::vector<uint8_t> serout;
-    serout.push_back(hostname.size());
-    serout.insert(serout.end(), hostname.begin(), hostname.end());
+    serout.push_back(WiFi.hostname().length());
+    std::string tmp(WiFi.hostname().c_str());
+    serout.insert(serout.end(), tmp.begin(), tmp.end());
+    //serout.insert(serout.end(), WiFi.hostname.begin(), hostname.end());
+	serout.push_back(mqtt_server.size());
+    serout.insert(serout.end(), mqtt_server.begin(), mqtt_server.end());
+	serout.push_back(mqtt_port >> 8);
+	serout.push_back(mqtt_port & 0xff);
      
     if (creds.empty())
     {
@@ -83,11 +94,16 @@ void serialize()
     verbose("Serialized to %d bytes\r\n", serout.size());
     for (auto iter: serout)
     {
-        verbose("%02d ",iter);
+        verbose("%02x ", iter);
     }
     verbose("\r\n");
     EEPROM.write(0, serout.size() >> 8);
     EEPROM.write(1, serout.size() & 0xff);
+	int addr(2);
+	for (auto iter: serout)
+	{
+		EEPROM.write(addr++, iter);
+	}
     EEPROM.commit();
 }
 
@@ -96,6 +112,9 @@ void deserialize()
     std::vector<uint8_t> serin;
     std::string first("");
     std::string second("");
+
+	hostname = "";
+	mqtt_server = "";
 
     int size(EEPROM.read(0) << 8 | EEPROM.read(1));
     verbose("Size %d\r\n", size);
@@ -111,37 +130,102 @@ void deserialize()
         verbose("%04d: %02x\r\n", 2+ii, serin.back());
     }
     ii = 0;
-    hostname.assign(serin.begin() + 1, serin.begin() + *serin.begin() + 1);
+ 	auto iter = serin.begin();
+	size = *iter++;
+	// hostname
+    hostname.assign(iter, iter + size);
     verbose("Loaded hostname %s\r\n", hostname.c_str());
-    ii += hostname.size() + 1;
-    while (size = serin[ii])
+//    WiFi.hostname(hostname.c_str());
+	iter += size;
+
+	// mqtt_server
+	size = *iter++;
+    mqtt_server.assign(iter, iter + size);
+    verbose("Loaded mqtt_server %s\r\n", mqtt_server.c_str());
+	iter += size;
+
+	// mqtt_port
+	mqtt_port = (*iter++) << 8;
+	mqtt_port |= *iter++;
+    verbose("Loaded mqtt_port %d\r\n", mqtt_port);
+
+    while (iter != serin.end())
     {
-        ii++;
+		size = *iter++;
         if (first.empty())
         {
-            first.assign(serin.begin() + ii, serin.begin() + ii + size);
-//            verbose("first %s\r\n", first.c_str());
+            first.assign(iter, iter + size);
+            verbose("first %s\r\n", first.c_str());
         }
         else if (second.empty())
         {
-            second.assign(serin.begin() + ii, serin.begin() + ii + size);
-//            verbose("second %s\r\n", second.c_str());
+            second.assign(iter, iter + size);
+            verbose("second %s\r\n", second.c_str());
             creds[first] = second;
             first.clear();
             second.clear();
         }
-        ii += size;
+		iter += size;
     }
 }
 
-// void initWebServer()
-// {
-//     server.on("/", HTTP_GET, []() { server.send(200, "text/html", "<html><body>Hello</body></html>"); });
-//     server.on("/hostname", HTTP_POST, [](){ server.end(200); });
-//     server.on("/hostname", HTTP_GET, [](){ server.end(200, "text/html", hostname.c_str()); });
-//     server.on("/speed", HTTP_POST, [](){ server.end(200, "text/html", hostname.c_str()); });
-//     server.begin();
-// }
+
+void findAndReplaceAll(std::string & data, std::string toSearch, std::string replaceStr)
+{
+    // Get the first occurrence
+    size_t pos = data.find(toSearch);
+    // Repeat till end is reached
+    while( pos != std::string::npos)
+    {
+        // Replace this occurrence of Sub String
+        data.replace(pos, toSearch.size(), replaceStr);
+        // Get the next occurrence from the current position
+        pos =data.find(toSearch, pos + replaceStr.size());
+    }
+}
+
+std::string pageFixup(std::string html)
+{
+     //findAndReplaceAll(html, "{{hostname}}", hostname);
+     findAndReplaceAll(html, "{{hostname}}", WiFi.hostname().c_str());
+     findAndReplaceAll(html, "{{mqtt_server}}", mqtt_server);
+     findAndReplaceAll(html, "{{mqtt_port}}", std::to_string(mqtt_port));
+    return html;
+}
+
+std::string handleSetConfig()
+{
+	for (auto ii = 0; ii < server.args(); ii++)
+	{
+		verbose("%s = %s\r\n", server.arg(ii), server.argName(ii));
+	}
+	if (server.hasArg("hname"))
+	{
+		//hostname = server.arg("hname").c_str();
+		WiFi.hostname(server.arg("hname").c_str());
+		//verbose("New hostname %s\r\n", hostname.c_str());
+		verbose("New hostname %s\r\n", WiFi.hostname().c_str());
+	}
+	if (server.hasArg("sname"))
+	{
+		mqtt_server = server.arg("sname").c_str();
+		verbose("New MQTT server %s\r\n", mqtt_server.c_str());
+	}
+	if (server.hasArg("mport"))
+	{
+		mqtt_port = server.arg("mport").toInt();
+		verbose("New MQTT port %d\r\n", mqtt_port);
+	}
+	return "<html><body>Restarting...</body></html>";
+}
+
+//GET /setconfig?hname=%7B%7Bhostname%7D%7D&sname=%7B%7Bmqtt_server%7D%7D&mport=%7B%7Bmqtt_port%7D%7D HTTP/1.1" 404
+void initWebServer()
+{
+    server.on("/", HTTP_GET, []() { server.send(200, "text/html", pageFixup(configpage).c_str()); });
+    server.on("/setconfig", HTTP_GET, [](){ server.send(200, "text/html", handleSetConfig().c_str()); });
+    server.begin();
+}
 
 void setup()
 {
@@ -150,6 +234,7 @@ void setup()
 //    deserialize();
 //    connect();
 
+    verbose("WS2812 setup\r\n");
     fx.init();
     fx.setBrightness(100);
     fx.setSpeed(10);
@@ -157,7 +242,8 @@ void setup()
     fx.start();
 
     EEPROM.begin(4096);
-//    initWebServer();
+//    verbose("Web setup\r\n");
+    webactive = false;
 
 	verbose("Setup Done\r\n");
 }
@@ -166,27 +252,27 @@ void MQTT_connect() {
   int8_t ret;
 
   // Stop if already connected.
-  if (mqtt.connected()) {
+  if (mqtt->connected()) {
     return;
   }
 
   verbose("Connecting to MQTT...\r\n");
 
   uint8_t retries = 3;
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       verbose("%s\r\n", (const char * )mqtt.connectErrorString(ret));
+  while ((ret = mqtt->connect()) != 0) { // connect will return 0 for connected
+       verbose("%s\r\n", (const char * )mqtt->connectErrorString(ret));
        verbose("Retrying MQTT connection in 5 seconds...\r\n");
-       mqtt.disconnect();
+       mqtt->disconnect();
        delay(5000);  // wait 5 seconds
        retries--;
        if (retries == 0) {
 		 verbose("Looks like a fail\r\n");
 		
          // basically die and wait for WDT to reset me
-         while (1);
+     //    while (1);
        }
   }
-  mqtt.setKeepAliveInterval(5);
+  mqtt->setKeepAliveInterval(5);
   verbose("MQTT Connected!\r\n");
 }
 
@@ -274,13 +360,14 @@ void listStoredNetworks()
 void mqttConnect()
 {
     verbose("MQTT_Connect\r\n");
-    MQTT_connect();
+    mqtt = new Adafruit_MQTT_Client(&client, mqtt_server.c_str(), mqtt_port);
     for (auto && [first,second]: subs)
     {
         int rc;
-        rc = mqtt.subscribe(first);
+        rc = mqtt->subscribe(first);
         verbose("subscribe rc %d\r\n", rc);
     }
+    MQTT_connect();
 }
 
 typedef std::pair<std::string, void (*)() > CmdPair;
@@ -296,18 +383,13 @@ Cmds cmds = {
     {'D', CmdPair("LED off", [](){ digitalWrite(2, HIGH); })},
     {'e', CmdPair("Set FX Speed", [](){ fx.setSpeed(param); })},
     {'f', CmdPair("Set FX Mode", [](){ fx.setMode(param); })},
-    {'h', CmdPair("Help", [](){ help(); })},
-    {'H', CmdPair("Set hostname", [](){ 
-        hostname.assign("colorbar");
-        hostname += WiFi.macAddress().c_str();
-        hostname.erase(std::remove(hostname.begin(), hostname.end(), ':'), hostname.end());
-        verbose("Built hostname %s\r\n", hostname.c_str());
-    })},
-    {'l', CmdPair("List stored networks", [](){ listStoredNetworks(); })},
+    {'h', CmdPair("Help", [](){ help(); listStoredNetworks(); })},
     {'m', CmdPair("Connect to MQTT", [](){ mqttConnect(); })},
-    {'M', CmdPair("Disconnect from MQTT", [](){ mqtt.disconnect(); })},
+    {'M', CmdPair("Disconnect from MQTT", [](){ mqtt->disconnect(); })},
     {'n', CmdPair("Scan and connect", [](){  connect(); })},
-    {'r', CmdPair("Reset", [](){  verbose("Resetting...\r\n"); while(1); })}
+    {'r', CmdPair("Reset", [](){  verbose("Resetting...\r\n"); while(1); })},
+    {'w', CmdPair("Webserver on", [](){  initWebServer(); webactive = true; })},
+    {'W', CmdPair("Webserver off", [](){  webactive = false; })}
 };
 
 void help()
@@ -318,18 +400,16 @@ void help()
     }
 
     verbose("Internal hostname %s\r\n", hostname.c_str());
-    if (WiFi.isConnected())
-    {
-        verbose("Hostname: %s\r\nSSID: %s\r\nPSK: %s\r\n", WiFi.hostname().c_str(),
-            WiFi.SSID().c_str(),
-            WiFi.psk().c_str());
-    }
+    verbose("WiFi connected %d\r\n", (WiFi.isConnected()));
+    verbose("Hostname: %s\r\nSSID: %s\r\nPSK: %s\r\n", WiFi.hostname().c_str(),
+        WiFi.SSID().c_str(),
+        WiFi.psk().c_str());
+	verbose("MQTT_Server %s port %d\r\n", mqtt_server.c_str(), mqtt_port);
 }
 
 void handleCommand()
 {
 	uint8_t lastCommand;
-    int rc;
     lastCommand = Serial.read();
     CmdsIter iter = cmds.find(lastCommand);
     if (iter != cmds.end())
@@ -347,9 +427,10 @@ void handleCommand()
 
 void mqttPing()
 {
-	if (!mqtt.connected()) return;
+    if (!mqtt) return;
+	if (!mqtt->connected()) return;
     Adafruit_MQTT_Subscribe * sub;
-    while (sub = mqtt.readSubscription(1))
+    while (sub = mqtt->readSubscription(1))
     {
         for (auto && [first, second]: subs)
         {
@@ -370,5 +451,8 @@ void loop()
 	}
     mqttPing();
     fx.service();
-//    server.handleClient();
+    if (webactive)
+    {
+        server.handleClient();
+    }
 }
