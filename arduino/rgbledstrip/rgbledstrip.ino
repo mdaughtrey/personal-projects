@@ -68,8 +68,10 @@ std::vector<SubTuple> subs = {
     SubTuple(std::string("speed"), SubPtr(), [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); }),
     SubTuple(std::string("bright"), SubPtr(), [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); }),
     SubTuple(std::string("color"), SubPtr(), [] (Sub * sub) { 
-        std::string str((const char *)sub->lastread);
-        fx.setColor(std::stol(str.substr(1).c_str())); })
+        verbose("setColor %s\r\n", (const char *)sub->lastread);
+        verbose("setColor %lu\r\n", std::stol((const char *)sub->lastread + 1, nullptr, 16)); 
+        uint32_t val = std::stol((const char *)sub->lastread + 1, nullptr, 16);
+        fx.setColor(val << 16, val << 24, val & 0xff);})
 };
 
 //std::vector<SubPair> subs = {
@@ -472,11 +474,11 @@ void mqttConnect()
         delay(3000);  // wait 5 seconds
         retries--;
         if (retries == 0) {
-//            verbose("Looks like a fail\r\n");
+            verbose("Looks like a fail\r\n");
             return;
         }
     }
-//    verbose("MQTT Connected!\r\n");
+    verbose("MQTT Connected!\r\n");
     mqttClient->setKeepAliveInterval(5);
 //    verbose("setkeepalive");
 }
