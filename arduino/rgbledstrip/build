@@ -42,7 +42,8 @@ build()
         --entrypoint /home/mattd/acli/bin/arduino-cli \
 		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile \
         --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} \
-        --output-dir  ${PROJDIR}
+        --output-dir  ${PROJDIR} \
+        --optimize-for-debug 
 }
 
 # Upload remote

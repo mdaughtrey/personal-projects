@@ -8,6 +8,7 @@ UF2=${PROJ}.ino.uf2
 ELF=${PROJ}.ino.elf
 ACLI=~/acli/bin/arduino-cli
 #MOUNT=/media/rp2040
+GDB=~/.arduino15/packages/esp8266/tools/xtensa-lx106-elf-gcc/3.0.4-gcc10.3-1757bed/bin/xtensa-lx106-elf-gdb
 
 DOCKERNAME=acli
 #DOCKER=docker.exe
@@ -50,6 +51,8 @@ s:
 c:
 	cat ${PORT} > serial.log
 
+d:
+	${GDB}
 #f:
 #	sudo scp mattd@pop-os:~${PROJDIR}/${UF2} /media/rp2040/
 #

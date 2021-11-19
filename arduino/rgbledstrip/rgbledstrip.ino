@@ -2,6 +2,7 @@
 #include <EEPROM.h>
 #include <WS2812FX.h>
 #include <ESP8266WebServer.h>
+#include <GDBStub.h>
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
@@ -19,7 +20,7 @@ const uint8_t LED_PIN = 4;
 int16_t param;
 WiFiClient client;
 WS2812FX fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
-Adafruit_MQTT_Client * mqtt = 0;
+std::shared_ptr<Adafruit_MQTT_Client>  mqttClient;
 ESP8266WebServer server(80);
 std::string hostname = "none";
 std::string mqtt_server = "none";
@@ -27,8 +28,10 @@ uint16_t mqtt_port = 1883;
 bool webactive;
 
 typedef Adafruit_MQTT_Subscribe Sub;
+typedef std::shared_ptr<Sub> SubPtr;
+typedef std::pair<SubPtr, void (*)(Sub *) > SubPair; 
+typedef std::tuple<std::string, SubPtr, void (*)(Sub *) > SubTuple;
 //typedef std::pair<Sub *, void (*)(Sub *) > SubPair; 
-typedef std::pair<std::shared_ptr<Sub>, void (*)(Sub *) > SubPair; 
 
 //char * topic(std::string & c)
 //{
@@ -37,29 +40,84 @@ typedef std::pair<std::shared_ptr<Sub>, void (*)(Sub *) > SubPair;
 //	return buffer;
 //}
 
-std::vector<std::string>  topics = { "led", "leds", "speed", "bright", "color" };
+//std::vector<std::string>  topics = { "led", "leds", "speed", "bright", "color" };
+//const char ** topicInit = { "led", "leds", "speed", "bright", "color" };
+//std::vector<void (*)(Sub *)> lambdas = {
+//    [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); },
+//    [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());},
+//    [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); },
+//    [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); },
+//    [] (Sub * sub) { fx.setColor(std::stoi((const char *)sub->lastread)); }
+//};
 
-auto subs = {
-    SubPair(std::shared_ptr<Sub>(), [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); }),
-    SubPair(std::shared_ptr<Sub>(), [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());}),
-    SubPair(std::shared_ptr<Sub>(), [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); }),
-    SubPair(std::shared_ptr<Sub>(), [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); }),
-    SubPair(std::shared_ptr<Sub>(), [] (Sub * sub) { fx.setColor(std::stoi((const char *)sub->lastread)); })
+//char * topics[] = { "led","leds","speed","bright","color" };
+//char subtext[5][32];
+void verbose(const char * fmt, ...)
+{
+    char buffer[256];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buffer, 255, fmt, args);
+    va_end(args);
+    Serial.print(buffer);
+}
+
+std::vector<SubTuple> subs = {
+    SubTuple(std::string("led"), SubPtr(), [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); }),
+    SubTuple(std::string("leds"), SubPtr(), [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());}),
+    SubTuple(std::string("speed"), SubPtr(), [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); }),
+    SubTuple(std::string("bright"), SubPtr(), [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); }),
+    SubTuple(std::string("color"), SubPtr(), [] (Sub * sub) { 
+        std::string str((const char *)sub->lastread);
+        fx.setColor(std::stol(str.substr(1).c_str())); })
 };
 
+//std::vector<SubPair> subs = {
+//    SubPair(SubPtr(), [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); }),
+//    SubPair(SubPtr(), [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());}),
+//    SubPair(SubPtr(), [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); }),
+//    SubPair(SubPtr(), [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); }),
+//    SubPair(SubPtr(), [] (Sub * sub) { fx.setColor(std::stoi((const char *)sub->lastread)); })
+//};
+
+//const char staticTopic[] = "ATOPIC";
 void buildTopics()
 {
-	char buffer[128];
-    auto itopic = topics.begin();
-    for (auto && [first, second]: subs)
+    char buffer[128];
+//    for (std::vector<SubTuple>::iterator iter :subs)
+    for (auto iter = subs.begin(); iter != subs.end(); iter++)
     {
-	    snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(), itopic->c_str());
-        itopic->assign(buffer);
-        first = std::make_shared<Sub>(new Adafruit_MQTT_Subscribe(mqtt, itopic->c_str()));
-        verbose("Built topic %s\r\n", itopic->c_str());
-        itopic++;
+        snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(), std::get<0>(*iter).c_str());
+        verbose("Buffer topic is %s\r\n", buffer);
+        std::get<0>(*iter).assign(buffer);
+        verbose("stack buffer address %x subs buffer address %x\r\n", buffer, std::get<0>(*iter).data());
+        std::get<1>(*iter).reset(new Adafruit_MQTT_Subscribe(mqttClient.get(), std::get<0>(*iter).c_str()));
+        mqttClient->subscribe(std::get<1>(*iter).get());
+        verbose("subs topic is %s\r\n", std::get<0>(*iter).c_str());
+    }
+    verbose("subs0 topic is %s\r\n", std::get<0>(subs[0]).c_str());
+// 	snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(), std::get<0>(subs[0]).c_str());
+//    std::get<0>(subs[0]).assign(buffer);
+//    verbose("stack buffer address %x subs buffer address %x\r\n", buffer, std::get<0>(subs[0]).data());
+//    std::get<1>(subs[0]).reset(new Adafruit_MQTT_Subscribe(mqttClient.get(), std::get<0>(subs[0]).c_str()));
+//    mqttClient->subscribe(std::get<1>(subs[0]).get());
+}
+
+void buildTopics0()
+{
+    char buffer[128];
+    for (auto iter: subs)
+    {
+        memset(buffer, 0, 128);
+ 	    snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(), std::get<0>(iter).c_str());
+        std::get<0>(iter).assign((const char *)buffer);
+        std::get<1>(iter).reset(new Adafruit_MQTT_Subscribe(mqttClient.get(), std::get<0>(iter).c_str()));
+        verbose("Built topic %s\r\n", std::get<0>(iter).c_str());
+        mqttClient->subscribe(std::get<1>(iter).get());
+        return;
     }
 }
+
 
 //auto subs = {
 //    //SubPair(new Adafruit_MQTT_Subscribe(mqtt, topic("led")),
@@ -76,16 +134,6 @@ void buildTopics()
 //        [] (Sub * sub) { fx.setColor(std::stoi((const char *)sub->lastread)); })
 //};
 
-void verbose(const char * fmt, ...)
-{
-//    if (threshold > config.verbose) return;
-    char buffer[256];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
-    va_end(args);
-    Serial.print(buffer);
-}
 
 //typedef std::pair<std::string, std::string > CredPair;
 typedef std::map<std::string, std::string> Creds;
@@ -145,7 +193,7 @@ void deserialize()
 	mqtt_server = "";
 
     int size(EEPROM.read(0) << 8 | EEPROM.read(1));
-    verbose("Size %d\r\n", size);
+    //verbose("Size %d\r\n", size);
     if (0 == size)
     {
         verbose("Cred store is empty\r\n");
@@ -155,7 +203,7 @@ void deserialize()
     for (ii = 0; ii < size; ii++)
     {
         serin.push_back(EEPROM.read(2+ii));
-        verbose("%04d: %02x\r\n", 2+ii, serin.back());
+     //   verbose("%04d: %02x\r\n", 2+ii, serin.back());
     }
     ii = 0;
  	auto iter = serin.begin();
@@ -258,6 +306,8 @@ void initWebServer()
 void setup()
 {
     Serial.begin(115200);
+    gdbstub_init();
+    delay(5000);
     pinMode(2, OUTPUT);
 //    deserialize();
 //    connect();
@@ -274,18 +324,22 @@ void setup()
     webactive = false;
 
 	verbose("Setup Done\r\n");
+
+    deserialize();
+    connect();
+    mqttConnect();
 }
 
-void MQTT_connect() {
-  int8_t ret;
-
-  // Stop if already connected.
-  if (mqtt->connected()) {
-    return;
-  }
-
-  verbose("Connecting to MQTT...%x\r\n", mqtt);
-  mqtt->connect();
+//void MQTT_connect() {
+//  int8_t ret;
+//
+//  // Stop if already connected.
+//  if (mqtt->connected()) {
+//    return;
+//  }
+//
+//  verbose("Connecting to MQTT...%x\r\n", mqtt);
+//  mqtt->connect();
 
 //  uint8_t retries = 3;
 //  while ((ret = mqtt->connect()) != 0) { // connect will return 0 for connected
@@ -302,8 +356,8 @@ void MQTT_connect() {
 //       }
 //  }
 //  mqtt->setKeepAliveInterval(5);
-  verbose("MQTT Connected!\r\n");
-}
+//  verbose("MQTT Connected!\r\n");
+//}
 
 IPAddress addr;
 // std::string ssid;
@@ -386,34 +440,45 @@ void listStoredNetworks()
     }
 }
 
+void dumpTopics()
+{
+    verbose("dumpTopics:\r\n");
+    for (auto iter: subs)
+    {
+        verbose("Topic %s \r\n", std::get<0>(iter).c_str());
+// 	    snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(), std::get<0>(iter).c_str());
+//        std::get<0>(iter).assign((const char *)buffer);
+//        std::get<1>(iter).reset(new Adafruit_MQTT_Subscribe(mqtt.get(), std::get<0>(iter).c_str()));
+//        verbose("Built topic %s\r\n", std::get<0>(iter).c_str());
+//        mqtt->subscribe(std::get<1>(iter).get());
+    }
+}
 void mqttConnect()
 {
     int8_t ret;
-    verbose("MQTT_Connect\r\n");
-    mqtt = new Adafruit_MQTT_Client(&client, mqtt_server.c_str(), mqtt_port);
-//    for (auto && [first,second]: subs)
-//    {
-//        int rc;
-//        rc = mqtt->subscribe(first);
-//        verbose("subscribe rc %d\r\n", rc);
-//    }
+//    verbose("MQTT_Connect\r\n");
+    mqttClient.reset(new Adafruit_MQTT_Client(&client, mqtt_server.c_str(), mqtt_port));
 
-    verbose("Connecting to MQTT...%x\r\n", mqtt);
+    //verbose("Connecting to MQTT...%x\r\n", mqtt);
+    buildTopics();
+//    verbose("buildTopics");
+    dumpTopics();
 
     uint8_t retries = 3;
-    while ((ret = mqtt->connect()) != 0) { // connect will return 0 for connected
-        verbose("%s\r\n", (const char * )mqtt->connectErrorString(ret));
+    while ((ret = mqttClient->connect()) != 0) { // connect will return 0 for connected
+        verbose("Failed %s\r\n", (const char * )mqttClient->connectErrorString(ret));
         verbose("Retrying MQTT connection in 5 seconds...\r\n");
-        mqtt->disconnect();
+        mqttClient->disconnect();
         delay(3000);  // wait 5 seconds
         retries--;
         if (retries == 0) {
-            verbose("Looks like a fail\r\n");
+//            verbose("Looks like a fail\r\n");
             return;
         }
     }
-    mqtt->setKeepAliveInterval(5);
-    verbose("MQTT Connected!\r\n");
+//    verbose("MQTT Connected!\r\n");
+    mqttClient->setKeepAliveInterval(5);
+//    verbose("setkeepalive");
 }
 
 typedef std::pair<std::string, void (*)() > CmdPair;
@@ -431,7 +496,7 @@ Cmds cmds = {
     {'f', CmdPair("Set FX Mode", [](){ fx.setMode(param); })},
     {'h', CmdPair("Help", [](){ help(); listStoredNetworks(); })},
     {'m', CmdPair("Connect to MQTT", [](){ mqttConnect(); })},
-    {'M', CmdPair("Disconnect from MQTT", [](){ mqtt->disconnect(); })},
+    {'M', CmdPair("Disconnect from MQTT", [](){ mqttClient->disconnect(); })},
     {'n', CmdPair("Scan and connect", [](){  connect(); })},
     {'r', CmdPair("Reset", [](){  verbose("Resetting...\r\n"); while(1); })},
     {'w', CmdPair("Webserver on", [](){  initWebServer(); webactive = true; })},
@@ -471,22 +536,22 @@ void handleCommand()
     }
 }
 
-//void mqttPing()
-//{
-//    if (!mqtt) return;
-//	if (!mqtt->connected()) return;
-//    Adafruit_MQTT_Subscribe * sub;
-//    while (sub = mqtt->readSubscription(1))
-//    {
-//        for (auto && [first, second]: subs)
-//        {
-//            if (sub == first)
-//            {
-//                second(first);
-//            }
-//        }
-//	}
-//}
+void mqttPing()
+{
+    if (!mqttClient) return;
+	if (!mqttClient->connected()) return;
+    Adafruit_MQTT_Subscribe * sub;
+    while (sub = mqttClient->readSubscription(1))
+    {
+        for (auto iter: subs)
+        {
+            if (sub == std::get<1>(iter).get())
+            {
+                std::get<2>(iter)(std::get<1>(iter).get());
+            }
+        }
+	}
+}
 
 void loop()
 {
@@ -495,7 +560,7 @@ void loop()
 	{
 		handleCommand();
 	}
-//    mqttPing();
+    mqttPing();
     fx.service();
     if (webactive)
     {
