@@ -2,6 +2,7 @@
 #include <EEPROM.h>
 #include <WS2812FX.h>
 #include <ESP8266WebServer.h>
+#define GDB
 #ifdef GDB
 #include <GDBStub.h>
 #endif // GDB
@@ -40,7 +41,7 @@ typedef std::shared_ptr<Pub> PubPtr;
 //typedef std::pair<SubPtr, void (*)(Sub *) > SubPair; 
 typedef std::tuple<std::string, SubPtr, void (*)(Sub *) > SubTuple;
 typedef std::tuple<std::string, SubPtr, void (*)(Sub *),
-    PubPtr, void (*)(Pub *, char *) > PubSubTuple;
+    std::string, PubPtr, void (*)(Pub *, char *) > PubSubTuple;
 
 void verbose(const char * fmt, ...)
 {
@@ -53,9 +54,10 @@ void verbose(const char * fmt, ...)
 }
 
 enum {
-    TOPIC = 0,
+    SUBTOPIC = 0,
     SUB,
     SUBFUN,
+    PUBTOPIC,
     PUB,
     PUBFUN
 };
@@ -64,24 +66,32 @@ std::vector<PubSubTuple> pubSubs = {
     PubSubTuple(std::string("led"),
         SubPtr(),
         [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); },
+        std::string("ledstatus"),
         PubPtr(),
         [] (Pub * pub, char * data) {}),
 
     PubSubTuple(std::string("fx"),
         SubPtr(),
         [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());},
+        std::string("fxstatus"),
         PubPtr(),
-        [] (Pub * pub, char * data) {}),
+        [] (Pub * pub, char * data) {
+            verbose("Publishing fx mode %d\r\n", fx.getMode());
+            verbose("Publishing fx mode %s\r\n",
+                (const char*)fx.getModeName(fx.getMode()));}),
+//            pub->publish((const char *)fx.getModeName(fx.getMode()));}),
 
     PubSubTuple(std::string("speed"),
         SubPtr(),
         [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); },
+        std::string("speedstatus"),
         PubPtr(),
         [] (Pub * pub, char * data) {}),
 
     PubSubTuple(std::string("bright"),
         SubPtr(),
         [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); },
+        std::string("brightstatus"),
         PubPtr(),
         [] (Pub * pub, char * data) {}),
 
@@ -92,20 +102,29 @@ std::vector<PubSubTuple> pubSubs = {
             verbose("setColor %lu\r\n", std::stol((const char *)sub->lastread + 1, nullptr, 16)); 
             uint32_t val = std::stol((const char *)sub->lastread + 1, nullptr, 16);
             fx.setColor(val << 16, val << 24, val & 0xff);},
+         std::string(""),
          PubPtr(),
          [] (Pub * pub, char * data) {}),
 
     PubSubTuple(std::string("fxprev"),
         SubPtr(),
-        [] (Sub * sub) { fx.setMode(fx.getMode() + fx.getModeCount() - 1 % fx.getModeCount());},
+        [] (Sub * sub) {
+            fx.setMode(fx.getMode() + fx.getModeCount() - 1 % fx.getModeCount());},
+        std::string("fxstatus"),
         PubPtr(),
-        [] (Pub * pub, char * data) {}),
+        [] (Pub * pub, char * data) {
+            pub->publish((const char *)fx.getModeName(fx.getMode()));}),
 
     PubSubTuple(std::string("fxnext"),
         SubPtr(),
         [] (Sub * sub) { fx.setMode(fx.getMode() + 1 % fx.getModeCount());},
+        std::string("fxstatus"),
         PubPtr(),
-        [] (Pub * pub, char * data) {}),
+        [] (Pub * pub, char * data) {
+            verbose("Publishing fx mode %d\r\n", fx.getMode());
+            verbose("Publishing fx mode %s\r\n",
+                (const char*)fx.getModeName(fx.getMode()));
+            pub->publish((const char *)fx.getModeName(fx.getMode()));}),
 
     PubSubTuple(std::string("green"),
         SubPtr(),
@@ -113,6 +132,7 @@ std::vector<PubSubTuple> pubSubs = {
             fx.setColor((*fx.getColors(0)) & 0x0000ffff | 
                 std::stoi((char *)sub->lastread) << 16);
             verbose("getColor %x\r\n", *fx.getColors(0)); }, 
+        std::string(""),
         PubPtr(),
         [] (Pub * pub, char * data) {}),
 
@@ -122,6 +142,7 @@ std::vector<PubSubTuple> pubSubs = {
             fx.setColor((*fx.getColors(0)) & 0x00ff00ff | 
                 std::stoi((char *)sub->lastread) << 8); 
             verbose("getColor %x\r\n", *fx.getColors(0)); }, 
+        std::string(""),
         PubPtr(),
         [] (Pub * pub, char * data) {}),
 
@@ -131,6 +152,7 @@ std::vector<PubSubTuple> pubSubs = {
             fx.setColor((*fx.getColors(0)) & 0x00ffff00 | 
                 std::stoi((char *)sub->lastread)), 
             verbose("getColor %x\r\n", *fx.getColors(0)); }, 
+        std::string(""),
         PubPtr(),
         [] (Pub * pub, char * data) {}),
 };
@@ -151,17 +173,24 @@ std::vector<PubSubTuple> pubSubs = {
 void buildTopics()
 {
     char buffer[128];
-    for (auto iter = pubSubs.begin(); iter != pubSubs.end(); iter++)
+    for (std::vector<PubSubTuple>::iterator iter =
+        pubSubs.begin(); iter != pubSubs.end(); iter++)
+    //for (auto iter = pubSubs.begin(); iter != pubSubs.end(); iter++)
     {
         snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(),
-            std::get<TOPIC>(*iter).c_str());
-        std::get<TOPIC>(*iter).assign(buffer);
+            std::get<SUBTOPIC>(*iter).c_str());
+        std::get<SUBTOPIC>(*iter).assign(buffer);
         std::get<SUB>(*iter).reset(new Adafruit_MQTT_Subscribe(mqttClient.get(),
-            std::get<TOPIC>(*iter).c_str()));
+            std::get<SUBTOPIC>(*iter).c_str()));
         mqttClient->subscribe(std::get<SUB>(*iter).get());
+        verbose("Sub Topic %s\r\n", std::get<SUBTOPIC>(*iter).c_str());
+
+        snprintf(buffer, 128, "/%s/%s", WiFi.hostname().c_str(),
+            std::get<PUBTOPIC>(*iter).c_str());
+        std::get<PUBTOPIC>(*iter).assign(buffer);
         std::get<PUB>(*iter).reset(new Adafruit_MQTT_Publish(mqttClient.get(),
-            std::get<TOPIC>(*iter).c_str()));
-        verbose("Topic %s\r\n", std::get<TOPIC>(*iter).c_str());
+            std::get<PUBTOPIC>(*iter).c_str()));
+        verbose("Pub Topic %s\r\n", std::get<PUBTOPIC>(*iter).c_str());
     }
 }
 
@@ -461,7 +490,8 @@ void dumpTopics()
     verbose("dumpTopics:\r\n");
     for (auto iter: pubSubs)
     {
-        verbose("Topic %s \r\n", std::get<TOPIC>(iter).c_str());
+        verbose("Sub topic %s \r\n", std::get<SUBTOPIC>(iter).c_str());
+        verbose("Pub topic %s \r\n", std::get<PUBTOPIC>(iter).c_str());
     }
 }
 void mqttConnect()
