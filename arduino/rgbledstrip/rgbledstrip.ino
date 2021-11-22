@@ -574,6 +574,10 @@ void handleCommand()
     }
 }
 
+void breakit()
+{
+    verbose("Broke!\r\n");
+}
 void mqttPing()
 {
     if (!mqttClient) return;
@@ -586,6 +590,7 @@ void mqttPing()
             if (sub == std::get<SUB>(iter).get())
             {
                 std::get<SUBFUN>(iter)(std::get<SUB>(iter).get());
+                breakit();
                 std::get<PUBFUN>(iter)(std::get<PUB>(iter).get(), (char *)sub->lastread);
             }
         }
