@@ -7,8 +7,8 @@ Commands = {
 --    {"D", "LED off", function() digitalWrite(2, HIGH); })},
 --    {"e", "Set FX Speed", function() fx.setSpeed(param); })},
 --    {"f", "Set FX Mode", function() fx.setMode(param); })},
---    {"h", "Help", function() help(); listStoredNetworks(); })},
-{"h", "Help", function() help() end }
+--    {"h", "Help", function() help(); listStoredNetworks(); })},jjj
+h = {help="Help", fun=function() help() end }
 --    {"m", "Connect to MQTT", function() mqttConnect(); })},
 --    {"M", "Disconnect from MQTT", function() mqttClient->disconnect(); })},
 --    {"n", "Scan and connect", function()  connect(); })},
@@ -18,19 +18,20 @@ Commands = {
 }
 
 function help()
-    print("Help!\r\n")
+--    print("Help!\r\n")
+    for kk,vv in pairs(Commands)
+    do
+        print(string.format("%s: %s", kk, vv["help"]))
+    end
 end
 
 function handleCommand(data)
 --    uart.write(0, string.format("Recieved data %s\r\n", data))
-    for kk,vv in ipairs(Commands)
-    do
-        if kk == data[0]
-        then
-            print("matched")
---            uart.write(0, vv[0])
-        end -- if
-    end -- for
+    key = string.sub(data, 1, 1)
+    if Commands[key]
+    then
+        Commands[key]["fun"]()
+    end
 end -- function
 
 function init()
@@ -44,5 +45,5 @@ function main()
 --    uart.write(0, "Hello\r\n")
 end
 
-    debug()
+    
 handleCommand("h")
