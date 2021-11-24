@@ -23,6 +23,9 @@ push:
 build:
 	${DOCKER} build -f ${NAME}.Dockerfile . --tag=${NAME}
 
+buildclean:
+	${DOCKER} build --no-cache -f ${NAME}.Dockerfile . --tag=${NAME}
+
 tag:
 	${DOCKER} tag ${IMAGE} mdaughtrey/projects:${NAME}
 
