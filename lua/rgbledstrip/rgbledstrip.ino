@@ -1,4 +1,22 @@
 #include <ESP8266WiFi.h>
+Commands = {
+"-" = {help="Clear param", fun=function() param = 0 end },
+--    {"a", "Save SSID/PSK to store", function() creds[WiFi.SSID().c_str()] = WiFi.psk().c_str(); serialize();})},
+A = {help="Load values  from store", fun=function() deserialize() },
+--    {"C", "Clear store", function() EEPROM.write(0, 0); EEPROM.write(1, 0); EEPROM.commit();})},
+--    {"d", "LED on", function() digitalWrite(2, LOW); })},
+--    {"D", "LED off", function() digitalWrite(2, HIGH); })},
+--    {"e", "Set FX Speed", function() fx.setSpeed(param); })},
+--    {"f", "Set FX Mode", function() fx.setMode(param); })},
+--    {"h", "Help", function() help(); listStoredNetworks(); })},jjj
+h = {help="Help", fun=function() help() end },
+m = {help="Connect to MQTT", fun=function() mqttConnect() },
+--    {"M", "Disconnect from MQTT", function() mqttClient->disconnect(); })},
+n = {help="Scan and connect", fun=function()  connect() },
+--    {"r", "Reset", function()  verbose("Resetting...\r\n"); while(1); })},
+w = {help="Webserver on", fun=function()  initWebServer() webactive = true },
+W = {help="Webserver off", fun=function()  webactive = false }
+}
 #include <EEPROM.h>
 #include <WS2812FX.h>
 #include <ESP8266WebServer.h>
