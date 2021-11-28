@@ -54,6 +54,7 @@ c:
 
 d:
 	${GDB}
+
 r:
 	lua main.lua
 

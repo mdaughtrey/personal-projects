@@ -22,8 +22,8 @@ Commands = {
 a = {help="Save SSID/PSK to store", fun=function() storedNetworks[WiFi.SSID] = WiFi.psk serialize() end},
 A = {help="Load values  from store", fun=function() deserialize() end },
 --    {"C", "Clear store", function() EEPROM.write(0, 0); EEPROM.write(1, 0); EEPROM.commit();})},
---    {"d", "LED on", function() digitalWrite(2, LOW); })},
---    {"D", "LED off", function() digitalWrite(2, HIGH); })},
+d = {help="LED on", fun=function() gpio.write(4, gpio.LOW) end },
+D = {help="LED off", fun=function() gpio.write(4, gpio.HIGH) end},
 e = {help="Set FX Speed", fun=function() fx.setSpeed(param) end },
 f = {help="Set FX Mode", fun=function() fx.setMode(param) end },
 h = {help="Help", fun=function() help() end },
@@ -36,34 +36,84 @@ W = {help="Webserver off", fun=function()  webactive = false end }
 }
 
 topics = {
-    {subtopic="led", subfun = function() print("led subfun") end,
-         pubtopic="ledstatus", pubfun=function() print("ledstatus pubfun") end},
-    {subtopic="fx", subfun = function() print("fx subfun") end,
-         pubtopic="fxstatus", pubfun=function() print("fxstatus pubfun") end},
-    {subtopic="speed", subfun = function() print("speed subfun") end,
-         pubtopic="speedstatus", pubfun=function() print("speedstatus pubfun") end},
-    {subtopic="bright", subfun = function() print("bright subfun") end,
-         pubtopic="brightstatus", pubfun=function() print("brightstatus pubfun") end},
-    {subtopic="bright", subfun = function() print("bright subfun") end,
-         pubtopic="brightstatus", pubfun=function() print("brightstatus pubfun") end},
-    {subtopic="color", subfun = function() print("color subfun") end,
-         pubtopic="colorstatus", pubfun=function() print("colorstatus pubfun") end},
-    {subtopic="fxnext", subfun = function() print("fxnext subfun") end,
-         pubtopic="fxnextstatus", pubfun=function() print("fxnextstatus pubfun") end},
-    {subtopic="fxprev", subfun = function() print("fxprev subfun") end,
-         pubtopic="fxprevstatus", pubfun=function() print("fxprevstatus pubfun") end},
-    {subtopic="red", subfun = function() print("red subfun") end,
-         pubtopic="redstatus", pubfun=function() print("redstatus pubfun") end},
-    {subtopic="green", subfun = function() print("green subfun") end,
-         pubtopic="greenstatus", pubfun=function() print("greenstatus pubfun") end},
-    {subtopic="blue", subfun = function() print("blue subfun") end,
-         pubtopic="bluestatus", pubfun=function() print("bluestatus pubfun") end}
+--    {subtopic="led", subfun = function() print("led subfun") end,
+--         pubtopic="ledstatus", pubfun=function() print("ledstatus pubfun") end},
+--    {subtopic="fx", subfun = function() print("fx subfun") end,
+--         pubtopic="fxstatus", pubfun=function() print("fxstatus pubfun") end},
+--    {subtopic="speed", subfun = function() print("speed subfun") end,
+--         pubtopic="speedstatus", pubfun=function() print("speedstatus pubfun") end},
+--    {subtopic="bright", subfun = function() print("bright subfun") end,
+--         pubtopic="brightstatus", pubfun=function() print("brightstatus pubfun") end},
+--    {subtopic="bright", subfun = function() print("bright subfun") end,
+--         pubtopic="brightstatus", pubfun=function() print("brightstatus pubfun") end},
+--    {subtopic="color", subfun = function() print("color subfun") end,
+--         pubtopic="colorstatus", pubfun=function() print("colorstatus pubfun") end},
+--    {subtopic="fxnext", subfun = function() print("fxnext subfun") end,
+--         pubtopic="fxnextstatus", pubfun=function() print("fxnextstatus pubfun") end},
+--    {subtopic="fxprev", subfun = function() print("fxprev subfun") end,
+--         pubtopic="fxprevstatus", pubfun=function() print("fxprevstatus pubfun") end},
+--    {subtopic="red", subfun = function() print("red subfun") end,
+--         pubtopic="redstatus", pubfun=function() print("redstatus pubfun") end},
+--    {subtopic="green", subfun = function() print("green subfun") end,
+--         pubtopic="greenstatus", pubfun=function() print("greenstatus pubfun") end},
+--    {subtopic="blue", subfun = function() print("blue subfun") end,
+--         pubtopic="bluestatus", pubfun=function() print("bluestatus pubfun") end}
 }
 
-storedNetworks = {
-    wifi0 = "psk0",
-    wifi1 = "psk1"
+config = {
+    mqttServer = "localhost",
+    mqttPort = 1883,
+    hostname = "none",
+    ssids = {
+        {ssid="testssid0", psk="testpsk0"},
+        {ssid="testssid1", psk="testpsk1"}
+    }
+
 }
+
+function listAP(t)
+    for k,v in pairs(t) do
+        print(k..": "..v)
+        if config["ssids"][k]
+        then
+            print("matched on "..config["ssids"][k])
+            wifi.sta.config({ssid=config["ssids"][k]["ssid"],
+            pwd==config["ssids"][k]["psk"],
+            save=true})
+            wifi.sta.connect(onWifiConnect)
+        end
+    end
+    print("No known APs, connecting via WPS...")
+    wps.enable()
+    wps.start(onWPSEnd)
+end
+
+function onWiFiConnect()
+    mqttConnect()
+end
+
+function onWPSEnd(status)
+    print("onWPSEnd status "..status)
+    if status == wps.SUCCESS then
+        wps.disable()
+        print("WPS: Success, connecting to AP...")
+        wifi.sta.connect()
+        return
+    elseif status == wps.FAILED then
+        print("WPS: Failed")
+    elseif status == wps.TIMEOUT then
+        print("WPS: Timeout")
+    elseif status == wps.WEP then
+        print("WPS: WEP not supported")
+    elseif status == wps.SCAN_ERR then
+        print("WPS: AP not found")
+    else
+        print(status)
+    end
+    wps.disable()
+end
+
+
 
 function pageFixup(html)
     html = string.gsub(html, "{{hostname}}", WiFi.hostname)
@@ -82,10 +132,6 @@ function buildTopics()
     end
 end
 
-function init()
-    param = 0
-end
-
 function deserialize()
     print("deserialize")
 end
@@ -96,6 +142,7 @@ end
 
 function connect()
     print("connect")
+    wifi.sta.getap(listAP)
     buildTopics()
 end
 
@@ -116,7 +163,7 @@ function help()
 end
 
 function handleCommand(data)
---    uart.write(0, string.format("Recieved data %s\r\n", data))
+    uart.write(0, string.format("Recieved data %s\r\n", data))
     local key = string.sub(data, 1, 1)
     if Commands[key]
     then
@@ -128,20 +175,64 @@ function handleCommand(data)
 end -- function
 
 function init()
+    param = 0
+    gpio.mode(4, gpio.OUTPUT)
+    wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, function(T)
+        print("\n\tSTA - CONNECTED".."\n\tSSID: "..T.SSID.."\n\tBSSID: "..
+        T.BSSID.."\n\tChannel: "..T.channel)
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.STA_DISCONNECTED, function(T)
+        print("\n\tSTA - DISCONNECTED".."\n\tSSID: "..T.SSID.."\n\tBSSID: "..
+        T.BSSID.."\n\treason: "..T.reason)
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.STA_AUTHMODE_CHANGE, function(T)
+        print("\n\tSTA - AUTHMODE CHANGE".."\n\told_auth_mode: "..
+        T.old_auth_mode.."\n\tnew_auth_mode: "..T.new_auth_mode)
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.STA_GOT_IP, function(T)
+        print("\n\tSTA - GOT IP".."\n\tStation IP: "..T.IP.."\n\tSubnet mask: "..
+        T.netmask.."\n\tGateway IP: "..T.gateway)
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.STA_DHCP_TIMEOUT, function()
+        print("\n\tSTA - DHCP TIMEOUT")
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.AP_STACONNECTED, function(T)
+        print("\n\tAP - STATION CONNECTED".."\n\tMAC: "..T.MAC.."\n\tAID: "..T.AID)
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.AP_STADISCONNECTED, function(T)
+        print("\n\tAP - STATION DISCONNECTED".."\n\tMAC: "..T.MAC.."\n\tAID: "..T.AID)
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.AP_PROBEREQRECVED, function(T)
+        print("\n\tAP - PROBE REQUEST RECEIVED".."\n\tMAC: ".. T.MAC.."\n\tRSSI: "..T.RSSI)
+    end)
+
+    wifi.eventmon.register(wifi.eventmon.WIFI_MODE_CHANGED, function(T)
+        print("\n\tSTA - WIFI MODE CHANGED".."\n\told_mode: "..
+        T.old_mode.."\n\tnew_mode: "..T.new_mode)
+    end)
+--     wifi.autoconnect()
     uart.setup(0, 115200, 8, uart.PARITY_NONE, uart.STOPBITS_1, 1)
     uart.on("data", 0, handleCommand, 0)
+    uart.write(0, "Hello\r\n")
 end
 
-function main()
---    init()
---    uart.write(0, "Hello\r\n")
-    while(true)
-    do
-        io.flush()
-        local input = io.read(1)
-        print("Input is", input)
-        handleCommand(input)
-    end
-end
+-- function main()
+--     init()
+--     while(true)
+--     do
+--         io.flush()
+--         local input = io.read(1)
+--         print("Input is", input)
+--         handleCommand(input)
+--     end
+-- end
 
-main()
+init()
+-- main()
