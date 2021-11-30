@@ -487,33 +487,42 @@ void mqttConnect()
     mqttClient->setKeepAliveInterval(5);
 }
 
-typedef std::pair<const char *, void (*)() > CmdPair;
-typedef std::map<char, CmdPair> Cmds;
-typedef Cmds::iterator CmdsIter;
+//typedef std::pair<const char *, void (*)() > CmdPair;
+//typedef std::map<char, CmdPair> Cmds;
+//typedef Cmds::iterator CmdsIter;
 
-Cmds cmds = {
-    {'-', CmdPair("Clear param", [](){ param = 0; })},
-    {'a', CmdPair("Save SSID/PSK to store", [](){ creds[WiFi.SSID().c_str()] = WiFi.psk().c_str(); serialize();})},
-    {'A', CmdPair("Load SSIDS from store", [](){ deserialize(); })},
-    {'C', CmdPair("Clear store", [](){ EEPROM.write(0, 0); EEPROM.write(1, 0); EEPROM.commit();})},
-    {'d', CmdPair("LED on", [](){ digitalWrite(2, LOW); })},
-    {'D', CmdPair("LED off", [](){ digitalWrite(2, HIGH); })},
-    {'e', CmdPair("Set FX Speed", [](){ fx.setSpeed(param); })},
-    {'f', CmdPair("Set FX Mode", [](){ fx.setMode(param); })},
-    {'h', CmdPair("Help", [](){ help(); listStoredNetworks(); })},
-    {'m', CmdPair("Connect to MQTT", [](){ mqttConnect(); })},
-    {'M', CmdPair("Disconnect from MQTT", [](){ mqttClient->disconnect(); })},
-    {'n', CmdPair("Scan and connect", [](){  connect(); })},
-    {'r', CmdPair("Reset", [](){  verbose("Resetting...\r\n"); while(1); })},
-    {'w', CmdPair("Webserver on", [](){  initWebServer(); webactive = true; })},
-    {'W', CmdPair("Webserver off", [](){  webactive = false; })}
+typedef struct
+{
+    char key;
+    char help[24];
+    void (*fun)();
+}Command;
+
+Command cmds[] = {
+    {'-', "Clear param", [](){ param = 0; }},
+    {'a', "Save SSID/PSK to store", [](){ creds[WiFi.SSID().c_str()] = WiFi.psk().c_str(); serialize();}},
+    {'A', "Load SSIDS from store", [](){ deserialize(); }},
+    {'C', "Clear store", [](){ EEPROM.write(0, 0); EEPROM.write(1, 0); EEPROM.commit();}},
+    {'d', "LED on", [](){ digitalWrite(2, LOW); }},
+    {'D', "LED off", [](){ digitalWrite(2, HIGH); }},
+    {'e', "Set FX Speed", [](){ fx.setSpeed(param); }},
+    {'f', "Set FX Mode", [](){ fx.setMode(param); }},
+    {'h', "Help", [](){ help(); listStoredNetworks(); }},
+    {'m', "Connect to MQTT", [](){ mqttConnect(); }},
+    {'M', "Disconnect from MQTT", [](){ mqttClient->disconnect(); }},
+    {'n', "Scan and connect", [](){  connect(); }},
+    {'r', "Reset", [](){  verbose("Resetting...\r\n"); while(1); }},
+    {'w', "Webserver on", [](){  initWebServer(); webactive = true; }},
+    {'W', "Webserver off", [](){  webactive = false; }}
 };
+
+#define NUMCOMMANDS (sizeof(cmds)/sizeof(cmds[0]))
 
 void help()
 {
-    for (auto && [first, second]: cmds)
+    for (uint8_t ii = 0; ii < NUMCOMMANDS; ii++)
     {
-        verbose("%c: %s\r\n", first, second.first);
+        verbose("%c: %s\r\n", cmds[ii].key, cmds[ii].help);
     }
 
     verbose("Internal hostname %s\r\n", hostname.c_str());
@@ -530,12 +539,14 @@ void handleCommand()
 {
 	uint8_t lastCommand;
     lastCommand = Serial.read();
-    CmdsIter iter = cmds.find(lastCommand);
-    if (iter != cmds.end())
+
+    for (uint8_t ii = 0; ii < NUMCOMMANDS; ii++)
     {
-        verbose("%s\r\n", iter->second.first);
-        iter->second.second();
-        return;
+        if (lastCommand == cmds[ii].key)
+        {
+            cmds[ii].fun();
+            return;
+        }
     }
 
     if (lastCommand >= '0' & lastCommand <= '9')
@@ -549,6 +560,7 @@ void breakit()
 {
     verbose("Broke!\r\n");
 }
+
 void mqttPing()
 {
     if (!mqttClient) return;
