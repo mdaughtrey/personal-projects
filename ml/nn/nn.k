@@ -28,30 +28,35 @@ alpha: 0.05
 iterations: 4000
 cost:()
 
+/ iin = a1 -> z1
+/ iact = z1 -> a1
+/ hin = a2 -> z2 -> ypred
+/ hact = ypred
 fprop:{[x0;w] / fprop
-    w[`z1]: w[`b1]+/:.k.dp[x0;w[`w1]]
-    w[`h1]:sigmoid'w[`z1]
-    w[`z2]: w[`b2]+/:.k.dp[w[`h1];w[`w2]]
-    w[`h2]:sigmoid'w[`z2]
+    w[`iout]: w[`b1]+/:_dot[w`w1]'x0       / input layer output
+    w[`iact]:sigmoid'w[`iout]              / input layer activated
+    w[`hout]: w[`b2]+/:_dot[w`w2]'w`iact   / hidden layer output
+    w[`hact]:sigmoid'w[`hout]              / hidden layer activated
     :w
 }
-
-/bprop:{[x0; y0; w] / bprop
-/    d2: (-(y0-w[`ypred])) * sigmoidd'w[`a2]
-/    w[`d_jw2]: .k.dp[+w[`z1];d2]
-/    d1: .k.dp[d2; +w[`w2]] * sigmoidd'w[`a1]
-/    w[`d_jw1]: .k.dp[+x0;d1]
-/    :w
 
 bprop:{[x0; y0; w] / bprop
-    d2: (w[`h2]-y0) * w[`h2] * (1-w[`h2])
-    d1: .k.dp[d2;+w[`w2]] * w[`h1] * (1 - w[`h1])
-    w[`dw2]: .k.dp[+w[`h1]; d2]
-    w[`db2]: +/d2
-    w[`dw1]: .k.dp[+x0;d1]
-    w[`db1]: +/d1
+    d2: (-(y0-w`hact)) * sigmoidd'w`hout
+    w[`d2]: _dot[,/d2;w`iact]
+    d1: (_dot[+w`w2]'d2) * sigmoidd'w[`iout]
+    w[`d1]:_dot[d1]'+x0
     :w
 }
+
+/bprop0:{[x0; y0; w] / bprop
+/    d2: (w[`h2]-y0) * w[`h2] * (1-w[`h2])
+/    d1: .k.dp[d2;+w[`w2]] * w[`h1] * (1 - w[`h1])
+/    w[`dw2]: .k.dp[+w[`h1]; d2]
+/    w[`db2]: +/d2
+/    w[`dw1]: .k.dp[+x0;d1]
+/    w[`db1]: +/d1
+/    :w
+/}
 
 .k.cost: ()
 
@@ -65,35 +70,34 @@ doit:{
     do[iterations
         / fprop propagation
         w: fprop[x0; w]
-
         / Back propagation
         w: bprop[x0; y0; w]
 
         / adjust
-        w[`w1`b1`w2`b2]-: alpha *' w[`dw1`db1`dw2`db2]
+/        w[`w1`b1`w2`b2]-: alpha *' w[`dw1`db1`dw2`db2]
 /        w[`w1]-: alpha * w[`dw1]
 /        w[`b1]-: alpha * w[`db1]
 /        w[`w2]-: alpha * w[`dw2]
 /        w[`b2]-: alpha * w[`db2]
 
         / Tweak the weights
-/        w[`w1]-:alpha * w[`d_jw1]
-/        w[`w2]-:alpha * w[`d_jw2]
+        w[`w1]-:alpha * w[`d1]
+        w[`w2]-:alpha * w[`d2]
 
         / Track the cost
-        .k.cost,: 0.5 * +/(y0 - w[`h2])^2   / j = cost
+        .k.cost,: c:0.5 * +/(y0 - w`hact)^2
+/        `0: ,,/$("w1 ";5:w`w1)
+/        `0: ,,/$("w2 ";5:w`w2)
+        `0: ,,/$("Cost ";5:c)
     ]
     .k.w: w
-/    `0: ,,/$("w1: ";5:w1)
-/    `0: ,,/$("w2: ";5:w2)
+    /`0: ,,/$("w1: ";5:w1)
+    /`0: ,,/$("w2: ";5:w2)
 }
 
-predict:{[a;w]
-    z1: _dot[a; w[`w1]] + w[`b1]
-    h1: sigmoid z1
-    z2: .k.dp[w[`h1];h[`w2]] + w[`b2]
-    h2: sigmoid z2
-    :h2
+test:{[i;p]
+    r: fprop[,i;.k.w]`hact
+    `0: ,,/$("Input ";5:i;" predicted ";p;" result ";5:*r)
 }
 
 \b 2
@@ -102,5 +106,5 @@ predict:{[a;w]
 /\b bprop *
 
 doit`
-predict[x0 2;.k.w]
-/ cost
+test .' +(x0;y0)
+
