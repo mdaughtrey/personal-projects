@@ -1,14 +1,9 @@
-/ https://welcomege.github.io/code-a-neural-network-from-scratch/
-\e 1
+/ https://medium.com/swlh/how-to-build-a-neural-network-from-scratch-b712d59ae641
+\e 0
 . "\\r ",$_t
 sigmoid:{1%1+_exp[-x]}
 sigmoidd:{_exp[-x]%(1+_exp[-x])^2}
 .k.dp:{+/''+x*\:/:+y}
-
-/def gaussian(u1,u2):
-/  z1 = sqrt(-2*log(u1))*cos(2*pi*u2)
-/    z2 = sqrt(-2*log(u1))*sin(2*pi*u2)
-/      return z1,z2
 
 x0:((0 0 0);(0 0 1);(0 1 0);(0 1 1);(1 0 0);(1 0 1);(1 1 0);(1 1 1))
 y0:((0);(1);(0);(1);(0);(1);(1);(1))
@@ -48,16 +43,6 @@ bprop:{[x0; y0; w] / bprop
     :w
 }
 
-/bprop0:{[x0; y0; w] / bprop
-/    d2: (w[`h2]-y0) * w[`h2] * (1-w[`h2])
-/    d1: .k.dp[d2;+w[`w2]] * w[`h1] * (1 - w[`h1])
-/    w[`dw2]: .k.dp[+w[`h1]; d2]
-/    w[`db2]: +/d2
-/    w[`dw1]: .k.dp[+x0;d1]
-/    w[`db1]: +/d1
-/    :w
-/}
-
 .k.cost: ()
 
 doit:{
@@ -73,26 +58,15 @@ doit:{
         / Back propagation
         w: bprop[x0; y0; w]
 
-        / adjust
-/        w[`w1`b1`w2`b2]-: alpha *' w[`dw1`db1`dw2`db2]
-/        w[`w1]-: alpha * w[`dw1]
-/        w[`b1]-: alpha * w[`db1]
-/        w[`w2]-: alpha * w[`dw2]
-/        w[`b2]-: alpha * w[`db2]
-
         / Tweak the weights
         w[`w1]-:alpha * w[`d1]
         w[`w2]-:alpha * w[`d2]
 
         / Track the cost
         .k.cost,: c:0.5 * +/(y0 - w`hact)^2
-/        `0: ,,/$("w1 ";5:w`w1)
-/        `0: ,,/$("w2 ";5:w`w2)
         `0: ,,/$("Cost ";5:c)
     ]
     .k.w: w
-    /`0: ,,/$("w1: ";5:w1)
-    /`0: ,,/$("w2: ";5:w2)
 }
 
 test:{[i;p]
