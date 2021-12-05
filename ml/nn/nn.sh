@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-k.exe nn
+k.exe nn0
