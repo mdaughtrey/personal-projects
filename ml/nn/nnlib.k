@@ -27,19 +27,19 @@ gaussian:{[u0;u1]   / gaussian
 / iact = z1 -> a1
 / hin = a2 -> z2 -> ypred
 / hact = ypred
-fprop:{[x0;w] / fprop
-    w[`iout]: w[`b1]+/:_dot[w`w1]'x0       / input layer output
+fprop:{[x;w] / fprop
+    w[`iout]: w[`b1]+/:_dot[w`w1]'x       / input layer output
     w[`iact]:config.actfun'w[`iout]    / input layer activated
     w[`hout]: w[`b2]+/:_dot[w`w2]'w`iact   / hidden layer output
     w[`hact]:config.actfun'w[`hout]    / hidden layer activated
     :w
 }
 
-bprop:{[x0; y0; w] / bprop
-    d2: (-(y0-w`hact)) * config.actfund'w`hout
+bprop:{[x; y; w] / bprop
+    d2: (-(y-w`hact)) * config.actfund'w`hout
     w[`d2]: _dot[,/d2;w`iact]
     d1: (_dot[+w`w2]'d2) * config.actfund'w[`iout]
-    w[`d1]:_dot[d1]'+x0
+    w[`d1]:_dot[d1]'+x
     :w
 }
 
@@ -54,8 +54,10 @@ train:{[w; x; y] / train
 
     do[config.iterations
         / fprop propagation
+        `0: "fprop..."
         w: fprop[x; w]
         / Back propagation
+        `0: ,"bprop"
         w: bprop[x; y; w]
 
         / Tweak the weights
@@ -64,7 +66,7 @@ train:{[w; x; y] / train
 
         / Track the cost
         cost,: c:0.5 * +/(y - w`hact)^2
-        `0: ,,/$("Cost ";5:c)
+        `0: ,,/$("Cost ";5:c;", ";5:_s)
     ]
     :w
 }
