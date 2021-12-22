@@ -16,7 +16,7 @@ def forward_propagation(W1, W2):
     a1 = np.dot(X, W1) + b1
     z1 = sigmoid(a1)
     a2 = np.dot(z1, W2) + b2
-    y_pred = sigmoid(a2)
+    y_pred = sigmoid(a1)
     return a1, z1, a2, y_pred
 
 def compute_cost(y_pred):
@@ -213,7 +213,6 @@ class NeuralNetwork:
             
 load()
 epochs = 10
-pdb.set_trace()
 ANN = NeuralNetwork(no_of_in_nodes = 784,
 	no_of_out_nodes = 10,
 	no_of_hidden_nodes = 100,
@@ -249,3 +248,4 @@ for i in range(epochs):
     print("accuracy train: ", corrects / ( corrects + wrongs))
     corrects, wrongs = ANN.evaluate(test_images, test_labels)
     print("accuracy: test", corrects / ( corrects + wrongs))
+
