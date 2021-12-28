@@ -36,9 +36,14 @@ fprop:{[x;w] / fprop
 }
 
 bprop:{[x; y; w] / bprop
+    1/0
     d2: (-(y-w`hact)) * config.actfund'w`hout
-    w[`d2]: _dot[,/d2;w`iact]
-    d1: (_dot[+w`w2]'d2) * config.actfund'w[`iout]
+    w[`d2]: _dot[w`iact]',/d2
+
+    d1: (_dot[,/d2]'+w`w2) * config.actfund'w[`iout]
+    
+/    w[`d2]: _dot[,/d2;w`iact]
+/    d1: (_dot[+w`w2]'d2) * config.actfund'w[`iout]
     w[`d1]:_dot[d1]'+x
     :w
 }
@@ -65,9 +70,12 @@ train:{[w; x; y] / train
         w[`w2]-:config.alpha * w[`d2]
 
         / Track the cost
+        1/0
         cost,: c:0.5 * +/(y - w`hact)^2
         `0: ,,/$("Cost ";5:c;", ";5:_s)
+
     ]
+    "weights" 1: w
     :w
 }
 
@@ -80,3 +88,4 @@ test:{[w;i;p] / test
     r: fprop[,i;w]`hact
     `0: ,,/$("Input ";5:i;" predicted ";p;" result ";5:*r)
 }
+
