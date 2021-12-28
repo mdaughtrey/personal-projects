@@ -70,7 +70,7 @@ fileHandler.setLevel(logging.DEBUG)
 logger.addHandler(fileHandler)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--frames', dest='frames', type=int, default=-1, help='frames to capture')
+parser.add_argument('--frames', dest='frames', type=int, default=1e6, help='frames to capture')
 parser.add_argument('--dev', dest='dev', help='image device')
 parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
 parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
@@ -278,7 +278,7 @@ def frame(port, num, stepLimit):
 #            msg = f'?{stepLimit}en'
         port.write(str.encode(msg))
         logger.debug(f'Serial write {msg}')
-        if b'{OIT:' == portWaitFor2(port, b'HDONE', b'{OIT:'):
+        if b'{NTO:' == portWaitFor2(port, b'HDONE', b'{NTO:'):
             logger.error("Frame init timed out [{}], exiting".format(text))
             sys.exit(0)
 
