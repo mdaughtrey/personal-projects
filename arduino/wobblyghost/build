@@ -1,0 +1,90 @@
+#!/bin/bash
+
+PROJ=wobblyghost
+PROJDIR=/personal-projects/arduino/wobblyghost
+PORT=/dev/ttyUSB0
+PLATFORM=esp8266:esp8266:generic
+IMAGE=${PROJ}.ino.bin
+UF2=${PROJ}.ino.uf2
+ELF=${PROJ}.ino.elf
+ACLI=~/acli/bin/arduino-cli
+#MOUNT=/media/rp2040
+
+DOCKERNAME=acli
+
+#ENVTYPE := $(or $(origin WSLENV), "linux")
+#ENVTYPE := $(or $(WSL_DISTRO_NAME), "linux")
+
+setup()
+{
+    ENVTYPE=${WSL_DISTRO_NAME:-linux}
+	echo envtype is $ENVTYPE
+    if [[ "linux" == "${ENVTYPE}" ]]; then
+        DOCKER=docker
+        LOCALVOL=~/personal-projects
+    else
+        LOCALVOL=$(wslpath -w ~/personal-projects)
+        DOCKER=docker.exe
+    fi
+}
+
+
+# Build remote
+#br:
+#	ssh mattd@pop-os  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects \
+#        --entrypoint /home/mattd/acli/bin/arduino-cli \
+#		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
+#
+build()
+{
+    setup
+	${DOCKER} run --rm -v ${LOCALVOL}:/personal-projects \
+        --entrypoint /home/mattd/acli/bin/arduino-cli \
+		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile \
+        --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} \
+        --output-dir  ${PROJDIR} \
+        --optimize-for-debug 
+}
+
+# Upload remote
+#ur: 
+#	scp pop-os:~${PROJDIR}/${IMAGE} /tmp
+#	sudo bossac -U --port=${PORT} -e -w /tmp/${IMAGE}
+
+upload()
+{
+	${ACLI} upload  -b ${PLATFORM} -p ${PORT} -i  ${IMAGE}
+}
+
+#a:
+#	docker attach acli
+
+screen()
+{
+	screen ${PORT} 115200
+}
+
+#c:
+#	cat ${PORT} > serial.log
+
+#f:
+#	sudo scp mattd@pop-os:~${PROJDIR}/${UF2} /media/rp2040/
+#
+#m:
+#	sudo mount /dev/sdc1 /media/rp2040  -o rw,users
+#
+#mc: 	# mount and copy
+#	./mntrp2040.sh
+#	sudo cp  ${UF2} ${MOUNT}
+#us:
+#	esptool --port ${PORT} --chip esp8266 --baud 460800 write_flash --flash_size=detect 0 ~${PROJDIR}/${IMAGE}
+#	screen ${PORT} 115200
+
+case "$1" in 
+    b) build ;;
+    br) buildremote ;;
+    u) upload ;;
+#    ur) uploadremote ;;
+    s) screen ;;
+    *) echo What? ;;
+esac
