@@ -11,6 +11,8 @@
 #include "Adafruit_MQTT_Client.h"
 #include "Arduino.h"
 //#include <list>
+#include <algorithm>
+#include <cctype>
 #include <vector>
 #include <string>
 //#include <regex>
@@ -26,7 +28,7 @@ WiFiClient client;
 WiFiManager wifiManager;
 WiFiManagerParameter param_mqttServer("mqttserver", "MQTT Server", "", 64);
 WiFiManagerParameter param_mqttPort("mqttport", "MQTT Port", "1883", 8);
-WiFiManagerParameter param_hostname("hostname", "Hostname", "rgb", 8);
+WiFiManagerParameter param_hostname("hostname", "Hostname", "rgb", 16);
 WS2812FX fx = WS2812FX(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 std::shared_ptr<Adafruit_MQTT_Client>  mqttClient;
 //ESP8266WebServer server(80);
@@ -50,10 +52,12 @@ typedef std::shared_ptr<Pub> PubPtr;
 
 typedef struct
 {
+    char sref[32];
     char subtopic[32];
     SubPtr sub;
     void (*subfun) (Sub*);
 
+    char pref[32];
     char pubtopic[32];
     PubPtr pub;
     void (*pubfun) (Pub*, char *);
@@ -79,27 +83,27 @@ void verbose(const char * fmt, ...)
 //};
 
 PubSubTuple pubSubs[] = {
-    {"led", SubPtr(), [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); },
-     "ledstatus", PubPtr(), [] (Pub * pub, char * data) {}},
+    {"led", "", SubPtr(), [] (Sub * sub) { digitalWrite(2, '0' == *(sub->lastread) ? LOW: HIGH); },
+     "ledstatus", "", PubPtr(), [] (Pub * pub, char * data) {}},
 
-    {"fx", SubPtr(), [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());},
-     "fxstatus", PubPtr(), [] (Pub * pub, char * data) {
+    {"fx", "", SubPtr(), [] (Sub * sub) { fx.setMode(String((const char *)sub->lastread).toInt());},
+     "fxstatus", "", PubPtr(), [] (Pub * pub, char * data) {
             verbose("Publishing fx mode %d\r\n", fx.getMode());
             verbose("Publishing fx mode %s\r\n",
                 (const char*)fx.getModeName(fx.getMode()));}},
 
-    {"speed", SubPtr(), [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); },
-     "speedstatus", PubPtr(), [] (Pub * pub, char * data) {}},
+    {"speed", "", SubPtr(), [] (Sub * sub) { fx.setSpeed(String((const char *)sub->lastread).toInt()); },
+     "speedstatus", "", PubPtr(), [] (Pub * pub, char * data) {}},
 
-    {"bright", SubPtr(), [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); },
-     "brightstatus", PubPtr(), [] (Pub * pub, char * data) {}},
+    {"bright", "", SubPtr(), [] (Sub * sub) { fx.setBrightness(String((const char *)sub->lastread).toInt()); },
+     "brightstatus", "", PubPtr(), [] (Pub * pub, char * data) {}},
 
-    {"color", SubPtr(), [] (Sub * sub) { 
+    {"color", "", SubPtr(), [] (Sub * sub) { 
             verbose("setColor %s\r\n", (const char *)sub->lastread);
             verbose("setColor %lu\r\n", std::stol((const char *)sub->lastread + 1, nullptr, 16)); 
             uint32_t val = std::stol((const char *)sub->lastread + 1, nullptr, 16);
             fx.setColor(val << 16, val << 24, val & 0xff);},
-     "", PubPtr(), [] (Pub * pub, char * data) {}},
+     "", "", PubPtr(), [] (Pub * pub, char * data) {}},
 
 //    {"fxprev", SubPtr(), [] (Sub * sub) { fx.setMode(fx.getMode() + fx.getModeCount() - 1 % fx.getModeCount());},
 //     "fxstatus", PubPtr(), [] (Pub * pub, char * data) {
@@ -113,27 +117,27 @@ PubSubTuple pubSubs[] = {
 //                (const char*)fx.getModeName(fx.getMode()));
 //            pub->publish((const char *)fx.getModeName(fx.getMode()));}},
 
-    {"green", SubPtr(),
+    {"green","",  SubPtr(),
         [] (Sub * sub) { verbose("Red %s\r\n", sub->lastread);
             fx.setColor((*fx.getColors(0)) & 0x00ff00ff | 
                 std::stoi((char *)sub->lastread) << 16);
             verbose("getColor %x\r\n", *fx.getColors(0)); }, 
-        "", PubPtr(), [] (Pub * pub, char * data) {}},
+        "", "", PubPtr(), [] (Pub * pub, char * data) {}},
 
-    {"red", SubPtr(),
+    {"red", "", SubPtr(),
         [] (Sub * sub) { verbose("Green %s\r\n", sub->lastread); 
             fx.setColor((*fx.getColors(0)) & 0x0000ffff | 
                 std::stoi((char *)sub->lastread) << 8); 
             verbose("getColor %x\r\n", *fx.getColors(0)); }, 
-        "", PubPtr(),
+        "", "", PubPtr(),
         [] (Pub * pub, char * data) {}},
 
-    {"blue", SubPtr(),
+    {"blue", "", SubPtr(),
         [] (Sub * sub) { verbose("Blue %s\r\n", sub->lastread); 
             fx.setColor((*fx.getColors(0)) & 0x00ffff00 | 
                 std::stoi((char *)sub->lastread)), 
             verbose("getColor %x\r\n", *fx.getColors(0)); }, 
-        "", PubPtr(),
+        "", "", PubPtr(),
         [] (Pub * pub, char * data) {}}
 };
 
@@ -157,12 +161,12 @@ void buildTopics()
     PubSubTuple * psp(pubSubs);
     for (uint8_t ii = 0; ii < NUMSUBS; ii++, psp++)
     {
-        snprintf(psp->subtopic, 32, "/%s/%s", WiFi.hostname().c_str(), psp->subtopic);
+        snprintf(psp->subtopic, 32, "/%s/%s", WiFi.hostname().c_str(), psp->sref);
         psp->sub.reset(new Adafruit_MQTT_Subscribe(mqttClient.get(), psp->subtopic));
         mqttClient->subscribe(psp->sub.get());
         verbose("Sub Topic %s\r\n", psp->subtopic);
 
-        snprintf(psp->pubtopic, 32, "/%s/%s", WiFi.hostname().c_str(), psp->pubtopic);
+        snprintf(psp->pubtopic, 32, "/%s/%s", WiFi.hostname().c_str(), psp->pref);
 //        pubSubs[ii].pub.reset(new Adafruit_MQTT_Subscribe(mqttClient.get(), pubSubs[ii].pubtopic));
 //        mqttClient->subscribe(pubSubs[ii].pub.get());
         verbose("Pub Topic %s\r\n", psp->pubtopic);
@@ -239,8 +243,8 @@ void deserialize()
     std::string first("");
     std::string second("");
 
-	hostname = "";
-	mqtt_server = "";
+//	hostname = "";
+//	mqtt_server = "";
 
     int size(EEPROM.read(0) << 8 | EEPROM.read(1));
     verbose("Size %d\r\n", size);
@@ -373,6 +377,7 @@ void setup()
     char buffer[64];
     snprintf(buffer, 64, "Color%04X", WIFI_getChipId() & 0xffff);
     hostname = buffer;
+    verbose("Hostname got set to %s\r\n", hostname.c_str());
     deserialize();
 //    fx.setMode(fxMode);
 //    connect();
@@ -446,14 +451,19 @@ void doWifiManager()
 {
     wifiManager.addParameter(&param_mqttServer);
     wifiManager.addParameter(&param_mqttPort);
-    wifiManager.addParameter(&param_hostname);
     param_hostname.setValue(hostname.c_str(), hostname.length());
+    wifiManager.addParameter(&param_hostname);
 //        wifiManager.setAPCallback(configModeCallback);
+    verbose("hostname pre wifi manager is %s\r\n", hostname.c_str());
     wifiManager.autoConnect(hostname.c_str());
     if (WiFi.isConnected())
     {
         mqtt_server = param_mqttServer.getValue();
+        std::transform(mqtt_server.begin(), mqtt_server.end(), mqtt_server.begin(),
+            [](unsigned char c){ return std::tolower(c); });
         hostname = param_hostname.getValue();
+        std::transform(hostname.begin(), hostname.end(), hostname.begin(), 
+            [](unsigned char c){ return std::tolower(c); });
         mqtt_port = std::stol(param_mqttPort.getValue());
         verbose("Connected via WiFi creds to %s\r\n", WiFi.SSID());
     }
@@ -461,14 +471,22 @@ void doWifiManager()
 
 void connect()
 {
-    uint8_t rc;
-    // Try scanning other networks we know about
+    uint8_t rc = WL_IDLE_STATUS;
+    WiFi.begin();
+    uint8_t retries = 10;
+    while (rc != WL_CONNECTED && rc != WL_CONNECT_FAILED && retries--)
+    {
+        rc = WiFi.status();
+        verbose("WiFi.begin returns %d\r\n", rc);
+        delay(500);
+    }
     if (WiFi.isConnected())
     {
         WiFi.setHostname(hostname.c_str());
         verbose("Connected via WiFi creds to %s\r\n", WiFi.SSID());
         return;
     }
+    // Try scanning other networks we know about
     scanAndConnect();
     if (WiFi.isConnected())
     {
