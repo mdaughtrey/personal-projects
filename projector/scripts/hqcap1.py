@@ -47,7 +47,8 @@ lastTension = 0
 numframes = 0
 captureProc = None
 
-stepLimits = (43,43,43,43,43,43,42)
+intervals = []
+lastInterval = 0
 
 Geometry = {'geo0':' --mode 0', 
     'geo1':' --left 804 --top 225 --mode 0', 
@@ -85,6 +86,7 @@ parser.add_argument('--picamera', dest='picamera', action='store_true', default=
 parser.add_argument('--picameracont', dest='picameracont', action='store_true', default=False, help='use picamera lib')
 parser.add_argument('--frameinterval', dest='frameinterval', type=int, default=45, help='Frame Interval')
 parser.add_argument('--nocam', dest='nocam', action='store_true', default=False, help='no camera operations')
+parser.add_argument('--intervals', dest='intervals', help='n,n,n...', required=True)
 config = parser.parse_args()
 
 if config.picamera or config.picameracont and 0 == config.nocam:
@@ -102,29 +104,47 @@ def signal_handler(signal, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
+#def portWaitFor(port, text):
+#    accum = b''
+#    logger.debug("Waiting on %s" % text)
+#    while not text in accum:
+#        accum += port.read()
+#        #logger.debug("Accumulating %s" % accum)
+#    logger.debug("Received %s" % text)
+#    return accum
+
 def portWaitFor(port, text):
     accum = b''
-    logger.debug("Waiting on %s" % text)
-    while not text in accum:
-        accum += port.read()
-        #logger.debug("Accumulating %s" % accum)
-    logger.debug("Received %s" % text)
-    return accum
+    if isinstance(text, bytes):
+        text = [text]
 
-def portWaitFor2(port, text1, text2):
-    accum = b''
-    logger.debug("Waiting on %s or %s" % (text1, text2))
-    while not text1 in accum and not text2 in accum:
+    logger.debug("Waiting on %s" % str(text))
+
+    res = [False]
+    
+    while True not in res:
         accum += port.read()
-        #logger.debug("Accumulating %s" % accum)
-    if text1 in accum:
-        logger.debug("Matched on %s" % text1)
-        logger.debug(f'Accumulated {accum}')
-        return text1
-    if text2 in accum:
-        logger.debug("Matched on %s" % text2)
-        logger.debug(f'Accumulated {accum}')
-        return text2
+#        logger.debug(f'Accumulated {accum}')
+        res = [t in accum for t in text]
+#        logger.debug(f'res {res}')
+
+    logger.debug(f'portWaitFor {res.index(True)}')
+    return text[res.index(True)]
+
+#def portWaitFor2(port, text1, text2):
+#    accum = b''
+#    logger.debug("Waiting on %s or %s" % (text1, text2))
+#    while not text1 in accum and not text2 in accum:
+#        accum += port.read()
+#        #logger.debug("Accumulating %s" % accum)
+#    if text1 in accum:
+#        logger.debug("Matched on %s" % text1)
+#        logger.debug(f'Accumulated {accum}')
+#        return text1
+#    if text2 in accum:
+#        logger.debug("Matched on %s" % text2)
+#        logger.debug(f'Accumulated {accum}')
+#        return text2
 
 #def captureProc(framenum):
 #    outfile = "{}".format("{:s}/{:s}{:06d}a.png".format(config.dir, config.prefix, framenum))
@@ -195,13 +215,14 @@ def captureWaitFor2(proc, text1, text2):
         logger.debug("Matched on %s" % text2)
         return (1, text2)
 
-def init(framenum):
+def init(framenum, interval):
     global tension
     t = Tension()
     global numframes
     (filmlength, numframes, tension) = t.feedstats(config.startdia, config.enddia)
     numframes += 1000
     logger.debug("Length {}m, {} Frames".format(math.floor(filmlength/1000), numframes))
+    map (lambda x: x * 3, tension)
 
     global lastTension
     lastTension = tension[0]
@@ -243,7 +264,12 @@ def init(framenum):
     if serPort.isOpen():
         serPort.close()
     serPort.open()
-    serPort.write(str.encode(f'33tl1d2D{config.frameinterval}e0E6000o'))
+#$    serPort.write(b' ')
+#    if b'{State:Ready}' != portWaitFor(serPort, b'{State:Ready}'):
+#        logger.debug("Init failed")
+#        sys.exit(1)
+
+    serPort.write(str.encode(f'{lastTension}tl1d2D{interval}e0E6000o'))
 #    portWaitFor(serPort, b'{State:Ready}')
 #    if False == config.noled:
 #        serPort.write(b'l')
@@ -259,27 +285,28 @@ def stop(port):
     logger.debug("Closing")
     port.close()
 
-def frame(port, num, stepLimit):
+def frame(port, num, interval):
     global lastTension
-    global lastStep
     try:
         if (tension[num] != lastTension) & (num < (len(tension) - 1)):
             lastTension = tension[num]
             port.write('-{}t'.format(tension[num]*3).encode('utf-8'))
-            logger.debug("Set tension {}".format(lastTension*3))
+            logger.debug("Set tension {}".format(lastTension))
     except:
         pass
 
     if False == config.nofilm:
-        msg = 'mn'
-#        if setLimit < lastStep:
-#        msg = f'?{stepLimit}emn'
-#        else:
-#            msg = f'?{stepLimit}en'
+#        msg = 'mn'
+        global lastInterval
+        if interval < lastInterval:
+            msg = f'?{interval}emn'
+        else:
+            msg = f'?{interval}en'
         port.write(str.encode(msg))
         logger.debug(f'Serial write {msg}')
-        if b'{NTO:' == portWaitFor2(port, b'HDONE', b'{NTO:'):
-            logger.error("Frame init timed out [{}], exiting".format(text))
+        if b'{NTO}' == portWaitFor(port, [b'{HDONE}', b'{NTO}']):
+            logger.error("Frame init timed out, exiting")
+            port.write(b' ')
             sys.exit(0)
 
 #    if config.singleframe:
@@ -380,6 +407,8 @@ def exptestframe(port, num):
     return 0
 
 def main():
+    global intervals
+    intervals = [int(mm) for mm in config.intervals.split(',')]
     os.makedirs(config.dir, exist_ok=True);
     files = sorted(glob("{0}/{1}??????a.rgb".format(config.dir, config.prefix)))
     if len(files):
@@ -388,7 +417,7 @@ def main():
         frameNum = 0
     logger.debug("Starting at frame {0}".format(frameNum))
     global port
-    port = init(frameNum)
+    port = init(frameNum, intervals[0])
     frameCount = 0
     #for frameCount in range(0, config.frames):
     for frameCount in range(0, min(config.frames, numframes)):
@@ -399,7 +428,7 @@ def main():
             else:
                 logger.info('Waiting for disk space')
                 time.sleep(10)
-        if frame(port, frameNum, stepLimits[frameNum % len(stepLimits)]): break
+        if frame(port, frameNum, intervals[frameNum % len(intervals)]): break
         #if exptestframe(port, frameNum): break
         frameNum += 1
     stop(port)
