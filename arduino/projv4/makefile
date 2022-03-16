@@ -45,7 +45,7 @@ a:
 	docker attach acli
 
 s:
-	screen ${PORT} 115200
+	screen -L ${PORT} 115200
 
 c:
 	cat ${PORT} > serial.log
