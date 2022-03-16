@@ -109,7 +109,7 @@ void isr2()
 {
     isr2count++;
     //if (config.rising & digitalRead(EncoderPin0))
-    if (digitalRead(EncoderPin0)
+    if (digitalRead(EncoderPin0))
     {
         encoderPos++;
     }
@@ -233,6 +233,7 @@ void dumpConfig(uint8_t th)
     verbose(th, "verbose: %d\r\n", config.verbose);
     verbose(th, "stepper::delta %d\r\nstepper::stepIndex %d\r\nstepper::lastMove %d\r\nmillis %d\r\n\r\n",
         stepper::getdelta(), stepper::getstepindex(), stepper::getlastmove(), millis());
+    verbose(th, "End Config\r\n");
 }
 
 void help()
@@ -265,18 +266,18 @@ void help()
 }
 
 
-void coilControl()
-{
-    lastCommand = Serial.read();
-    switch (lastCommand)
-    {
-    case '1': coilCtrl(0, 0); break;
-    case '2': coilCtrl(0, 1); break;
-    case '3': coilCtrl(1, 0); break;
-    case '4': coilCtrl(1, 1); break;
-    default: setup(); break;
-    }
-}
+//void coilControl()
+//{
+//    lastCommand = Serial.read();
+//    switch (lastCommand)
+//    {
+//    case '1': coilCtrl(0, 0); break;
+//    case '2': coilCtrl(0, 1); break;
+//    case '3': coilCtrl(1, 0); break;
+//    case '4': coilCtrl(1, 1); break;
+//    default: setup(); break;
+//    }
+//}
 
 
 void handleCommand()
@@ -295,7 +296,7 @@ void handleCommand()
         case '.': stepper::stop(); break;
 
         case 'c': config.param = 0; break;
-        case 'C': commandHandler = coilControl(); break;
+//        case 'C': commandHandler = coilControl(); break;
         case 'd': stepdelay(); break;
         case 'D': slowstepdelay(); break;
 
@@ -394,7 +395,7 @@ void zeroPoll()
     {
         return;
     }
-    verbose(2, "zeroPoll elapsed %u\r\n", millis() - config.encoderTime());
+    verbose(2, "zeroPoll elapsed %u\r\n", millis() - config.encoderTime);
     if ((millis() - config.encoderTime) > config.encoderTO)
     {
         stepcount(0);
