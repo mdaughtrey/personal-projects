@@ -2,12 +2,12 @@
 
 #set +o noexec
 
-PROJECT=mechtest12
+PROJECT=mechtest13
 #TYPE=super8
 #ROOTOFALL=/media/sf_vproj/scans/
-#ROOTOFALL=/media/currentscan/scans/
+ROOTOFALL=/media/currentscan/scans/
 #IMPORT=/p/vproj/scans
-ROOTOFALL=/media/sf_vproj/scans/
+#ROOTOFALL=/media/sf_vproj/scans/
 mkdir -p $ROOTOFALL/$PROJECT
 RP="${ROOTOFALL}/${PROJECT}"
 
@@ -137,7 +137,11 @@ stitch()
 peek()
 {
 	#ls ${RP}/png_cropped/*.png | sed "s/.*/file '\0'/" > /tmp/filelist.txt
-	ls ${RP}/png_cropped/*.png  > /tmp/filelist.txt
+	if [[ "cb" == "$1" ]]; then
+		ls ${RP}/png_cropped/??????a_cropboxes.png  > /tmp/filelist.txt
+	else
+		ls ${RP}/png_cropped/??????a.png  > /tmp/filelist.txt
+	fi
     	#ffmpeg -y -i /tmp/filelist.txt -vcodec libx264 -r 30 -pix_fmt yuv420p ${RP}/${PROJECT}_peek.mp4
 	if [[ ! -f "${RP}/peek.yuv" ]]; then
 		mplayer -msglevel all=6 -lavdopts threads=`nproc` \
@@ -145,7 +149,11 @@ peek()
 		    -quiet -mf fps=15 -benchmark -nosound -noframedrop -noautosub \
        	     	-vo yuv4mpeg:file=${RP}/peek.yuv
 	fi
-	ffmpeg -i ${RP}/peek.yuv -vf scale=720:-2 ${RP}/peek.mp4
+	if [[ "cb" == "$1" ]]; then
+		ffmpeg -i ${RP}/peek.yuv -vf scale=720:-2 ${RP}/peekcb.mp4
+	else
+		ffmpeg -i ${RP}/peek.yuv -vf scale=720:-2 ${RP}/peek.mp4
+	fi
 #	rm ${RP}/peek.yuv
 }
 
@@ -205,9 +213,8 @@ case "$1" in
 #    gen) use=${2:-ac}
 #        bash -x ../gencontenthq.sh -h -r ${ROOTOFALL} -p ${PROJECT} -u ${use} ;;
     import) import ;;
-    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png  --draft --serialize --onefile 000836a.rgb;;
-    #pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png  --draft --serialize --nowrite ;;
-#    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png  --draft ;;
+    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png --nowrite --draft;;
+#    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png  --serialize --draft --onefile 000682a.rgb --overwrite ;;
     deshake) deshake > deshake.log 2>&1 ;;
     vidstab) vidstab ;; # > vidstab.log 2>&1 ;;
     scenedetect) doscenedetect ;;
@@ -215,6 +222,7 @@ case "$1" in
     build) build $2 ;;
     stitch) stitch ;;
     peek) peek ;;
+    peekcb) peek cb ;;
     graph) ./graph.py ${RP} ;;
 #    png2mp4) ffmpeg -i ${RP}/png_stabilized-2x-RIFE/%08d.png -vcodec libx264 -r 30 -pix_fmt yuv420p -tune grain,stillimage ${RP}/final.mp4 ;;
     *) echo What?
