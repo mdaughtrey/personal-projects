@@ -58,9 +58,12 @@ void stepcount(int16_t sc) { config.stepCount = sc; config.param = 0; }
 void encoderStart() { config.encoderTime = millis(); }
 void encoderTO() { config.encoderTO = config.param; config.param = 0; }
 
-int encoderPos = 0;
-int isr1count = 0;
-int isr2count = 0;
+volatile int encoderPos = 0;
+volatile int isr1count = 0;
+volatile int isr2count = 0;
+void handleCommand();
+void coilControl();
+void (*commandHandler)() = handleCommand;
 
 void verbose(uint8_t threshold, const char * fmt, ...)
 {
@@ -76,14 +79,15 @@ void verbose(uint8_t threshold, const char * fmt, ...)
 void isr1()
 {
     isr1count++;
-    if (config.rising & !digitalRead(EncoderPin1))
+    //if (config.rising & !digitalRead(EncoderPin1))
+    if (!digitalRead(EncoderPin1))
     {
         encoderPos++;
     }
-//    else
-//    {
-//        encoderPos--;
-//    }
+    else
+    {
+        encoderPos--;
+    }
 
     if (config.slowEncoderThreshold && (encoderPos > config.slowEncoderThreshold))
     {
@@ -92,6 +96,7 @@ void isr1()
     if (config.encoderLimit && (encoderPos > config.encoderLimit))
     {
         stepcount(0);
+        stepper::stop(); 
     }
 //    if (config.verbose)
 //    {
@@ -103,14 +108,15 @@ void isr1()
 void isr2()
 {
     isr2count++;
-    if (config.rising & digitalRead(EncoderPin0))
+    //if (config.rising & digitalRead(EncoderPin0))
+    if (digitalRead(EncoderPin0)
     {
         encoderPos++;
     }
-//    else
-//    {
-//        encoderPos++;
-//    }
+    else
+    {
+        encoderPos++;
+    }
 //    if (config.verbose)
 //    {
 //        Serial.println("ISR2: ");
@@ -236,6 +242,7 @@ void help()
     Serial.println("<: step clockwise");
     Serial.println(">: step counterclockwise");
     Serial.println("c: param = 0");
+    Serial.println("C: coilControl");
     Serial.println("d: step delay (param)");
     Serial.println("D: slow step delay (param)");
     Serial.println("e: encoder limit (param)");
@@ -257,6 +264,21 @@ void help()
     Serial.println("z: hunt");
 }
 
+
+void coilControl()
+{
+    lastCommand = Serial.read();
+    switch (lastCommand)
+    {
+    case '1': coilCtrl(0, 0); break;
+    case '2': coilCtrl(0, 1); break;
+    case '3': coilCtrl(1, 0); break;
+    case '4': coilCtrl(1, 1); break;
+    default: setup(); break;
+    }
+}
+
+
 void handleCommand()
 {
     uint8_t t;
@@ -273,6 +295,7 @@ void handleCommand()
         case '.': stepper::stop(); break;
 
         case 'c': config.param = 0; break;
+        case 'C': commandHandler = coilControl(); break;
         case 'd': stepdelay(); break;
         case 'D': slowstepdelay(); break;
 
@@ -371,6 +394,7 @@ void zeroPoll()
     {
         return;
     }
+    verbose(2, "zeroPoll elapsed %u\r\n", millis() - config.encoderTime());
     if ((millis() - config.encoderTime) > config.encoderTO)
     {
         stepcount(0);
@@ -400,7 +424,8 @@ void loop ()
     dumpConfig(3);
     if (Serial.available())
     {
-        handleCommand();
+        commandHandler();
+//        handleCommand();
     }
     if (config.stepCount > 0)
     {

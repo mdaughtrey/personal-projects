@@ -8,4 +8,5 @@ void ccw();
 int8_t getdelta();
 uint8_t getstepindex();
 uint32_t getlastmove();
+void coilCtrl(uint8_t a, uint8_t l);
 }

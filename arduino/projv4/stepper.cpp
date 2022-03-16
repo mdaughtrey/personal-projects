@@ -4,13 +4,6 @@
 namespace stepper
 {
 
-// const uint8_t pinControlF[] = { // Fullstep
-// 0b0000,
-// 0b0010,
-// 0b0100,
-// 0b0001,
-// 0b1000};
-
 const uint8_t pinControl[] = { // Halfstep
 0b0000,
 0b1010,
@@ -85,6 +78,27 @@ void cw()
 {
     delta = -1;
 //    stepIndex = numControl - 1;
+}
+
+
+void coilCtrl(uint8_t a, uint8_t l)
+{
+    if (0 == a)
+    {
+        digitalWrite(motorPin1, l);
+        digitalWrite(motorPin2, !l);
+    }
+    else
+    {
+        digitalWrite(motorPin3, l);
+        digitalWrite(motorPin4, !l);
+    }
+}
+
+void coilAPos()
+{
+    digitalWrite(motorPin1, 1);
+    digitalWrite(motorPin2, 0);
 }
 
 void ccw()
