@@ -87,6 +87,26 @@ void cw()
 //    stepIndex = numControl - 1;
 }
 
+void coilCtrl(uint8_t a, uint8_t l)
+{
+    if (0 == a)
+    {
+        digitalWrite(motorPin1, l);
+        digitalWrite(motorPin2, !l);
+    }
+    else
+    {
+        digitalWrite(motorPin3, l);
+        digitalWrite(motorPin4, !l);
+    }
+}
+
+void coilAPos()
+{
+    digitalWrite(motorPin1, 1);
+    digitalWrite(motorPin2, 0);
+}
+
 void ccw()
 {
     delta = 1;
