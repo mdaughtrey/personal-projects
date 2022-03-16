@@ -82,15 +82,14 @@ void verbose(uint8_t threshold, const char * fmt, ...)
 void isr1()
 {
     isr1count++;
-//    if (config.rising & !digitalRead(EncoderPin1))
     if (config.rising)
     {
         encoderPos++;
     }
-//    else
-//    {
-//        encoderPos--;
-//    }
+    else
+    {
+        encoderPos--;
+    }
 
     if (config.slowEncoderThreshold && (encoderPos > config.slowEncoderThreshold))
     {
@@ -99,6 +98,7 @@ void isr1()
     if (config.encoderLimit && (encoderPos > config.encoderLimit))
     {
         stepcount(0);
+        stepper::stop(); 
     }
 //    if (config.verbose)
 //    {
@@ -262,6 +262,7 @@ void help()
     Serial.println("a: fan on");
     Serial.println("A: fan off");
     Serial.println("c: param = 0");
+    Serial.println("C: coilControl");
     Serial.println("d: step delay (param)");
     Serial.println("D: slow step delay (param)");
     Serial.println("e: encoder limit (param)");

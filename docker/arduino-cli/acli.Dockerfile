@@ -40,7 +40,8 @@ RUN ~/acli/bin/arduino-cli lib install gxepd2
 RUN ~/acli/bin/arduino-cli lib install Adafruit_VL53L0X
 RUN ~/acli/bin/arduino-cli lib install AsyncStepperLib
 RUN ~/acli/bin/arduino-cli lib install 'Adafruit MQTT Library'
-RUN ~/acli/bin/arduino-cli lib install  WS2812FX
+RUN ~/acli/bin/arduino-cli lib install WS2812FX
+RUN ~/acli/bin/arduino-cli lib install WiFiManager
 # https://roboticsbackend.com/arduino-stl-library/
 RUN cd ~/Arduino/libraries && git clone https://github.com/maniacbug/StandardCplusplus.git
 #ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]

@@ -1,13 +1,15 @@
 PROJ=projv4
 PROJDIR=/personal-projects/arduino/projv4
 PORT=/dev/ttyACM0
+#PORT=/dev/ttyS0
 PLATFORM=rp2040:rp2040:generic
 IMAGE=${PROJ}.ino.bin
 UF2=${PROJ}.ino.uf2
 ELF=${PROJ}.ino.elf
-ACLI=~/acli/bin/arduino-cli
+ACLI=/home/mattd/acli/bin/arduino-cli
 MOUNT=/media/rp2040
 
+DOCKERHOST=DESKTOP-TOJK787
 DOCKERNAME=acli
 DOCKER=docker
 
@@ -33,6 +35,8 @@ u:
 	${ACLI} upload  -b ${PLATFORM} -p ${PORT} -i  ${UF2}
 #	stty -F ${PORT} 1200
 #	bossac --port=${PORT} -e -w -v -b ${IMAGE}
+ur: 
+	${ACLI} upload --log-level trace --log-file acli.log -b ${PLATFORM} -p ${PORT} -i /home/mattd/mnt/arduino/projv4/projv4.ino.uf2
 
 a:
 	docker attach acli
@@ -55,3 +59,10 @@ c:
 #us:
 #	esptool --port ${PORT} --chip esp8266 --baud 460800 write_flash --flash_size=detect 0 ~${PROJDIR}/${IMAGE}
 #	screen ${PORT} 115200
+
+sshfs:
+	sudo sshfs -o allow_other mattd@${DOCKERHOST}:/home/mattd/dev/personal-projects /home/mattd/mnt
+	#sudo sshfs -o allow_other mattd@pop-os:/home/mattd/personal-projects /home/mattd/mnt
+
+unmount:
+	sudo fusermount -u /home/mattd/mnt
