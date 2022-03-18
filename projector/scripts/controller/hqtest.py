@@ -370,7 +370,7 @@ def threadrun(fromdir, todir, file):
 #        bfile = outfile.replace('.png', f'_{b}.png')
 #        blurred.save(bfile)
 #    image = cv2.GaussianBlur(image, {'width':4,'height':4}, 0, 0, cv2.BORDER_REFLECT_101)
-    image = findSprocketsS8(image, None)
+    image = findSprocketsS8(image, outfile)
     if False == config.nowrite:
         image.save(outfile)
 

@@ -2,7 +2,7 @@
 
 #set +o noexec
 
-PROJECT=mechtest13
+PROJECT=1_of_9
 #TYPE=super8
 #ROOTOFALL=/media/sf_vproj/scans/
 ROOTOFALL=/media/currentscan/scans/
@@ -213,7 +213,7 @@ case "$1" in
 #    gen) use=${2:-ac}
 #        bash -x ../gencontenthq.sh -h -r ${ROOTOFALL} -p ${PROJECT} -u ${use} ;;
     import) import ;;
-    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png --nowrite --draft;;
+    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png --draft;;
 #    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png  --serialize --draft --onefile 000682a.rgb --overwrite ;;
     deshake) deshake > deshake.log 2>&1 ;;
     vidstab) vidstab ;; # > vidstab.log 2>&1 ;;
