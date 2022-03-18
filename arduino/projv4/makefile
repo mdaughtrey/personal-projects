@@ -15,9 +15,12 @@ DOCKER=docker
 
 # Build remote
 br:
-	ssh mattd@pop-os  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects \
+	ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/dev/personal-projects:/personal-projects \
         --entrypoint /home/mattd/acli/bin/arduino-cli \
 		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
+#	ssh mattd@pop-os  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects \
+#        --entrypoint /home/mattd/acli/bin/arduino-cli \
+#		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
 	
 # Build
 b:
@@ -42,7 +45,7 @@ a:
 	docker attach acli
 
 s:
-	screen ${PORT} 115200
+	screen -L ${PORT} 115200
 
 c:
 	cat ${PORT} > serial.log

@@ -80,7 +80,6 @@ void cw()
 //    stepIndex = numControl - 1;
 }
 
-
 void coilCtrl(uint8_t a, uint8_t l)
 {
     if (0 == a)

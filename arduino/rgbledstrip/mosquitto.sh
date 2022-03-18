@@ -1,2 +1,2 @@
 #!/bin/bash
-mosquitto -v -c mosquitto.conf
+screen -S mosquitto mosquitto -v -c mosquitto.conf
