@@ -87,15 +87,13 @@ parser.add_argument('--picameracont', dest='picameracont', action='store_true', 
 parser.add_argument('--frameinterval', dest='frameinterval', type=int, default=45, help='Frame Interval')
 parser.add_argument('--nocam', dest='nocam', action='store_true', default=False, help='no camera operations')
 parser.add_argument('--intervals', dest='intervals', help='n,n,n...', required=True)
-parser.add_argument('--draft', dest='draft', action='store_true', default=False, help='draft mode')
+parser.add_argument('--res', dest='res', choices=['draft','1k', 'hd', 'full'], help="resolution")
 config = parser.parse_args()
 
 if config.picamera or config.picameracont and 0 == config.nocam:
     camera = PiCamera()
-    if config.draft:
-    	camera.resolution = (640, 480)
-    else:
-    	camera.resolution = (4056, 3040)
+    res = {'draft':(640, 480), '1k':(1024,768), 'hd':(1920, 1080), 'full':(4056, 3040)}
+    camera.resolution = res[config.res]
     camera.shutter_speed = 700 # 700us
 
 

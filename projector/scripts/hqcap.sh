@@ -1,11 +1,13 @@
 #!/bin/bash
 
 # mechtest13 42 6/7
-INTERVALS=42,43,43,43,43,43,43,43,43
+#1 of 9INTERVALS=42,43,43,43,43,43,43,43,43
+INTERVALS=42,43,43,43,43,43,43,43,43,42,43,43,43,43,43,43,43,43,43
+
 # mechtest14 32 2/13
 #INTERVALS=43
 
-PROJECT=1_of_9
+PROJECT=hd0
 
 run()
 {
@@ -15,8 +17,9 @@ run()
         --dir /mnt/exthd/${PROJECT} \
         --single --picameracont \
         --intervals=${INTERVALS} \
-        --draft \
-        --frames=1500
+        --frames=100 \
+        --nocam
+#        --draft 
 }
 
 batch()
