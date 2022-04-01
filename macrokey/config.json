@@ -1,0 +1,22 @@
+{"buttons": [
+    {"label": "Mute"},
+    {"label": "1Password"},
+    {"label": "ADU"},
+    {"label": "ADP"},
+    {"label": "sysdev"},
+    {"label": "new sysdev"},
+    {"label": "vim kzsload"},
+    {"label": "SVN Checkout"},
+    {"label": "Murphy"},
+    {"label": "unalias ls"},
+    {"label": "tar czf"},
+    {"label": "tar xzf"},
+    {"label": "PC am1egw"},
+    {"label": "PC 001"},
+    {"label": "PC 002"},
+    {"label": "saz"},
+    {"label": "Play/Pause"},
+    {"label": "SM am1egw"},
+    {"label": "SM 001"},
+    {"label": "SM 002"}
+]}
