@@ -9,9 +9,12 @@ import pdb
 import sys
 import time
 
+class Meta():
+    def __init__(tag, name):
+        self.tag = name
+
 cmdline = None
 logger = None
-config = {'buttons': []}
 app = Flask(__name__)
 
 def setLogging():
@@ -51,14 +54,36 @@ def parseCommandLine():
     cmdline = parser.parse_args()
 
 def loadConfig():
-    try:
-        global config
+#    try:
+    while True:
         config = json.load(open('config.json', 'rb'))
         for ii in range(len(config['buttons'])):
+            logger.debug(config['buttons'][ii]['label'])
             config['buttons'][ii]['id'] = ii
+            report = []
+            for chunk in config['buttons'][ii]['emit']:
+                for ee in chunk.get('keys', []):
+                    hid = hidmap[ee]
+                    if isinstance(hid, int):
+                        report.append([0, 0, hid, 0, 0, 0, 0, 0])
+                    else:
+                        report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
+                if chunk.get('meta', None):
+                    hid = hidmap[chunk['meta']]
+                    report.append([0, 0, hid, 0, 0, 0, 0, 0])
+            if report[-1] == report[-2]:
+                report = report[:-1] + [0, 0, 0, 0, 0, 0, 0, 0] + report[-1]
 
-    except Exception as ee:
-        print(ee)
+
+            report.append([0, 0, 0, 0, 0, 0, 0, 0])
+            config['buttons'][ii]['report'] = report
+        logger.debug('loadConfig exit')
+        return config
+
+#    except Exception as ee:
+#        pdb.set_trace()
+#        logger.error(str(ee))
+
             
 def homepage():
     top = """<html><head><title>Macrokey</title>
@@ -80,25 +105,23 @@ def homepage():
     bottom = '</table></body></html>'
     return top + ''.join(row) + bottom
 
-def resolve(id):
-    pdb.set_trace()
-    keys = config['buttons'][int(id)]['keys']
-    tosend = []
-    for key in keys:
-        tosend.append([0, 0, hidmap[key], [0] * 5])
-    pass
+#def resolve(id):
+#    pdb.set_trace()
+#    keys = config['buttons'][int(id)]['keys']
+#    tosend = []
+#    for key in keys:
+#        tosend.append([0, 0, hidmap[key], [0] * 5])
+#    pass
 
 def procButtonPress(id):
     logger.debug('procButtonPress {}'.format(id))
-    writeHid(resolve(id))
+    writeHid(config['buttons'][id]['report'])
     return ""
 
-def writeHid0():
+def writeHid0(report):
     logger.debug("writeHid")
-    queueData = [[0, 0, 4, 0, 0, 0, 0, 0], [0] * 8]
-    logger.debug('opening')
     with open('/dev/hidg0', 'wb+') as hid:
-        for buf in queueData:
+        for buf in reaport:
             try:
                 logger.debug('writing')
                 n = hid.raw.write(bytearray(buf))
@@ -109,39 +132,15 @@ def writeHid0():
                 time.sleep(0.01)
     logger.debug('exit writeHid')
 
-helloData = [
-[0x20,0,0xb,0,0,0,0,0],
-[0,0,0x8,0,0,0,0,0],
-[0,0,0xf,0,0,0,0,0],
-[0,0,0,0,0,0,0,0],
-[0,0,0xf,0,0,0,0,0],
-[0,0,0x12,0,0,0,0,0],
-[0,0,0x2c,0,0,0,0,0],
-[0x20,0,0x1a,0,0,0,0,0],
-[0,0,0x12,0,0,0,0,0],
-[0,0,0x21,0,0,0,0,0],
-[0,0,0xf,0,0,0,0,0],
-[0,0,0x7,0,0,0,0,0],
-[0x20,0,0x1e,0,0,0,0,0],
-[0,0,0,0,0,0,0,0]]
 
-
-def writeHid():
-    logger.debug("writeHid")
-    return
-    queueData = [[0, 0, 4, 0, 0, 0, 0, 0], [0] * 8]
-    logger.debug('opening')
-#    pdb.set_trace()
-    time.sleep(2)
+def writeHid(report):
     with open('/dev/hidg0', 'wb+') as hid:
-        for buf in queueData:
+        for buf in report:
             written = 0
             while written < 8:
                 try:
-                    logger.debug('writing')
                     written += hid.write(bytearray(buf))
                     hid.flush()
-                    logger.debug('written {}'.format(written))
 
                 except BlockingIOError as ee:
 #                    pdb.set_trace()
@@ -149,21 +148,19 @@ def writeHid():
 #                    written += ee.characters_written
                     time.sleep(0.01)
 
-    logger.debug('exit writeHid')
-
-app.route('/')
+@app.route('/')
 def home():
     return homepage()
 
 @app.route('/buttonpress/<id>')
 def buttonPress(id):
-    return procButtonPress(id) 
+    return procButtonPress(int(id) )
 
 def main():
+    global config
     setLogging()
-    loadConfig()
-#    writeHid()
-    app.run(host='0.0.0.0', port=8000)
+    config = loadConfig()
+    app.run(host='0.0.0.0', port=8000, debug=1)
 
 main()
 

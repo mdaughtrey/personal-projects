@@ -6,7 +6,7 @@ hidmap = {
 'TAB': 0x2b,  # Tab
 'CLR': 0x53,  # Clear
 'ENTER': 0x28,  # Enter
-'LSHIFT': 0xe1,  # Shift (Left)
+0x02: 0xe1,  # Shift (Left)
 'RSHIFT': 0xe5,  # Shift (Left)
 'LCTRL': 0xe0,  # Ctrl (left)
 'RCTRL': 0xe4,  # Ctrl (left)
@@ -15,7 +15,7 @@ hidmap = {
 'BREAK': 0x48,  # Pause / Break
 'CLOCK': 0x39,  # Caps Lock
 'ESC': 0x29,  # Escape
-'SPC': 0x2c,  # Spacebar
+' ': 0x2c,  # Spacebar
 'PGUP': 0x4b,  # Page Up
 'PGDN': 0x4e,  # Page Down
 'END': 0x4d,  # End
@@ -40,46 +40,46 @@ hidmap = {
 '7': 0x24,  # 7
 '8': 0x25,  # 8
 '9': 0x26,  # 9
-')': ['LSHIFT','0'], # 48: 0x27,  # 0
-'!': ['LSHIFT','1'], # 48: 0x27,  # 0
-'@': ['LSHIFT','2'], # 50: 0x1f,  # 2
-'#': ['LSHIFT','3'], # 3
-'$': ['LSHIFT','4'], # 4
-'%': ['LSHIFT','5'], # 5
-'^': ['LSHIFT','6'], # 6
-'&': ['LSHIFT','7'], # 7
-'*': ['LSHIFT','8'], # 8
-'(': ['LSHIFT','9'], # 9
-';': 0x33,  # Semicolon
-':': ['LSHIFT',';'],
-'<': ['LSHIFT',','],
+')': [0x02, 0x27], # 48: 0x27,  # 0
+'!': [0x02, 0x1e], # 48: 0x27,  # 0
+'@': [0x02, 0x1f], # 50: 0x1f,  # 2
+'#': [0x02, 0x20], # 3
+'$': [0x02, 0x21], # 4
+'%': [0x02, 0x22], # 5
+'^': [0x02, 0x23], # 6
+'&': [0x02, 0x24], # 7
+'*': [0x02, 0x25], # 8
+'(': [0x02, 0x26], # 9
+#';': 0x33,  # Semicolon
+':': [0x02, 0x33],
+'<': [0x02, 0x36],
 '=': 0x2e,  # Equal sign
-'A': ['LSHIFT','a'], #: 65: 0x04,  # a
-'B': ['LSHIFT','b'], #: 66: 0x05,  # b
-'C': ['LSHIFT','c'], #: 67: 0x06,  # c
-'D': ['LSHIFT','d'], #: 68: 0x07,  # d
-'E': ['LSHIFT','e'], #: 69: 0x08,  # e
-'F': ['LSHIFT','f'], #: 70: 0x09,  # f
-'G': ['LSHIFT','g'], #: 71: 0x0a,  # g
-'H': ['LSHIFT','h'], #: 72: 0x0b,  # h
-'I': ['LSHIFT','i'], #: 73: 0x0c,  # i
-'J': ['LSHIFT','j'], #: 74: 0x0d,  # j
-'K': ['LSHIFT','k'], #: 75: 0x0e,  # k
-'L': ['LSHIFT','l'], #: 76: 0x0f,  # l
-'M': ['LSHIFT','m'], #: 77: 0x10,  # m
-'N': ['LSHIFT','n'], #: 78: 0x11,  # n
-'O': ['LSHIFT','o'], #: 79: 0x12,  # o
-'P': ['LSHIFT','p'], #: 80: 0x13,  # p
-'Q': ['LSHIFT','q'], #: 81: 0x14,  # q
-'R': ['LSHIFT','r'], #: 82: 0x15,  # r
-'S': ['LSHIFT','s'], #: 83: 0x16,  # s
-'T': ['LSHIFT','t'], #: 84: 0x17,  # t
-'U': ['LSHIFT','u'], #: 85: 0x18,  # u
-'V': ['LSHIFT','v'], #: 86: 0x19,  # v
-'W': ['LSHIFT','w'], #: 87: 0x1a,  # w
-'X': ['LSHIFT','x'], #: 88: 0x1b,  # x
-'Y': ['LSHIFT','y'], #: 89: 0x1c,  # y
-'Z': ['LSHIFT','z'], #: 90: 0x1d,  # z
+'A': [0x02, 0x04], #: 65: 0x04,  # a
+'B': [0x02, 0x05], #: 66: 0x05,  # b
+'C': [0x02, 0x06], #: 67: 0x06,  # c
+'D': [0x02, 0x07], #: 68: 0x07,  # d
+'E': [0x02, 0x08], #: 69: 0x08,  # e
+'F': [0x02, 0x09], #: 70: 0x09,  # f
+'G': [0x02, 0x0a], #: 71: 0x0a,  # g
+'H': [0x02, 0x0b], #: 72: 0x0b,  # h
+'I': [0x02, 0x0c], #: 73: 0x0c,  # i
+'J': [0x02, 0x0d], #: 74: 0x0d,  # j
+'K': [0x02, 0x0e], #: 75: 0x0e,  # k
+'L': [0x02, 0x0f], #: 76: 0x0f,  # l
+'M': [0x02, 0x10], #: 77: 0x10,  # m
+'N': [0x02, 0x11], #: 78: 0x11,  # n
+'O': [0x02, 0x12], #: 79: 0x12,  # o
+'P': [0x02, 0x13], #: 80: 0x13,  # p
+'Q': [0x02, 0x14], #: 81: 0x14,  # q
+'R': [0x02, 0x15], #: 82: 0x15,  # r
+'S': [0x02, 0x16], #: 83: 0x16,  # s
+'T': [0x02, 0x17], #: 84: 0x17,  # t
+'U': [0x02, 0x18], #: 85: 0x18,  # u
+'V': [0x02, 0x19], #: 86: 0x19,  # v
+'W': [0x02, 0x1a], #: 87: 0x1a,  # w
+'X': [0x02, 0x1b], #: 88: 0x1b,  # x
+'Y': [0x02, 0x1c], #: 89: 0x1c,  # y
+'Z': [0x02, 0x1d], #: 90: 0x1d,  # z
 'a': 0x04,  # a
 'b': 0x05,  # b
 'c': 0x06,  # c
@@ -158,29 +158,29 @@ hidmap = {
 'KVOLD': 0x81,
 'NLOCK': 0x53,  # Num Lock
 'SLOCK': 0x47,  # Scroll Lock
-'!': 0x1e,  # !
-'#': 0x32,  # Hash
-'-': 0x2d,  # Minus
+#'!': 0x1e,  # !
+#'#': 0x32,  # Hash
+#'-': 0x2d,  # Minus
 'PPAUSE':  0xe8,  # Media play/pause
 'REFRESH':  0xfa,  # Refresh
 ';': 0x33,  # Semicolon
 '=': 0x2e,  # Equal sign
-'+': ['LSHIFT','='],
+'+': [0x02, 0x2e],
 ',': 0x36,  # Comma
 '-': 0x2d,  # Minus sign
-'_': ['LSHIFT','-'], 
+'_': [0x02, 0x2d], 
 '.': 0x37,  # Period
-'>': ['LSHIFT','.'],
+'>': [0x02, '.'],
 '/': 0x38,  # Forward slash
-'?': ['LSHIFT', '/'],
+'?': [0x02, 0x38],
 '`': 0x35,  # Accent grave
 '[': 0x2f,  # Left bracket ([, {])
 ']': 0x30,  # Right bracket (], })
-'{': ['LSHIFT','['],
-'}': ['LSHIFT',']'],
+'{': [0x02, 0x2f],
+'}': [0x02, 0x30],
 '\\': 0x31,  # Back slash
-'|': ['LSHIFT','\\'],
+'|': [0x02, 0x31],
 '\'': 0x34,  # Single quote
-'"': ['LSHIFT', '\''],  # Single quote
-'~': ['LSHIFT','`'] # tilde
+'"': [0x02, 0x34],  # Single quote
+'~': [0x02, 0x35] # tilde
 }
