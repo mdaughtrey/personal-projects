@@ -2,10 +2,12 @@
 
 import argparse
 from flask import Flask
+from hidmap import hidmap
 import json
 import logging
 import pdb
 import sys
+import time
 
 cmdline = None
 logger = None
@@ -22,9 +24,9 @@ def setLogging():
     fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
     soutHandler = logging.StreamHandler(stream=sys.stdout)
-    fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    fileHandler.setLevel(logging.DEBUG)
-    logger.addHandler(fileHandler)
+    soutHandler.setFormatter(logging.Formatter(fmt=FormatString))
+    soutHandler.setLevel(logging.DEBUG)
+    logger.addHandler(soutHandler)
 
 def parseCommandLine():
     parser = argparse.ArgumentParser()
@@ -78,18 +80,78 @@ def homepage():
     bottom = '</table></body></html>'
     return top + ''.join(row) + bottom
 
-def procButtonPress(id):
-    logger.debug('procButtonPress {}'.format(id))
-    writeHid()
-    return ""
-
-def writeHid():
-    with open('/dev/hidg0', 'rb+') as hid:
-        hid.write('\0\0\4\0\0\0\0\0'.encode())
-        hid.flush()
+def resolve(id):
+    pdb.set_trace()
+    keys = config['buttons'][int(id)]['keys']
+    tosend = []
+    for key in keys:
+        tosend.append([0, 0, hidmap[key], [0] * 5])
     pass
 
-@app.route('/')
+def procButtonPress(id):
+    logger.debug('procButtonPress {}'.format(id))
+    writeHid(resolve(id))
+    return ""
+
+def writeHid0():
+    logger.debug("writeHid")
+    queueData = [[0, 0, 4, 0, 0, 0, 0, 0], [0] * 8]
+    logger.debug('opening')
+    with open('/dev/hidg0', 'wb+') as hid:
+        for buf in queueData:
+            try:
+                logger.debug('writing')
+                n = hid.raw.write(bytearray(buf))
+                logger.debug('written {}'.format(n))
+
+            except BlockingIOError as ee:
+                logger.debug('writeHid exception: ' + ee)
+                time.sleep(0.01)
+    logger.debug('exit writeHid')
+
+helloData = [
+[0x20,0,0xb,0,0,0,0,0],
+[0,0,0x8,0,0,0,0,0],
+[0,0,0xf,0,0,0,0,0],
+[0,0,0,0,0,0,0,0],
+[0,0,0xf,0,0,0,0,0],
+[0,0,0x12,0,0,0,0,0],
+[0,0,0x2c,0,0,0,0,0],
+[0x20,0,0x1a,0,0,0,0,0],
+[0,0,0x12,0,0,0,0,0],
+[0,0,0x21,0,0,0,0,0],
+[0,0,0xf,0,0,0,0,0],
+[0,0,0x7,0,0,0,0,0],
+[0x20,0,0x1e,0,0,0,0,0],
+[0,0,0,0,0,0,0,0]]
+
+
+def writeHid():
+    logger.debug("writeHid")
+    return
+    queueData = [[0, 0, 4, 0, 0, 0, 0, 0], [0] * 8]
+    logger.debug('opening')
+#    pdb.set_trace()
+    time.sleep(2)
+    with open('/dev/hidg0', 'wb+') as hid:
+        for buf in queueData:
+            written = 0
+            while written < 8:
+                try:
+                    logger.debug('writing')
+                    written += hid.write(bytearray(buf))
+                    hid.flush()
+                    logger.debug('written {}'.format(written))
+
+                except BlockingIOError as ee:
+#                    pdb.set_trace()
+#                    logger.debug('writeHid exception: ' + ee)
+#                    written += ee.characters_written
+                    time.sleep(0.01)
+
+    logger.debug('exit writeHid')
+
+app.route('/')
 def home():
     return homepage()
 
@@ -99,8 +161,8 @@ def buttonPress(id):
 
 def main():
     setLogging()
-    logging
     loadConfig()
+#    writeHid()
     app.run(host='0.0.0.0', port=8000)
 
 main()
