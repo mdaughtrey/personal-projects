@@ -69,13 +69,17 @@ def loadConfig():
                     else:
                         report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
                 if chunk.get('meta', None):
-                    hid = hidmap[chunk['meta']]
-                    report.append([0, 0, hid, 0, 0, 0, 0, 0])
-            if report[-1] == report[-2]:
-                report = report[:-1] + [0, 0, 0, 0, 0, 0, 0, 0] + report[-1]
+                    for mm in chunk['meta'].split(','):
+                        hid = hidmap[mm]
+                        report.append([0, 0, hid, 0, 0, 0, 0, 0])
 
+            dups = [ii==jj for ii,jj in zip(report[:-1],report[1:])]
+            r2 = []
+            for kk,ll in enumerate(dups):
+                r2.append(report[kk])
+                if ll == True: r2.append([0] * 8)
 
-            report.append([0, 0, 0, 0, 0, 0, 0, 0])
+            report = r2 + [report[-1]] + [[0] * 8]
             config['buttons'][ii]['report'] = report
         logger.debug('loadConfig exit')
         return config
@@ -93,16 +97,17 @@ def homepage():
             xhr.open('GET', 'http://macrokey:8000/buttonpress/' + id)
             xhr.send()
         }
-    </script>
-    </head><body><table>"""
+    </script><style>""" + open('style.css', 'rb').read().decode() + """</style>
+    </head><body><div class="main">"""
     cols = 6
     index = 0
-    buttons = ['<td><button onclick="buttonpress({});">{}</button></td>'.format(button['id'],button['label']) for button in config['buttons']]
+    rowHtml = '<div class="bouter"><button class="button" onclick="buttonpress({});" style="background-image: linear-gradient(to bottom,white,{} 10%);">{}</button></div>'
+    buttons = [rowHtml.format(button['id'],button['color'],button['label']) for button in config['buttons']]
     row = []
     while index < len(buttons):
-        row.append('<tr>{}</tr>'.format(''.join(buttons[index:index + min(len(buttons)-index,cols)])))
+        row.append('<div class="row">{}</div><!-- row -->'.format(''.join(buttons[index:index + min(len(buttons)-index,cols)])))
         index += cols
-    bottom = '</table></body></html>'
+    bottom = '</div><!-- main --></body></html>'
     return top + ''.join(row) + bottom
 
 #def resolve(id):
@@ -120,8 +125,9 @@ def procButtonPress(id):
 
 def writeHid0(report):
     logger.debug("writeHid")
+    return
     with open('/dev/hidg0', 'wb+') as hid:
-        for buf in reaport:
+        for buf in report:
             try:
                 logger.debug('writing')
                 n = hid.raw.write(bytearray(buf))
@@ -137,6 +143,7 @@ def writeHid(report):
     with open('/dev/hidg0', 'wb+') as hid:
         for buf in report:
             written = 0
+            logger.debug('Writing {}'.format(buf))
             while written < 8:
                 try:
                     written += hid.write(bytearray(buf))
@@ -160,7 +167,7 @@ def main():
     global config
     setLogging()
     config = loadConfig()
-    app.run(host='0.0.0.0', port=8000, debug=1)
+    app.run(host='0.0.0.0', port=8000)
 
 main()
 

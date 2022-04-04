@@ -6,7 +6,7 @@ hidmap = {
 'TAB': 0x2b,  # Tab
 'CLR': 0x53,  # Clear
 'ENTER': 0x28,  # Enter
-0x02: 0xe1,  # Shift (Left)
+'LSHIFT': 0xe1,  # Shift (Left)
 'RSHIFT': 0xe5,  # Shift (Left)
 'LCTRL': 0xe0,  # Ctrl (left)
 'RCTRL': 0xe4,  # Ctrl (left)
