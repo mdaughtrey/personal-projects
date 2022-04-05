@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import colorsys
 from flask import Flask
 from hidmap import hidmap
 import json
@@ -29,7 +30,7 @@ def setLogging():
     soutHandler = logging.StreamHandler(stream=sys.stdout)
     soutHandler.setFormatter(logging.Formatter(fmt=FormatString))
     soutHandler.setLevel(logging.DEBUG)
-    logger.addHandler(soutHandler)
+#    logger.addHandler(soutHandler)
 
 def parseCommandLine():
     parser = argparse.ArgumentParser()
@@ -61,6 +62,7 @@ def loadConfig():
             logger.debug(config['buttons'][ii]['label'])
             config['buttons'][ii]['id'] = ii
             report = []
+            # Build the HID report string
             for chunk in config['buttons'][ii]['emit']:
                 for ee in chunk.get('keys', []):
                     hid = hidmap[ee]
@@ -81,6 +83,15 @@ def loadConfig():
 
             report = r2 + [report[-1]] + [[0] * 8]
             config['buttons'][ii]['report'] = report
+
+            # Build upper and lower colors
+            color = int(config['buttons'][ii]['color'][1:], 16)
+            rgb = [(color >> 16 & 0xff)/255, (color >> 8 & 0xff)/255, (color & 0xff)/255]
+            upperColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
+            lowerColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
+            config['buttons'][ii]['uppercolor'] = 'hsl({},{}%,60%)'.format(360 * upperColor[0], 100 * upperColor[2])
+            config['buttons'][ii]['lowercolor'] = 'hsl({},{}%,30%)'.format(360 * lowerColor[0], 100 * lowerColor[2])
+
         logger.debug('loadConfig exit')
         return config
 
@@ -101,8 +112,13 @@ def homepage():
     </head><body><div class="main">"""
     cols = 6
     index = 0
-    rowHtml = '<div class="bouter"><button class="button" onclick="buttonpress({});" style="background-image: linear-gradient(to bottom,white,{} 10%);">{}</button></div>'
-    buttons = [rowHtml.format(button['id'],button['color'],button['label']) for button in config['buttons']]
+    rowHtml = '<div class="bouter"><button class="button" onclick="buttonpress({});" style="background-image: linear-gradient(to bottom,{},{} 10%,{} 80%,{} 95%);">{}</button></div>'
+    buttons = [rowHtml.format(button['id'],
+        button['uppercolor'],
+        button['color'],
+        button['color'],
+        button['lowercolor'],
+        button['label']) for button in config['buttons']]
     row = []
     while index < len(buttons):
         row.append('<div class="row">{}</div><!-- row -->'.format(''.join(buttons[index:index + min(len(buttons)-index,cols)])))
@@ -110,33 +126,10 @@ def homepage():
     bottom = '</div><!-- main --></body></html>'
     return top + ''.join(row) + bottom
 
-#def resolve(id):
-#    pdb.set_trace()
-#    keys = config['buttons'][int(id)]['keys']
-#    tosend = []
-#    for key in keys:
-#        tosend.append([0, 0, hidmap[key], [0] * 5])
-#    pass
-
 def procButtonPress(id):
     logger.debug('procButtonPress {}'.format(id))
     writeHid(config['buttons'][id]['report'])
     return ""
-
-def writeHid0(report):
-    logger.debug("writeHid")
-    return
-    with open('/dev/hidg0', 'wb+') as hid:
-        for buf in report:
-            try:
-                logger.debug('writing')
-                n = hid.raw.write(bytearray(buf))
-                logger.debug('written {}'.format(n))
-
-            except BlockingIOError as ee:
-                logger.debug('writeHid exception: ' + ee)
-                time.sleep(0.01)
-    logger.debug('exit writeHid')
 
 
 def writeHid(report):
@@ -154,6 +147,10 @@ def writeHid(report):
 #                    logger.debug('writeHid exception: ' + ee)
 #                    written += ee.characters_written
                     time.sleep(0.01)
+
+                except BrokenPipeError as ee:
+                    logger.error(ee)
+                    return
 
 @app.route('/')
 def home():
