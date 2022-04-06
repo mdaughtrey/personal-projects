@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse
+#import argparse
 import colorsys
 from flask import Flask
 from hidmap import hidmap
@@ -10,9 +10,9 @@ import pdb
 import sys
 import time
 
-class Meta():
-    def __init__(tag, name):
-        self.tag = name
+#class Meta():
+#    def __init__(tag, name):
+#        self.tag = name
 
 cmdline = None
 logger = None
@@ -26,33 +26,33 @@ def setLogging():
     fileHandler = logging.FileHandler(filename = './macrokey.log')
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
     fileHandler.setLevel(logging.DEBUG)
-    logger.addHandler(fileHandler)
+#    logger.addHandler(fileHandler)
     soutHandler = logging.StreamHandler(stream=sys.stdout)
     soutHandler.setFormatter(logging.Formatter(fmt=FormatString))
     soutHandler.setLevel(logging.DEBUG)
-#    logger.addHandler(soutHandler)
+    logger.addHandler(soutHandler)
 
-def parseCommandLine():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--frames', dest='frames', type=int, default=1e6, help='frames to capture')
-    parser.add_argument('--dev', dest='dev', help='image device')
-    parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
-    parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
-    parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
-    parser.add_argument('--film', dest='film', choices=['super8','8mm'], help='8mm/super8')
-    parser.add_argument('--dir', dest='dir', required=True, help='set project directory')
-    parser.add_argument('--single', dest='singleframe', action='store_true', default=False, help='One image per frame')
-    parser.add_argument('--startdia', dest='startdia', type=int, default=62, help='Feed spool starting diameter (mm)')
-    parser.add_argument('--enddia', dest='enddia', type=int, default=35, help='Feed spool ending diameter (mm)')
-    parser.add_argument('--raspid', dest='raspid', type=int, default=0, help='raspistill PID')
-    parser.add_argument('--picamera', dest='picamera', action='store_true', default=False, help='use picamera lib')
-    parser.add_argument('--picameracont', dest='picameracont', action='store_true', default=False, help='use picamera lib')
-    parser.add_argument('--frameinterval', dest='frameinterval', type=int, default=45, help='Frame Interval')
-    parser.add_argument('--nocam', dest='nocam', action='store_true', default=False, help='no camera operations')
-    parser.add_argument('--intervals', dest='intervals', help='n,n,n...', required=True)
-    parser.add_argument('--res', dest='res', choices=['draft','1k', 'hd', 'full'], help="resolution")
-    global cmdline
-    cmdline = parser.parse_args()
+#def parseCommandLine():
+#    parser = argparse.ArgumentParser()
+#    parser.add_argument('--frames', dest='frames', type=int, default=1e6, help='frames to capture')
+#    parser.add_argument('--dev', dest='dev', help='image device')
+#    parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
+#    parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
+#    parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
+#    parser.add_argument('--film', dest='film', choices=['super8','8mm'], help='8mm/super8')
+#    parser.add_argument('--dir', dest='dir', required=True, help='set project directory')
+#    parser.add_argument('--single', dest='singleframe', action='store_true', default=False, help='One image per frame')
+#    parser.add_argument('--startdia', dest='startdia', type=int, default=62, help='Feed spool starting diameter (mm)')
+#    parser.add_argument('--enddia', dest='enddia', type=int, default=35, help='Feed spool ending diameter (mm)')
+#    parser.add_argument('--raspid', dest='raspid', type=int, default=0, help='raspistill PID')
+#    parser.add_argument('--picamera', dest='picamera', action='store_true', default=False, help='use picamera lib')
+#    parser.add_argument('--picameracont', dest='picameracont', action='store_true', default=False, help='use picamera lib')
+#    parser.add_argument('--frameinterval', dest='frameinterval', type=int, default=45, help='Frame Interval')
+#    parser.add_argument('--nocam', dest='nocam', action='store_true', default=False, help='no camera operations')
+#    parser.add_argument('--intervals', dest='intervals', help='n,n,n...', required=True)
+#    parser.add_argument('--res', dest='res', choices=['draft','1k', 'hd', 'full'], help="resolution")
+#    global cmdline
+#    cmdline = parser.parse_args()
 
 def procConfigChunk0(chunk):
     report = []
