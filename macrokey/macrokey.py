@@ -54,6 +54,58 @@ def parseCommandLine():
     global cmdline
     cmdline = parser.parse_args()
 
+def procConfigChunk0(chunk):
+    report = []
+    for chunk in config['buttons'][ii]['emit']:
+        report = [0] * 8
+        for mm in chunk.get('meta',"").split(','):
+            hid = hidmap[mm]
+            report[0] |= hid
+
+        for ee in chunk.get('keys', []):
+            hid = hidmap[ee]
+            if isinstance(hid, int):
+                report[2] = hid
+            else:
+                report[0] |= hid[0]
+                report[2] = hid[1]
+
+        for aa in chunk.get('action', "").split(','):
+            hid = hidmap[aa]
+            if isinstance(hid, int):
+                report[2] = hid
+            else:
+                report[0] |= hid[0]
+                report[2] = hid[1]
+                
+    return report
+
+def procConfigChunk(chunk):
+    report = []
+    if chunk.get('meta', None):
+        for mm in chunk['meta'].split(','):
+            hid = hidmap[mm]
+            if isinstance(hid, int):
+                report.append([0, 0, hid, 0, 0, 0, 0, 0])
+            else:
+                report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
+
+    for ee in chunk.get('keys', []):
+        hid = hidmap[ee]
+        if isinstance(hid, int):
+            report.append([0, 0, hid, 0, 0, 0, 0, 0])
+        else:
+            report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
+
+#        for aa in chunk.get('action', "").split(','):
+#            hid = hidmap[aa]
+#            if isinstance(hid, int):
+#                report.append([0, 0, hid, 0, 0, 0, 0, 0])
+#            else:
+#                report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
+    return report
+
+
 def loadConfig():
 #    try:
     while True:
@@ -61,19 +113,11 @@ def loadConfig():
         for ii in range(len(config['buttons'])):
             logger.debug(config['buttons'][ii]['label'])
             config['buttons'][ii]['id'] = ii
-            report = []
             # Build the HID report string
+            report = []
+#            pdb.set_trace()
             for chunk in config['buttons'][ii]['emit']:
-                for ee in chunk.get('keys', []):
-                    hid = hidmap[ee]
-                    if isinstance(hid, int):
-                        report.append([0, 0, hid, 0, 0, 0, 0, 0])
-                    else:
-                        report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
-                if chunk.get('meta', None):
-                    for mm in chunk['meta'].split(','):
-                        hid = hidmap[mm]
-                        report.append([0, 0, hid, 0, 0, 0, 0, 0])
+                report.extend(procConfigChunk(chunk))
 
             dups = [ii==jj for ii,jj in zip(report[:-1],report[1:])]
             r2 = []
@@ -134,6 +178,7 @@ def procButtonPress(id):
 
 def writeHid(report):
     with open('/dev/hidg0', 'wb+') as hid:
+#        pdb.set_trace()
         for buf in report:
             written = 0
             logger.debug('Writing {}'.format(buf))

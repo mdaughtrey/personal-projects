@@ -161,7 +161,8 @@ hidmap = {
 #'!': 0x1e,  # !
 #'#': 0x32,  # Hash
 #'-': 0x2d,  # Minus
-'PPAUSE':  0xe8,  # Media play/pause
+#'PPAUSE':  [0x09, 0xcd], # 0xe8,  # Media play/pause
+'PPAUSE':  [0x09, 0xcd], # 0xe8,  # Media play/pause
 'REFRESH':  0xfa,  # Refresh
 ';': 0x33,  # Semicolon
 '=': 0x2e,  # Equal sign
