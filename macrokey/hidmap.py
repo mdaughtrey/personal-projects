@@ -153,7 +153,7 @@ hidmap = {
 'KCOPY': 0x7c,
 'KPASTE': 0x7d,
 'KFIND': 0x7e,
-'KMUTE': 0x7f,
+'KMUTE': 0xe2,
 'KVOLU': 0x80,
 'KVOLD': 0x81,
 'NLOCK': 0x53,  # Num Lock

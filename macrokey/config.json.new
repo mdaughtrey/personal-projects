@@ -1,0 +1,37 @@
+{
+    "pages: [
+    {"page": "home",
+    "buttons": [
+        {"label": "Mute", "color": "#990033", "emit" : [{"meta": "LALT"},{"keys":"a"}]},
+        {"label": "1Password", "color": "#336699", "emit" : [{"keys": "3Closer10!"},{"meta":"ENTER"}]},
+        {"label": "ADU", "color": "#336699", "emit" : [{"keys": "matt.daughtrey"}]},
+        {"label": "ADP", "color": "#336699", "emit" : [{"keys": "3Three7Seven!"}, {"meta": "ENTER"}]},
+        {"label": "sysdev", "color": "#336699", "emit" : [{"keys": "SKOLEM66"},{"meta": "ENTER"}]},
+        {"label": "new sysdev", "color": "#336699", "emit" : [{"keys": "d@s3dEv#jK523"},{"meta": "ENTER"}]},
+        {"label": "vim kzsload", "color": "#0000ff", "emit" :[{"keys": "sudo vim /srv/1010data/etc/kzsloadlin.ini"},{"meta":"ENTER"}]},
+        {"label": "SVN Checkout", "color": "#0000ff", "emit" : [{"keys": "svn co -q http://projects.corp.1010data.com/svn/1010data/branches/matt.daughtrey/"}]},
+        {"label": "Murphy", "color": "#0000ff", "emit" : [{"keys": ":colorscheme murphy"}, {"meta": "ENTER"}]},
+        {"label": "unalias ls", "color": "#0000ff", "emit" : [{"keys": "unalias ls"}, {"meta": "ENTER"}]},
+        {"label": "tar czf - base64 ", "color": "#ff9933", "emit" : [{"keys": "tar czf -  | base64 -w 150"}, {"meta":"LEFT*16"}]},
+        {"label": "tar xzf", "color": "#ff9933", "emit" : [{"keys": "cat | base64 -d | tar xzf -"},{"meta": "ENTER"}]},
+        {"label": "saz", "color": "#0000ff", "emit" : [{"keys": "sudo su - azure"},{"meta": "ENTER"}]},
+        {"label": "Play/Pause", "color": "#0000ff", "emit" : [{"meta": "PPAUSE"}]},
+        {"label": "Azure US", "color": "#0000ff", "page" : "Azure US"}
+    ]},
+    {"page": "Azure US",
+    "buttons": [
+        {"label": "Home", "page": "home"},
+        {"label": "Web Server 0", "color": "#0066ff", "emit": [{"keys": "kubectl exec -ti am1ewebserver-0 -- /bin/bash"}]},
+        {"label": "Web Server 1", "color": "#0066ff", "emit": [{"keys": "kubectl exec -ti am1ewebserver-1 -- /bin/bash"}]},
+        {"label": "Party City GW", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin partycity am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "Party City DBM", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin partycity am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "Party City compute", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin partycity am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]},
+        {"label": "Savemart GW",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin savemart am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "Savemart DBM",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin savemart am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "Savemart compute", "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin savemart am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]},
+        {"label": "BN GW",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin bn am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "BN DBM",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin bn am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "BN compute", "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin bn am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]}
+    ]}
+]
+}

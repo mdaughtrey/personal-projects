@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-#import argparse
+import argparse
 import colorsys
 from flask import Flask
 from hidmap import hidmap
@@ -32,9 +32,9 @@ def setLogging():
     soutHandler.setLevel(logging.DEBUG)
     logger.addHandler(soutHandler)
 
-#def parseCommandLine():
-#    parser = argparse.ArgumentParser()
-#    parser.add_argument('--frames', dest='frames', type=int, default=1e6, help='frames to capture')
+def parseCommandLine():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--new', dest='new', action='store_true', help='new config')
 #    parser.add_argument('--dev', dest='dev', help='image device')
 #    parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
 #    parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
@@ -82,13 +82,18 @@ def procConfigChunk0(chunk):
 
 def procConfigChunk(chunk):
     report = []
+    pdb.set_trace()
     if chunk.get('meta', None):
         for mm in chunk['meta'].split(','):
-            hid = hidmap[mm]
-            if isinstance(hid, int):
-                report.append([0, 0, hid, 0, 0, 0, 0, 0])
-            else:
-                report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
+            m = mm.split('*')
+            loop = 1
+            if len(m) == 2: loop = int(m[1])
+            for ll in range(loop):
+                hid = hidmap[m[0]]
+                if isinstance(hid, int):
+                    report.append([0, 0, hid, 0, 0, 0, 0, 0])
+                else:
+                    report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
 
     for ee in chunk.get('keys', []):
         hid = hidmap[ee]
@@ -139,6 +144,40 @@ def loadConfig():
         logger.debug('loadConfig exit')
         return config
 
+def loadConfigNew():
+#    try:
+    while True:
+        config = json.load(open('config.json', 'rb'))
+        for page in config['pages']:
+            for ii in range(len([page['buttons'])):
+                logger.debug(page['buttons'][ii]['label'])
+                page['buttons'][ii]['id'] = ii
+                # Build the HID report string
+                report = []
+    #            pdb.set_trace()
+                for chunk in page['buttons'][ii]['emit']:
+                    report.extend(procConfigChunk(chunk))
+
+                dups = [ii==jj for ii,jj in zip(report[:-1],report[1:])]
+                r2 = []
+                for kk,ll in enumerate(dups):
+                    r2.append(report[kk])
+                    if ll == True: r2.append([0] * 8)
+
+                report = r2 + [report[-1]] + [[0] * 8]
+                page['buttons'][ii]['report'] = report
+
+                # Build upper and lower colors
+                color = int(page['buttons'][ii]['color'][1:], 16)
+                rgb = [(color >> 16 & 0xff)/255, (color >> 8 & 0xff)/255, (color & 0xff)/255]
+                upperColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
+                lowerColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
+                page['buttons'][ii]['uppercolor'] = 'hsl({},{}%,60%)'.format(360 * upperColor[0], 100 * upperColor[2])
+                page['buttons'][ii]['lowercolor'] = 'hsl({},{}%,30%)'.format(360 * lowerColor[0], 100 * lowerColor[2])
+
+        logger.debug('loadConfig exit')
+        return config
+
 #    except Exception as ee:
 #        pdb.set_trace()
 #        logger.error(str(ee))
@@ -177,6 +216,8 @@ def procButtonPress(id):
 
 
 def writeHid(report):
+    logger.debug('writeHid {}'.format(report))
+    return
     with open('/dev/hidg0', 'wb+') as hid:
 #        pdb.set_trace()
         for buf in report:
@@ -206,9 +247,13 @@ def buttonPress(id):
     return procButtonPress(int(id) )
 
 def main():
+    cmdLine = parser.parse_args()
     global config
     setLogging()
-    config = loadConfig()
+    if cmdLine.new:
+        config = loadConfigNew()
+    else:
+        config = loadConfig()
     app.run(host='0.0.0.0', port=8000)
 
 main()
