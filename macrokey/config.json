@@ -1,5 +1,5 @@
 {"buttons": [
-    {"label": "Mute", "color": "#990033", "emit" : [{"meta": "LALT"},{"keys":"a"}]},
+    {"label": "Mute", "color": "#990033", "emit" : [{"meta": "KVOLU"}]},
     {"label": "1Password", "color": "#336699", "emit" : [{"keys": "3Closer10!"},{"meta":"ENTER"}]},
     {"label": "ADU", "color": "#336699", "emit" : [{"keys": "matt.daughtrey"}]},
     {"label": "ADP", "color": "#336699", "emit" : [{"keys": "3Three7Seven!"}, {"meta": "ENTER"}]},
