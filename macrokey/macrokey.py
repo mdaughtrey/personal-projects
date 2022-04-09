@@ -7,6 +7,7 @@ from hidmap import hidmap
 import json
 import logging
 import pdb
+import platform
 import sys
 import time
 
@@ -35,7 +36,7 @@ def setLogging():
 def parseCommandLine():
     parser = argparse.ArgumentParser()
     parser.add_argument('--new', dest='new', action='store_true', help='new config')
-#    parser.add_argument('--dev', dest='dev', help='image device')
+    parser.add_argument('--nosend', dest='nosend', action='store_true', help='no HID reports')
 #    parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
 #    parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
 #    parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
@@ -53,6 +54,7 @@ def parseCommandLine():
 #    parser.add_argument('--res', dest='res', choices=['draft','1k', 'hd', 'full'], help="resolution")
 #    global cmdline
 #    cmdline = parser.parse_args()
+    return parser.parse_args()
 
 def procConfigChunk0(chunk):
     report = []
@@ -82,7 +84,7 @@ def procConfigChunk0(chunk):
 
 def procConfigChunk(chunk):
     report = []
-    pdb.set_trace()
+#    pdb.set_trace()
     if chunk.get('meta', None):
         for mm in chunk['meta'].split(','):
             m = mm.split('*')
@@ -147,25 +149,27 @@ def loadConfig():
 def loadConfigNew():
 #    try:
     while True:
-        config = json.load(open('config.json', 'rb'))
+        config = json.load(open('config.json.new', 'rb'))
         for page in config['pages']:
-            for ii in range(len([page['buttons'])):
+#            pdb.set_trace()
+            for ii in range(len(page['buttons'])):
                 logger.debug(page['buttons'][ii]['label'])
                 page['buttons'][ii]['id'] = ii
                 # Build the HID report string
                 report = []
     #            pdb.set_trace()
-                for chunk in page['buttons'][ii]['emit']:
-                    report.extend(procConfigChunk(chunk))
+                if 'emit' in page['buttons'][ii].keys():
+                    for chunk in page['buttons'][ii]['emit']:
+                        report.extend(procConfigChunk(chunk))
 
-                dups = [ii==jj for ii,jj in zip(report[:-1],report[1:])]
-                r2 = []
-                for kk,ll in enumerate(dups):
-                    r2.append(report[kk])
-                    if ll == True: r2.append([0] * 8)
+                    dups = [ii==jj for ii,jj in zip(report[:-1],report[1:])]
+                    r2 = []
+                    for kk,ll in enumerate(dups):
+                        r2.append(report[kk])
+                        if ll == True: r2.append([0] * 8)
 
-                report = r2 + [report[-1]] + [[0] * 8]
-                page['buttons'][ii]['report'] = report
+                    report = r2 + [report[-1]] + [[0] * 8]
+                    page['buttons'][ii]['report'] = report
 
                 # Build upper and lower colors
                 color = int(page['buttons'][ii]['color'][1:], 16)
@@ -174,6 +178,8 @@ def loadConfigNew():
                 lowerColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
                 page['buttons'][ii]['uppercolor'] = 'hsl({},{}%,60%)'.format(360 * upperColor[0], 100 * upperColor[2])
                 page['buttons'][ii]['lowercolor'] = 'hsl({},{}%,30%)'.format(360 * lowerColor[0], 100 * lowerColor[2])
+#            pdb.set_trace()
+            config[page['page']] = page
 
         logger.debug('loadConfig exit')
         return config
@@ -183,25 +189,29 @@ def loadConfigNew():
 #        logger.error(str(ee))
 
             
-def homepage():
+def genpage(pageid):
+    pdb.set_trace()
+    if pageid not in config.keys(): return ""
     top = """<html><head><title>Macrokey</title>
     <script>
-        buttonpress = function(id) {
+        buttonpress = function(pageid, id) {
             xhr = new XMLHttpRequest()
-            xhr.open('GET', 'http://macrokey:8000/buttonpress/' + id)
+            xhr.open('GET', 'http://{}:8000/click/' + pageid + '/' + id)
             xhr.send()
         }
     </script><style>""" + open('style.css', 'rb').read().decode() + """</style>
-    </head><body><div class="main">"""
+    </head><body><div class="main">""".format(platform.node())
     cols = 6
     index = 0
-    rowHtml = '<div class="bouter"><button class="button" onclick="buttonpress({});" style="background-image: linear-gradient(to bottom,{},{} 10%,{} 80%,{} 95%);">{}</button></div>'
-    buttons = [rowHtml.format(button['id'],
+    rowHtml = '<div class="bouter"><button class="button" onclick="buttonpress(\'{}\',{});" style="background-image: linear-gradient(to bottom,{},{} 10%,{} 80%,{} 95%);">{}</button></div>'
+    page = config[pageid]
+    buttons = [rowHtml.format(pageid,
+        button['id'],
         button['uppercolor'],
         button['color'],
         button['color'],
         button['lowercolor'],
-        button['label']) for button in config['buttons']]
+        button['label']) for button in page['buttons']]
     row = []
     while index < len(buttons):
         row.append('<div class="row">{}</div><!-- row -->'.format(''.join(buttons[index:index + min(len(buttons)-index,cols)])))
@@ -209,15 +219,25 @@ def homepage():
     bottom = '</div><!-- main --></body></html>'
     return top + ''.join(row) + bottom
 
-def procButtonPress(id):
-    logger.debug('procButtonPress {}'.format(id))
-    writeHid(config['buttons'][id]['report'])
+def procButtonPress(pageid, id):
+    if pageid not in config.keys():
+        logger.error('Unknown page id {}'.format(pageid))
+        return
+    if id >= len(config[page]['buttons']):
+        logger.error('Unknown button id {}/{}'.format(pageid, id))
+        return ""
+    
+    logger.debug('procButtonPress {}/{}'.format(pageid, id))
+    button = config[pageid]['buttons'][id]
+    if 'page' in buttons.keys():
+        return genpage(button['page'])
+    writeHid(button['report'])
     return ""
 
 
 def writeHid(report):
     logger.debug('writeHid {}'.format(report))
-    return
+    if config.nosend: return
     with open('/dev/hidg0', 'wb+') as hid:
 #        pdb.set_trace()
         for buf in report:
@@ -240,14 +260,19 @@ def writeHid(report):
 
 @app.route('/')
 def home():
-    return homepage()
+    return genpage('home')
 
-@app.route('/buttonpress/<id>')
-def buttonPress(id):
-    return procButtonPress(int(id) )
+@app.route('/<pageid>')
+def page(pageid):
+    return genpage(pageid)
+
+@app.route('/click/<pageid>/<id>')
+def buttonPress(pageid, id):
+    pdb.set_trace()
+    return procButtonPress(pageid, int(id) )
 
 def main():
-    cmdLine = parser.parse_args()
+    cmdLine = parseCommandLine()
     global config
     setLogging()
     if cmdLine.new:
