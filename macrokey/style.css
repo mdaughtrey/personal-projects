@@ -12,7 +12,12 @@
 }
 
 .button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     white-space: normal;
+    text-decoration: none;
+    font-family: Arial;
     color: white;
     border-radius: 10px;
     font-size: x-large;

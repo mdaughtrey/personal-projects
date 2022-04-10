@@ -16,22 +16,25 @@
         {"label": "tar xzf", "color": "#ff9933", "emit" : [{"keys": "cat | base64 -d | tar xzf -"},{"meta": "ENTER"}]},
         {"label": "saz", "color": "#0000ff", "emit" : [{"keys": "sudo su - azure"},{"meta": "ENTER"}]},
         {"label": "Play/Pause", "color": "#0000ff", "emit" : [{"meta": "PPAUSE"}]},
-        {"label": "Azure US", "color": "#0000ff", "page" : "Azure US"}
+        {"label": "DBM Header", "color": "#333399", "emit": [{"keys": "rlwrap e333j"}, {"meta": "ENTER"}, {"keys": ".l.version:\"beta-latest\""}, {"meta":"ENTER"},{"keys":"\\l kzsload"},{"meta":"ENTER"},{"keys": ".l.load_lib(`dblib_path; `dbi; `dbi; 1)"}, {"meta":"ENTER"}]},
+        {"label": "Get User", "color": "#333399", "emit": [{"keys": "uu:.dbi.DBMAPI[`;`get_user;(`uid;`)]"},{"meta": "LEFT*2"}]},
+        {"label": "Put User", "color": "#333399", "emit": [{"keys": "uu:.dbi.DBMAPI[`;`put_user;(`uid;`)]"},{"meta": "LEFT*2"}]},
+        {"label": "Azure US", "color": "#e67300", "page" : "AzureUS"}
     ]},
-    {"page": "Azure US",
+    {"page": "AzureUS",
     "buttons": [
-        {"label": "Home", "page": "home", "color": "#00ff00"},
-        {"label": "Web Server 0", "color": "#0066ff", "emit": [{"keys": "kubectl exec -ti am1ewebserver-0 -- /bin/bash"}]},
-        {"label": "Web Server 1", "color": "#0066ff", "emit": [{"keys": "kubectl exec -ti am1ewebserver-1 -- /bin/bash"}]},
+        {"label": "Home", "page": "home", "color": "#e67300"},
+        {"label": "Web Server 0", "color": "#cc0044", "emit": [{"keys": "kubectl exec -ti am1ewebserver-0 -- /bin/bash"}]},
+        {"label": "Web Server 1", "color": "#cc0044", "emit": [{"keys": "kubectl exec -ti am1ewebserver-1 -- /bin/bash"}]},
         {"label": "Party City GW", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin partycity am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
         {"label": "Party City DBM", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin partycity am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
         {"label": "Party City compute", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin partycity am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]},
         {"label": "Savemart GW",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin savemart am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
         {"label": "Savemart DBM",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin savemart am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
         {"label": "Savemart compute", "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin savemart am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]},
-        {"label": "BN GW",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin bn am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
-        {"label": "BN DBM",  "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin bn am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
-        {"label": "BN compute", "color": "#00cc99", "emit" : [{"keys": "kubectl exec -tin bn am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]}
+        {"label": "BN GW",  "color": "#009933", "emit" : [{"keys": "kubectl exec -tin bn am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "BN DBM",  "color": "#009933", "emit" : [{"keys": "kubectl exec -tin bn am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "BN compute", "color": "#009933", "emit" : [{"keys": "kubectl exec -tin bn am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]}
     ]}
 ]
 }

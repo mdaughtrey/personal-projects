@@ -2,7 +2,7 @@
 
 import argparse
 import colorsys
-from flask import Flask
+from flask import Flask, redirect, url_for
 from hidmap import hidmap
 import json
 import logging
@@ -84,7 +84,6 @@ def procConfigChunk0(chunk):
 
 def procConfigChunk(chunk):
     report = []
-#    pdb.set_trace()
     if chunk.get('meta', None):
         for mm in chunk['meta'].split(','):
             m = mm.split('*')
@@ -122,7 +121,6 @@ def loadConfig():
             config['buttons'][ii]['id'] = ii
             # Build the HID report string
             report = []
-#            pdb.set_trace()
             for chunk in config['buttons'][ii]['emit']:
                 report.extend(procConfigChunk(chunk))
 
@@ -151,13 +149,11 @@ def loadConfigNew():
     while True:
         config = json.load(open('config.json.new', 'rb'))
         for page in config['pages']:
-#            pdb.set_trace()
             for ii in range(len(page['buttons'])):
                 logger.debug(page['buttons'][ii]['label'])
                 page['buttons'][ii]['id'] = ii
                 # Build the HID report string
                 report = []
-    #            pdb.set_trace()
                 if 'emit' in page['buttons'][ii].keys():
                     for chunk in page['buttons'][ii]['emit']:
                         report.extend(procConfigChunk(chunk))
@@ -178,68 +174,69 @@ def loadConfigNew():
                 lowerColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
                 page['buttons'][ii]['uppercolor'] = 'hsl({},{}%,60%)'.format(360 * upperColor[0], 100 * upperColor[2])
                 page['buttons'][ii]['lowercolor'] = 'hsl({},{}%,30%)'.format(360 * lowerColor[0], 100 * lowerColor[2])
-#            pdb.set_trace()
             config[page['page']] = page
 
         logger.debug('loadConfig exit')
         return config
 
 #    except Exception as ee:
-#        pdb.set_trace()
 #        logger.error(str(ee))
 
             
 def genpage(pageid):
-    pdb.set_trace()
     if pageid not in config.keys(): return ""
     top = """<html><head><title>Macrokey</title>
     <script>
-        buttonpress = function(pageid, id) {
+        buttonpress = function(pageid, id) {{
             xhr = new XMLHttpRequest()
             xhr.open('GET', 'http://{}:8000/click/' + pageid + '/' + id)
             xhr.send()
-        }
-    </script><style>""" + open('style.css', 'rb').read().decode() + """</style>
-    </head><body><div class="main">""".format(platform.node())
+        }}
+    </script><style>""".format(platform.node()) + open('style.css', 'rb').read().decode() + """</style>
+    </head><body><div class="main">"""
+    buttonAction = '<div class="bouter"><button class="button" onclick="buttonpress(\'{}\',{});" style="background-image: linear-gradient(to bottom,{},{} 10%,{} 80%,{} 95%);">{}</button></div>'
+    buttonPage = '<div class="bouter"><a class="button" href="http://{}:8000/{}" style="background-image: linear-gradient(to bottom,{},{} 10%,{} 80%,{} 95%);">{}</a></div>'
+
+    rows = []
     cols = 6
     index = 0
-    rowHtml = '<div class="bouter"><button class="button" onclick="buttonpress(\'{}\',{});" style="background-image: linear-gradient(to bottom,{},{} 10%,{} 80%,{} 95%);">{}</button></div>'
-    page = config[pageid]
-    buttons = [rowHtml.format(pageid,
-        button['id'],
-        button['uppercolor'],
-        button['color'],
-        button['color'],
-        button['lowercolor'],
-        button['label']) for button in page['buttons']]
-    row = []
-    while index < len(buttons):
-        row.append('<div class="row">{}</div><!-- row -->'.format(''.join(buttons[index:index + min(len(buttons)-index,cols)])))
+    buttons = config[pageid]['buttons']
+    for button in buttons:
+        if 'page' in button.keys():
+            rows.append(buttonPage.format(platform.node(), 
+            *[button[x] for x in ('page', 'uppercolor', 'color', 'color', 'lowercolor', 'label')]))
+        else:
+            rows.append(buttonAction.format(pageid,
+            *[button[x] for x in ('id','uppercolor', 'color', 'color', 'lowercolor', 'label')]))
+
+    html = ''
+    while index < len(rows):
+        html += '<div class="row">{}</div><!-- row -->'.format(''.join(rows[index:index + min(len(rows)-index,cols)]))
         index += cols
     bottom = '</div><!-- main --></body></html>'
-    return top + ''.join(row) + bottom
+    return top + ''.join(html) + bottom
 
 def procButtonPress(pageid, id):
     if pageid not in config.keys():
         logger.error('Unknown page id {}'.format(pageid))
         return
-    if id >= len(config[page]['buttons']):
+    if id >= len(config[pageid]['buttons']):
         logger.error('Unknown button id {}/{}'.format(pageid, id))
         return ""
     
     logger.debug('procButtonPress {}/{}'.format(pageid, id))
     button = config[pageid]['buttons'][id]
-    if 'page' in buttons.keys():
+    if 'page' in button.keys():
         return genpage(button['page'])
+#        return redirect('http://{}:8000/{}'.format(platform.node(), button['page'], 302))
     writeHid(button['report'])
     return ""
 
 
 def writeHid(report):
     logger.debug('writeHid {}'.format(report))
-    if config.nosend: return
+    if cmdLine.nosend: return
     with open('/dev/hidg0', 'wb+') as hid:
-#        pdb.set_trace()
         for buf in report:
             written = 0
             logger.debug('Writing {}'.format(buf))
@@ -249,7 +246,6 @@ def writeHid(report):
                     hid.flush()
 
                 except BlockingIOError as ee:
-#                    pdb.set_trace()
 #                    logger.debug('writeHid exception: ' + ee)
 #                    written += ee.characters_written
                     time.sleep(0.01)
@@ -268,10 +264,11 @@ def page(pageid):
 
 @app.route('/click/<pageid>/<id>')
 def buttonPress(pageid, id):
-    pdb.set_trace()
     return procButtonPress(pageid, int(id) )
+    
 
 def main():
+    global cmdLine
     cmdLine = parseCommandLine()
     global config
     setLogging()
