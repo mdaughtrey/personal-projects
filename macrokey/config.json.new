@@ -9,7 +9,9 @@
         {"label": "sysdev", "color": "#336699", "emit" : [{"keys": "SKOLEM66"},{"meta": "ENTER"}]},
         {"label": "new sysdev", "color": "#336699", "emit" : [{"keys": "d@s3dEv#jK523"},{"meta": "ENTER"}]},
         {"label": "vim kzsload", "color": "#0000ff", "emit" :[{"keys": "sudo vim /srv/1010data/etc/kzsloadlin.ini"},{"meta":"ENTER"}]},
-        {"label": "SVN Checkout", "color": "#0000ff", "emit" : [{"keys": "svn co -q http://projects.corp.1010data.com/svn/1010data/branches/matt.daughtrey/"}]},
+        {"label": "SVN Checkout", "color": "#009933", "emit" : [{"keys": "svn co -q http://projects.corp.1010data.com/svn/1010data/branches/matt.daughtrey/"}]},
+        {"label": "Merge test", "color": "#009933", "emit" : [{"keys": "svn merge http://projects.corp.1010data.com/svn/1010data/branches/test/"}]},
+        {"label": "Merge mine", "color": "#009933", "emit" : [{"keys": "svn merge http://projects.corp.1010data.com/svn/1010data/matt.daughtrey/"},{"meta":"LCTRL"},{"keys":"]"}]},
         {"label": "Murphy", "color": "#0000ff", "emit" : [{"keys": ":colorscheme murphy"}, {"meta": "ENTER"}]},
         {"label": "unalias ls", "color": "#0000ff", "emit" : [{"keys": "unalias ls"}, {"meta": "ENTER"}]},
         {"label": "tar czf - base64 ", "color": "#ff9933", "emit" : [{"keys": "tar czf -  | base64 -w 150"}, {"meta":"LEFT*16"}]},
@@ -19,7 +21,8 @@
         {"label": "DBM Header", "color": "#333399", "emit": [{"keys": "rlwrap e333j"}, {"meta": "ENTER"}, {"keys": ".l.version:\"beta-latest\""}, {"meta":"ENTER"},{"keys":"\\l kzsload"},{"meta":"ENTER"},{"keys": ".l.load_lib(`dblib_path; `dbi; `dbi; 1)"}, {"meta":"ENTER"}]},
         {"label": "Get User", "color": "#333399", "emit": [{"keys": "uu:.dbi.DBMAPI[`;`get_user;(`uid;`)]"},{"meta": "LEFT*2"}]},
         {"label": "Put User", "color": "#333399", "emit": [{"keys": "uu:.dbi.DBMAPI[`;`put_user;(`uid;`)]"},{"meta": "LEFT*2"}]},
-        {"label": "Azure US", "color": "#e67300", "page" : "AzureUS"}
+        {"label": "Azure US", "color": "#e67300", "page" : "AzureUS"},
+        {"label": "Azure UK", "color": "#e67300", "page" : "AzureUK"}
     ]},
     {"page": "AzureUS",
     "buttons": [
@@ -35,6 +38,15 @@
         {"label": "BN GW",  "color": "#009933", "emit" : [{"keys": "kubectl exec -tin bn am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
         {"label": "BN DBM",  "color": "#009933", "emit" : [{"keys": "kubectl exec -tin bn am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
         {"label": "BN compute", "color": "#009933", "emit" : [{"keys": "kubectl exec -tin bn am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]}
+    ]},
+    {"page": "AzureUK",
+    "buttons": [
+        {"label": "Home", "page": "home", "color": "#e67300"},
+        {"label": "Web Server 0", "color": "#cc0044", "emit": [{"keys": "kubectl exec -ti am1ewebserver-0 -- /bin/bash"}]},
+        {"label": "Web Server 1", "color": "#cc0044", "emit": [{"keys": "kubectl exec -ti am1ewebserver-1 -- /bin/bash"}]},
+        {"label": "McColls", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin mccolls am1egw-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "McColls DBM", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin mccolls am1edbm-0 -- /bin/bash"},{"meta": "ENTER"}]},
+        {"label": "McColls compute", "color": "#0066ff", "emit" : [{"keys": "kubectl exec -tin mccolls am1ecompute001-0 -- /bin/bash"},{"meta": "LEFT*16"}]}
     ]}
 ]
 }

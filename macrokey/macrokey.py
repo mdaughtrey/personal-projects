@@ -17,12 +17,14 @@ import time
 
 cmdline = None
 logger = None
+pageCache = {}
 app = Flask(__name__)
 
 def setLogging():
     global logger
     FormatString='%(asctime)s %(levelname)s %(lineno)s %(message)s'
-    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+    #logging.basicConfig(level = logging.DEBUG, format=FormatString)
+    logging.basicConfig(level = logging.ERROR, format=FormatString)
     logger = logging.getLogger('macrokey')
     fileHandler = logging.FileHandler(filename = './macrokey.log')
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
@@ -31,7 +33,7 @@ def setLogging():
     soutHandler = logging.StreamHandler(stream=sys.stdout)
     soutHandler.setFormatter(logging.Formatter(fmt=FormatString))
     soutHandler.setLevel(logging.DEBUG)
-    logger.addHandler(soutHandler)
+#    logger.addHandler(soutHandler)
 
 def parseCommandLine():
     parser = argparse.ArgumentParser()
@@ -184,7 +186,9 @@ def loadConfigNew():
 
             
 def genpage(pageid):
+    global pageCache
     if pageid not in config.keys(): return ""
+    if pageid in pageCache.keys(): return pageCache[pageid]
     top = """<html><head><title>Macrokey</title>
     <script>
         buttonpress = function(pageid, id) {{
@@ -214,7 +218,8 @@ def genpage(pageid):
         html += '<div class="row">{}</div><!-- row -->'.format(''.join(rows[index:index + min(len(rows)-index,cols)]))
         index += cols
     bottom = '</div><!-- main --></body></html>'
-    return top + ''.join(html) + bottom
+    pageCache[pageid] = top + ''.join(html) + bottom
+    return pageCache[pageid]
 
 def procButtonPress(pageid, id):
     if pageid not in config.keys():
