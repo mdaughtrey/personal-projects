@@ -42,8 +42,12 @@ RUN ~/acli/bin/arduino-cli lib install AsyncStepperLib
 RUN ~/acli/bin/arduino-cli lib install 'Adafruit MQTT Library'
 RUN ~/acli/bin/arduino-cli lib install WS2812FX
 RUN ~/acli/bin/arduino-cli lib install WiFiManager
+RUN ~/acli/bin/arduino-cli lib install Effortless-SPIFFS
+RUN ~/acli/bin/arduino-cli lib install asynctimer
 # https://roboticsbackend.com/arduino-stl-library/
 RUN cd ~/Arduino/libraries && git clone https://github.com/maniacbug/StandardCplusplus.git
+RUN cd /var/tmp && wget https://github.com/T-vK/ESP32-BLE-Keyboard/archive/refs/tags/0.3.0.tar.gz && \
+tar xzvf 0.3.0.tar.gz && mv ESP32-BLE-Keyboard-0.3.0/ /home/mattd/Arduino/libraries/
 #ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
 #COPY ~/personal-projects/bin/vimrc ~/.vimrc
 #COPY ~/personal-projects/bin/tmux.conf ~/.tmux.conf
