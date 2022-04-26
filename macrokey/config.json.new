@@ -4,7 +4,7 @@
     "buttons": [
         {"label": "Mute", "color": "#990033", "emit" : [{"meta": "LALT"},{"keys":"a"}]},
         {"label": "1Password", "color": "#336699", "emit" : [{"keys": "3Closer10!"},{"meta":"ENTER"}]},
-        {"label": "ADU", "color": "#336699", "emit" : [{"keys": "matt.daughtrey"}]},
+        {"label": "ADU", "color": "#336699", "emit" : [{"keys": "matt.daughtrey"}, {"meta":"ENTER"}]},
         {"label": "ADP", "color": "#336699", "emit" : [{"keys": "3Three7Seven!"}, {"meta": "ENTER"}]},
         {"label": "sysdev", "color": "#336699", "emit" : [{"keys": "SKOLEM66"},{"meta": "ENTER"}]},
         {"label": "new sysdev", "color": "#336699", "emit" : [{"keys": "d@s3dEv#jK523"},{"meta": "ENTER"}]},
@@ -22,7 +22,8 @@
         {"label": "Get User", "color": "#333399", "emit": [{"keys": "uu:.dbi.DBMAPI[`;`get_user;(`uid;`)]"},{"meta": "LEFT*2"}]},
         {"label": "Put User", "color": "#333399", "emit": [{"keys": "uu:.dbi.DBMAPI[`;`put_user;(`uid;`)]"},{"meta": "LEFT*2"}]},
         {"label": "Azure US", "color": "#e67300", "page" : "AzureUS"},
-        {"label": "Azure UK", "color": "#e67300", "page" : "AzureUK"}
+        {"label": "Azure UK", "color": "#e67300", "page" : "AzureUK"},
+        {"label": "My ACCUM", "color": "#333399", "emit" : [{"keys": "screen -r $(screen -ls | grep '\\.ACCUM_mdaughtrey' | cut -d. -f1)"}]}
     ]},
     {"page": "AzureUS",
     "buttons": [

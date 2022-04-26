@@ -251,6 +251,7 @@ def writeHid(report):
                     hid.flush()
 
                 except BlockingIOError as ee:
+#                    print('writeHid exception: ' + ee)
 #                    logger.debug('writeHid exception: ' + ee)
 #                    written += ee.characters_written
                     time.sleep(0.01)
@@ -277,10 +278,10 @@ def main():
     cmdLine = parseCommandLine()
     global config
     setLogging()
-    if cmdLine.new:
-        config = loadConfigNew()
-    else:
-        config = loadConfig()
+    #if cmdLine.new:
+    config = loadConfigNew()
+    #else:
+    #    config = loadConfig()
     app.run(host='0.0.0.0', port=8000)
 
 main()
