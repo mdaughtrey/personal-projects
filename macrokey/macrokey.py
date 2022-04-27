@@ -3,6 +3,7 @@
 import argparse
 import colorsys
 from flask import Flask, redirect, url_for
+import getpass
 from hidmap import hidmap
 import json
 import logging
@@ -41,7 +42,8 @@ def parseCommandLine():
     parser = argparse.ArgumentParser()
     parser.add_argument('--nosend', dest='nosend', action='store_true', help='no HID reports')
     parser.add_argument('--configfile', dest='configfile', required=True, help='config file location')
-    parser.add_argument('do', choices=['dec','enc'])
+    parser.add_argument('--enc', dest='enc', action='store_true', help='encrypt')
+    parser.add_argument('--dec', dest='dec', action='store_true', help='decrypt')
     return parser.parse_args()
 
 def procConfigChunk0(chunk):
@@ -93,9 +95,9 @@ def procConfigChunk(chunk):
     return report
 
 
-def loadConfig(password):
+def loadConfig(file, password):
     while True:
-        config = json.load(open('config.json.new', 'rb'))
+        config = json.loads(dec(file, password))
         for page in config['pages']:
             for ii in range(len(page['buttons'])):
                 logger.debug(page['buttons'][ii]['label'])
@@ -182,7 +184,7 @@ def procButtonPress(pageid, id):
 
 def writeHid(report):
     logger.debug('writeHid {}'.format(report))
-    if cmdLine.nosend: return
+#    if cmdLine.nosend: return
     with open('/dev/hidg0', 'wb+') as hid:
         for buf in report:
             written = 0
@@ -215,12 +217,14 @@ def genkey(provided):
 def enc(file, password):
     key = genkey(password)
     f = Fernet(key)
-    print(f.encrypt(open(file, 'rb').read()))
+    data = f.encrypt(open(file, 'rb').read())
+    open(file, 'wb').write(data)
 
 def dec(file, password):
     key = genkey(password)
     f = Fernet(key)
-    print(f.decrypt(open(file, 'rb').read().encode()))
+    data = f.decrypt(open(file, 'rb').read())
+    return data
 
 @app.route('/')
 def home():
@@ -236,14 +240,21 @@ def buttonPress(pageid, id):
     
 
 def main():
-    password = input('Password: ')
+    password = getpass.getpass()
     global cmdLine
     cmdline = parseCommandLine()
-    if 'dec' == cmdline.do: dec(cmdline.configfile, password)
-    elif 'enc' == cmdline.do: enc(cmdline.configfile, password)
+
+    if cmdline.dec:
+        data = dec(cmdline.configfile, password)
+        open(file, 'wb').write(data)
+        sys.exit(0)
+    elif cmdline.enc:
+        enc(cmdline.configfile, password)
+        sys.exit(0)
+
     global config
     setLogging()
-    config = loadConfig(password)
+    config = loadConfig(cmdline.configfile, password)
     app.run(host='0.0.0.0', port=8000)
 
 main()
