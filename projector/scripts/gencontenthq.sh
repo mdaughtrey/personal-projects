@@ -153,8 +153,8 @@ processavi()
             echo 'result="result1"' >> $avsscript
             cat $MYDIR/hq_interpolate2.avs >> $avsscript
             WINEDLLPATH=~/.wine/drive_c/windows/system32 
-    #        export WINEDEBUG=trace+all
-            wine ${SOFTWARE}/avs2yuv/avs2yuv.exe -v $avsscript - > ${outfile} 
+           export WINEDEBUG=trace+all
+            wine ${SOFTWARE}/avs2yuv/avs2yuv.exe -v $avsscript - > ${outfile}  2> gencontenthq.log
         fi
         ((count++))
     done
