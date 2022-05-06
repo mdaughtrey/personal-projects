@@ -3,6 +3,7 @@
 import argparse
 import colorsys
 from flask import Flask, redirect, url_for
+import getpass
 from hidmap import hidmap
 import json
 import logging
@@ -11,9 +12,11 @@ import platform
 import sys
 import time
 
-#class Meta():
-#    def __init__(tag, name):
-#        self.tag = name
+import base64
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.fernet import Fernet
 
 cmdline = None
 logger = None
@@ -37,25 +40,10 @@ def setLogging():
 
 def parseCommandLine():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--new', dest='new', action='store_true', help='new config')
     parser.add_argument('--nosend', dest='nosend', action='store_true', help='no HID reports')
-#    parser.add_argument('--prefix', dest='prefix', default='', help='prefix filenames with a prefix')
-#    parser.add_argument('--nofilm', dest='nofilm', action='store_true', default=False, help='run with no film loaded')
-#    parser.add_argument('--noled', dest='noled', action='store_true', default=False, help='run with no LED')
-#    parser.add_argument('--film', dest='film', choices=['super8','8mm'], help='8mm/super8')
-#    parser.add_argument('--dir', dest='dir', required=True, help='set project directory')
-#    parser.add_argument('--single', dest='singleframe', action='store_true', default=False, help='One image per frame')
-#    parser.add_argument('--startdia', dest='startdia', type=int, default=62, help='Feed spool starting diameter (mm)')
-#    parser.add_argument('--enddia', dest='enddia', type=int, default=35, help='Feed spool ending diameter (mm)')
-#    parser.add_argument('--raspid', dest='raspid', type=int, default=0, help='raspistill PID')
-#    parser.add_argument('--picamera', dest='picamera', action='store_true', default=False, help='use picamera lib')
-#    parser.add_argument('--picameracont', dest='picameracont', action='store_true', default=False, help='use picamera lib')
-#    parser.add_argument('--frameinterval', dest='frameinterval', type=int, default=45, help='Frame Interval')
-#    parser.add_argument('--nocam', dest='nocam', action='store_true', default=False, help='no camera operations')
-#    parser.add_argument('--intervals', dest='intervals', help='n,n,n...', required=True)
-#    parser.add_argument('--res', dest='res', choices=['draft','1k', 'hd', 'full'], help="resolution")
-#    global cmdline
-#    cmdline = parser.parse_args()
+    parser.add_argument('--configfile', dest='configfile', required=True, help='config file location')
+    parser.add_argument('--enc', dest='enc', action='store_true', help='encrypt')
+    parser.add_argument('--dec', dest='dec', action='store_true', help='decrypt')
     return parser.parse_args()
 
 def procConfigChunk0(chunk):
@@ -104,52 +92,12 @@ def procConfigChunk(chunk):
             report.append([0, 0, hid, 0, 0, 0, 0, 0])
         else:
             report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
-
-#        for aa in chunk.get('action', "").split(','):
-#            hid = hidmap[aa]
-#            if isinstance(hid, int):
-#                report.append([0, 0, hid, 0, 0, 0, 0, 0])
-#            else:
-#                report.append([hid[0], 0, hid[1], 0, 0, 0, 0, 0])
     return report
 
 
-def loadConfig():
-#    try:
+def loadConfig(file, password):
     while True:
-        config = json.load(open('config.json', 'rb'))
-        for ii in range(len(config['buttons'])):
-            logger.debug(config['buttons'][ii]['label'])
-            config['buttons'][ii]['id'] = ii
-            # Build the HID report string
-            report = []
-            for chunk in config['buttons'][ii]['emit']:
-                report.extend(procConfigChunk(chunk))
-
-            dups = [ii==jj for ii,jj in zip(report[:-1],report[1:])]
-            r2 = []
-            for kk,ll in enumerate(dups):
-                r2.append(report[kk])
-                if ll == True: r2.append([0] * 8)
-
-            report = r2 + [report[-1]] + [[0] * 8]
-            config['buttons'][ii]['report'] = report
-
-            # Build upper and lower colors
-            color = int(config['buttons'][ii]['color'][1:], 16)
-            rgb = [(color >> 16 & 0xff)/255, (color >> 8 & 0xff)/255, (color & 0xff)/255]
-            upperColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
-            lowerColor = list([ee for ee in colorsys.rgb_to_hls(*rgb)])
-            config['buttons'][ii]['uppercolor'] = 'hsl({},{}%,60%)'.format(360 * upperColor[0], 100 * upperColor[2])
-            config['buttons'][ii]['lowercolor'] = 'hsl({},{}%,30%)'.format(360 * lowerColor[0], 100 * lowerColor[2])
-
-        logger.debug('loadConfig exit')
-        return config
-
-def loadConfigNew():
-#    try:
-    while True:
-        config = json.load(open('config.json.new', 'rb'))
+        config = json.loads(dec(file, password))
         for page in config['pages']:
             for ii in range(len(page['buttons'])):
                 logger.debug(page['buttons'][ii]['label'])
@@ -180,9 +128,6 @@ def loadConfigNew():
 
         logger.debug('loadConfig exit')
         return config
-
-#    except Exception as ee:
-#        logger.error(str(ee))
 
             
 def genpage(pageid):
@@ -233,14 +178,13 @@ def procButtonPress(pageid, id):
     button = config[pageid]['buttons'][id]
     if 'page' in button.keys():
         return genpage(button['page'])
-#        return redirect('http://{}:8000/{}'.format(platform.node(), button['page'], 302))
     writeHid(button['report'])
     return ""
 
 
 def writeHid(report):
     logger.debug('writeHid {}'.format(report))
-    if cmdLine.nosend: return
+#    if cmdLine.nosend: return
     with open('/dev/hidg0', 'wb+') as hid:
         for buf in report:
             written = 0
@@ -251,13 +195,36 @@ def writeHid(report):
                     hid.flush()
 
                 except BlockingIOError as ee:
-#                    logger.debug('writeHid exception: ' + ee)
-#                    written += ee.characters_written
                     time.sleep(0.01)
 
                 except BrokenPipeError as ee:
                     logger.error(ee)
                     return
+
+def genkey(provided):
+    password = provided.encode()
+    salt = b'adeff'
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend())
+
+    key = base64.urlsafe_b64encode(kdf.derive(password))
+    return key
+
+def enc(file, password):
+    key = genkey(password)
+    f = Fernet(key)
+    data = f.encrypt(open(file, 'rb').read())
+    open(file, 'wb').write(data)
+
+def dec(file, password):
+    key = genkey(password)
+    f = Fernet(key)
+    data = f.decrypt(open(file, 'rb').read())
+    return data
 
 @app.route('/')
 def home():
@@ -273,14 +240,21 @@ def buttonPress(pageid, id):
     
 
 def main():
+    password = getpass.getpass()
     global cmdLine
-    cmdLine = parseCommandLine()
+    cmdline = parseCommandLine()
+
+    if cmdline.dec:
+        data = dec(cmdline.configfile, password)
+        open(file, 'wb').write(data)
+        sys.exit(0)
+    elif cmdline.enc:
+        enc(cmdline.configfile, password)
+        sys.exit(0)
+
     global config
     setLogging()
-    if cmdLine.new:
-        config = loadConfigNew()
-    else:
-        config = loadConfig()
+    config = loadConfig(cmdline.configfile, password)
     app.run(host='0.0.0.0', port=8000)
 
 main()

@@ -2,7 +2,7 @@
 
 #set +o noexec
 
-PROJECT=1_of_9
+#PROJECT=hd0
 #TYPE=super8
 #ROOTOFALL=/media/sf_vproj/scans/
 ROOTOFALL=/media/currentscan/scans/
@@ -33,6 +33,31 @@ import()
     done
     #echo scp mattd@hqcam:/mnt/exthd/${PROJECT}/${sourcefile}*.rgb ${targetdir}
 
+}
+
+yuv()
+{
+#    ls ${RP}/png_cropped/??????a.png > /tmp/filelist.txt
+#    mplayer -msglevel all=6 -lavdopts threads=`nproc` \
+#        mf://@/tmp/filelist.txt \
+#    	-quiet -mf fps=18 -benchmark -nosound -noframedrop -noautosub \
+#        -vo yuv4mpeg:file=${RP}/video0.yuv
+
+
+            ffmpeg -loglevel info -i ${RP}/video0.yuv -vcodec rawvideo -y ${RP}/video0.avi
+
+
+#	ffmpeg -framerate 15 -pattern_type glob -i ${RP}/png_cropped/'??????a.png' -c:v libx264 -pix_fmt yuv420p ${RP}/video0.avi
+#    mkdir ${RP}/deshake
+#	#ls ${RP}/png_cropped/*.png | sed -n '1~6!p' | sed "s/.*/file '\0'/" > /tmp/filelist.txt
+#	ls ${RP}/png_cropped/*.png | sed -n '1~6!p' > /tmp/filelist.txt
+#	video0="${RP}/video0.avi"
+#	if [[ ! -f "$video0" ]]; then
+#        mplayer -msglevel all=6 -lavdopts threads=`nproc` \
+#            mf://@/tmp/filelist.txt -quiet -mf fps=15 $video0
+##            -quiet -mf fps=15 -benchmark -nosound -noframedrop -noautosub -vo avi:file=$video0
+#	fi
+#    ffmpeg -loglevel verbose -i $video0 -vf deshake=x=384:y=579:w=316:h=721:ry=64 ${RP}/deshake/%06d.png 
 }
 
 deshake()
@@ -143,12 +168,13 @@ peek()
 		ls ${RP}/png_cropped/??????a.png  > /tmp/filelist.txt
 	fi
     	#ffmpeg -y -i /tmp/filelist.txt -vcodec libx264 -r 30 -pix_fmt yuv420p ${RP}/${PROJECT}_peek.mp4
-	if [[ ! -f "${RP}/peek.yuv" ]]; then
+#	if [[ ! -f "${RP}/peek.yuv" ]]; then
 		mplayer -msglevel all=6 -lavdopts threads=`nproc` \
 		    mf://@/tmp/filelist.txt \
 		    -quiet -mf fps=15 -benchmark -nosound -noframedrop -noautosub \
        	     	-vo yuv4mpeg:file=${RP}/peek.yuv
-	fi
+       	     	#-vo yuv4mpeg:file=${RP}/peek.yuv
+#	fi
 	if [[ "cb" == "$1" ]]; then
 		ffmpeg -i ${RP}/peek.yuv -vf scale=720:-2 ${RP}/peekcb.mp4
 	else
@@ -207,13 +233,32 @@ peek()
 # 6. flowframes input = vidstab
 # 7: flowframes ps1
 # 8: stitch
+processavi()
+{
+    MYDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    SOFTWARE=/media/sf_vproj/scans/software/
+    let count=0
+    for avifile in ${RP}/video?.avi; do
+        avsscript=/tmp/interpolate.avs
+        outfile=${RP}/vsynth_${count}.avi
+        if [[ ! -f "$outfile" ]]; then 
+            echo "film=\"${avifile}\"" > $avsscript
+            echo 'result="result1"' >> $avsscript
+            cat ../hq_interpolate2.avs >> $avsscript
+            WINEDLLPATH=~/.wine/drive_c/windows/system32 
+           export WINEDEBUG=trace+all
+            wine ${SOFTWARE}/avs2yuv/avs2yuv.exe -v $avsscript - > ${outfile}  2> gencontenthq.log
+        fi
+        ((count++))
+    done
+}
 
 case "$1" in 
     title) ../gentitlehq.sh -r ${ROOTOFALL} -p ${PROJECT} ;; # -u ac ;;
 #    gen) use=${2:-ac}
 #        bash -x ../gencontenthq.sh -h -r ${ROOTOFALL} -p ${PROJECT} -u ${use} ;;
     import) import ;;
-    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png --draft;;
+    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png --overwrite --res hd;;
 #    pngcrop) ./hqtest.py --project ${PROJECT} --root ${ROOTOFALL} --format png  --serialize --draft --onefile 000682a.rgb --overwrite ;;
     deshake) deshake > deshake.log 2>&1 ;;
     vidstab) vidstab ;; # > vidstab.log 2>&1 ;;
@@ -224,6 +269,8 @@ case "$1" in
     peek) peek ;;
     peekcb) peek cb ;;
     graph) ./graph.py ${RP} ;;
+    yuv) yuv ;;
+    processavi) processavi ;;
 #    png2mp4) ffmpeg -i ${RP}/png_stabilized-2x-RIFE/%08d.png -vcodec libx264 -r 30 -pix_fmt yuv420p -tune grain,stillimage ${RP}/final.mp4 ;;
     *) echo What?
 esac

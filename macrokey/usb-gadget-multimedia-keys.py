@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import pdb
 import os
 import time
 from optparse import OptionParser
@@ -10,7 +11,7 @@ DEFAULT_HID = '/dev/hidg0'
 #       that differs for multimedia devices is using the reserved bit [1]
 #       for the button code, instead of [2] which keyboards use
 CONTROL_CODE = 0x02
-DEBUG = False
+DEBUG = True
 
 KEYS_ALLOWED = {
   'WAKE':           {'rsvd': 0,  'ctrl': 0x00,         'kbd': 0x81, 'delay': 2,   'ctrl': 0x00},         # Basically just send a "empty/invalid" keypress, to "wake" whatever device before sending a real key below
@@ -29,18 +30,39 @@ KEYS_ALLOWED = {
   'VOLUME_DOWN':    {'rsvd': 64, 'ctrl': CONTROL_CODE, 'kbd': 0x00, 'delay': 0.1, 'ctrl': CONTROL_CODE},
 }
 
+def writeHid(hid_path, report):
+    print(report)
+    with open(hid_path, 'wb+') as hid:
+        buf = report
+        written = 0
+        while written < 8:
+            try:
+                written += hid.write(bytearray(buf))
+#                hid.flush()
+
+            except BlockingIOError as ee:
+#                print('BlockingIOError ' + ee)
+                time.sleep(0.01)
+
+            except BrokenPipeError as ee:
+#                print('BrokenPipeError ' + ee)
+                time.sleep(0.01)
+
 # Helper script to send data directly to our HID Gadget emulation device
 def send_to_gadget(hid_path, reserved_code, control_code=CONTROL_CODE, keyboard_code=0x00):
+#    pdb.set_trace()
     if DEBUG:
         print("Sending {}:{}:{} to {}".format(control_code, reserved_code, keyboard_code, hid_path))
 
-    with open(hid_path, 'wb+') as hid_handle:
-        buf = [0] * 8
-        buf[0] = control_code
-        buf[1] = reserved_code
-        buf[2] = keyboard_code
-        hid_handle.write(bytearray(buf))
-        hid_handle.write(bytearray([0] * 8))
+#    with open(hid_path, 'wb+') as hid_handle:
+    buf = [0] * 8
+    buf[0] = control_code
+    buf[1] = reserved_code
+    buf[2] = keyboard_code
+    writeHid(hid_path, buf)
+    #hid_handle.write(bytearray(buf))
+    #writeHid(hid_path, bytearray([0] * 8))
+    #hid_handle.write(bytearray([0] * 8))
 
 # Helper script to translate KEYS_ALLOWED into the above
 def send(key_name, hid_path=DEFAULT_HID):

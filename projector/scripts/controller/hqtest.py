@@ -22,7 +22,7 @@ parser.add_argument('--root', required = True, dest='root', help='rootdir')
 parser.add_argument('--format', required = True, dest='format', help='Output Format', default='png', choices = ['png', 'bmp'])
 parser.add_argument('--nowrite', dest='nowrite', help='dont write the image files', action="store_true")
 parser.add_argument('--overwrite', dest='overwrite', help='overwrite the output file', action="store_true")
-parser.add_argument('--draft', dest='draft', action='store_true', default=False, help='draft mode')
+parser.add_argument('--res', dest='res',  choices=['draft', 'hd', 'full'], help="resolution")
 parser.add_argument('--serialize', dest='serialize', action='store_true', default=False, help='serialized operation')
 parser.add_argument('--onefile', dest='onefile', help='Process one file')
 config = parser.parse_args()
@@ -40,7 +40,7 @@ crop = (489, 168, 489+2574, 168+1761)
 # 8mm 4.5 x 3.3mm
 # S8 5.36 x 4.01
 PxPerMm8mm = (crop[2] - crop[0])/4.5
-PxPerMmS8 = 75 if config.draft else 391 
+PxPerMmS8 = {'draft':75, '1k':int(467/4.01), 'hd': int(1200/5.36), 'full':391}[config.res]
 
 def roundIt(val): return int(val + val%2)
 SprocketS8 = type('obj', (object,), {'h': roundIt(.91 * PxPerMmS8),
@@ -108,7 +108,7 @@ def savedebug(image, filename, tag):
 
 # Shape = Y,X
 def findSprockets8mm(image):
-    pdb.set_trace()
+#    pdb.set_trace()
     grey = image.convert('L')
     savedebug(grey, 'grey')
     flattened = np.asarray(grey, dtype=np.uint8)
@@ -230,17 +230,14 @@ def findSprocketsS80(image): # backup
     return (image, centerline)
 
 def findSprocketsS8(image, filename=None):
+#    pdb.set_trace()
     grey = image.convert('L')
-    image = image.convert('L')
+    #image = image.convert('L')
     flattened = np.asarray(grey, dtype=np.uint8)
     savedebug(flattened, filename, 'flattened')
-#    if filename:
-#        savedebug(Image.fromarray(flattened), filename.replace('.png', '_flattened.png'))
 
     eroded = ndimage.grey_erosion(flattened, size=(5,5))
     savedebug(eroded, filename, 'eroded')
-#    if filename:
-#        savedebug(Image.fromarray(eroded), filename.replace('.png', '_eroded.png'))
 
     sliceL = 0
     sliceR = int(PxPerMmS8 * (0.51 + 0.91))
@@ -250,8 +247,6 @@ def findSprocketsS8(image, filename=None):
     slice = eroded[:,sliceL:sliceR]
 
     savedebug(slice, filename, 'slice')
-#    if filename:
-#        savedebug(Image.fromarray(slice), filename.replace('.png', '_slice.png'))
 
     # get the darkest and lightest values, their midpoint is the threshold
     darkest = ndimage.minimum(slice)
@@ -271,18 +266,8 @@ def findSprocketsS8(image, filename=None):
         debugimage = image
 
     centerlines = []
-#    pdb.set_trace()
     for ss in range(sliceL, sliceR, int(sliceW/5)):
         vstrip = slice[:,ss:ss+int(sliceW/10)]
-
-#        if filename: 
-#            # paste slice
-#            dstrip = np.copy(vstrip)
-#            dstrip[dstrip == 1] = 255
-#            savedebug(dstrip, filename, 'vstrip_{}'.format(ss))
-#            x = Image.fromarray(dstrip)
-#            # (x0, y0)
-#            debugimage.paste(x, (ss, 0))
 
         # rect x0,y0,x1,y1
         rect = findExtents(vstrip)
@@ -292,7 +277,6 @@ def findSprocketsS8(image, filename=None):
 
     if filename:
         savedebug(np.asarray(debugimage), filename, 'strips')
-#    pdb.set_trace()
     centerlines = [x for x in centerlines if x]
     if len(centerlines):
         yCenter = int(st.median(centerlines))
@@ -360,17 +344,17 @@ def threadrun(fromdir, todir, file):
     outfile = '{dir}/{filename}'.format(dir=todir, filename = outfilename)
     if os.path.exists(outfile) and (False == config.nowrite) and (False == config.overwrite):
         return
-    if config.draft:
-        image = Image.frombytes('RGB', (640, 480),open(file,'rb').read())
-    else:
-        image = Image.frombytes('RGB', (4064, 3040),open(file,'rb').read())
+
+    res = {'draft':(640, 480), '1k':(1024,768), 'hd': (1920,1080), 'full':(4064,3040)}
+    image = Image.frombytes('RGB', res[config.res],open(file,'rb').read())
     print(f'Processing {file}')
 #    for b in range(16):
 #        blurred = image.filter(ImageFilter.BoxBlur(b))
 #        bfile = outfile.replace('.png', f'_{b}.png')
 #        blurred.save(bfile)
 #    image = cv2.GaussianBlur(image, {'width':4,'height':4}, 0, 0, cv2.BORDER_REFLECT_101)
-    image = findSprocketsS8(image, outfile)
+    #image = findSprocketsS8(image, outfile)
+    image = findSprocketsS8(image) # , outfile)
     if False == config.nowrite:
         image.save(outfile)
 
