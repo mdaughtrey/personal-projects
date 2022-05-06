@@ -44,6 +44,7 @@ RUN ~/acli/bin/arduino-cli lib install WS2812FX
 RUN ~/acli/bin/arduino-cli lib install WiFiManager
 RUN ~/acli/bin/arduino-cli lib install Effortless-SPIFFS
 RUN ~/acli/bin/arduino-cli lib install asynctimer
+RUN ~/acli/bin/arduino-cli lib install HID-Project
 # https://roboticsbackend.com/arduino-stl-library/
 RUN cd ~/Arduino/libraries && git clone https://github.com/maniacbug/StandardCplusplus.git
 RUN cd /var/tmp && wget https://github.com/T-vK/ESP32-BLE-Keyboard/archive/refs/tags/0.3.0.tar.gz && \
