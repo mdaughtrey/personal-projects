@@ -15,11 +15,12 @@
 
 #include "HID-Project.h"
 #include <AsyncTimer.h>
+#include <avr/wdt.h>
 
 typedef struct
 {
     char key;
-    char help[24];
+    char help[32];
     bool (*fun)();
 }Command;
 
@@ -51,9 +52,9 @@ uint32_t buttonState = 0;
 uint8_t writeReady = 0;
 AsyncTimer at;
 //uat.setTimeout(setFrameReady, 10);
-void setEvent(uint8_t ev} { event |= ev; }
-void resetEvent(uint8_t ev} { event &= ~ev; }
-void isEvent(uint8 ev) { event &= ev; }
+void setEvent(uint8_t ev) { event |= ev; }
+void resetEvent(uint8_t ev) { event &= ~ev; }
+bool isEvent(uint8_t ev) { return event & ev; }
 
 
 void verbose(const char * fmt, ...)
@@ -73,6 +74,7 @@ void verbose(const char * fmt, ...)
 void setup() {
     Serial.begin(115200);
     Serial.println("{State:Ready}");
+    wdt_enable(WDTO_2S);
     Gamepad.begin();
 }
 
@@ -84,108 +86,108 @@ bool commandB()
     return 1;
 }
 
-bool buttonChaser()
+void buttonChaser()
 {
-    buttonState <<= 1;
-    if (~buttonState)
+    if (!buttonState)
     {
+        verbose("buttonChaser stop");
         resetEvent(EV_BUTTONCHASER);
+        return;
     }
-    if (isEvent(EV_BUTTONCHASER))
-    {
-        writeReady = 1;
-        Gamepad.buttons(buttonState);
-        verbose("buttonChaser %04x\r", buttonState);
-        at.setTimeout(buttonChaser, 100);
-    }
+    writeReady = 1;
+    Gamepad.buttons(buttonState);
+    verbose("buttonChaser %04x\r", buttonState);
+    buttonState <<= 1;
+    at.setTimeout(buttonChaser, 100);
 }
 
-bool xAxisWipe()
+void xAxisWipe()
 {
-    xAxis++;
     if (!xAxis)
     {
-        resetEvent(EV_BUTTONCHASER);
+        verbose("xAxisWipe stop");
+        resetEvent(EV_XAXIS);
+        return;
     }
-    if (isEvent(EV_XAXIS))
-    {
-        writeReady = 1;
-        Gamepad.xAxis(xAxis);
-        verbose("xAxisWipe %u\r", xAxis);
-        at.setTimeout(xAxisWipe, 10);
-    }
+    writeReady = 1;
+    Gamepad.xAxis(xAxis);
+    verbose("xAxisWipe %u\r", xAxis);
+    xAxis++;
+    at.setTimeout(xAxisWipe, 10);
 }
 
-bool yAxisWipe()
+void yAxisWipe()
 {
-    yAxis++;
     if (!yAxis)
     {
+        verbose("yAxisWipe stop");
         resetEvent(EV_YAXIS);
     }
-    if (isEvent(EV_YAXIS))
-    {
-        writeReady = 1;
-        Gamepad.yAxis(yAxis);
-        verbose("yAxisWipe %u\r", yAxis);
-        at.setTimeout(yAxisWipe, 10);
-    }
+    writeReady = 1;
+    Gamepad.yAxis(yAxis);
+    verbose("yAxisWipe %u\r", yAxis);
+    yAxis++;
+    at.setTimeout(yAxisWipe, 10);
 }
 
-bool zAxisWipe()
+void zAxisWipe()
 {
-    zAxis++;
     if (!zAxis)
     {
+        verbose("zAxisWipe stop");
         resetEvent(EV_ZAXIS);
+        return;
     }
-    if (isEvent(EV_ZAXIS))
-    {
-        writeReady = 1;
-        Gamepad.zAxis(zAxis);
-        verbose("zAxisWipe %u\r", zAxis);
-        at.setTimeout(zAxisWipe, 10);
-    }
+    writeReady = 1;
+    Gamepad.zAxis(zAxis);
+    verbose("zAxisWipe %u\r", zAxis);
+    zAxis++;
+    at.setTimeout(zAxisWipe, 10);
 }
 
-bool rxAxisWipe()
+void rxAxisWipe()
 {
-    rxAxis++;
     if (!rxAxis)
     {
+        verbose("rxAxisWipe stop");
         resetEvent(EV_RXAXIS);
+        return;
     }
-    if (isEvent(EV_RXAXIS))
-    {
-        writeReady = 1;
-        Gamepad.rxAxis(rxAxis);
-        verbose("rxAxisWipe %u\r", rxAxis);
-        at.setTimeout(rxAxisWipe, 10);
-    }
+    writeReady = 1;
+    Gamepad.rxAxis(rxAxis);
+    verbose("rxAxisWipe %u\r", rxAxis);
+    rxAxis++;
+    at.setTimeout(rxAxisWipe, 10);
 }
 
-bool ryAxisWipe()
+void ryAxisWipe()
 {
+    if (!ryAxis)
+    {
+        verbose("ryAxisWipe stop");
+        resetEvent(EV_RYAXIS);
+        return;
+    }
+    writeReady = 1;
+    Gamepad.ryAxis(ryAxis);
+    verbose("ryAxisWipe %u\r", ryAxis);
     ryAxis++;
-    if (ryAxis)
-    {
-        writeReady = 1;
-        Gamepad.ryAxis(ryAxis);
-        verbose("ryAxisWipe %u\r", ryAxis);
-        at.setTimeout(ryAxisWipe, 10);
-    }
+    at.setTimeout(ryAxisWipe, 10);
 }
 
-bool rzAxisWipe()
+void rzAxisWipe()
 {
-    rzAxis++;
-    if (rzAxis)
+    if (!rzAxis)
     {
-        writeReady = 1;
-        Gamepad.rzAxis(rzAxis);
-        verbose("rzAxisWipe %u\r", rzAxis);
-        at.setTimeout(rzAxisWipe, 10);
+        verbose("rzAxisWipe stop");
+        resetEvent(EV_RZAXIS);
+        return;
     }
+    writeReady = 1;
+    Gamepad.rzAxis(rzAxis);
+    verbose("rzAxisWipe %u\r", rzAxis);
+    rzAxis++;
+    at.setTimeout(rzAxisWipe, 10);
 }
 
 void doReset()
@@ -196,6 +198,7 @@ void doReset()
     rxAxis = 0;
     ryAxis = 0;
     rzAxis = 0;
+    buttonState = 0;
     debug = 0;
     doWrite = 0;
     event = 0;
@@ -203,17 +206,18 @@ void doReset()
 
 Command cmds[] = {
     {'b', "Toggle button (param)", commandB},
-    {'B', "Button Chaser", []() { event |= EV_BUTTONCHASER; return 0;}},
+    {'B', "Button Chaser", []() { setEvent(EV_BUTTONCHASER); return 0;}},
     {'c', "Clear param", [](){ param = 0; return 0; }},
     {'d', "Debug on", []() { debug = 1; return 0;}},
     {'D', "Debug off", []() { debug = 0; return 0;}},
-    {'e', "X Axis Wipe", []() { event |= EV_XAXIS; return 0; }},
-    {'f', "Y Axis Wipe", []() { event |= EV_YAXIS; return 0; }},
-    {'g', "Z Axis Wipe", []() { event |= EV_ZAXIS; return 0; }},
+    {'e', "X Axis Wipe", []() { setEvent(EV_XAXIS); return 0; }},
+    {'f', "Y Axis Wipe", []() { setEvent(EV_YAXIS); return 0; }},
+    {'g', "Z Axis Wipe", []() { setEvent(EV_ZAXIS); return 0; }},
     {'h', "Help", [](){ help(); return 0; }},
-    {'i', "RX Axis Wipe", []() { event |= EV_RXAXIS; return 0; }},
-    {'j', "RY Axis Wipe", []() { event |= EV_RYAXIS; return 0; }},
-    {'k', "RZ Axis Wipe", []() { event |= EV_RZAXIS; return 0; }},
+    {'i', "RX Axis Wipe", []() { setEvent(EV_RXAXIS); return 0; }},
+    {'j', "RY Axis Wipe", []() { setEvent(EV_RYAXIS); return 0; }},
+    {'k', "RZ Axis Wipe", []() { setEvent(EV_RZAXIS); return 0; }},
+    {'r', "Reset", []() { while (1); }},
     {'w', "USB Write on", []() { doWrite = 1; return 0; }},
     {'W', "USB Write off", []() { doWrite = 0; return 0; }},
     {'x', "16-bit X Axis (param)", [](){ Gamepad.xAxis(param); return 1; }},
@@ -232,6 +236,10 @@ void help()
     {
         verbose("%c: %s\r\n", cmds[ii].key, cmds[ii].help);
     }
+    char buffer[12];
+    itoa(event, buffer, 2);
+    verbose("Event %s\r\n", buffer);
+    verbose("doWrite %u\r\n", doWrite);
 }
 
 void handleCommand()
@@ -258,7 +266,9 @@ void handleCommand()
     }
 }
 
-void loop() {
+void loop()
+{
+    wdt_reset();
     if (Serial.available())
     {
         handleCommand();
@@ -271,45 +281,57 @@ void loop() {
         }
         writeReady = 0;
     }
-    if (event & EV_BUTTONCHASER)
+    if (isEvent(EV_BUTTONCHASER))
     {
-        event &= ~EV_BUTTONCHASER;
+        buttonState = 1;
+        resetEvent(EV_BUTTONCHASER);
+        verbose("buttonChaser start\r\n");
         buttonChaser();
     }
-    if (event & EV_XAXIS)
+    if (isEvent(EV_XAXIS))
     {
-        event &= ~EV_XAXIS;
+        xAxis++;
+        resetEvent(EV_XAXIS);
+        verbose("xAxisWipe start\r\n");
         xAxisWipe();
     }
-    if (event & EV_YAXIS)
+    if (isEvent(EV_YAXIS))
     {
-        event &= ~EV_YAXIS;
+        yAxis++;
+        resetEvent(EV_YAXIS);
+        verbose("yAxisWipe start\r\n");
         yAxisWipe();
     }
-    if (event & EV_ZAXIS)
+    if (isEvent(EV_ZAXIS))
     {
-        event &= ~EV_ZAXIS;
+        zAxis++;
+        resetEvent(EV_ZAXIS);
+        verbose("zAxisWipe start\r\n");
         zAxisWipe();
     }
-    if (event & EV_RXAXIS)
+    if (isEvent(EV_RXAXIS))
     {
-        event &= ~EV_RXAXIS;
+        rxAxis++;
+        resetEvent(EV_RXAXIS);
+        verbose("rxAxisWipe start\r\n");
         rxAxisWipe();
     }
-    if (event & EV_RYAXIS)
+    if (isEvent(EV_RYAXIS))
     {
-        event &= ~EV_RYAXIS;
+        ryAxis++;
+        resetEvent(EV_RYAXIS);
+        verbose("ryAxisWipe start\r\n");
         ryAxisWipe();
     }
-    if (event & EV_RZAXIS)
+    if (isEvent(EV_RZAXIS))
     {
-        event &= ~EV_RZAXIS;
+        rzAxis++;
+        resetEvent(EV_RZAXIS);
+        verbose("rzAxisWipe start\r\n");
         rzAxisWipe();
     }
-    if (event)
-    {
-        at.handle();
-    }
+    at.handle();
+   
 
 //  if (!digitalRead(pinButton)) {
 //    digitalWrite(pinLed, HIGH);
