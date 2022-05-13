@@ -74,7 +74,7 @@ void verbose(const char * fmt, ...)
 void setup() {
     Serial.begin(115200);
     Serial.println("{State:Ready}");
-    wdt_enable(WDTO_2S);
+//    wdt_enable(WDTO_2S);
     Gamepad.begin();
 }
 
@@ -103,7 +103,7 @@ void buttonChaser()
 
 void xAxisWipe()
 {
-    if (!xAxis)
+    if (xAxis > 65000)
     {
         verbose("xAxisWipe stop");
         resetEvent(EV_XAXIS);
@@ -111,28 +111,29 @@ void xAxisWipe()
     }
     writeReady = 1;
     Gamepad.xAxis(xAxis);
-    verbose("xAxisWipe %u\r", xAxis);
-    xAxis++;
-    at.setTimeout(xAxisWipe, 10);
+    verbose("xAxisWipe %d\r", xAxis);
+    xAxis += 10;
+    at.setTimeout(xAxisWipe, 100);
 }
 
 void yAxisWipe()
 {
-    if (!yAxis)
+    if (yAxis > 65000)
     {
         verbose("yAxisWipe stop");
         resetEvent(EV_YAXIS);
+        return;
     }
     writeReady = 1;
     Gamepad.yAxis(yAxis);
-    verbose("yAxisWipe %u\r", yAxis);
-    yAxis++;
-    at.setTimeout(yAxisWipe, 10);
+    verbose("yAxisWipe %d\r", yAxis);
+    yAxis += 10;
+    at.setTimeout(yAxisWipe, 100);
 }
 
 void zAxisWipe()
 {
-    if (!zAxis)
+    if (zAxis > 240)
     {
         verbose("zAxisWipe stop");
         resetEvent(EV_ZAXIS);
@@ -141,13 +142,13 @@ void zAxisWipe()
     writeReady = 1;
     Gamepad.zAxis(zAxis);
     verbose("zAxisWipe %u\r", zAxis);
-    zAxis++;
-    at.setTimeout(zAxisWipe, 10);
+    zAxis += 10;
+    at.setTimeout(zAxisWipe, 100);
 }
 
 void rxAxisWipe()
 {
-    if (!rxAxis)
+    if (rxAxis > 240)
     {
         verbose("rxAxisWipe stop");
         resetEvent(EV_RXAXIS);
@@ -156,13 +157,13 @@ void rxAxisWipe()
     writeReady = 1;
     Gamepad.rxAxis(rxAxis);
     verbose("rxAxisWipe %u\r", rxAxis);
-    rxAxis++;
-    at.setTimeout(rxAxisWipe, 10);
+    rxAxis += 10;
+    at.setTimeout(rxAxisWipe, 100);
 }
 
 void ryAxisWipe()
 {
-    if (!ryAxis)
+    if (ryAxis > 240)
     {
         verbose("ryAxisWipe stop");
         resetEvent(EV_RYAXIS);
@@ -171,13 +172,13 @@ void ryAxisWipe()
     writeReady = 1;
     Gamepad.ryAxis(ryAxis);
     verbose("ryAxisWipe %u\r", ryAxis);
-    ryAxis++;
-    at.setTimeout(ryAxisWipe, 10);
+    ryAxis += 10;
+    at.setTimeout(ryAxisWipe, 100);
 }
 
 void rzAxisWipe()
 {
-    if (!rzAxis)
+    if (rzAxis > 240)
     {
         verbose("rzAxisWipe stop");
         resetEvent(EV_RZAXIS);
@@ -186,8 +187,8 @@ void rzAxisWipe()
     writeReady = 1;
     Gamepad.rzAxis(rzAxis);
     verbose("rzAxisWipe %u\r", rzAxis);
-    rzAxis++;
-    at.setTimeout(rzAxisWipe, 10);
+    rzAxis += 10;
+    at.setTimeout(rzAxisWipe, 100);
 }
 
 void doReset()
@@ -268,7 +269,7 @@ void handleCommand()
 
 void loop()
 {
-    wdt_reset();
+    //wdt_reset();
     if (Serial.available())
     {
         handleCommand();
@@ -290,42 +291,42 @@ void loop()
     }
     if (isEvent(EV_XAXIS))
     {
-        xAxis++;
+        xAxis = 10;
         resetEvent(EV_XAXIS);
         verbose("xAxisWipe start\r\n");
         xAxisWipe();
     }
     if (isEvent(EV_YAXIS))
     {
-        yAxis++;
+        yAxis = 10;
         resetEvent(EV_YAXIS);
         verbose("yAxisWipe start\r\n");
         yAxisWipe();
     }
     if (isEvent(EV_ZAXIS))
     {
-        zAxis++;
+        zAxis = 10;
         resetEvent(EV_ZAXIS);
         verbose("zAxisWipe start\r\n");
         zAxisWipe();
     }
     if (isEvent(EV_RXAXIS))
     {
-        rxAxis++;
+        rxAxis = 10;
         resetEvent(EV_RXAXIS);
         verbose("rxAxisWipe start\r\n");
         rxAxisWipe();
     }
     if (isEvent(EV_RYAXIS))
     {
-        ryAxis++;
+        ryAxis = 10;
         resetEvent(EV_RYAXIS);
         verbose("ryAxisWipe start\r\n");
         ryAxisWipe();
     }
     if (isEvent(EV_RZAXIS))
     {
-        rzAxis++;
+        rzAxis = 10;
         resetEvent(EV_RZAXIS);
         verbose("rzAxisWipe start\r\n");
         rzAxisWipe();

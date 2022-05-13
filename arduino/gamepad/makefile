@@ -40,9 +40,10 @@ b:
 # Upload - remove and reinsert SS micro every  time
 u:
 	stty -F ${PORT} 1200
-	sleep 1
 	stty -F ${PORT} 57600
-	sleep 1
+	avrdude -D -P ${PORT} -pm32u4 -cavr109 -b 57600 -U flash:w:${HEX}
+
+u2:
 	avrdude -D -P ${PORT} -pm32u4 -cavr109 -b 57600 -U flash:w:${HEX}
 
 ur: 
