@@ -26,25 +26,17 @@ typedef struct
 
 typedef enum
 {
-    EV_BUTTONCHASER = 0x0001,
-    EV_XAXIS = 0x0002,
-    EV_YAXIS = 0x0004,
-    EV_ZAXIS = 0x0008,
-    EV_RXAXIS = 0x0010,
-    EV_RYAXIS = 0x0020,
-    EV_RZAXIS = 0x0040,
-    EV_DPAD2 = 0x0080,
-    EV_DPAD1 =0x0100 
+    EV_BUTTONCHASER = 1,
+    EV_XAXIS = 2,
+    EV_YAXIS = 4,
+    EV_ZAXIS = 8,
+    EV_RXAXIS = 16,
+    EV_RYAXIS = 32,
+    EV_RZAXIS = 64,
+    EV_DPAD2 = 128,
+    EV_DPAD1 = 256
 }Event;
 
-const uint8_t Encoder0Pin0 = 0;
-const uint8_t Encoder0Pin1 = 1;
-
-volatile uint8_t isr0Count = 0;
-volatile uint8_t isr1Count = 0;
-uint8_t steeringInc = 16;
-
-volatile int16_t encoder0Pos = 0;
 uint16_t xAxis = 0;
 uint16_t yAxis = 0;
 uint8_t zAxis = 0;
@@ -84,48 +76,11 @@ void verbose(const char * fmt, ...)
     Serial.print(buffer);
 }
 
-void isrEncoder00(void)
-{
-    if (digitalRead(Encoder0Pin1))
-    {
-        if (encoder0Pos > -32763)
-        {
-            encoder0Pos -= steeringInc;
-            Gamepad.xAxis(encoder0Pos);
-            writeReady = 1;
-        }
-    }
-    isr0Count++;
-}
-
-void isrEncoder01(void)
-{
-    if (digitalRead(Encoder0Pin0))
-    {
-        if (encoder0Pos < 32763)
-        {
-            encoder0Pos += steeringInc;
-            Gamepad.xAxis(encoder0Pos);
-            writeReady = 1;
-        }
-    }
-    isr1Count++;
-}
-
 void setup() {
     Serial.begin(115200);
     Serial.println("{State:Ready}");
 //    wdt_enable(WDTO_2S);
     Gamepad.begin();
-
-    pinMode(Encoder0Pin0, INPUT_PULLUP);
-    pinMode(Encoder0Pin1, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(Encoder0Pin0), isrEncoder00, FALLING);
-    attachInterrupt(digitalPinToInterrupt(Encoder0Pin1), isrEncoder01, FALLING);
-//    for (uint8_t ii = 0; ii < 17; ii++)
-//    {
-//        pinMode(ii, INPUT_PULLUP);
-//    }
 }
 
 bool commandB()
@@ -276,7 +231,6 @@ void doReset()
     debug = 0;
     doWrite = 0;
     event = 0;
-    encoder0Pos = 0;
 }
 
 Command cmds[] = {
@@ -289,8 +243,7 @@ Command cmds[] = {
     {'f', "Y Axis Wipe", []() { setEvent(EV_YAXIS); return 0; }},
     {'g', "Z Axis Wipe", []() { setEvent(EV_ZAXIS); return 0; }},
     {'h', "Help", [](){ help(); return 0; }},
-    {'i', "Steering Inc", []() { steeringInc = param; return 0; }},
-    {'I', "RX Axis Wipe", []() { setEvent(EV_RXAXIS); return 0; }},
+    {'i', "RX Axis Wipe", []() { setEvent(EV_RXAXIS); return 0; }},
     {'j', "RY Axis Wipe", []() { setEvent(EV_RYAXIS); return 0; }},
     {'k', "RZ Axis Wipe", []() { setEvent(EV_RZAXIS); return 0; }},
     {'p', "DPad1 wipe", []() { setEvent(EV_DPAD1); return 0; }},
@@ -318,15 +271,6 @@ void help()
     itoa(event, buffer, 2);
     verbose("Event %s\r\n", buffer);
     verbose("doWrite %u\r\n", doWrite);
-    verbose("encoder0Pos %d\r\n", encoder0Pos);
-    verbose("isr0Count %u\r\n", isr0Count);
-    verbose("isr1Count %u\r\n", isr1Count);
-//    verbose("Pins");
-//    for (uint8_t ii = 0; ii < 17; ii++)
-//    {
-//        verbose("%u", digitalRead(ii));
-//    }
-//    verbose("\r\n");
 }
 
 void handleCommand()
@@ -431,7 +375,6 @@ void loop()
         verbose("dpad1Wipe start\r\n");
         dpad1Wipe();
     }
-//    verbose("%u:%u\r\n", digitalRead(Encoder0Pin0), digitalRead(Encoder0Pin1));
     at.handle();
    
 
