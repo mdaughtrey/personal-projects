@@ -246,7 +246,7 @@ def main():
 
     if cmdline.dec:
         data = dec(cmdline.configfile, password)
-        open(file, 'wb').write(data)
+        open(cmdline.configfile, 'wb').write(data)
         sys.exit(0)
     elif cmdline.enc:
         enc(cmdline.configfile, password)
