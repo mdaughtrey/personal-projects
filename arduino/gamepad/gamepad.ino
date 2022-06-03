@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2014-2015 NicoHood
+  iopyright (c) 2014-2015 NicoHood
   See the readme for credit to other people.
 
   Gamepad example
@@ -15,7 +15,7 @@
 
 #include "HID-Project.h"
 #include <AsyncTimer.h>
-#include <avr/wdt.h>
+//#include <avr/wdt.h>
 
 typedef struct
 {
@@ -56,8 +56,8 @@ uint8_t rzAxis = 0;
 uint8_t dpad2 = 0;
 uint8_t dpad1 = 0;
 
-uint8_t debug = 0;
-uint8_t doWrite = 0;
+//uint8_t debug = 0;
+uint8_t doWrite = 1;
 uint16_t event = 0;
 int16_t param;
 uint8_t lastCommand;
@@ -72,10 +72,10 @@ bool isEvent(uint8_t ev) { return event & ev; }
 
 void verbose(const char * fmt, ...)
 {
-    if (!debug)
-    {
-        return;
-    }
+//    if (!debug)
+//    {
+//        return;
+//    }
     char buffer[256];
     va_list args;
     va_start(args, fmt);
@@ -88,7 +88,7 @@ void isrEncoder00(void)
 {
     if (digitalRead(Encoder0Pin1))
     {
-        if (encoder0Pos > -32763)
+        if (encoder0Pos > -(32767-steeringInc))
         {
             encoder0Pos -= steeringInc;
             Gamepad.xAxis(encoder0Pos);
@@ -102,7 +102,7 @@ void isrEncoder01(void)
 {
     if (digitalRead(Encoder0Pin0))
     {
-        if (encoder0Pos < 32763)
+        if (encoder0Pos < 32767-steeringInc)
         {
             encoder0Pos += steeringInc;
             Gamepad.xAxis(encoder0Pos);
@@ -114,7 +114,7 @@ void isrEncoder01(void)
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("{State:Ready}");
+//    Serial.println("{State:Ready}");
 //    wdt_enable(WDTO_2S);
     Gamepad.begin();
 
@@ -273,18 +273,32 @@ void doReset()
     ryAxis = 0;
     rzAxis = 0;
     buttonState = 0;
-    debug = 0;
-    doWrite = 0;
+//    debug = 0;
+    doWrite = 1;
     event = 0;
     encoder0Pos = 0;
 }
+
+//void test()
+//{
+//    pinMode(Encoder0Pin0, OUTPUT);
+//    pinMode(Encoder0Pin1, OUTPUT);
+//    while (1) {
+//        digitalWrite(Encoder0Pin0, LOW);
+//        digitalWrite(Encoder0Pin1, HIGH);
+//        delay(100);
+//        digitalWrite(Encoder0Pin1, LOW);
+//        digitalWrite(Encoder0Pin0, HIGH);
+//        delay(100);
+//    }
+//}
 
 Command cmds[] = {
     {'b', "Toggle button (param)", commandB},
     {'B', "Button Chaser", []() { setEvent(EV_BUTTONCHASER); return 0;}},
     {'c', "Clear param", [](){ param = 0; return 0; }},
-    {'d', "Debug on", []() { debug = 1; return 0;}},
-    {'D', "Debug off", []() { debug = 0; return 0;}},
+//    {'d', "Debug on", []() { debug = 1; return 0;}},
+//    {'D', "Debug off", []() { debug = 0; return 0;}},
     {'e', "X Axis Wipe", []() { setEvent(EV_XAXIS); return 0; }},
     {'f', "Y Axis Wipe", []() { setEvent(EV_YAXIS); return 0; }},
     {'g', "Z Axis Wipe", []() { setEvent(EV_ZAXIS); return 0; }},
@@ -296,8 +310,9 @@ Command cmds[] = {
     {'p', "DPad1 wipe", []() { setEvent(EV_DPAD1); return 0; }},
     {'P', "DPad2 wipe", []() { setEvent(EV_DPAD2); return 0; }},
     {'r', "Reset", []() { while (1); }},
-    {'w', "USB Write on", []() { doWrite = 1; return 0; }},
-    {'W', "USB Write off", []() { doWrite = 0; return 0; }},
+//    {'w', "USB Write on", []() { doWrite = 1; return 0; }},
+//    {'t', "Test", []() { test(); return 0; }},
+    {'w', "USB Write off", []() { doWrite = 0; return 0; }},
     {'x', "16-bit X Axis (param)", [](){ Gamepad.xAxis(param); return 1; }},
     {'y', "16-bit Y Axis (param)", [](){ Gamepad.yAxis(param); return 1; }},
     {'z', "8-bit lZ Axis (param)", [](){ Gamepad.zAxis(param); return 1; }},
@@ -321,6 +336,8 @@ void help()
     verbose("encoder0Pos %d\r\n", encoder0Pos);
     verbose("isr0Count %u\r\n", isr0Count);
     verbose("isr1Count %u\r\n", isr1Count);
+    verbose("Encoder0Pin0 %u\r\n", digitalRead(Encoder0Pin0));
+    verbose("Encoder0Pin1 %u\r\n", digitalRead(Encoder0Pin1));
 //    verbose("Pins");
 //    for (uint8_t ii = 0; ii < 17; ii++)
 //    {
