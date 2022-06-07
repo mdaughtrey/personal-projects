@@ -39,12 +39,18 @@ typedef enum
 
 const uint8_t Encoder0Pin0 = 0;
 const uint8_t Encoder0Pin1 = 1;
+const uint8_t Pedal0Pin = 0;
+const uint8_t Pedal1Pin = 1;
 
 volatile uint8_t isr0Count = 0;
 volatile uint8_t isr1Count = 0;
-uint8_t steeringInc = 16;
+uint8_t steeringInc = 24;
 
-volatile int16_t encoder0Pos = 0;
+volatile uint16_t encoder0Val = 0;
+uint16_t encoder0Min = 0;
+uint16_t encoder0Max = 0xffff;
+int16_t encoder0Scaled = 0;
+int16_t encoder0ScaledPrev = 0;
 uint16_t xAxis = 0;
 uint16_t yAxis = 0;
 uint8_t zAxis = 0;
@@ -88,11 +94,11 @@ void isrEncoder00(void)
 {
     if (digitalRead(Encoder0Pin1))
     {
-        if (encoder0Pos > -(32767-steeringInc))
+        if (encoder0Val)
         {
-            encoder0Pos -= steeringInc;
-            Gamepad.xAxis(encoder0Pos);
-            writeReady = 1;
+            encoder0Val--;
+//            Gamepad.xAxis(encoder0Val);
+//            writeReady = 1;
         }
     }
     isr0Count++;
@@ -102,11 +108,11 @@ void isrEncoder01(void)
 {
     if (digitalRead(Encoder0Pin0))
     {
-        if (encoder0Pos < 32767-steeringInc)
+        if (encoder0Val < 65535)
         {
-            encoder0Pos += steeringInc;
-            Gamepad.xAxis(encoder0Pos);
-            writeReady = 1;
+            encoder0Val++; //  steeringInc;
+//            Gamepad.xAxis(encoder0Val);
+//            writeReady = 1;
         }
     }
     isr1Count++;
@@ -126,6 +132,11 @@ void setup() {
 //    {
 //        pinMode(ii, INPUT_PULLUP);
 //    }
+}
+
+int16_t getEncoder0Scaled()
+{
+    return (encoder0Val - 1000) * 32;
 }
 
 bool commandB()
@@ -276,7 +287,7 @@ void doReset()
 //    debug = 0;
     doWrite = 1;
     event = 0;
-    encoder0Pos = 0;
+    encoder0Val = 32767;
 }
 
 //void test()
@@ -307,18 +318,21 @@ Command cmds[] = {
     {'I', "RX Axis Wipe", []() { setEvent(EV_RXAXIS); return 0; }},
     {'j', "RY Axis Wipe", []() { setEvent(EV_RYAXIS); return 0; }},
     {'k', "RZ Axis Wipe", []() { setEvent(EV_RZAXIS); return 0; }},
+    {'s', "Set leftmost steer", []{ encoder0Val = 0; return 0; }},
+    {'S', "Set righttmost steer", []{ encoder0Max = encoder0Val; }},
     {'p', "DPad1 wipe", []() { setEvent(EV_DPAD1); return 0; }},
     {'P', "DPad2 wipe", []() { setEvent(EV_DPAD2); return 0; }},
     {'r', "Reset", []() { while (1); }},
 //    {'w', "USB Write on", []() { doWrite = 1; return 0; }},
 //    {'t', "Test", []() { test(); return 0; }},
     {'w', "USB Write off", []() { doWrite = 0; return 0; }},
-    {'x', "16-bit X Axis (param)", [](){ Gamepad.xAxis(param); return 1; }},
-    {'y', "16-bit Y Axis (param)", [](){ Gamepad.yAxis(param); return 1; }},
-    {'z', "8-bit lZ Axis (param)", [](){ Gamepad.zAxis(param); return 1; }},
-    {'X', "8-bit X Axis (param)", [](){ Gamepad.rxAxis(param); return 1; }},
-    {'Y', "8-bit Y Axis (param)", [](){ Gamepad.ryAxis(param); return 1; }},
-    {' ', "Reset", [](){ doReset(); return 0; }}
+//    {'x', "16-bit X Axis (param)", [](){ Gamepad.xAxis(param); return 1; }},
+//    {'y', "16-bit Y Axis (param)", [](){ Gamepad.yAxis(param); return 1; }},
+//    {'z', "8-bit lZ Axis (param)", [](){ Gamepad.zAxis(param); return 1; }},
+//    {'X', "8-bit X Axis (param)", [](){ Gamepad.rxAxis(param); return 1; }},
+//    {'Y', "8-bit Y Axis (param)", [](){ Gamepad.ryAxis(param); return 1; }},
+    {'z', "Set center steering position", [](){ encoder0Val = 32767; }} ,
+    {' ', "Soft Reset", [](){ doReset(); return 0; }}
 };
 
 #define NUMCOMMANDS (sizeof(cmds)/sizeof(cmds[0]))
@@ -333,11 +347,14 @@ void help()
     itoa(event, buffer, 2);
     verbose("Event %s\r\n", buffer);
     verbose("doWrite %u\r\n", doWrite);
-    verbose("encoder0Pos %d\r\n", encoder0Pos);
+    verbose("encoder0Val %u\r\n", encoder0Val);
+    verbose("encoder0Scaled %d\r\n", getEncoder0Scaled());
     verbose("isr0Count %u\r\n", isr0Count);
     verbose("isr1Count %u\r\n", isr1Count);
     verbose("Encoder0Pin0 %u\r\n", digitalRead(Encoder0Pin0));
     verbose("Encoder0Pin1 %u\r\n", digitalRead(Encoder0Pin1));
+    verbose("Pedal0Val %u\r\n", analogRead(Pedal0Pin));
+    verbose("Pedal1Val %u\r\n", analogRead(Pedal1Pin));
 //    verbose("Pins");
 //    for (uint8_t ii = 0; ii < 17; ii++)
 //    {
@@ -372,19 +389,30 @@ void handleCommand()
 
 void loop()
 {
+    int16_t tmp;
     //wdt_reset();
     if (Serial.available())
     {
         handleCommand();
     }
-    if (writeReady)
+    if ((tmp = getEncoder0Scaled()) != encoder0ScaledPrev)
     {
-        if (doWrite)
-        {
-            Gamepad.write();
-        }
-        writeReady = 0;
+        encoder0ScaledPrev = tmp;
+        Gamepad.xAxis(tmp);
+        writeReady = 1;
     }
+    Gamepad.zAxis((analogRead(Pedal0Pin)-128) >> 2);
+    Gamepad.rzAxis((analogRead(Pedal1Pin)-128) >> 2);
+    writeReady = 1;
+    doWrite = 1;
+//    if (writeReady)
+//    {
+//        if (doWrite)
+//        {
+            Gamepad.write();
+//        }
+//        writeReady = 0;
+//    }
     if (isEvent(EV_BUTTONCHASER))
     {
         buttonState = 1;
