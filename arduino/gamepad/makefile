@@ -10,6 +10,7 @@ ELF=${PROJ}.ino.elf
 HEX=${PROJ}.ino.hex
 ACLI=/home/mattd/acli/bin/arduino-cli
 MOUNT=/media/rp2040
+TAGFILE=${PROJDIR}
 
 #DOCKERHOST=DESKTOP-TOJK787
 DOCKERHOST=pop-os
@@ -75,3 +76,7 @@ c:
 
 init:
 	pio init --board 32u416m
+
+tags:
+	etags --append  --exclude=.py -R . --langmap=C++:.ino
+	etags --append  --exclude=.py -R ~/tmp/PrintEx --langmap=C++:.ino
