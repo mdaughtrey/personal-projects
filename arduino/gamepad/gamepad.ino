@@ -195,7 +195,6 @@ void setup() {
 //    Serial.println("{State:Ready}");
 //    wdt_enable(WDTO_2S);
     Gamepad.begin();
-    tm.displayBegin();
     pinMode(Encoder0Pin0, INPUT_PULLUP);
     pinMode(Encoder0Pin1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(Encoder0Pin0), isrEncoder00, FALLING);
@@ -208,7 +207,7 @@ void setup() {
 //    updateDisplay();
 }
 
-int16_t getPedalScaled(uint8_t pin)
+void pedalTest(uint8_t pin)
 {
     int16_t val = analogRead(pin);
     if (pin == Pedal0Pin && val != pedal0PinLast)
@@ -221,6 +220,10 @@ int16_t getPedalScaled(uint8_t pin)
         pedal1PinLast = val;
         updateUSB |= UPDATE_PEDAL1;
     }
+}
+
+int16_t getPedalScaled(uint16_t val)
+{
     return (val - 512) * 64;
 }
 
@@ -407,6 +410,7 @@ void softReset()
 //    doWrite = 1;
     event = 0;
     encoder0Val = config.encoder0ValMax/2;
+    tm.displayBegin();
     for (uint8_t ii = 0; ii < 3; ii++)
     {
         tm.setLED(0, 1);
@@ -436,18 +440,18 @@ void softReset()
 const char helpa[] PROGMEM = "Set Display 0=Off 1=Opto 2=stepcount, 3=loopcount";
 //const char helpA[] PROGMEM = "Enable stepper";
 //const char helpb[] PROGMEM = "Reset stepper";
-const char helpB[] PROGMEM = "Button Chaser";
+//const char helpB[] PROGMEM = "Button Chaser";
 const char helpc[] PROGMEM = "Clear param";
 const char helpd[] PROGMEM = "Stepper Dir 0";
 const char helpD[] PROGMEM = "Stepper Dir 1";
-const char helpe[] PROGMEM = "X Axis Wipe";
+//const char helpe[] PROGMEM = "X Axis Wipe";
 const char helpE[] PROGMEM = "Step Delay";
-const char helpf[] PROGMEM = "Y Axis Wipe";
-const char helpg[] PROGMEM = "Z Axis Wipe";
+//const char helpf[] PROGMEM = "Y Axis Wipe";
+//const char helpg[] PROGMEM = "Z Axis Wipe";
 const char helph[] PROGMEM = "Help";
-const char helpI[] PROGMEM = "RX Axis Wipe";
-const char helpj[] PROGMEM = "RY Axis Wipe";
-const char helpk[] PROGMEM = "RZ Axis Wipe";
+//const char helpI[] PROGMEM = "RX Axis Wipe";
+//const char helpj[] PROGMEM = "RY Axis Wipe";
+//const char helpk[] PROGMEM = "RZ Axis Wipe";
 const char helpl[] PROGMEM = "Load Config";
 const char helplt[] PROGMEM = "b0 Set leftmost steer";
 const char helpgt[] PROGMEM = "b1 Set righttmost steer";
@@ -456,8 +460,8 @@ const char helpP[] PROGMEM = "DPad2 wipe";
 const char helpr[] PROGMEM = "Hard Reset";
 const char helps[] PROGMEM = "Steps (param)";
 const char helpS[] PROGMEM = "Save Config";
-const char helpy[] PROGMEM = "16-bit Y Axis (param)";
-const char helpY[] PROGMEM = "16-bit rY Axis (param)";
+//const char helpy[] PROGMEM = "16-bit Y Axis (param)";
+//const char helpY[] PROGMEM = "16-bit rY Axis (param)";
 const char helpSpc[] PROGMEM = "b7 Soft Reset";
 
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
@@ -486,18 +490,18 @@ Command cmds[] = {
  //       digitalWrite(stepResetPin, 1);
  //       }},
     {'a', []() { serout << FSH(helpa) << endl; }  , []() { config.display = param;param = 0; }},
-    {'B', []() { serout << FSH(helpB) << endl; }  , []() { setEvent(EV_BUTTONCHASER); }},
+//    {'B', []() { serout << FSH(helpB) << endl; }  , []() { setEvent(EV_BUTTONCHASER); }},
     {'c', []() { serout << FSH(helpc) << endl; }  , [](){ param = 0; }},
     {'d', []() { serout << FSH(helpd) << endl; }  , [](){ stepper.dir(0); }},
     {'D', []() { serout << FSH(helpD) << endl; }  , [](){ stepper.dir(1); }},
-    {'e', []() { serout << FSH(helpe) << endl; }  , []() { setEvent(EV_XAXIS); }},
+//    {'e', []() { serout << FSH(helpe) << endl; }  , []() { setEvent(EV_XAXIS); }},
     {'E', []() { serout << FSH(helpE) << endl; }  , []() { config.stepDelay = param;  param = 0;}},
-    {'f', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_YAXIS); }},
-    {'g', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_ZAXIS); }},
+//    {'f', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_YAXIS); }},
+//    {'g', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_ZAXIS); }},
     {'h', []() { serout << FSH(helph) << endl; }  , [](){ help(); }},
-    {'I', []() { serout << FSH(helpI) << endl; }  , []() { setEvent(EV_RXAXIS); }},
-    {'j', []() { serout << FSH(helpj) << endl; }  , []() { setEvent(EV_RYAXIS); }},
-    {'k', []() { serout << FSH(helpk) << endl; }  , []() { setEvent(EV_RZAXIS); }},
+//    {'I', []() { serout << FSH(helpI) << endl; }  , []() { setEvent(EV_RXAXIS); }},
+//    {'j', []() { serout << FSH(helpj) << endl; }  , []() { setEvent(EV_RYAXIS); }},
+//    {'k', []() { serout << FSH(helpk) << endl; }  , []() { setEvent(EV_RZAXIS); }},
     {'l', []() { serout << FSH(helpl) << endl; }  , []() { loadConfig(); }},
     {'<', []() { serout << FSH(helplt) << endl; } , []{ setEncoder0Min(); }},
     {'>', []() { serout << FSH(helpgt) << endl; } , []{ config.encoder0ValMax = encoder0Val; }},
@@ -506,8 +510,8 @@ Command cmds[] = {
     {'r', []() { serout << FSH(helpr) << endl; }  , []() { hardReset(); }},
     {'s', []() { serout << FSH(helps) << endl; }  , []() { stepCount = param; param = 0; step(); }},
     {'S', []() { serout << FSH(helpS) << endl; }  , []() { saveConfig(); }},
-    {'y', []() { serout << FSH(helpy) << endl; }  , [](){ Gamepad.yAxis(param); }},
-    {'Y', []() { serout << FSH(helpY) << endl; }  , [](){ Gamepad.ryAxis(param); }},
+//    {'y', []() { serout << FSH(helpy) << endl; }  , [](){ Gamepad.yAxis(param); }},
+//    {'Y', []() { serout << FSH(helpY) << endl; }  , [](){ Gamepad.ryAxis(param); }},
     {' ', []() { serout << FSH(helpSpc) << endl; }, [](){ softReset(); return 0; }}
 };
 
@@ -531,8 +535,8 @@ void help()
     serout << F("Encoder0Pin1 ") << digitalRead(Encoder0Pin1) << endl;
     serout << F("Pedal0Val ") << analogRead(Pedal0Pin) << endl;
     serout << F("Pedal1Val ") << analogRead(Pedal1Pin) << endl;
-    serout << F("xAxis ") << getPedalScaled(Pedal0Pin) << endl;
-    serout << F("yAxis ") << getPedalScaled(Pedal1Pin) << endl;
+    serout << F("Pedal0Scaled ") << getPedalScaled(Pedal0Pin) << endl;
+    serout << F("Pedal1Scaled ") << getPedalScaled(Pedal1Pin) << endl;
     serout << F("param ") << param << endl;
     serout << F("Config") << endl;
     serout << F("-- encoder0ValMax ") << config.encoder0ValMax << endl;
@@ -587,8 +591,8 @@ void loop()
     {
         handleCommand();
     }
-    getPedalScaled(Pedal0Pin);
-    getPedalScaled(Pedal1Pin);
+    pedalTest(Pedal0Pin);
+    pedalTest(Pedal1Pin);
     if (updateUSB)
     {
         if (updateUSB & UPDATE_STEERING)
@@ -597,11 +601,11 @@ void loop()
         }
         if (updateUSB & UPDATE_PEDAL0)
         {
-            Gamepad.yAxis(pedal0PinLast);
+            Gamepad.rxAxis(getPedalScaled(pedal0PinLast));
         }
         if (updateUSB & UPDATE_PEDAL1)
         {
-            Gamepad.ryAxis(pedal1PinLast);
+            Gamepad.ryAxis(getPedalScaled(pedal1PinLast));
         }
         Gamepad.write();
         updateUSB = UPDATE_NONE;
