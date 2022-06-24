@@ -87,7 +87,11 @@ volatile Update updateUSB = UPDATE_NONE;
 uint16_t pedal0PinLast = 0;
 uint16_t pedal1PinLast = 0;
 
-uint16_t loopCount = 0;
+uint16_t countLoop = 0;
+uint16_t countIoCheck = 0;
+uint16_t countUpdateUSB = 0;
+uint32_t timeUSBWrite = 0;
+
 volatile uint16_t encoder0Val = 0;
 //uint16_t config.encoder0Max = 0xffff;
 int16_t encoder0Scaled = 0;
@@ -105,7 +109,7 @@ uint8_t dpad1 = 0;
 
 uint16_t event = 0;
 int16_t param;
-uint16_t stepCount = 0;
+volatile uint16_t stepCount = 0;
 uint32_t buttonState = 0;
 AsyncTimer at;
 StreamEx serout = Serial;
@@ -194,7 +198,6 @@ void setup() {
     Serial.begin(115200);
 //    Serial.println("{State:Ready}");
 //    wdt_enable(WDTO_2S);
-    Gamepad.begin();
     pinMode(Encoder0Pin0, INPUT_PULLUP);
     pinMode(Encoder0Pin1, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(Encoder0Pin0), isrEncoder00, FALLING);
@@ -241,164 +244,67 @@ bool commandB()
     return 1;
 }
 
-//void buttonChaser()
-//{
-//    if (!buttonState)
-//    {
-//        serout << F("buttonChaser stop") << endl;
-//        resetEvent(EV_BUTTONCHASER);
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.buttons(buttonState);
-//    serout << F("buttonChaser ") << hex << buttonState << endl;
-//    buttonState <<= 1;
-//    at.setTimeout(buttonChaser, 100);
-//}
-//
-//
-//void xAxisWipe()
-//{
-//    if (xAxis > 65000)
-//    {
-//        serout << F("xAxisWipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.xAxis(xAxis);
-//    serout << F("xAxisWipe ") << xAxis << endl;
-//    xAxis += 1000;
-//    at.setTimeout(xAxisWipe, 100);
-//}
-//
-//void yAxisWipe()
-//{
-//    if (yAxis > 65000)
-//    {
-//        serout << F("yAxisWipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.yAxis(yAxis);
-//    serout << F("yAxisWipe ") << yAxis << endl;
-//    yAxis += 1000;
-//    at.setTimeout(yAxisWipe, 100);
-//}
-//
-//void zAxisWipe()
-//{
-//    if (zAxis > 240)
-//    {
-//        serout << F("zAxisWipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.zAxis(zAxis);
-//    serout << F("zAxisWipe ") << zAxis << endl;
-//    zAxis += 10;
-//    at.setTimeout(zAxisWipe, 100);
-//}
-//
-//void rxAxisWipe()
-//{
-//    if (rxAxis > 65000)
-//    {
-//        serout << F("rxAxisWipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.rxAxis(rxAxis);
-//    serout << F("rxAxisWipe ") << rxAxis << endl;
-//    rxAxis += 1000;
-//    at.setTimeout(rxAxisWipe, 100);
-//}
-//
-//void ryAxisWipe()
-//{
-//    if (ryAxis > 65000)
-//    {
-//        serout << F("ryAxisWipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.ryAxis(ryAxis);
-//    serout << F("ryAxisWipe ") << ryAxis << endl;
-//    ryAxis += 1000;
-//    at.setTimeout(ryAxisWipe, 100);
-//}
-//
-//void rzAxisWipe()
-//{
-//    if (rzAxis > 240)
-//    {
-//        serout << F("rzAxisWipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.rzAxis(rzAxis);
-//    serout << F("rzAxisWipe ") << rzAxis << endl;
-//    rzAxis += 10;
-//    at.setTimeout(rzAxisWipe, 100);
-//}
-//
-//void dpad2Wipe()
-//{
-//    if (dpad2 > GAMEPAD_DPAD_UP_LEFT)
-//    {
-//        serout << F("dpad2Wipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.dPad2(dpad2);
-//    serout << F("dpad2 ") << dpad2 << endl;
-//    dpad2++;
-//    at.setTimeout(dpad2Wipe, 1000);
-//}
-//
-//void dpad1Wipe()
-//{
-//    if (dpad1 > GAMEPAD_DPAD_UP_LEFT)
-//    {
-//        serout << F("dpad1Wipe stop") << endl;
-//        return;
-//    }
-////    writeReady = 1;
-//    Gamepad.dPad1(dpad1);
-//    serout << F("dpad1 ") << dpad1 << endl;
-//    dpad1++;
-//    at.setTimeout(dpad1Wipe, 1000);
-//}
 
 void updateDisplay()
 {
+    char buffer[9];
     switch (config.display)
     {
-        case 0: tm.reset(); config.display = 4; break;
-        case 1: tm.displayIntNum(getEncoder0Scaled()); break;
-        case 2: tm.displayIntNum(param); break;
-        case 3: tm.displayIntNum(loopCount); break;
-    }
-    uint8_t val = 0xff << ((1024 + pedal1PinLast - pedal0PinLast) >> 8);
+//        case 0: tm.reset(); config.display = 4; break;
+//        case 1: tm.displayIntNum(getEncoder0Scaled()); break;
+//        case 2: tm.displayIntNum(stepCount); break;
+//        case 3: tm.displayIntNum(countLoop); break;
+//        case 4: tm.displayIntNum(countIoCheck); break;
+//        case 5: tm.displayIntNum(countUpdateUSB); break;
+//    }
 
-    tm.setLEDs(~val << 8);
+    case 0: break;
+    case 1:
+        sprintf_P(buffer, PSTR("Enc0%04x"), getEncoder0Scaled());
+        tm.displayText(buffer);
+        break;
+    case 2:
+        sprintf_P(buffer, PSTR("Stct%04x"), stepCount);
+        tm.displayText(buffer);
+        break;
+    case 3:
+        sprintf_P(buffer, PSTR("Loop%04x"), countLoop);
+        tm.displayText(buffer);
+        break;
+    case 4:
+        sprintf_P(buffer, PSTR("IO  %04x"), countIoCheck);
+        tm.displayText(buffer);
+        break;
+    case 5:
+        sprintf_P(buffer, PSTR("USBc%04x"), countUpdateUSB);
+        tm.displayText(buffer);
+        break;
+    case 6:
+        sprintf_P(buffer, PSTR("USBt%04x"), timeUSBWrite);
+        tm.displayText(buffer);
+        break;
+    case 7:
+        sprintf_P(buffer, PSTR("UUSB%04x"), updateUSB);
+        tm.displayText(buffer);
+        break;
+    default: tm.reset(); config.display = 0; break;
+    }
+
+
+
+ //   uint8_t val = 0xff << ((1024 + pedal1PinLast - pedal0PinLast) >> 8);
+//    tm.setLEDs(~val << 8);
     at.setTimeout(updateDisplay, 100);
 }
 
 void softReset()
 {
+    serout << F("Soft Reset");
     stepper.init();
-//    pinMode(stepResetPin, OUTPUT);
-//    pinMode(stepEnablePin, OUTPUT);
-//    pinMode(stepDirPin, OUTPUT);
-//    pinMode(stepStepPin, OUTPUT);
-//    digitalWrite(stepResetPin, 0);
-//    digitalWrite(stepEnablePin, 1);
-//    digitalWrite(stepDirPin, 0);
-//    digitalWrite(stepStepPin, 0);
     //loadConfig();
     config.encoder0ValMax = 0xffff;
     config.stepDelay = 100;
-    config.display = 1;
+    config.display = 0;
     xAxis = 0;
     yAxis = 0;
     zAxis = 0;
@@ -406,8 +312,6 @@ void softReset()
     ryAxis = 0;
     rzAxis = 0;
     buttonState = 0;
-//    debug = 0;
-//    doWrite = 1;
     event = 0;
     encoder0Val = config.encoder0ValMax/2;
     tm.displayBegin();
@@ -420,8 +324,10 @@ void softReset()
         tm.reset();
         delay(100);
     }
+    Gamepad.begin();
     checkButtons();
     updateDisplay();
+    ioCheck();
 }
 
 //void test()
@@ -437,29 +343,31 @@ void softReset()
 //        delay(100);
 //    }
 //}
-const char helpa[] PROGMEM = "Set Display 0=Off 1=Opto 2=stepcount, 3=loopcount";
-//const char helpA[] PROGMEM = "Enable stepper";
+//const char helpDisplay[] PROGMEM = "Set Display 0=Off 1=Opto 2=stepcount, 3=loopcount 4=I/O Check, 5=update USB";
+const char helpStepEnable[] PROGMEM = "Enable stepper";
+const char helpStepDisable[] PROGMEM = "Disable stepper";
 //const char helpb[] PROGMEM = "Reset stepper";
 //const char helpB[] PROGMEM = "Button Chaser";
 const char helpc[] PROGMEM = "Clear param";
-const char helpd[] PROGMEM = "Stepper Dir 0";
-const char helpD[] PROGMEM = "Stepper Dir 1";
+const char helpDir0[] PROGMEM = "Stepper Dir 0";
+const char helpDir1[] PROGMEM = "Stepper Dir 1";
 //const char helpe[] PROGMEM = "X Axis Wipe";
-const char helpE[] PROGMEM = "Step Delay";
+const char helpStepDelay[] PROGMEM = "Step Delay ms (param)";
 //const char helpf[] PROGMEM = "Y Axis Wipe";
 //const char helpg[] PROGMEM = "Z Axis Wipe";
 const char helph[] PROGMEM = "Help";
 //const char helpI[] PROGMEM = "RX Axis Wipe";
 //const char helpj[] PROGMEM = "RY Axis Wipe";
 //const char helpk[] PROGMEM = "RZ Axis Wipe";
-const char helpl[] PROGMEM = "Load Config";
+const char helpLoadConfig[] PROGMEM = "Load Config";
 const char helplt[] PROGMEM = "b0 Set leftmost steer";
 const char helpgt[] PROGMEM = "b1 Set righttmost steer";
 const char helpp[] PROGMEM = "DPad1 wipe";
 const char helpP[] PROGMEM = "DPad2 wipe";
-const char helpr[] PROGMEM = "Hard Reset";
-const char helps[] PROGMEM = "Steps (param)";
+const char helpHardReset[] PROGMEM = "Hard Reset";
+const char helpSteps[] PROGMEM = "Steps (param)";
 const char helpS[] PROGMEM = "Save Config";
+const char helpStepperReset[] PROGMEM = "Reset Stepper";
 //const char helpy[] PROGMEM = "16-bit Y Axis (param)";
 //const char helpY[] PROGMEM = "16-bit rY Axis (param)";
 const char helpSpc[] PROGMEM = "b7 Soft Reset";
@@ -474,7 +382,7 @@ void setEncoder0Min()
 
 void step()
 {
-    if (stepCount--)
+    if (stepCount-- && config.stepDelay)
     {
         stepper.next();
         at.setTimeout(step, config.stepDelay);
@@ -483,32 +391,37 @@ void step()
 
 
 Command cmds[] = {
-//    {'a', []() { serout << FSH(helpa) << endl; }, []() { digitalWrite(stepEnablePin, 1); }},
-//    {'A', []() { serout << FSH(helpA) << endl; }, []() { digitalWrite(stepEnablePin, 0); }},
  //   {'b', []() { serout << FSH(helpb) << endl; }, []() { 
  //       digitalWrite(stepResetPin, 0);
  //       digitalWrite(stepResetPin, 1);
  //       }},
-    {'a', []() { serout << FSH(helpa) << endl; }  , []() { config.display = param;param = 0; }},
+//    {'a', []() { serout << FSH(helpa) << endl; }  , []() { config.display = param;param = 0; }},
 //    {'B', []() { serout << FSH(helpB) << endl; }  , []() { setEvent(EV_BUTTONCHASER); }},
     {'c', []() { serout << FSH(helpc) << endl; }  , [](){ param = 0; }},
-    {'d', []() { serout << FSH(helpd) << endl; }  , [](){ stepper.dir(0); }},
-    {'D', []() { serout << FSH(helpD) << endl; }  , [](){ stepper.dir(1); }},
+    {'d', []() { serout << FSH(helpDir0) << endl; }  , [](){ stepper.dir(0); }},
+    {'D', []() { serout << FSH(helpDir1) << endl; }  , [](){ stepper.dir(1); }},
+//    {'E', []() { serout << FSH(helpStepEnable) << endl; }, []() { digitalWrite(stepEnablePin, 1); }},
+//    {'e', []() { serout << FSH(helpStepDisable) << endl; }, []() { digitalWrite(stepEnablePin, 0); }},
 //    {'e', []() { serout << FSH(helpe) << endl; }  , []() { setEvent(EV_XAXIS); }},
-    {'E', []() { serout << FSH(helpE) << endl; }  , []() { config.stepDelay = param;  param = 0;}},
 //    {'f', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_YAXIS); }},
 //    {'g', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_ZAXIS); }},
     {'h', []() { serout << FSH(helph) << endl; }  , [](){ help(); }},
 //    {'I', []() { serout << FSH(helpI) << endl; }  , []() { setEvent(EV_RXAXIS); }},
 //    {'j', []() { serout << FSH(helpj) << endl; }  , []() { setEvent(EV_RYAXIS); }},
 //    {'k', []() { serout << FSH(helpk) << endl; }  , []() { setEvent(EV_RZAXIS); }},
-    {'l', []() { serout << FSH(helpl) << endl; }  , []() { loadConfig(); }},
+//    {'i', []() { serout << FSH(helpDisplay) << endl; }  , []() { config.display = param;param = 0; }},
+    {'l', []() { serout << FSH(helpStepDelay) << endl; }  , []() { config.stepDelay = param;  param = 0;}},
+    {'L', []() { serout << FSH(helpLoadConfig) << endl; }  , []() { loadConfig(); }},
     {'<', []() { serout << FSH(helplt) << endl; } , []{ setEncoder0Min(); }},
     {'>', []() { serout << FSH(helpgt) << endl; } , []{ config.encoder0ValMax = encoder0Val; }},
     {'p', []() { serout << FSH(helpp) << endl; }  , []() { setEvent(EV_DPAD1); }},
     {'P', []() { serout << FSH(helpP) << endl; }  , []() { setEvent(EV_DPAD2); }},
-    {'r', []() { serout << FSH(helpr) << endl; }  , []() { hardReset(); }},
-    {'s', []() { serout << FSH(helps) << endl; }  , []() { stepCount = param; param = 0; step(); }},
+//    {'r', []() { serout << FSH(helpStepperReset) << endl; }, []() { 
+//        digitalWrite(stepResetPin, 0);
+//        digitalWrite(stepResetPin, 1);
+//        }},
+    {'R', []() { serout << FSH(helpHardReset) << endl; }  , []() { hardReset(); }},
+    {'s', []() { serout << FSH(helpSteps) << endl; }  , []() { stepCount = param; param = 0; step(); }},
     {'S', []() { serout << FSH(helpS) << endl; }  , []() { saveConfig(); }},
 //    {'y', []() { serout << FSH(helpy) << endl; }  , [](){ Gamepad.yAxis(param); }},
 //    {'Y', []() { serout << FSH(helpY) << endl; }  , [](){ Gamepad.ryAxis(param); }},
@@ -575,26 +488,27 @@ void checkButtons()
     {
         config.encoder0ValMax = encoder0Val; 
     }
+    if (tmp & 1<< 6)
+    {
+        config.display++;
+    }
     if (tmp & 1<< 7)
     {
         softReset();
     }
-    at.setTimeout(checkButtons, 50);
+//    at.setTimeout(checkButtons, 50);
 }
 
-void loop()
+void ioCheck()
 {
-    loopCount++;
-    int16_t tmp;
-    //wdt_reset();
-    if (Serial.available())
-    {
-        handleCommand();
-    }
+    int32_t ttime;
+    countIoCheck++;
+    checkButtons();
     pedalTest(Pedal0Pin);
     pedalTest(Pedal1Pin);
-    if (updateUSB)
+    if (updateUSB != UPDATE_NONE)
     {
+        countUpdateUSB++;
         if (updateUSB & UPDATE_STEERING)
         {
             Gamepad.xAxis(getEncoder0Scaled());
@@ -607,120 +521,22 @@ void loop()
         {
             Gamepad.ryAxis(getPedalScaled(pedal1PinLast));
         }
+        ttime = millis();
         Gamepad.write();
+        timeUSBWrite = millis() - ttime;
         updateUSB = UPDATE_NONE;
     }
-//    writeReady = 1;
-//    doWrite = 1;
-//    if (writeReady)
-//    {
-//        if (doWrite)
-//        {
-//        }
-//        writeReady = 0;
-//    }
-//    if (isEvent(EV_BUTTONCHASER))
-//    {
-//        buttonState = 1;
-//        resetEvent(EV_BUTTONCHASER);
-//        serout << F("buttonChaser") << endl;
-//        buttonChaser();
-//    }
-//    if (isEvent(EV_XAXIS))
-//    {
-//        xAxis = 10;
-//        resetEvent(EV_XAXIS);
-//        serout << F("xAxisWipe start") << endl;
-//        xAxisWipe();
-//    }
-//    if (isEvent(EV_YAXIS))
-//    {
-//        yAxis = 10;
-//        resetEvent(EV_YAXIS);
-//        serout << F("yAxisWipe start") << endl;
-//        yAxisWipe();
-//    }
-//    if (isEvent(EV_ZAXIS))
-//    {
-//        zAxis = 10;
-//        resetEvent(EV_ZAXIS);
-//        serout.printf("zAxisWipe start\r\n");
-//        zAxisWipe();
-//    }
-//    if (isEvent(EV_RXAXIS))
-//    {
-//        rxAxis = 10;
-//        resetEvent(EV_RXAXIS);
-//        serout.printf("rxAxisWipe start\r\n");
-//        rxAxisWipe();
-//    }
-//    if (isEvent(EV_RYAXIS))
-//    {
-//        ryAxis = 10;
-//        resetEvent(EV_RYAXIS);
-//        serout.printf("ryAxisWipe start\r\n");
-//        ryAxisWipe();
-//    }
-//    if (isEvent(EV_RZAXIS))
-//    {
-//        rzAxis = 10;
-//        resetEvent(EV_RZAXIS);
-//        serout.printf("rzAxisWipe start\r\n");
-//        rzAxisWipe();
-//    }
-//    if (isEvent(EV_DPAD2))
-//    {
-//        dpad2 = GAMEPAD_DPAD_UP;
-//        resetEvent(EV_DPAD2);
-//        serout.printf("dpad2Wipe start\r\n");
-//        dpad2Wipe();
-//    }
-//    if (isEvent(EV_DPAD1))
-//    {
-//        dpad1 = GAMEPAD_DPAD_UP;
-//        resetEvent(EV_DPAD1);
-//        serout.printf("dpad1Wipe start\r\n");
-//        dpad1Wipe();
-//    }
-//    serout.printf("%u:%u\r\n", digitalRead(Encoder0Pin0), digitalRead(Encoder0Pin1));
-    at.handle();
-   
+    at.setTimeout(ioCheck, 50);
+}
 
-//  if (!digitalRead(pinButton)) {
-//    digitalWrite(pinLed, HIGH);
-//
-//    // Press button 1-32
-//    static uint8_t count = 0;
-//    count++;
-//    if (count == 33) {
-//      Gamepad.releaseAll();
-//      count = 0;
-//    }
-//    else
-//      Gamepad.press(count);
-//
-//    // Move x/y Axis to a new position (16bit)
-//    Gamepad.xAxis(random(0xFFFF));
-//    Gamepad.yAxis(random(0xFFFF));
-//
-//    // Go through all dPad positions
-//    // values: 0-8 (0==centered)
-//    static uint8_t dpad1 = GAMEPAD_DPAD_CENTERED;
-//    Gamepad.dPad1(dpad1++);
-//    if (dpad1 > GAMEPAD_DPAD_UP_LEFT)
-//      dpad1 = GAMEPAD_DPAD_CENTERED;
-//
-//    static int8_t dpad2 = GAMEPAD_DPAD_CENTERED;
-//    Gamepad.dPad2(dpad2--);
-//    if (dpad2 < GAMEPAD_DPAD_CENTERED)
-//      dpad2 = GAMEPAD_DPAD_UP_LEFT;
-//
-//    // Functions above only set the values.
-//    // This writes the report to the host.
-//    Gamepad.write();
-//
-//    // Simple debounce
-//    delay(300);
-//    digitalWrite(pinLed, LOW);
-//  }
+void loop()
+{
+    countLoop++;
+    int16_t tmp;
+    //wdt_reset();
+    if (Serial.available())
+    {
+        handleCommand();
+    }
+    at.handle();
 }
