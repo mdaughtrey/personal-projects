@@ -23,6 +23,14 @@
 
 using namespace ios;
 
+#define UPDATEDISPLAY
+#define CHECKBUTTONS
+#define IOCHECK
+#define SERIAL
+#define STEPPER
+//#define FORCEDISPLAY
+//#define FORCEUSB
+
 #define TM_STROBE 14
 #define TM_CLOCK 15
 #define TM_DIO 16
@@ -83,6 +91,8 @@ const uint8_t Pedal1Pin = 1;
 volatile uint8_t isr0Count = 0;
 volatile uint8_t isr1Count = 0;
 volatile Update updateUSB = UPDATE_NONE;
+Update displayBits = UPDATE_NONE;
+uint16_t buttonState = 0;
 
 uint16_t pedal0PinLast = 0;
 uint16_t pedal1PinLast = 0;
@@ -110,7 +120,7 @@ uint8_t dpad1 = 0;
 uint16_t event = 0;
 int16_t param;
 volatile uint16_t stepCount = 0;
-uint32_t buttonState = 0;
+//uint32_t buttonState = 0;
 AsyncTimer at;
 StreamEx serout = Serial;
 Stepper stepper(9, 10, 11, 2);
@@ -195,7 +205,10 @@ void isrEncoder01(void)
 
 
 void setup() {
+#ifdef SERIAL
     Serial.begin(115200);
+#endif // SERIAL
+
 //    Serial.println("{State:Ready}");
 //    wdt_enable(WDTO_2S);
     pinMode(Encoder0Pin0, INPUT_PULLUP);
@@ -213,12 +226,12 @@ void setup() {
 void pedalTest(uint8_t pin)
 {
     int16_t val = analogRead(pin);
-    if (pin == Pedal0Pin && val != pedal0PinLast)
+    if (pin == Pedal0Pin && 32 < abs(val - pedal0PinLast))
     {
         pedal0PinLast = val;
         updateUSB |= UPDATE_PEDAL0;
     }
-    if (pin == Pedal1Pin && val != pedal1PinLast)
+    if (pin == Pedal1Pin && 32 < abs(val - pedal1PinLast))
     {
         pedal1PinLast = val;
         updateUSB |= UPDATE_PEDAL1;
@@ -248,6 +261,9 @@ bool commandB()
 void updateDisplay()
 {
     char buffer[9];
+#ifdef FORCEDISPLAY
+    config.display = 6;
+#endif // FORCEDISPLAY
     switch (config.display)
     {
 //        case 0: tm.reset(); config.display = 4; break;
@@ -260,47 +276,61 @@ void updateDisplay()
 
     case 0: break;
     case 1:
-        sprintf_P(buffer, PSTR("Enc0%04x"), getEncoder0Scaled());
+        sprintf_P(buffer, PSTR("ENC0%04X"), getEncoder0Scaled());
         tm.displayText(buffer);
         break;
     case 2:
-        sprintf_P(buffer, PSTR("Stct%04x"), stepCount);
+        sprintf_P(buffer, PSTR("STPC%04X"), stepCount);
         tm.displayText(buffer);
         break;
     case 3:
-        sprintf_P(buffer, PSTR("Loop%04x"), countLoop);
+        sprintf_P(buffer, PSTR("LOOP%04X"), countLoop);
         tm.displayText(buffer);
         break;
     case 4:
-        sprintf_P(buffer, PSTR("IO  %04x"), countIoCheck);
+        sprintf_P(buffer, PSTR("IO  %04X"), countIoCheck);
         tm.displayText(buffer);
         break;
     case 5:
-        sprintf_P(buffer, PSTR("USBc%04x"), countUpdateUSB);
+        sprintf_P(buffer, PSTR("USBC%04X"), countUpdateUSB);
         tm.displayText(buffer);
         break;
     case 6:
-        sprintf_P(buffer, PSTR("USBt%04x"), timeUSBWrite);
+        sprintf_P(buffer, PSTR("USBT%04X"), timeUSBWrite & 0xffff);
         tm.displayText(buffer);
         break;
+//    case 7:
+//        sprintf_P(buffer, PSTR("UUSB%04X"), updateUSB);
+//        tm.displayText(buffer);
+//        break;
     case 7:
-        sprintf_P(buffer, PSTR("UUSB%04x"), updateUSB);
+        sprintf_P(buffer, PSTR("PED0%04X"), analogRead(Pedal0Pin));
+        tm.displayText(buffer);
+        break;
+    case 8:
+        sprintf_P(buffer, PSTR("PED1%04X"), analogRead(Pedal1Pin));
         tm.displayText(buffer);
         break;
     default: tm.reset(); config.display = 0; break;
     }
 
 
-
  //   uint8_t val = 0xff << ((1024 + pedal1PinLast - pedal0PinLast) >> 8);
-//    tm.setLEDs(~val << 8);
+    tm.setLEDs(((uint16_t)displayBits << 8) | 
+        digitalRead(9) << 4 |
+        digitalRead(10) << 5 |
+        digitalRead(11) << 6 |
+        digitalRead(2) << 7);
+    displayBits = UPDATE_NONE;
     at.setTimeout(updateDisplay, 100);
 }
 
 void softReset()
 {
     serout << F("Soft Reset");
+#ifdef STEPPER
     stepper.init();
+#endif //  STEPPER
     //loadConfig();
     config.encoder0ValMax = 0xffff;
     config.stepDelay = 100;
@@ -311,7 +341,7 @@ void softReset()
     rxAxis = 0;
     ryAxis = 0;
     rzAxis = 0;
-    buttonState = 0;
+//    buttonState = 0;
     event = 0;
     encoder0Val = config.encoder0ValMax/2;
     tm.displayBegin();
@@ -325,9 +355,18 @@ void softReset()
         delay(100);
     }
     Gamepad.begin();
+#ifdef CHECKBUTTONS
     checkButtons();
+#endif // CHECKBUTTONS
+#ifdef UPDATEDISPLAY
     updateDisplay();
+#endif // UPDATEDISPLAY
+#ifdef IOCHECK
     ioCheck();
+#endif // IOCHECK
+#ifdef FORCEUSB
+    forceUSB();
+#endif //  FORCEUSB
 }
 
 //void test()
@@ -384,7 +423,9 @@ void step()
 {
     if (stepCount-- && config.stepDelay)
     {
+#ifdef STEPPER
         stepper.next();
+#endif // STEPPER
         at.setTimeout(step, config.stepDelay);
     }
 }
@@ -452,9 +493,7 @@ void help()
     serout << F("Pedal1Scaled ") << getPedalScaled(Pedal1Pin) << endl;
     serout << F("param ") << param << endl;
     serout << F("Config") << endl;
-    serout << F("-- encoder0ValMax ") << config.encoder0ValMax << endl;
-    serout << F("-- stepDelay ") << config.stepDelay << endl;
-    serout << F("-- display ") << config.display << endl;
+    serout << F("stepDelay ") << config.stepDelay << endl;
 }
 
 void handleCommand()
@@ -479,31 +518,36 @@ void handleCommand()
 void checkButtons()
 {
     uint16_t tmp;
-    tmp = tm.readButtons();
+    uint16_t buttons = tm.readButtons();
+    tmp = buttons & buttonState;
     if (tmp & 0x01)
     {
         setEncoder0Min();
+        buttons &= ~1;
     }
     if (tmp & 0x02)
     {
         config.encoder0ValMax = encoder0Val; 
+        buttons &= ~2;
     }
     if (tmp & 1<< 6)
     {
         config.display++;
+        buttons &= ~(1 << 6);
     }
     if (tmp & 1<< 7)
     {
         softReset();
+        buttons &= ~(1 << 7);
     }
-//    at.setTimeout(checkButtons, 50);
+    buttonState = buttons;
+    at.setTimeout(checkButtons, 200);
 }
 
 void ioCheck()
 {
-    int32_t ttime;
+    uint32_t ttime;
     countIoCheck++;
-    checkButtons();
     pedalTest(Pedal0Pin);
     pedalTest(Pedal1Pin);
     if (updateUSB != UPDATE_NONE)
@@ -524,10 +568,30 @@ void ioCheck()
         ttime = millis();
         Gamepad.write();
         timeUSBWrite = millis() - ttime;
+        displayBits = updateUSB;
         updateUSB = UPDATE_NONE;
     }
     at.setTimeout(ioCheck, 50);
+    //at.setTimeout(ioCheck, 1000);
 }
+
+#ifdef FORCEUSB
+void forceUSB()
+{
+    serout << "forceUSB" << endl;
+    char buffer[9];
+    uint32_t ttime;
+    Gamepad.xAxis(ttime);
+    ttime = millis();
+    Gamepad.write();
+    timeUSBWrite = millis() - ttime;
+    sprintf_P(buffer, PSTR("USBT%04X"), timeUSBWrite & 0xffff);
+    tm.displayText(buffer);
+    tm.setLEDs(ttime >> 24);
+    at.setTimeout(1000, forceUSB);
+    //at.setTimeout(5, forceUSB);
+}
+#endif // FORCEUSB
 
 void loop()
 {

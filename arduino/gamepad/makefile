@@ -78,5 +78,4 @@ init:
 	pio init --board 32u416m
 
 tags:
-	etags --append  --exclude=.py -R . --langmap=C++:.ino
-	etags --append  --exclude=.py -R ~/tmp/PrintEx --langmap=C++:.ino
+	etags -R --exclude=*.py  --langmap=C++:.ino .
