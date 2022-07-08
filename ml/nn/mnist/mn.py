@@ -110,8 +110,7 @@ class NeuralNetwork:
                              sd=1, 
                              low=-rad, 
                              upp=rad)
-        self.wih = X.rvs((self.no_of_hidden_nodes, 
-                                       self.no_of_in_nodes))
+        self.wih = X.rvs((self.no_of_hidden_nodes, self.no_of_in_nodes))
         rad = 1 / np.sqrt(self.no_of_hidden_nodes)
         X = truncated_normal(mean=0, 
                              sd=1, 
