@@ -69,6 +69,7 @@ typedef struct
     uint16_t encoder0ValMax;
     uint16_t stepDelay;
     uint8_t display;
+    uint8_t usbWrite;
 }Config;
 
 Config config;
@@ -335,6 +336,7 @@ void softReset()
     config.encoder0ValMax = 0xffff;
     config.stepDelay = 100;
     config.display = 0;
+    config.usbWrite = 1;
     xAxis = 0;
     yAxis = 0;
     zAxis = 0;
@@ -410,6 +412,8 @@ const char helpStepperReset[] PROGMEM = "Reset Stepper";
 //const char helpy[] PROGMEM = "16-bit Y Axis (param)";
 //const char helpY[] PROGMEM = "16-bit rY Axis (param)";
 const char helpSpc[] PROGMEM = "b7 Soft Reset";
+const char helpUsbWrite[] PROGMEM = "Toggle USB Write";
+const char helpStepNext[] PROGMEM = "Stepper next";
 
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
 
@@ -452,6 +456,7 @@ Command cmds[] = {
 //    {'k', []() { serout << FSH(helpk) << endl; }  , []() { setEvent(EV_RZAXIS); }},
 //    {'i', []() { serout << FSH(helpDisplay) << endl; }  , []() { config.display = param;param = 0; }},
     {'l', []() { serout << FSH(helpStepDelay) << endl; }  , []() { config.stepDelay = param;  param = 0;}},
+    {'n', []() { serout << FSH(helpStepNext) << endl; }  , []() { stepper.next();}},
     {'L', []() { serout << FSH(helpLoadConfig) << endl; }  , []() { loadConfig(); }},
     {'<', []() { serout << FSH(helplt) << endl; } , []{ setEncoder0Min(); }},
     {'>', []() { serout << FSH(helpgt) << endl; } , []{ config.encoder0ValMax = encoder0Val; }},
@@ -464,6 +469,7 @@ Command cmds[] = {
     {'R', []() { serout << FSH(helpHardReset) << endl; }  , []() { hardReset(); }},
     {'s', []() { serout << FSH(helpSteps) << endl; }  , []() { stepCount = param; param = 0; step(); }},
     {'S', []() { serout << FSH(helpS) << endl; }  , []() { saveConfig(); }},
+    {'u', []() { serout << FSH(helpUsbWrite) << endl; }, [](){ config.usbWrite = !config.usbWrite; }},
 //    {'y', []() { serout << FSH(helpy) << endl; }  , [](){ Gamepad.yAxis(param); }},
 //    {'Y', []() { serout << FSH(helpY) << endl; }  , [](){ Gamepad.ryAxis(param); }},
     {' ', []() { serout << FSH(helpSpc) << endl; }, [](){ softReset(); return 0; }}
@@ -494,6 +500,7 @@ void help()
     serout << F("param ") << param << endl;
     serout << F("Config") << endl;
     serout << F("stepDelay ") << config.stepDelay << endl;
+    serout << F("usbWrite ") << config.usbWrite << endl;
 }
 
 void handleCommand()
@@ -566,7 +573,10 @@ void ioCheck()
             Gamepad.ryAxis(getPedalScaled(pedal1PinLast));
         }
         ttime = millis();
-        Gamepad.write();
+        if (config.usbWrite)
+        {
+            Gamepad.write();
+        }
         timeUSBWrite = millis() - ttime;
         displayBits = updateUSB;
         updateUSB = UPDATE_NONE;
