@@ -126,6 +126,16 @@ AsyncTimer at;
 StreamEx serout = Serial;
 Stepper stepper(9, 10, 11, 2);
 TM1638plus tm (TM_STROBE, TM_CLOCK, TM_DIO, false);
+Command * commandSet;
+
+// Forward Declarations
+void checkButtons(); 
+void ioCheck();
+void mainHelp();
+void stepperHelp();
+extern Command stepperCommands[];
+extern Command mainCommands[];
+
 void setEvent(uint8_t ev) { event |= ev; }
 void resetEvent(uint8_t ev) { event &= ~ev; }
 bool isEvent(uint8_t ev) { return event & ev; }
@@ -329,6 +339,7 @@ void updateDisplay()
 void softReset()
 {
     serout << F("Soft Reset");
+    commandSet = mainCommands;
 #ifdef STEPPER
     stepper.init();
 #endif //  STEPPER
@@ -384,6 +395,7 @@ void softReset()
 //        delay(100);
 //    }
 //}
+// Main Commands
 //const char helpDisplay[] PROGMEM = "Set Display 0=Off 1=Opto 2=stepcount, 3=loopcount 4=I/O Check, 5=update USB";
 const char helpStepEnable[] PROGMEM = "Enable stepper";
 const char helpStepDisable[] PROGMEM = "Disable stepper";
@@ -406,7 +418,7 @@ const char helpgt[] PROGMEM = "b1 Set righttmost steer";
 const char helpp[] PROGMEM = "DPad1 wipe";
 const char helpP[] PROGMEM = "DPad2 wipe";
 const char helpHardReset[] PROGMEM = "Hard Reset";
-const char helpSteps[] PROGMEM = "Steps (param)";
+const char helpStepCount[] PROGMEM = "Step Count (param)";
 const char helpS[] PROGMEM = "Save Config";
 const char helpStepperReset[] PROGMEM = "Reset Stepper";
 //const char helpy[] PROGMEM = "16-bit Y Axis (param)";
@@ -434,8 +446,9 @@ void step()
     }
 }
 
+const char helpStepperMenu[] PROGMEM = "Stepper Menu";
 
-Command cmds[] = {
+Command mainCommands[] = {
  //   {'b', []() { serout << FSH(helpb) << endl; }, []() { 
  //       digitalWrite(stepResetPin, 0);
  //       digitalWrite(stepResetPin, 1);
@@ -443,20 +456,18 @@ Command cmds[] = {
 //    {'a', []() { serout << FSH(helpa) << endl; }  , []() { config.display = param;param = 0; }},
 //    {'B', []() { serout << FSH(helpB) << endl; }  , []() { setEvent(EV_BUTTONCHASER); }},
     {'c', []() { serout << FSH(helpc) << endl; }  , [](){ param = 0; }},
-    {'d', []() { serout << FSH(helpDir0) << endl; }  , [](){ stepper.dir(0); }},
-    {'D', []() { serout << FSH(helpDir1) << endl; }  , [](){ stepper.dir(1); }},
+//    {'d', []() { serout << FSH(helpDir0) << endl; }  , [](){ stepper.dir(0); }},
+//    {'D', []() { serout << FSH(helpDir1) << endl; }  , [](){ stepper.dir(1); }},
 //    {'E', []() { serout << FSH(helpStepEnable) << endl; }, []() { digitalWrite(stepEnablePin, 1); }},
 //    {'e', []() { serout << FSH(helpStepDisable) << endl; }, []() { digitalWrite(stepEnablePin, 0); }},
 //    {'e', []() { serout << FSH(helpe) << endl; }  , []() { setEvent(EV_XAXIS); }},
 //    {'f', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_YAXIS); }},
 //    {'g', []() { serout << FSH(helpf) << endl; }  , []() { setEvent(EV_ZAXIS); }},
-    {'h', []() { serout << FSH(helph) << endl; }  , [](){ help(); }},
+    {'h', []() { serout << FSH(helph) << endl; }  , [](){ mainHelp(); }},
 //    {'I', []() { serout << FSH(helpI) << endl; }  , []() { setEvent(EV_RXAXIS); }},
 //    {'j', []() { serout << FSH(helpj) << endl; }  , []() { setEvent(EV_RYAXIS); }},
 //    {'k', []() { serout << FSH(helpk) << endl; }  , []() { setEvent(EV_RZAXIS); }},
 //    {'i', []() { serout << FSH(helpDisplay) << endl; }  , []() { config.display = param;param = 0; }},
-    {'l', []() { serout << FSH(helpStepDelay) << endl; }  , []() { config.stepDelay = param;  param = 0;}},
-    {'n', []() { serout << FSH(helpStepNext) << endl; }  , []() { stepper.next();}},
     {'L', []() { serout << FSH(helpLoadConfig) << endl; }  , []() { loadConfig(); }},
     {'<', []() { serout << FSH(helplt) << endl; } , []{ setEncoder0Min(); }},
     {'>', []() { serout << FSH(helpgt) << endl; } , []{ config.encoder0ValMax = encoder0Val; }},
@@ -467,23 +478,66 @@ Command cmds[] = {
 //        digitalWrite(stepResetPin, 1);
 //        }},
     {'R', []() { serout << FSH(helpHardReset) << endl; }  , []() { hardReset(); }},
-    {'s', []() { serout << FSH(helpSteps) << endl; }  , []() { stepCount = param; param = 0; step(); }},
+    {'s', []() { serout << FSH(helpStepperMenu) << endl; }  , []() { commandSet = stepperCommands; }},
     {'S', []() { serout << FSH(helpS) << endl; }  , []() { saveConfig(); }},
     {'u', []() { serout << FSH(helpUsbWrite) << endl; }, [](){ config.usbWrite = !config.usbWrite; }},
 //    {'y', []() { serout << FSH(helpy) << endl; }  , [](){ Gamepad.yAxis(param); }},
 //    {'Y', []() { serout << FSH(helpY) << endl; }  , [](){ Gamepad.ryAxis(param); }},
-    {' ', []() { serout << FSH(helpSpc) << endl; }, [](){ softReset(); return 0; }}
+    {' ', []() { serout << FSH(helpSpc) << endl; }, [](){ softReset(); return 0; }},
+    {'&', [](){}, [](){} }
 };
 
-#define NUMCOMMANDS (sizeof(cmds)/sizeof(cmds[0]))
+const char helpStepperInit[] PROGMEM  = "Stepper Init";
+const char helpMainMenu[] PROGMEM  = "Main Menu";
 
-void help()
+
+Command stepperCommands[] = {
+    {'i', []() { serout << FSH(helpStepperInit) << endl; }, []() { stepper.init(); }},
+    {'d', []() { serout << FSH(helpDir0) << endl; }  , [](){ stepper.dir(0); }},
+    {'D', []() { serout << FSH(helpDir1) << endl; }  , [](){ stepper.dir(1); }},
+    {'h', []() { serout << FSH(helph) << endl; }  , [](){ stepperHelp(); }},
+    {'l', []() { serout << FSH(helpStepDelay) << endl; }  , []() { config.stepDelay = param;  param = 0;}},
+    {'n', []() { serout << FSH(helpStepNext) << endl; }  , []() { stepper.next();}},
+    {'s', []() { serout << FSH(helpStepCount) << endl; }  , []() { stepCount = param; param = 0; step(); }},
+    {'x', []() { serout << FSH(helpMainMenu) << endl; }  , []() { commandSet = mainCommands; }},
+    {'&', [](){}, [](){} }
+};
+
+//        void a0Plus() { digitalWrite(p0, 1); }
+//        void a0Minus() { digitalWrite(p0, 0); }
+//        void a1Plus() { digitalWrite(p1, 1); }
+//        void a1Minus() { digitalWrite(p1, 0); }
+//        void b0Plus() { digitalWrite(p2, 1); }
+//        void b0Minus() { digitalWrite(p2, 0); }
+//        void b1Plus() { digitalWrite(p3, 1); }
+//        void b1Minus() { digitalWrite(p3, 0); }
+
+
+//#define NUMCOMMANDS (sizeof(mainCommands)/sizeof(mainCommands[0]))
+
+void stepperHelp()
 {
-    for (uint8_t ii = 0; ii < NUMCOMMANDS; ii++)
+    for (Command * iter = stepperCommands; iter->key != '&'; iter++)
     {
-        serout << cmds[ii].key << ": ";
-        cmds[ii].help();
+        serout << iter->key << F(": ");
+        iter->help();
     }
+    serout << F("stepDelay ") << config.stepDelay << endl;
+}
+
+void mainHelp()
+{
+    for (Command * iter = mainCommands; iter->key != '&'; iter++)
+    {
+        serout << iter->key << F(": ");
+        iter->help();
+    }
+
+//    for (uint8_t ii = 0; ii < NUMCOMMANDS; ii++)
+//    {
+//        serout << mainCommands[ii].key << ": ";
+//        mainCommands[ii].help();
+//    }
     char buffer[12];
     itoa(event, buffer, 2);
     serout << F("Event ") << buffer << endl;
@@ -499,7 +553,6 @@ void help()
     serout << F("Pedal1Scaled ") << getPedalScaled(Pedal1Pin) << endl;
     serout << F("param ") << param << endl;
     serout << F("Config") << endl;
-    serout << F("stepDelay ") << config.stepDelay << endl;
     serout << F("usbWrite ") << config.usbWrite << endl;
 }
 
@@ -507,13 +560,22 @@ void handleCommand()
 {
 	uint8_t lastCommand;
     lastCommand = Serial.read();
-    for (uint8_t ii = 0; ii < NUMCOMMANDS; ii++)
+    for (Command * iter = commandSet; iter->key != '&'; iter++)
     {
-        if (lastCommand == cmds[ii].key)
+        if (iter->key == lastCommand)
         {
-            cmds[ii].fun();
+            iter->fun();
+            return;
         }
     }
+
+//    for (uint8_t ii = 0; ii < NUMCOMMANDS; ii++)
+//    {
+//        if (lastCommand == mainCommands[ii].key)
+//        {
+//            mainCommands[ii].fun();
+//        }
+//    }
 
     if (lastCommand >= '0' & lastCommand <= '9')
     {
