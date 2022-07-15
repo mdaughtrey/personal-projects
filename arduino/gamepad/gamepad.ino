@@ -489,17 +489,27 @@ Command mainCommands[] = {
 
 const char helpStepperInit[] PROGMEM  = "Stepper Init";
 const char helpMainMenu[] PROGMEM  = "Main Menu";
+const char helpStepperMode[] PROGMEM = "Stepper Mode (0=full)";
 
 
 Command stepperCommands[] = {
-    {'i', []() { serout << FSH(helpStepperInit) << endl; }, []() { stepper.init(); }},
+    {'I', []() { serout << FSH(helpStepperInit) << endl; }, []() { stepper.init(); }},
     {'d', []() { serout << FSH(helpDir0) << endl; }  , [](){ stepper.dir(0); }},
     {'D', []() { serout << FSH(helpDir1) << endl; }  , [](){ stepper.dir(1); }},
     {'h', []() { serout << FSH(helph) << endl; }  , [](){ stepperHelp(); }},
     {'l', []() { serout << FSH(helpStepDelay) << endl; }  , []() { config.stepDelay = param;  param = 0;}},
+    {'m', []() { serout << FSH(helpStepperMode) << endl; }, []() { stepper.mode(param); param = 0;}},
     {'n', []() { serout << FSH(helpStepNext) << endl; }  , []() { stepper.next();}},
     {'s', []() { serout << FSH(helpStepCount) << endl; }  , []() { stepCount = param; param = 0; step(); }},
     {'x', []() { serout << FSH(helpMainMenu) << endl; }  , []() { commandSet = mainCommands; }},
+    {'q', []() {}, [](){ stepper.a0Plus(); }},
+    {'w', []() {}, [](){ stepper.a0Minus(); }},
+    {'e', []() {}, [](){ stepper.a1Plus(); }},
+    {'r', []() {}, [](){ stepper.a1Minus(); }},
+    {'t', []() {}, [](){ stepper.b0Plus(); }},
+    {'y', []() {}, [](){ stepper.b0Minus(); }},
+    {'u', []() {}, [](){ stepper.b1Plus(); }},
+    {'i', []() {}, [](){ stepper.b1Minus(); }},
     {'&', [](){}, [](){} }
 };
 
