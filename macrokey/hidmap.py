@@ -32,12 +32,18 @@ hidmap = {
 'TAB': 0x2b,  # Tab
 'CLR': 0x53,  # Clear
 'ENTER': 0x28,  # Enter
-'LSHIFT': 0xe1,  # Shift (Left)
-'RSHIFT': 0xe5,  # Shift (Left)
-'LCTRL': 0xe0,  # Ctrl (left)
-'RCTRL': 0xe4,  # Ctrl (left)
-'LALT': 0xe2,  # Alt (left)
-'RALT': 0xe6,  # Alt (left)
+#'LSHIFT': 0xe1,  # Shift (Left)
+'LSHIFT': 1 << 1,  # Shift (Left)
+#'RSHIFT': 0xe5,  # Shift (Left)
+'RSHIFT': 1 << 5,  # Shift (Left)
+#'LCTRL': 0xe0,  # Ctrl (left)
+'LCTRL': 1 << 0,  # Ctrl (left)
+#'RCTRL': 0xe4,  # Ctrl (left)
+'RCTRL': 1 << 4,  # Ctrl (left)
+#'LALT': 0xe2,  # Alt (left)
+'LALT': 1 << 2,  # Alt (left)
+#'RALT': 0xe6,  # Alt (left)
+'RALT': 1 << 6,  # Alt (left)
 'BREAK': 0x48,  # Pause / Break
 'CLOCK': 0x39,  # Caps Lock
 'ESC': 0x29,  # Escape
@@ -132,8 +138,10 @@ hidmap = {
 'x': 0x1b,  # x
 'y': 0x1c,  # y
 'z': 0x1d,  # z
-'LWIN': 0xe3,  # Windows key / Meta Key (Left)
-'RWIN': 0xe7,  # Windows key / Meta Key (Left)
+#'LWIN': 0xe3,  # Windows key / Meta Key (Left)
+'LWIN': 1 << 3,  # Windows key / Meta Key (Left)
+#'RWIN': 0xe7,  # Windows key / Meta Key (Left)
+'RWIN': 1 << 7,  # Windows key / Meta Key (Left)
 'N0': 0x62,  # Numpad 0
 'N1': 0x59,  # Numpad 1
 'N2': 0x5a,  # Numpad 2
