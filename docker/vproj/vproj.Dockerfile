@@ -23,5 +23,10 @@ RUN cd /PySceneDetect && python3 setup.py install
 #RUN chown -R mattd:mattd /home/mattd
 #USER ${USER}
 RUN echo mkdir -p /root/.wine/drive_c/windows/system  > /init.sh
-RUN echo cp -R /media/sf_vproj/scans/software/avx/scripts/plugins/ /root/.wine/drive_c/windows/system >> /init.sh
-RUN ssh-keygen -t rsa  -f /root/.ssh/id_rsa -N ''
+RUN echo cp -R /software/avx/scripts/plugins/ /root/.wine/drive_c/windows/system >> /init.sh
+#RUN ssh-keygen -t rsa  -f /root/.ssh/id_rsa -N ''
+RUN mkdir /root/.ssh
+COPY id_rsa.pub /root/.ssh
+COPY .vimrc /root/.vimrc
+COPY .tmux.conf /root/.tmux.conf
+WORKDIR /personal-projects/projector/scripts/controller

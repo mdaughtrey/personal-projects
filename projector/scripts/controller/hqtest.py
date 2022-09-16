@@ -25,6 +25,8 @@ parser.add_argument('--overwrite', dest='overwrite', help='overwrite the output 
 parser.add_argument('--res', dest='res',  choices=['draft', 'hd', 'full'], help="resolution")
 parser.add_argument('--serialize', dest='serialize', action='store_true', default=False, help='serialized operation')
 parser.add_argument('--onefile', dest='onefile', help='Process one file')
+parser.add_argument('--showwork', dest='showwork', action='store_true', default=False, help='Show intermediary cropfiles')
+parser.add_argument('--showcrop', dest='showcrop', action='store_true', default=False, help='Show crop boxes')
 config = parser.parse_args()
 
 #dodraw = False
@@ -257,7 +259,7 @@ def findSprocketsS8(image, filename=None):
     slice[slice < threshold] = 0
     slice[slice >= threshold] = 1
 
-    if filename:
+    if config.showwork:
         slice2 = np.copy(slice)
         slice2[slice2 == 1] = 255
         savedebug(slice2, filename, 'darklight')
@@ -275,7 +277,7 @@ def findSprocketsS8(image, filename=None):
             rect = tupleAdd((ss, 0, ss, 0), rect)
             centerlines.append(int(rect[1] + (rect[3]-rect[1])/2))
 
-    if filename:
+    if config.showwork:
         savedebug(np.asarray(debugimage), filename, 'strips')
     centerlines = [x for x in centerlines if x]
     if len(centerlines):
@@ -289,13 +291,14 @@ def findSprocketsS8(image, filename=None):
     rect = findExtents(hstrip.transpose())
     xCenter = rect[1] + (rect[3] - rect[1])/2
 
-    open('{}/{}/centerline.dat'.format(config.root,config.project), 'a').write("{}\n".format(yCenter + sliceY))
+    if config.showwork:
+        open('{}/{}/centerline.dat'.format(config.root,config.project), 'a').write("{}\n".format(yCenter + sliceY))
     sprocketRect = (int(xCenter - SprocketS8.w/2), int(yCenter - SprocketS8.h/2),
         int(xCenter + SprocketS8.w/2), int(yCenter + SprocketS8.h/2))
     cropRect = (int(xCenter + SprocketS8.w/2), int(yCenter - FrameS8.h/2),
         int(xCenter + SprocketS8.w/2 + FrameS8.w), int(yCenter + FrameS8.h/2))
 
-    if filename:
+    if config.showcrop:
         draw = ImageDraw.Draw(image)
         # sprocket
         draw.rectangle(sprocketRect, outline='#ffff00', width=1)
@@ -307,9 +310,9 @@ def findSprocketsS8(image, filename=None):
 
         draw.rectangle(cropRect, outline='#ff0000', width=1)
         draw.rectangle(tupleAdd(cropRect, (1,1,-1,-1)), outline='#ffffff', width=1)
-        savedebug(np.asarray(image), filename, 'cropboxes')
-
-    image = image.crop(cropRect)
+#        savedebug(np.asarray(image), filename, 'cropboxes')
+    else:
+        image = image.crop(cropRect)
 
     return image
 
@@ -354,7 +357,10 @@ def threadrun(fromdir, todir, file):
 #        blurred.save(bfile)
 #    image = cv2.GaussianBlur(image, {'width':4,'height':4}, 0, 0, cv2.BORDER_REFLECT_101)
     #image = findSprocketsS8(image, outfile)
-    image = findSprocketsS8(image) # , outfile)
+    if config.showwork:
+        image = findSprocketsS8(image, outfile)
+    else:
+        image = findSprocketsS8(image) # , outfile)
     if False == config.nowrite:
         image.save(outfile)
 
@@ -363,7 +369,7 @@ def mainthreaded():
     dirnum = 0
     while True:
         fromdir = f'{config.root}/{config.project}/{dirnum:03d}/'
-        todir = '{}/{}/{}_cropped'.format(config.root, config.project, config.format)
+        todir = '{}/{}/cropped_{}'.format(config.root, config.project, config.res)
         print(f'Dir {fromdir}', end='\n')
         if not os.path.exists(fromdir):
             return 0

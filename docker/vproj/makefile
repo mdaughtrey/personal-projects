@@ -11,10 +11,15 @@ all:
 
 run:
 ifeq ($(HOST),md)
-	${DOCKER} run -dh ${NAME} --name ${NAME} --expose 22 -p5000:5000 -it \
+	${DOCKER} run --rm -dh ${NAME} --name ${NAME} --expose 22 -p5000:5000 -it \
     -v '\\wsl\$\Ubuntu\home\matt\personal-projects':/personal-projects ${NAME}:latest 
 else
-	${DOCKER} run -dh ${NAME} --name ${NAME} --expose 22 -p5000:5000 -it -v /mnt/c/vproj:/media/currentscan -v ~/dev/personal-projects/:/personal-projects -v /mnt/p/vproj:/media/sf_vproj -v /mnt/c/:/c ${NAME}:latest 
+	${DOCKER} run --rm -dh ${NAME} --name ${NAME} --expose 22 -p5000:5000 -it \
+    --volume /c/vproj:/working \
+    --volume /p/vproj/scans/software:/software \
+    --volume /p/vproj/scans:/allscans \
+    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects:/personal-projects \
+    ${NAME}:latest 
 endif
 
 hqtest:
@@ -35,4 +40,7 @@ push:
 	${DOCKER} push mdaughtrey/projects:${TAG}
 
 build:
+	cp ~/.vimrc .
+	cp ~/.tmux.conf .
+	cp ~/.ssh/id_rsa.pub .
 	${DOCKER} build -f ${NAME}.Dockerfile . --tag=vproj 

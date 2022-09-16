@@ -1,0 +1,3 @@
+When I'm doing the dishes and cleaning up the kitchen after dinner I always have my headphones on. Sometimes I want to skip a track but I don't want to touch my phone with my wet hands. So I built this simple unit which attaches underneath my kitchen cabinet and lets me swipe left or right to skip tracks backwards and forwards.
+
+The code is trivial; it's simply gluing together the libraries for the BLE Keyboard client and the PAJ7620 Gesture sensor
