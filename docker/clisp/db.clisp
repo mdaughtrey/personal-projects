@@ -1,0 +1,30 @@
+(defvar *db* nil)
+(defun add-record (cd) (push cd *db*))
+(defun make-cd (title artist rating ripped)
+    (list :title title :artist artist :rating rating :ripped ripped))
+
+(defun dump-db ()
+    (format t "~{~{~a:~10t~a~%~}~%~}" *db*))
+    
+(defun prompt-read (prompt)
+    (format *query-io* "~a: " prompt)
+    (force-output *query-io*)
+    (read-line *query-io*))
+
+(defun prompt-for-cd ()
+    (make-cd
+        (prompt-read "Title")
+        (prompt-read "Artist")
+        (parse-integer (prompt-read "Rating"))
+        (prompt-read "Ripped [Y/N]")))
+
+(add-record (make-cd "Dark Side of the Moon" "Pink Floyd" 7 t))
+(add-record (make-cd "Kid A" "Radiohead" 8 t))
+(add-record (make-cd "With the Lights Out" "Nirvana" 9 t))
+
+(dump-db)
+(prompt-for-cd)
+(dump-db)
+
+
+
