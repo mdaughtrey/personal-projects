@@ -1,0 +1,2 @@
+
+((:|TITLE| "A new title" :|ARTIST| "an Old artist" :|RATING| 9. :|RIPPED| |COMMON-LISP|::|NIL|) (:|TITLE| "title" :|ARTIST| "art" :|RATING| 4. :|RIPPED| |COMMON-LISP|::|NIL|) (:|TITLE| "With the Lights Out" :|ARTIST| "Nirvana" :|RATING| 9. :|RIPPED| |COMMON-LISP|::|T|) (:|TITLE| "Kid A" :|ARTIST| "Radiohead" :|RATING| 8. :|RIPPED| |COMMON-LISP|::|T|) (:|TITLE| "Dark Side of the Moon" :|ARTIST| "Pink Floyd" :|RATING| 7. :|RIPPED| |COMMON-LISP|::|T|)) 

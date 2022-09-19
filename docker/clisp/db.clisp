@@ -15,16 +15,35 @@
     (make-cd
         (prompt-read "Title")
         (prompt-read "Artist")
-        (parse-integer (prompt-read "Rating"))
-        (prompt-read "Ripped [Y/N]")))
+        (or (parse-integer (prompt-read "Rating") :junk-allowed t) 0)
+        (y-or-n-p "Ripped [y/n]: ")))
 
 (add-record (make-cd "Dark Side of the Moon" "Pink Floyd" 7 t))
 (add-record (make-cd "Kid A" "Radiohead" 8 t))
 (add-record (make-cd "With the Lights Out" "Nirvana" 9 t))
 
-(dump-db)
-(prompt-for-cd)
-(dump-db)
+; (dump-db)
+; (prompt-for-cd)
+; (dump-db)
 
+(defun add-cds()
+    (loop (add-record (prompt-for-cd))
+        (if (not (y-or-n-p "Another? [y/n]: ")) (return))))
 
+(defun save-db (filename)
+    (with-open-file (out filename
+        :direction :output
+        :if-exists :supersede)
+    (with-standard-io-syntax
+        (print *db* out))))
+
+(defun load-db (filename)
+    (with-open-file (in filename)
+        (with-standard-io-syntax
+            (setf *db* (read in)))))
+
+(load-db "database")
+(dump-db)
+(add-cds)
+(save-db "database")
 
