@@ -4,7 +4,9 @@ DOCKER=docker.exe
 run:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} \
     -v '\\wsl\$\Ubuntu\home\matt\personal-projects':/personal-projects \
-	-w /personal-projects/docker/jekyll ${TAG}:latest /bin/bash
+    --publish 4000:4000 \
+	-w /personal-projects/docker/jekyll ${TAG}:latest \
+    /root/runserver.sh
 
 #--publish 4000:4000  
 runi:
