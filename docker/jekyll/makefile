@@ -6,9 +6,10 @@ run:
     -v '\\wsl\$\Ubuntu\home\matt\personal-projects':/personal-projects \
 	-w /personal-projects/docker/jekyll ${TAG}:latest /bin/bash
 
+#--publish 4000:4000  
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
-	-p 4000:4000  \
+	--publish 4000:4000  \
 	-v '\\wsl\$\Ubuntu\home\matt\personal-projects':/personal-projects \
 	-w /personal-projects/docker/jekyll ${TAG}:latest /bin/bash 
 
