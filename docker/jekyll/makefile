@@ -8,12 +8,12 @@ run:
 
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
-	--publish 4000:4000  \
+	-p 4000:4000  \
 	-v '\\wsl\$\Ubuntu\home\matt\personal-projects':/personal-projects \
 	-w /personal-projects/docker/jekyll ${TAG}:latest /bin/bash 
 
 network:
-	${DOCKER} inspect --format '{{ .NetworkSettings.IPAddress }}' $(docker ps -a | grep jekyll | awk '{print $1}')
+	${DOCKER} inspect --format '{{ .NetworkSettings.IPAddress }}' $(shell ${DOCKER} ps -a | grep jekyll | awk '{print $$1}')
 
 attach:
 	${DOCKER} attach ${TAG}
