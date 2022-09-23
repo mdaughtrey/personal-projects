@@ -3,17 +3,28 @@ DOCKER=docker.exe
 
 run:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} \
-    -v '\\wsl\$\Ubuntu\home\matt\personal-projects':/personal-projects \
-    --publish 4000:4000 \
-	-w /personal-projects/docker/jekyll ${TAG}:latest \
-    /root/runserver.sh
+	--publish 4000:4000  \
+	--publish 35729:35729  \
+    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects:/personal-projects \
+    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects\\jekyll:/home/mattd/sites \
+    -w /home/mattd ${TAG}:latest /home/mattd/runserver.sh
 
-#--publish 4000:4000  
+runi0:
+	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
+	--publish 4000:4000  \
+	--publish 35729:35729  \
+	-v '\\wsl\$\Ubuntu\home\mattd\personal-projects':/personal-projects \
+    -v '\\wsl\$\Ubuntu\home\mattd\personal-projects\jekyll':/home/mattd/sites  \
+    -w /home/mattd \
+	${TAG}:latest /bin/bash 
+
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
 	--publish 4000:4000  \
-	-v '\\wsl\$\Ubuntu\home\matt\personal-projects':/personal-projects \
-	-w /personal-projects/docker/jekyll ${TAG}:latest /bin/bash 
+    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects:/personal-projects \
+    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects\\jekyll:/home/mattd/sites \
+    -w /home/mattd \
+	${TAG}:latest /bin/bash 
 
 network:
 	${DOCKER} inspect --format '{{ .NetworkSettings.IPAddress }}' $(shell ${DOCKER} ps -a | grep jekyll | awk '{print $$1}')
