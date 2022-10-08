@@ -14,6 +14,6 @@ COPY --chown=mattd .tmux.conf /home/mattd/.tmux.conf
 COPY --chown=mattd .bashrc /home/mattd/.bashrc
 ENV GEM_HOME=/home/mattd/gems
 ENV PATH=/home/mattd/gems/bin:${PATH}
-RUN gem install bundler jekyll
+RUN cd /home/mattd && gem install bundler jekyll minima
 ENV SHELL=/bin/bash
 ENV EDITOR=vim
