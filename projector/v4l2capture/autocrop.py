@@ -257,20 +257,20 @@ def findSprocketsS8(image, filename=None):
     grey = image.convert('L')
     #image = image.convert('L')
     flattened = np.asarray(grey, dtype=np.uint8)
-    savedebug(flattened, filename, 'flattened')
+    #savedebug(flattened, filename, 'flattened')
 
     eroded = ndimage.grey_erosion(flattened, size=(5,5))
-    savedebug(eroded, filename, 'eroded')
+    #savedebug(eroded, filename, 'eroded')
 
     sliceL = 0
     sliceR = int(image.size[0]/40)
 #    sliceR = int(PxPerMmS8 * (0.51 + 0.91))
 #    sliceW = sliceR - sliceL
     # Slice runs down the left, vertically clipped 1/2 vertical frame size top and bottom
-    sliceY = int(FrameS8.h/2)
+    #sliceY = int(FrameS8.h/2)
     slice = eroded[:,sliceL:sliceR]
 
-    savedebug(slice, filename, 'slice')
+    #savedebug(slice, filename, 'slice')
 
     # get the darkest and lightest values, their midpoint is the threshold
     darkest = ndimage.minimum(slice)
@@ -281,31 +281,32 @@ def findSprocketsS8(image, filename=None):
     slice[slice < threshold] = 0
     slice[slice >= threshold] = 1
 
-    if config.showwork:
-        slice2 = np.copy(slice)
-        slice2[slice2 == 1] = 255
-        savedebug(slice2, filename, 'darklight')
+#    if config.showwork:
+#        slice2 = np.copy(slice)
+#        slice2[slice2 == 1] = 255
+#        savedebug(slice2, filename, 'darklight')
 
-    if filename:
-        debugimage = image
+#    if filename:
+#        debugimage = image
 
-    centerlines = []
-    for ss in range(sliceL, sliceR, int(sliceW/5)):
-        vstrip = slice[:,ss:ss+int(sliceW/10)]
+    rect = findExtents(slice)
+#    centerlines = []
+#    for ss in range(sliceL, sliceR, int(sliceW/5)):
+#        vstrip = slice[:,ss:ss+int(sliceW/10)]
+#
+#        # rect x0,y0,x1,y1
+#        rect = findExtents(vstrip)
+#        if SprocketS8.h < (rect[3] - rect[1]):
+#            rect = tupleAdd((ss, 0, ss, 0), rect)
+#            centerlines.append(int(rect[1] + (rect[3]-rect[1])/2))
 
-        # rect x0,y0,x1,y1
-        rect = findExtents(vstrip)
-        if SprocketS8.h < (rect[3] - rect[1]):
-            rect = tupleAdd((ss, 0, ss, 0), rect)
-            centerlines.append(int(rect[1] + (rect[3]-rect[1])/2))
-
-    if config.showwork:
-        savedebug(np.asarray(debugimage), filename, 'strips')
-    centerlines = [x for x in centerlines if x]
-    if len(centerlines):
-        yCenter = int(st.median(centerlines))
-    else:
-        yCenter = image.shape[0]/2
+#    if config.showwork:
+#        savedebug(np.asarray(debugimage), filename, 'strips')
+#    centerlines = [x for x in centerlines if x]
+#    if len(centerlines):
+#        yCenter = int(st.median(centerlines))
+#    else:
+#        yCenter = image.shape[0]/2
 
 
     # Now we have a Y-axis sprocket hole yCenter, find the X-axis sprocket hole yCenter
@@ -406,7 +407,6 @@ def mainthreaded():
         bound = partial(threadrun, config.inputdir, config.outputdir)
         files =  [f'{config.inputdir}/{config.onefile}'] if config.onefile else glob(f'{config.inputdir}/*.bmp')
         files = [os.path.basename(f) for f in sorted(files)]
-        pdb.set_trace()
         if config.serialize:
             for file in files:
                 bound(file)

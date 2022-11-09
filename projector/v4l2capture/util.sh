@@ -19,11 +19,16 @@ clip()
     ./autocrop.py --inputdir ${SHAREDIR} --outputdir ${SHAREDIR}/cropped --serialize
 }
 
+usbcap()
+{
+    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR} 
+}
+
 case "$1" in 
     dev) ffmpeg -devices ;;
-    caps) ffmpeg -f v4l2 -list_formats all -i ${DEVICE} ;;
-    capbmp) 
-        ffmpeg -f v4l2 -framerate 1 -video_size ${VIDEOSIZE} -i $(getdev) -y ${SHAREDIR}/%08d.bmp ;;
+    caps) ffmpeg -f v4l2 -list_formats all -i $(getdev) ;;
+    cap1bmp) 
+        ffmpeg -f v4l2 -video_size ${VIDEOSIZE} -i $(getdev) -vframes 1 -y ${SHAREDIR}/%08d.bmp ;;
     capmjpeg) 
         ffmpeg -f v4l2 -framerate 1 -video_size ${VIDEOSIZE} -i ${DEVICE}  -vf fps=10 -y ${SHAREDIR}/capmjpeg_${VIDEOSIZE}.avi ;;
     copy) ffmpeg -f v4l2 -video_size ${VIDEOSIZE} -i ${DEVICE} -vcodec copy -y ${SHAREDIR}/rawout_${VIDEOSIZE}.avi ;;
@@ -32,6 +37,7 @@ case "$1" in
     stream) ffmpeg -video_size 640x480 -rtbufsize 702000k -framerate 10 -i video="${DEVICE}" -threads 4 -vcodec libh264 -crf 0 -preset ultrafast -f mpegts "udp://pop-os:56666" ;;
     getdev) getdev ;;
     clip) clip ;;
+    usbcap) usbcap ;;
     *) echo what?
 esac
 
