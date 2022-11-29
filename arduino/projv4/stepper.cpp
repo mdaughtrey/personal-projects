@@ -59,8 +59,8 @@ void stop(void)
     digitalWrite(motorPin2, 0);
     digitalWrite(motorPin3, 0);
     digitalWrite(motorPin4, 0);
-    delta = 0;
-    stepIndex = 0;
+//    delta = 0;
+//    stepIndex = 0;
 }
 
 void init()
