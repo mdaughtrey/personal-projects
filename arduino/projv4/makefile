@@ -14,6 +14,8 @@ DOCKERHOST=pop-os
 DOCKERNAME=acli
 DOCKER=docker
 
+all:
+	make b
 #ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/dev/personal-projects:/personal-projects 
 # Build remote
 br:
