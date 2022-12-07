@@ -124,7 +124,7 @@ uint8_t Stepper::getNextInterval(uint16_t position)
         return m_minInterval;
     }
 
-    float p = (m_targetSteps - position) / m_rampDownSteps;
+    float p = 1.0 - (m_targetSteps - position) / m_rampDownSteps;
     float q = intervalRange * p;
     uint8_t r = m_minInterval + static_cast<int>(q);
     if (m_verbose)
@@ -163,7 +163,7 @@ void Stepper::stop(uint16_t move)
     m_running = false;
     if (move)
     {
-        m_stepsPerMove = int(m_targetSteps/move);
+        m_stepsPerMove = int(m_stepCount/move);
     }
 }
 
