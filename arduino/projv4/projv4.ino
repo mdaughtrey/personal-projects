@@ -184,8 +184,8 @@ void setup ()
     stepper.enable();
     stepper.minInterval(1);
     stepper.maxInterval(6);
-    stepper.rampUpSteps(3);
-    stepper.rampDownSteps(3);
+    stepper.rampUpSteps(10);
+    stepper.rampDownSteps(10);
 
     stepper.cw(); 
     buttonInit();
@@ -284,6 +284,10 @@ void dumpStepperConfig()
     Serial.printf("minInterval: %u\r\nmaxInterval: %u\r\nrampUpSteps: %u\r\nrampDownSteps: %u\r\nenabled: %u\r\nencoderPos: %u\r\n",
         stepper.minInterval(), stepper.maxInterval(), stepper.rampUpSteps(), stepper.rampDownSteps(), stepper.enabled(),
         encoderPos);
+    Serial.printf("m_stepCount %u\r\n  m_targetSteps %u\r\n m_stepsPerMove %u\r\n",
+        stepper.m_stepCount,
+        stepper.m_targetSteps,
+        stepper.m_stepsPerMove);
     Serial.printf("Pins: %u %u %u %u\r\n", digitalRead(stepperPin1), digitalRead(stepperPin2), digitalRead(stepperPin3), digitalRead(stepperPin4));
 }
 
@@ -341,7 +345,7 @@ const char help_nextimeout[] PROGMEM="next timeout (param)";
 const char help_isr[] PROGMEM="ISR on rising/falling edge (param 0=off, 1=rising, 2=falling, 3=both)";
 const char help_tension[] PROGMEM="tension (param)";
 const char help_tension0[] PROGMEM="tension 0";
-const char help_verbose[] PROGMEM="verbose 0-2 (param)";
+const char help_verbose[] PROGMEM="verbose 0-1 (param)";
 const char empty[] PROGMEM="";
 
 Command commands_main[] = {
@@ -371,7 +375,7 @@ Command commands_main[] = {
     rewindMotor(config.tension); 
     fan(1); }},
 {'T',FSH(help_tension0), [](){ rewindMotor(0); fan(0);}},
-{'v',FSH(help_verbose), [](){}},
+{'v',FSH(help_verbose), [](){ stepper.verbose(config.param);}},
 {'&', FSH(empty), [](){} }
 };
 
@@ -396,7 +400,7 @@ Command commands_stepper[] = {
     {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
     {'i', FSH(help_imax), [](){ stepper.maxInterval(config.param);} },
     {'I', FSH(help_imin), [](){ stepper.minInterval(config.param);} },
-    {'r', FSH(help_run), [](){ stepper.run(encoderPos);} },
+    {'r', FSH(help_run), [](){ stepper.run();} },
     {'s', FSH(help_start), [](){ stepper.start(config.param); }},
     {'u', FSH(help_rup), [](){ stepper.rampUpSteps(config.param);} },
     {'?', FSH(help_sconfig), [](){ dumpStepperConfig(); }},
@@ -461,14 +465,14 @@ void stepperPoll()
     }
     else if (encoderPos >= config.encoderLimit && frameReady)
     {
-        stepper.stop();
+        stepper.stop(encoderPos);
         config.state = NONE;
         frameReady = 0;
         Serial.println("{HDONE}");
     }
     else
     {
-        stepper.run(encoderPos);
+        stepper.run();
     }
 }
 
