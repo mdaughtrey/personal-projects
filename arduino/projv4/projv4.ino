@@ -1,3 +1,4 @@
+#define TB6600
 #include <stdarg.h>
 #include <pico/stdlib.h>
 #include "stepper.h"
@@ -5,10 +6,16 @@
 
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
 
+#ifdef TB6600
+const uint8_t stepperEnable = 20;
+const uint8_t stepperDir = 19;
+const uint8_t stepperPulse = 18;
+#else
 const int stepperPin4 = 18;
 const int stepperPin3 = 19;
 const int stepperPin2 = 20;
 const int stepperPin1 = 21;
+#endif // TB600
 
 typedef enum
 {
@@ -85,7 +92,11 @@ void handleCommand();
 void coilControl();
 //void (*commandHandler)() = handleCommand;
 
+#ifdef TB6600
+Stepper stepper(stepperEnable, stepperDir, stepperPulse);
+#else
 Stepper stepper(stepperPin1, stepperPin2, stepperPin3, stepperPin4);
+#endif // TB600
 
 void verbose(uint8_t threshold, const char * fmt, ...)
 {
@@ -279,8 +290,13 @@ const char stepperTitle[] PROGMEM = "--------Stepper Config ---------\r\n";
 void dumpStepperConfig()
 {
     Serial.printf("%s",FSH(stepperTitle));
+#ifdef TB6600
+    Serial.printf("config.param %d\r\ncurrentInterval %u\r\nrunning %u\r\n",
+        config.param, stepper.m_currentInterval, stepper.m_running);
+#else
     Serial.printf("config.param %d\r\ncurrentInterval %u\r\nrunning %u\r\nindex %u\r\n",
         config.param, stepper.m_currentInterval, stepper.m_running, stepper.m_stepIndex);
+#endif // TB600
     Serial.printf("minInterval: %u\r\nmaxInterval: %u\r\nrampUpSteps: %u\r\nrampDownSteps: %u\r\nenabled: %u\r\nencoderPos: %u\r\n",
         stepper.minInterval(), stepper.maxInterval(), stepper.rampUpSteps(), stepper.rampDownSteps(), stepper.enabled(),
         encoderPos);
@@ -288,7 +304,10 @@ void dumpStepperConfig()
         stepper.m_stepCount,
         stepper.m_targetSteps,
         stepper.m_stepsPerMove);
+#ifdef TB6600
+#else
     Serial.printf("Pins: %u %u %u %u\r\n", digitalRead(stepperPin1), digitalRead(stepperPin2), digitalRead(stepperPin3), digitalRead(stepperPin4));
+#endif // TB600
 }
 
 void do_next()
@@ -391,18 +410,21 @@ const char help_run[] PROGMEM = "run";
 const char help_stepperrun[] PROGMEM = "stepper run (1 shot)";
 const char help_sdisable[] PROGMEM = "disable stepper outputs";
 const char help_senable[] PROGMEM = "enable stepper outputs";
+const char help_pulse[] PROGMEM = "pulse (param 0=lh 1=hl)";
 
 Command commands_stepper[] = {
-    {'d', FSH(help_rdown), [](){ stepper.rampDownSteps(config.param);} },
+    {'c',FSH(help_param0), [](){config.param = 0;}},
+    {'D', FSH(help_rdown), [](){ stepper.rampDownSteps(config.param);} },
+    {'d', FSH(help_sdisable), [](){ stepper.disable();} },
     {'e', FSH(help_senable), [](){ stepper.enable();} },
-    {'E', FSH(help_sdisable), [](){ stepper.disable();} },
     {'h',FSH(help_help), [](){ help();}},
-    {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
     {'i', FSH(help_imax), [](){ stepper.maxInterval(config.param);} },
     {'I', FSH(help_imin), [](){ stepper.minInterval(config.param);} },
+    {'p', FSH(help_pulse), [](){ stepper.pulse(config.param);} },
     {'r', FSH(help_run), [](){ stepper.run();} },
     {'s', FSH(help_start), [](){ stepper.start(config.param); }},
-    {'u', FSH(help_rup), [](){ stepper.rampUpSteps(config.param);} },
+    {'U', FSH(help_rup), [](){ stepper.rampUpSteps(config.param);} },
+    {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
     {'?', FSH(help_sconfig), [](){ dumpStepperConfig(); }},
     {' ', FSH(help_stop), [](){ setup(); }},
     {'&', FSH(empty), [](){}}

@@ -1,3 +1,4 @@
+#define TB6600
 class Stepper
 {
     public:
@@ -7,16 +8,20 @@ class Stepper
         uint8_t m_maxInterval;
         float  m_rampUpSteps;
         float  m_rampDownSteps;
+#ifdef TB6600
+        uint8_t m_stepperEnable;
+        uint8_t m_stepperDir;
+        uint8_t m_stepperPulse;
+#else
         uint8_t m_motorPin4;
         uint8_t m_motorPin3;
         uint8_t m_motorPin2;
         uint8_t m_motorPin1;
-        uint16_t m_currentInterval;
-
         uint8_t m_stepIndex;
-
-        uint32_t m_lastStepTime;
         int8_t m_delta;
+#endif // TB600
+        uint16_t m_currentInterval;
+        uint32_t m_lastStepTime;
 //        uint16_t m_currentStep;
         uint16_t m_stepCount;
         uint16_t m_targetSteps;
@@ -27,7 +32,11 @@ class Stepper
         bool m_verbose;
 
     public:
+#ifdef TB6600
+        Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse);
+#else
         Stepper(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4);
+#endif // TB600
         void run();
         void start(uint16_t moves);
         void stop(uint16_t move = 0);
@@ -46,6 +55,7 @@ class Stepper
         uint8_t rampDownSteps(uint8_t steps) { m_rampDownSteps = static_cast<float>(steps); return steps; }
         bool enabled() { return m_enabled; }
         void verbose(uint8_t v) { m_verbose = v; };
+        void pulse(bool v);
 
 
     protected:
