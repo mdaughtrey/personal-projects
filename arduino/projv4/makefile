@@ -9,14 +9,18 @@ ELF=${PROJ}.ino.elf
 ACLI=/home/mattd/acli/bin/arduino-cli
 MOUNT=/media/rp2040
 
-DOCKERHOST=DESKTOP-TOJK787
+#DOCKERHOST=DESKTOP-TOJK787
+DOCKERHOST=pop-os
 DOCKERNAME=acli
 DOCKER=docker
 
+all:
+	make b
+#ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/dev/personal-projects:/personal-projects 
 # Build remote
 br:
-	ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/dev/personal-projects:/personal-projects \
-        --entrypoint /home/mattd/acli/bin/arduino-cli \
+	ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects  \
+	--entrypoint /home/mattd/acli/bin/arduino-cli \
 		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
 #	ssh mattd@pop-os  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects \
 #        --entrypoint /home/mattd/acli/bin/arduino-cli \

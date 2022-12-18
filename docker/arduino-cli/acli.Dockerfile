@@ -34,21 +34,18 @@ RUN ~/acli/bin/arduino-cli core install esp32:esp32
 RUN ~/acli/bin/arduino-cli core install rp2040:rp2040
 RUN git config --global user.email "mdaughtrey@gmail.com"
 RUN git config --global user.name mdaughtrey
+RUN ~/acli/bin/arduino-cli core install arduino:avr
 RUN ~/acli/bin/arduino-cli lib install 'Adafruit GFX Library'
-RUN ~/acli/bin/arduino-cli lib install 'Adafruit APDS9960 Library'
-RUN ~/acli/bin/arduino-cli lib install gxepd2
-RUN ~/acli/bin/arduino-cli lib install Adafruit_VL53L0X
-RUN ~/acli/bin/arduino-cli lib install AsyncStepperLib
-RUN ~/acli/bin/arduino-cli lib install 'Adafruit MQTT Library'
-RUN ~/acli/bin/arduino-cli lib install WS2812FX
-RUN ~/acli/bin/arduino-cli lib install WiFiManager
-RUN ~/acli/bin/arduino-cli lib install Effortless-SPIFFS
-RUN ~/acli/bin/arduino-cli lib install asynctimer
-RUN ~/acli/bin/arduino-cli lib install HID-Project
-# https://roboticsbackend.com/arduino-stl-library/
 RUN cd ~/Arduino/libraries && git clone https://github.com/maniacbug/StandardCplusplus.git
 RUN cd /var/tmp && wget https://github.com/T-vK/ESP32-BLE-Keyboard/archive/refs/tags/0.3.0.tar.gz && \
 tar xzvf 0.3.0.tar.gz && mv ESP32-BLE-Keyboard-0.3.0/ /home/mattd/Arduino/libraries/
+RUN ~/acli/bin/arduino-cli lib install 'Adafruit APDS9960 Library'
+RUN ~/acli/bin/arduino-cli lib install gxepd2 Adafruit_VL53L0X AsyncStepperLib 'Adafruit MQTT Library' WS2812FX WiFiManager Effortless-SPIFFS
+RUN ~/acli/bin/arduino-cli lib install HID-Project printex asynctimer TM1638plus
+RUN ~/acli/bin/arduino-cli lib install 'SparkFun APDS9960 RGB and Gesture Sensor'
+RUN ~/acli/bin/arduino-cli lib install 'RevEng PAJ7620'
+RUN ~/acli/bin/arduino-cli lib install 'AccelStepper'
+# https://roboticsbackend.com/arduino-stl-library/
 #ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
 #COPY ~/personal-projects/bin/vimrc ~/.vimrc
 #COPY ~/personal-projects/bin/tmux.conf ~/.tmux.conf
