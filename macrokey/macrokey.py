@@ -203,7 +203,10 @@ def procButtonPress(pageid, id):
     button = config[pageid]['buttons'][id]
     if 'page' in button.keys():
         return genpage(button['page'])
-    writeHid(button['report'])
+    try:
+        writeHid(button['report'])
+    except:
+        pass
     return ""
 
 
