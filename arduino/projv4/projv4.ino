@@ -1,6 +1,7 @@
 #define TB6600
 #include <stdarg.h>
 #include <pico/stdlib.h>
+//#include "serialout.h"
 #include "stepper.h"
 #include <AsyncTimer.h>
 
@@ -98,16 +99,16 @@ Stepper stepper(stepperEnable, stepperDir, stepperPulse);
 Stepper stepper(stepperPin1, stepperPin2, stepperPin3, stepperPin4);
 #endif // TB600
 
-void verbose(uint8_t threshold, const char * fmt, ...)
-{
-    if (threshold > config.verbose) return;
-    char buffer[256];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
-    va_end(args);
-    Serial.print(buffer);
-}
+//void serialout(uint8_t threshold, const char * fmt, ...)
+//{
+//    if (threshold > config.verbose) return;
+//    char buffer[256];
+//    va_list args;
+//    va_start(args, fmt);
+//    vsprintf(buffer, fmt, args);
+//    va_end(args);
+//    Serial.print(buffer);
+//}
 
 void setFrameReady()
 {
@@ -116,7 +117,7 @@ void setFrameReady()
 //    stepcount(0);
 //    stepper::stop(); 
 #endif // ACCELSTEPPER
-    verbose(1, "setFrameReady\r\n");
+    Serial.printf("setFrameReady\r\n");
 }
 
 void isr1()
@@ -193,10 +194,14 @@ void setup ()
     memset(&config, sizeof(config), 0);
 //    commandHandler = handleCommand;
     stepper.enable();
-    stepper.minInterval(1);
-    stepper.maxInterval(6);
-    stepper.rampUpSteps(10);
-    stepper.rampDownSteps(10);
+//    stepper.minInterval64(1);
+//    stepper.maxInterval64(6);
+    stepper.m_minInterval64 = 1;
+    stepper.m_maxInterval64 = 6;
+//    stepper.rampUpSteps(10);
+//    stepper.rampDownSteps(10);
+    stepper.m_rampUpSteps = 10;
+    stepper.m_rampDownSteps = 10;
 
     stepper.cw(); 
     buttonInit();
@@ -264,8 +269,8 @@ void buttonPoll()
 
 void dumpConfig(uint8_t th)
 {
-    verbose(th, "-------------------------------\r\n");
-    verbose(th, "encoderLimit: %u\r\nencoderSlowThreshold: %u\r\n"
+    Serial.printf("-------------------------------\r\n");
+    Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u\r\n"
         "param: %d\r\nisr1count: %u\r\nisr2count: %u\r\n",
         config.encoderLimit,
         config.slowEncoderThreshold,
@@ -273,7 +278,7 @@ void dumpConfig(uint8_t th)
         isr1count,
         isr2count);
 
-    verbose(th, "encoderPos: %d\r\ntension: %d\r\nisrEdge: %d\r\nencoderTO: %d\r\nencoderTime: %d\r\nstate: %d\r\n",
+    Serial.printf("encoderPos: %d\r\ntension: %d\r\nisrEdge: %d\r\nencoderTO: %d\r\nencoderTime: %d\r\nstate: %d\r\n",
         encoderPos,
         config.tension,
         config.isrEdge,
@@ -281,33 +286,22 @@ void dumpConfig(uint8_t th)
         config.encoderTime,
         config.state);
 
-    verbose(th, "verbose: %d\r\n", config.verbose);
+    Serial.printf("verbose: %d\r\n", config.verbose);
+    Serial.printf("stepper.minInterval %u stepper.maxInterval %u\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
 
-    verbose(th, "End Config\r\n");
+    Serial.printf("End Config\r\n");
 }
 
 const char stepperTitle[] PROGMEM = "--------Stepper Config ---------\r\n";
 void dumpStepperConfig()
 {
     Serial.printf("%s",FSH(stepperTitle));
-#ifdef TB6600
-    Serial.printf("config.param %d\r\ncurrentInterval %u\r\nrunning %u\r\n",
-        config.param, stepper.m_currentInterval, stepper.m_running);
-#else
-    Serial.printf("config.param %d\r\ncurrentInterval %u\r\nrunning %u\r\nindex %u\r\n",
-        config.param, stepper.m_currentInterval, stepper.m_running, stepper.m_stepIndex);
-#endif // TB600
-    Serial.printf("minInterval: %u\r\nmaxInterval: %u\r\nrampUpSteps: %u\r\nrampDownSteps: %u\r\nenabled: %u\r\nencoderPos: %u\r\n",
-        stepper.minInterval(), stepper.maxInterval(), stepper.rampUpSteps(), stepper.rampDownSteps(), stepper.enabled(),
-        encoderPos);
-    Serial.printf("m_stepCount %u\r\n  m_targetSteps %u\r\n m_stepsPerMove %u\r\n",
-        stepper.m_stepCount,
-        stepper.m_targetSteps,
-        stepper.m_stepsPerMove);
-#ifdef TB6600
-#else
-    Serial.printf("Pins: %u %u %u %u\r\n", digitalRead(stepperPin1), digitalRead(stepperPin2), digitalRead(stepperPin3), digitalRead(stepperPin4));
-#endif // TB600
+    Serial.printf("param %u\r\n", config.param);
+    Serial.printf("m_rampUpSteps %f m_rampDownSteps %f\r\n", stepper.m_rampUpSteps, stepper.m_rampDownSteps);
+    Serial.printf("m_minInterval64 %llu m_maxInterval64 %llu\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
+    Serial.printf("m_stepCount %u m_targetSteps %u m_stepsPerMove %u m_running %u\r\n",
+        stepper.m_stepCount, stepper.m_targetSteps, stepper.m_stepsPerMove, stepper.m_running);
+
 }
 
 void do_next()
@@ -394,7 +388,7 @@ Command commands_main[] = {
     rewindMotor(config.tension); 
     fan(1); }},
 {'T',FSH(help_tension0), [](){ rewindMotor(0); fan(0);}},
-{'v',FSH(help_verbose), [](){ stepper.verbose(config.param);}},
+{'v',FSH(help_verbose), [](){ config.verbose = stepper.m_verbose = config.param;}},
 {'&', FSH(empty), [](){} }
 };
 
@@ -414,16 +408,16 @@ const char help_pulse[] PROGMEM = "pulse (param 0=lh 1=hl)";
 
 Command commands_stepper[] = {
     {'c',FSH(help_param0), [](){config.param = 0;}},
-    {'D', FSH(help_rdown), [](){ stepper.rampDownSteps(config.param);} },
+    {'D', FSH(help_rdown), [](){ stepper.m_rampDownSteps = config.param;} },
     {'d', FSH(help_sdisable), [](){ stepper.disable();} },
     {'e', FSH(help_senable), [](){ stepper.enable();} },
-    {'h',FSH(help_help), [](){ help();}},
-    {'i', FSH(help_imax), [](){ stepper.maxInterval(config.param);} },
-    {'I', FSH(help_imin), [](){ stepper.minInterval(config.param);} },
+    {'h', FSH(help_help), [](){ help();}},
+    {'i', FSH(help_imax), [](){ stepper.m_maxInterval64 = config.param;} },
+    {'I', FSH(help_imin), [](){ stepper.m_minInterval64 = config.param;} },
     {'p', FSH(help_pulse), [](){ stepper.pulse(config.param);} },
     {'r', FSH(help_run), [](){ stepper.run();} },
     {'s', FSH(help_start), [](){ stepper.start(config.param); }},
-    {'U', FSH(help_rup), [](){ stepper.rampUpSteps(config.param);} },
+    {'U', FSH(help_rup), [](){ stepper.m_rampUpSteps = config.param;} },
     {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
     {'?', FSH(help_sconfig), [](){ dumpStepperConfig(); }},
     {' ', FSH(help_stop), [](){ setup(); }},
@@ -472,13 +466,19 @@ void handleCommand()
 void stepperPoll()
 {
     if (NONE == config.state) return;
-    verbose(2, "state %u\r\n", config.state);
+    if (config.verbose)
+    {
+        Serial.printf("state %u\r\n", config.state);
+    }
 
     if (NEXT != config.state)
     {
         return;
     }
-    verbose(2, "stepperPoll %d\r\n", millis() - config.encoderTime);
+    if (config.verbose)
+    {
+        Serial.printf("stepperPoll %d\r\n", millis() - config.encoderTime);
+    }
     if ((millis() - config.encoderTime) > config.encoderTO)
     {
         stepper.stop();

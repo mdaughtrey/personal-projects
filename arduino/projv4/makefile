@@ -73,3 +73,15 @@ sshfs:
 
 unmount:
 	sudo fusermount -u /home/mattd/mnt
+
+t:
+	stty -F ${PORT} 1200
+
+m:
+	sudo mount /dev/sdb1 ${MOUNT}
+
+um:
+	sudo umount ${MOUNT}
+
+cp:
+	sudo cp ${UF2} ${MOUNT}

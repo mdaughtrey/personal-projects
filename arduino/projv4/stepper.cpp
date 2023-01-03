@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <Arduino.h>
 #include "stepper.h"
+//#include "qserialout.h"
 
 
 #ifdef TB6600
@@ -11,8 +12,9 @@ Stepper::Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse
 Stepper::Stepper(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4)
     : m_motorPin1(pin1), m_motorPin2(pin2), m_motorPin3(pin3), m_motorPin4(pin4), m_running(false),
 #endif // TB600
-    m_minInterval(0), m_maxInterval(0), m_rampUpSteps(0.0), m_rampDownSteps(0.0), m_enabled(false),
-    m_stepsPerMove(20)
+    //m_minInterval(0), m_maxInterval(0), m_rampUpSteps(0.0), m_rampDownSteps(0.0), m_enabled(false),
+    m_minInterval64(0), m_maxInterval64(0), m_rampUpSteps(0.0), m_rampDownSteps(0.0), m_enabled(false),
+    m_stepsPerMove(25) 
 {
 #ifdef TB6600
     pinMode(m_stepperPulse, INPUT_PULLUP);
@@ -21,13 +23,6 @@ Stepper::Stepper(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4)
     digitalWrite(m_stepperPulse, 0);
     digitalWrite(m_stepperDir, 0);
     digitalWrite(m_stepperEnable, 0);
-
-//    pinMode(m_stepperPulse, OUTPUT);
-//    pinMode(m_stepperDir, OUTPUT);
-//    pinMode(m_stepperEnable, OUTPUT);
-//    digitalWrite(m_stepperPulse, 1);
-//    digitalWrite(m_stepperDir, 1);
-//    digitalWrite(m_stepperEnable, 1);
 #endif // TB600
     cw();
 }
@@ -38,7 +33,16 @@ void Stepper::run()
     {
         return;
     }
-    if ((millis() - m_lastStepTime) < (uint32_t)m_currentInterval)
+    if (m_verbose) 
+    {
+        //Serial.printf("m_lastStepTime64 %lu delta %u\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
+        Serial.printf("m_lastStepTime64 %llu delta %llu\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
+    }
+//    if ((millis() - m_lastStepTime) < (uint32_t)m_currentInterval)
+//    {
+//        return;
+//    }
+    if ((time_us_64() - m_lastStepTime64) < m_currentInterval64)
     {
         return;
     }
@@ -65,18 +69,25 @@ void Stepper::run()
     }
 #endif // TB600
     m_stepCount++;
-    m_lastStepTime = millis();
-    m_currentInterval = getNextInterval(m_stepCount);
+//    m_lastStepTime = millis();
+    m_lastStepTime64 = time_us_64();
+//    m_currentInterval = getNextInterval(m_stepCount);
+    m_currentInterval64 = getNextInterval64(m_stepCount);
+//    if (m_verbose) 
+//    {
+//        Serial.printf("m_stepcount %4u m_stepsPerMove %4u m_targetSteps %4u m_currentInterval %4u\r\n",
+//                m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval);
+//    }
     if (m_verbose) 
     {
-        Serial.printf("m_stepcount %4u m_stepsPerMove %4u m_targetSteps %4u m_currentInterval %4u\r\n",
-                m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval);
+        Serial.printf("m_stepcount %4u m_stepsPerMove %4u m_targetSteps %4u m_currentInterval64 %llu\r\n",
+                m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval64);
     }
 }
 
 void Stepper::start(uint16_t moves)
 {
-    if (0 == m_minInterval || !m_enabled)
+    if (0 == m_minInterval64 || !m_enabled)
     {
         return;
     }
@@ -88,7 +99,8 @@ void Stepper::start(uint16_t moves)
 //    m_moves = moves;
     m_running = true;
     m_targetSteps = int(moves * m_stepsPerMove);
-    m_currentInterval = getNextInterval(0);
+//    m_currentInterval = getNextInterval(0);
+    m_currentInterval64 = getNextInterval64(0);
 }
 
 void Stepper::cw()
@@ -111,19 +123,56 @@ void Stepper::ccw()
 #endif // TB600
 }
 
-uint8_t Stepper::getNextInterval(uint16_t position)
+//uint8_t Stepper::getNextInterval(uint16_t position)
+//{
+//    uint8_t intervalRange = m_maxInterval - m_minInterval;
+//    if (position > m_targetSteps)
+//    {
+//        if (m_verbose) { Serial.printf("gni 0 "); }
+//        return m_maxInterval;
+//    }
+//    if (position < m_rampUpSteps)
+//    {
+//        float m = (m_rampUpSteps - position) / m_rampUpSteps;
+//        float n = intervalRange * m;
+//        uint8_t o = m_minInterval + static_cast<int>(n);
+//        if (m_verbose)
+//        {
+//            Serial.printf("GNI Clause 1: m %f n %f o %u\r\n", m, n, o);
+//        }
+//        return o;
+//        //return m_minInterval + static_cast<int>(intervalRange * ((m_rampUpSteps - position) / m_rampUpSteps));
+//    }
+//    if (position < (m_targetSteps - m_rampDownSteps))
+//    {
+//        if (m_verbose) { Serial.printf("gni 2 "); }
+//        return m_minInterval;
+//    }
+//
+//    float p = 1.0 - (m_targetSteps - position) / m_rampDownSteps;
+//    float q = intervalRange * p;
+//    uint8_t r = m_minInterval + static_cast<int>(q);
+//    if (m_verbose)
+//    {
+//        Serial.printf("GNI Clause 3: p %f q %f r %u\r\n", p, q, r);
+//    }
+//    return r;
+//    //return m_minInterval + static_cast<int>(intervalRange * ((m_rampDownSteps - position) / m_rampDownSteps));
+//}
+
+uint64_t Stepper::getNextInterval64(uint16_t position)
 {
-    uint8_t intervalRange = m_maxInterval - m_minInterval;
+    uint64_t intervalRange = m_maxInterval64 - m_minInterval64;
     if (position > m_targetSteps)
     {
         if (m_verbose) { Serial.printf("gni 0 "); }
-        return m_maxInterval;
+        return m_maxInterval64;
     }
     if (position < m_rampUpSteps)
     {
         float m = (m_rampUpSteps - position) / m_rampUpSteps;
         float n = intervalRange * m;
-        uint8_t o = m_minInterval + static_cast<int>(n);
+        uint8_t o = m_minInterval64 + static_cast<int>(n);
         if (m_verbose)
         {
             Serial.printf("GNI Clause 1: m %f n %f o %u\r\n", m, n, o);
@@ -134,12 +183,12 @@ uint8_t Stepper::getNextInterval(uint16_t position)
     if (position < (m_targetSteps - m_rampDownSteps))
     {
         if (m_verbose) { Serial.printf("gni 2 "); }
-        return m_minInterval;
+        return m_minInterval64;
     }
 
     float p = 1.0 - (m_targetSteps - position) / m_rampDownSteps;
     float q = intervalRange * p;
-    uint8_t r = m_minInterval + static_cast<int>(q);
+    uint8_t r = m_minInterval64 + static_cast<int>(q);
     if (m_verbose)
     {
         Serial.printf("GNI Clause 3: p %f q %f r %u\r\n", p, q, r);
@@ -211,6 +260,10 @@ void Stepper::stop(uint16_t move)
     if (move)
     {
         m_stepsPerMove = int(m_stepCount/move);
+        if (m_verbose)
+        {
+            Serial.printf("m_stepsPerMove %u\r\n", m_stepsPerMove);
+        }
     }
 }
 
