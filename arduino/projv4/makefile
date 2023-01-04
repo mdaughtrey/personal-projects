@@ -7,6 +7,7 @@ IMAGE=${PROJ}.ino.bin
 UF2=${PROJ}.ino.uf2
 ELF=${PROJ}.ino.elf
 ACLI=/home/mattd/acli/bin/arduino-cli
+DEV=/dev/sda1
 MOUNT=/media/rp2040
 
 #DOCKERHOST=DESKTOP-TOJK787
@@ -78,7 +79,7 @@ t:
 	stty -F ${PORT} 1200
 
 m:
-	sudo mount /dev/sdb1 ${MOUNT}
+	sudo mount ${DEV} ${MOUNT}
 
 um:
 	sudo umount ${MOUNT}

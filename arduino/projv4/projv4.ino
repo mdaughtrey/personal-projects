@@ -1,4 +1,4 @@
-#define TB6600
+#include "defs.h"
 #include <stdarg.h>
 #include <pico/stdlib.h>
 //#include "serialout.h"
@@ -7,16 +7,9 @@
 
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
 
-#ifdef TB6600
 const uint8_t stepperEnable = 20;
 const uint8_t stepperDir = 19;
 const uint8_t stepperPulse = 18;
-#else
-const int stepperPin4 = 18;
-const int stepperPin3 = 19;
-const int stepperPin2 = 20;
-const int stepperPin1 = 21;
-#endif // TB600
 
 typedef enum
 {
@@ -93,11 +86,7 @@ void handleCommand();
 void coilControl();
 //void (*commandHandler)() = handleCommand;
 
-#ifdef TB6600
 Stepper stepper(stepperEnable, stepperDir, stepperPulse);
-#else
-Stepper stepper(stepperPin1, stepperPin2, stepperPin3, stepperPin4);
-#endif // TB600
 
 //void serialout(uint8_t threshold, const char * fmt, ...)
 //{
@@ -297,7 +286,7 @@ void dumpStepperConfig()
 {
     Serial.printf("%s",FSH(stepperTitle));
     Serial.printf("param %u\r\n", config.param);
-    Serial.printf("m_rampUpSteps %f m_rampDownSteps %f\r\n", stepper.m_rampUpSteps, stepper.m_rampDownSteps);
+    Serial.printf("m_rampUpSteps %u m_rampDownSteps %u\r\n", stepper.m_rampUpSteps, stepper.m_rampDownSteps);
     Serial.printf("m_minInterval64 %llu m_maxInterval64 %llu\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
     Serial.printf("m_stepCount %u m_targetSteps %u m_stepsPerMove %u m_running %u\r\n",
         stepper.m_stepCount, stepper.m_targetSteps, stepper.m_stepsPerMove, stepper.m_running);

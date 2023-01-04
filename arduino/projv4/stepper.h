@@ -1,5 +1,4 @@
-#define TB6600
-
+#include "defs.h"
 #include <pico/stdlib.h>
 
 class Stepper
@@ -7,23 +6,19 @@ class Stepper
     public:
         static const uint8_t pinControl[];
         static const uint8_t numControl;
+#ifdef SIGMOID
+        uint16_t  m_rampUpSteps;
+        uint16_t  m_rampDownSteps;
+#else // SIGMOID
         float  m_rampUpSteps;
         float  m_rampDownSteps;
+#endif  // SIGMOID
         uint64_t m_minInterval64;
         uint64_t m_maxInterval64;
         uint64_t m_testmember;
-#ifdef TB6600
         uint8_t m_stepperEnable;
         uint8_t m_stepperDir;
         uint8_t m_stepperPulse;
-#else
-        uint8_t m_motorPin4;
-        uint8_t m_motorPin3;
-        uint8_t m_motorPin2;
-        uint8_t m_motorPin1;
-        uint8_t m_stepIndex;
-        int8_t m_delta;
-#endif // TB600
 //        uint16_t m_currentInterval;
         uint64_t m_currentInterval64;
 //        uint64_t m_lastStepTime;
@@ -38,11 +33,7 @@ class Stepper
         bool m_verbose;
 
     public:
-#ifdef TB6600
         Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse);
-#else
-        Stepper(uint8_t pin1, uint8_t pin2, uint8_t pin3, uint8_t pin4);
-#endif // TB600
         void run();
         void start(uint16_t moves);
         void stop(uint16_t move = 0);
