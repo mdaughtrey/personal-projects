@@ -16,7 +16,7 @@ Stepper::Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse
 #else
     m_minInterval64(0), m_maxInterval64(0), m_rampUpSteps(0), m_rampDownSteps(0.0), m_enabled(false),
 #endif // SIGMOID
-    m_stepsPerMove(25) 
+    m_stepsPerMove(25.0) 
 {
     pinMode(m_stepperPulse, INPUT_PULLUP);
     pinMode(m_stepperDir, INPUT_PULLUP);
@@ -57,7 +57,7 @@ void Stepper::run()
     m_currentInterval64 = getNextInterval64(m_stepCount);
     if (m_verbose) 
     {
-        Serial.printf("m_stepcount %4u m_stepsPerMove %4u m_targetSteps %4u m_currentInterval64 %llu\r\n",
+        Serial.printf("m_stepcount %4u m_stepsPerMove %4f m_targetSteps %4u m_currentInterval64 %llu\r\n",
                 m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval64);
     }
 }
@@ -70,7 +70,7 @@ void Stepper::start(uint16_t moves)
     }
     m_stepCount = 0;
     m_running = true;
-    m_targetSteps = int(moves * m_stepsPerMove);
+    m_targetSteps = static_cast<int>(round(moves * m_stepsPerMove));
     m_currentInterval64 = getNextInterval64(0);
 }
 
@@ -198,10 +198,10 @@ void Stepper::stop(uint16_t move)
     m_running = false;
     if (move)
     {
-        m_stepsPerMove = int(m_stepCount/move);
+        m_stepsPerMove = m_stepCount / move * 1.0;
         if (m_verbose)
         {
-            Serial.printf("m_stepsPerMove %u\r\n", m_stepsPerMove);
+            Serial.printf("m_stepsPerMove %f\r\n", m_stepsPerMove);
         }
     }
 }

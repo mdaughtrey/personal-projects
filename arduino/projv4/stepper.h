@@ -1,6 +1,7 @@
 #include "defs.h"
 #include <pico/stdlib.h>
 
+
 class Stepper
 {
     public:
@@ -26,7 +27,8 @@ class Stepper
 //        uint16_t m_currentStep;
         uint16_t m_stepCount;
         uint16_t m_targetSteps;
-        uint16_t m_stepsPerMove;
+        //uint16_t m_stepsPerMove;
+        float m_stepsPerMove;
 
         bool m_running;
         bool m_enabled;

@@ -7,7 +7,7 @@ IMAGE=${PROJ}.ino.bin
 UF2=${PROJ}.ino.uf2
 ELF=${PROJ}.ino.elf
 ACLI=/home/mattd/acli/bin/arduino-cli
-DEV=/dev/sda1
+DEV=/dev/sdb1
 MOUNT=/media/rp2040
 
 #DOCKERHOST=DESKTOP-TOJK787

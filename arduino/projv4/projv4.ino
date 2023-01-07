@@ -1,6 +1,7 @@
 #include "defs.h"
 #include <stdarg.h>
 #include <pico/stdlib.h>
+#include <hardware/pwm.h>
 //#include "serialout.h"
 #include "stepper.h"
 #include <AsyncTimer.h>
@@ -44,6 +45,8 @@ struct {
     uint16_t encoderTO;
     uint32_t encoderTime;
     uint8_t state;
+    uint8_t pwmslice;
+    uint8_t pwmpin;
 } config;
 
 AsyncTimer at;
@@ -71,11 +74,17 @@ Command * commandset;
 void help();
 extern Command commands_stepper[];
 extern Command commands_main[];
+extern Command commands_pwm[];
 //StreamEx serout = Serial;
 
 void fan(uint8_t val) { digitalWrite(OutputPin0, val); }
 void lamp(uint8_t val) { digitalWrite(OutputPin1, val); }
-void rewindMotor(uint8_t val) { analogWrite(OutputPin3, val); }
+
+void rewindMotor(uint8_t val) { 
+    pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, val);
+    pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
+}
+//analogWrite(OutputPin3, val); }
 void encoderStart() { config.encoderTime = millis(); }
 void encoderTO() { config.encoderTO = config.param; config.param = 0; }
 
@@ -98,6 +107,17 @@ Stepper stepper(stepperEnable, stepperDir, stepperPulse);
 //    va_end(args);
 //    Serial.print(buffer);
 //}
+
+void initPWM()
+{
+    Serial.printf("initPWM\r\n");
+    config.pwmpin = 0;
+    gpio_set_function(config.pwmpin, GPIO_FUNC_PWM);
+    config.pwmslice = pwm_gpio_to_slice_num(config.pwmpin);
+    Serial.printf("slice is %d\r\n", config.pwmslice);
+    pwm_set_wrap(config.pwmslice, 256);
+    pwm_set_chan_level(config.pwmslice, PWM_CHAN_A,0);
+}
 
 void setFrameReady()
 {
@@ -180,15 +200,11 @@ void outputInit()
 void setup ()
 { 
     Serial.begin(115200);
+
     memset(&config, sizeof(config), 0);
-//    commandHandler = handleCommand;
     stepper.enable();
-//    stepper.minInterval64(1);
-//    stepper.maxInterval64(6);
     stepper.m_minInterval64 = 1;
     stepper.m_maxInterval64 = 6;
-//    stepper.rampUpSteps(10);
-//    stepper.rampDownSteps(10);
     stepper.m_rampUpSteps = 10;
     stepper.m_rampDownSteps = 10;
 
@@ -196,6 +212,7 @@ void setup ()
     buttonInit();
     encoder_init();
     outputInit();
+    initPWM();
     ledState = 0;
     config.isrEdge = OPTO_BOTH;
     fan(0);
@@ -203,7 +220,6 @@ void setup ()
     isr1count = 0;
     isr2count = 0;
     pinMode(LedPin, OUTPUT);
-
 
     attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, CHANGE);
     attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, CHANGE);
@@ -233,7 +249,7 @@ void buttonPoll()
     {
         if (buttonState[1])
         {
-            rewindMotor(99); 
+            rewindMotor(255); 
             fan(1); 
         }
         buttonState[1] = !buttonState[1];
@@ -242,7 +258,7 @@ void buttonPoll()
     {
         if (buttonState[2])
         {
-            rewindMotor(33);
+            rewindMotor(110);
         }
         buttonState[2] = !buttonState[2];
     } 
@@ -290,7 +306,12 @@ void dumpStepperConfig()
     Serial.printf("m_minInterval64 %llu m_maxInterval64 %llu\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
     Serial.printf("m_stepCount %u m_targetSteps %u m_stepsPerMove %u m_running %u\r\n",
         stepper.m_stepCount, stepper.m_targetSteps, stepper.m_stepsPerMove, stepper.m_running);
+}
 
+void dumpPWMConfig()
+{
+    Serial.printf("param %u\r\n", config.param);
+    Serial.printf("PWM pin %d PWM slice %d\r\n", config.pwmpin, config.pwmslice);
 }
 
 void do_next()
@@ -348,6 +369,7 @@ const char help_isr[] PROGMEM="ISR on rising/falling edge (param 0=off, 1=rising
 const char help_tension[] PROGMEM="tension (param)";
 const char help_tension0[] PROGMEM="tension 0";
 const char help_verbose[] PROGMEM="verbose 0-1 (param)";
+const char help_pwmmenu[] PROGMEM="PWM menu";
 const char empty[] PROGMEM="";
 
 Command commands_main[] = {
@@ -370,6 +392,7 @@ Command commands_main[] = {
 {'m',FSH(help_encpos0), [](){ encoderPos = 0;}},
 {'n',FSH(help_next),[](){ do_next(); }},
 {'o',FSH(help_nextimeout), [](){encoderTO();}},
+{'p',FSH(help_pwmmenu), [](){commandset = commands_pwm;}},
 {'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
     config.tension = config.param;
@@ -412,6 +435,30 @@ Command commands_stepper[] = {
     {' ', FSH(help_stop), [](){ setup(); }},
     {'&', FSH(empty), [](){}}
 };
+
+
+const char help_initpwm[] PROGMEM = "Init pwm";
+const char help_wrap[] PROGMEM = "pwm cycle wrap = config.param";
+const char help_level[] PROGMEM = "pwm level = config.param";
+const char help_enable[] PROGMEM = "enable pwm";
+const char help_disable[] PROGMEM = "disable pwm";
+const char help_clkdiv[] PROGMEM = "clock div = config.param";
+const char help_pwmpin[] PROGMEM = "PWM pin = config.param";
+
+
+Command commands_pwm[] = {
+    {'c',FSH(help_param0), [](){config.param = 0;}},
+    {'d', FSH(help_disable), [](){ pwm_set_enabled(config.pwmslice, false);}},
+    {'e', FSH(help_enable), [](){ pwm_set_enabled(config.pwmslice, true);}},
+    {'h', FSH(help_help), [](){ help();}},
+    {'p', FSH(help_pwmpin), [](){ config.pwmpin = config.param;}},
+    {'i', FSH(help_initpwm), [](){ initPWM(); }},
+    {'l', FSH(help_level), [](){ pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, config.param);}},
+//    {'v', FSH(help_clkdiv), [](){ pwm_config_set_clkdiv_int( pwm_config c = {0, hhset_enable(config.pwmslice, true);}},
+    {'w', FSH(help_wrap), [](){ pwm_set_wrap(config.pwmslice, config.param);}},
+    {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
+    {'?', FSH(help_sconfig), [](){ dumpPWMConfig(); }},
+    {'&', FSH(empty), [](){}}};
 
 const char dashes[] PROGMEM="-------------------------------------------------------\r\n";
 void help()
