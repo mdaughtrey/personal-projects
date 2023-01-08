@@ -77,7 +77,7 @@ def init(config):
     t = Tension()
     global numframes
     (filmlength, numframes, tension) = t.feedstats(config.startdia, config.enddia)
-    tension = np.multiply(np.array(tension), 3)
+    tension = np.multiply(np.array(tension), 9)
     numframes += 1000
     logger = logging.getLogger('hqcap')
     logger.debug("Length {}m, {} Frames".format(math.floor(filmlength/1000), numframes))
@@ -96,7 +96,8 @@ def init(config):
 #    if b'{State:Ready}' != portWaitFor(serPort, b'{State:Ready}'):
 #        logger.debug("Init failed")
 #        sys.exit(1)
-    message = f'{lastTension}t1dl{config.optocount}e0E6000o'.encode()
+    message = f'cv{lastTension}tl{config.optocount}ecE6000oCc500Ic2000ic25DUx'.encode()          
+    #message = f'{lastTension}t2dl{config.optocount}e0E6000oCc1iIDUx'.encode()
     logger.info(message)
     serwrite(message)
     #serdev.write(str.encode(f'{lastTension}tl1d2D{interval}e0E6000o'))
@@ -109,7 +110,7 @@ def init(config):
 #    portWaitFor(serPort, b'{pt:')
 
 def get_most_recent_frame(config):
-    files = sorted(glob("{0}/????????.bmp".format(config.framesto)))
+    files = sorted(glob("{0}/????????.png".format(config.framesto)))
     if len(files):
         frames =  [int(os.path.basename(os.path.splitext(f)[0])) for f in files]
         frame = 1+ sorted(frames)[::-1][0]
@@ -222,18 +223,18 @@ def findSprocketsS8(image, debug = False):
             draw.line(line, fill=255, width=2)
 
     # Reject if above threshold
-    global last_delta
+#    global last_delta
     if delta > threshold:
         logger.debug('rejecting frame')
-        last_delta = delta
+#        last_delta = delta
         return None
     # Reject if below threshold but so was the last image
-    elif last_delta < threshold:
-        logger.debug('reject duplicate crop match')
-        last_delta = delta
-        return None
+#    elif last_delta < threshold:
+#        logger.debug('reject duplicate crop match')
+#        last_delta = delta
+#        return None
     # Use this image
-    last_delta = delta
+#    last_delta = delta
 
     xCenter = image.size[1]/2
     yofs = image.size[1]/2 - yCenter
@@ -291,7 +292,7 @@ def save10(config, cap, framenum):
     logger = logging.getLogger('hqcap')
     for ii in range(0, 10):
         ret, frame = cap.read()
-        filename = "{}/{:>08}_{}.bmp".format(config.framesto, framenum, ii)
+        filename = "{}/{:>08}_{}.png".format(config.framesto, framenum, ii)
         logger.debug(f'Captured {filename}')
         cv2.imwrite(filename, frame)
         time.sleep(0.5)
@@ -304,7 +305,7 @@ def capture_hd(config, cap, framenum):
     if not ret:
         logger.error(f'HD Cap framenum {framenum} failed')
         sys.exit(1)
-    filename = "{}/{:>08}_cropped.bmp".format(config.framesto, framenum)
+    filename = "{}/{:>08}_cropped.png".format(config.framesto, framenum)
     logger.info(f'Saving to {filename}')
     cv2.imwrite(filename, np.asarray(frame))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[0][0])
@@ -320,12 +321,16 @@ def capture_n(config, cap, framenum, ires, count, write=True):
             logger.error(f'cap.read {framenum} failed')
             sys.exit(1)
         framenum += 1
-        filename = f'{config.framesto}/{framenum:>08}.bmp'
-        logger.info(f'Saving to {filename}')
-        cv2.imwrite(filename, np.asarray(frame))
-        time.sleep(0.1)
+        if write:
+            write_frame(config, framenum, frame)
+            time.sleep(0.1)
     return(framenum, frame)
 
+def write_frame(config, framenum, frame):
+    logger = logging.getLogger('hqcap')
+    filename = f'{config.framesto}/{framenum:>08}.png'
+    logger.info(f'Saving to {filename}')
+    cv2.imwrite(filename, np.asarray(frame))
 
 def framecap(config):
     logger = logging.getLogger('hqcap')
@@ -334,17 +339,25 @@ def framecap(config):
 #    cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[config.res][0])
 #    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[config.res][1])
     frame_count = 0
+    usecrop = True
     while frame_count < config.frames:
-        (framenum, frame) = capture_n(config, cap, framenum, 0, 1, False)
+        (_, frame) = capture_n(config, cap, framenum, 0, 1, False)
         cropped = findSprocketsS8(Image.fromarray(frame), True)
-        if cropped is not None:
+        if cropped is not None and usecrop == True:
             (framenum, frame) = capture_n(config, cap, framenum, config.res, 1)
+            write_frame(config, framenum, findSprocketsS8(Image.fromarray(frame), False))
+            frame_count += 1
             serwrite(f'c{config.optocount * config.fastforward}emn'.encode())
+            usecrop = False
         else:
+            usecrop = True
             serwrite(f'c{config.optocount}emn'.encode())
 
 #        framenum += 1
         wait = serwaitfor(b'{HDONE}', b'{NTO}')
+        if wait[0]:
+            logger.error(wait[2])
+            return
 #        serwrite(b'l')
 #        time.sleep(2)
 #        if cropped is not None:
@@ -352,9 +365,6 @@ def framecap(config):
 #        serwrite(b'?')
 #        details = serwaitfor(b'End Config', b'xxx')
 #        logger.debug(details[2])
-#        if wait[0]:
-#            logger.error(wait[2])
-#            sys.exit(1)
         time.sleep(0.6)
     cap.release()
 
@@ -368,7 +378,7 @@ def alternate(config):
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[0][1])
         ret, frame = cap.read()
         logger.info(f'ret {ret}')
-        filename = "{}/{:>08}_res0.bmp".format(config.framesto, framenum)
+        filename = "{}/{:>08}_res0.png".format(config.framesto, framenum)
         logger.info(f'Saving to {filename}')
         cv2.imwrite(filename, frame)
 
@@ -376,7 +386,7 @@ def alternate(config):
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[config.res][1])
         ret, frame = cap.read()
         logger.info(f'ret {ret}')
-        filename = "{}/{:>08}_res{}.bmp".format(config.framesto, framenum, config.res)
+        filename = "{}/{:>08}_res{}.png".format(config.framesto, framenum, config.res)
         logger.info(f'Saving to {filename}')
         cv2.imwrite(filename, frame)
         serwrite(f'c{config.optocount}emn'.encode())

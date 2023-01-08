@@ -21,9 +21,9 @@ clip()
 
 usbcap()
 {
-    rm usbcap.log ~/share/*.bmp
+#    rm usbcap.log ~/share/*.png
     #./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 100 --logfile usbcap.log --fastforward 5 --res 1 alternate
-    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 1500 --logfile usbcap.log --fastforward 5 --res 1 framecap
+    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 100 --logfile usbcap.log --fastforward 8 --res 1 framecap
 #    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}/opto4  --frames 200 --optocount 4 --logfile opto4.log
 #    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}/opto8  --frames 200 --optocount 8 --logfile opto8.log
 #    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}/opto4_pcd_2  --frames 200 --optocount 4 --logfile opto4_pcd_2.log --postcropdelay 2
@@ -32,11 +32,11 @@ usbcap()
 tovideo()
 {
 
-    ls ${SHAREDIR}/*.bmp > /tmp/filelist.txt
-    mplayer -msglevel all=6 -lavdopts threads=`nproc` \
-	    mf://@/tmp/filelist.txt \
-    	-quiet -mf fps=30 -benchmark -nosound -noframedrop -noautosub \
-        -vo yuv4mpeg:file=${SHAREDIR}/vdeo.mp4
+    	#-quiet -mf fps=10 -benchmark -nosound -noframedrop -noautosub 
+    # mplayer \ # -msglevel all=6 -lavdopts threads=`nproc` \
+    ls ${SHAREDIR}/*.png > /tmp/filelist.txt
+    mplayer mf://@/tmp/filelist.txt -vo yuv4mpeg:file=video.mp4
+#    mv video.mp4 ~/share
 }
 
 
