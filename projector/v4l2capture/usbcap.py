@@ -150,65 +150,21 @@ def findExtents(matrix):
 def findSprocketsS8(image, debug = False):
     logger = logging.getLogger('hqcap')
     grey = image.convert('L')
-    #image = image.convert('L')
     flattened = np.asarray(grey, dtype=np.uint8)
-    #savedebug(flattened, filename, 'flattened')
-
     eroded = ndimage.grey_erosion(flattened, size=(5,5))
-    #savedebug(eroded, filename, 'eroded')
-
     sliceL = 0
     sliceR = int(image.size[0]/40)
-#    sliceR = int(PxPerMmS8 * (0.51 + 0.91))
-#    sliceW = sliceR - sliceL
-    # Slice runs down the left, vertically clipped 1/2 vertical frame size top and bottom
-    #sliceY = int(FrameS8.h/2)
     slice = eroded[:,sliceL:sliceR]
-
-    #savedebug(slice, filename, 'slice')
-
     # get the darkest and lightest values, their midpoint is the threshold
     darkest = ndimage.minimum(slice)
     lightest = ndimage.maximum(slice)
+#    pdb.set_trace()
 
-#    threshold = darkest + (lightest - darkest)/2
     threshold=205
     slice[slice < threshold] = 0
     slice[slice >= threshold] = 1
 
-#    if config.showwork:
-#        slice2 = np.copy(slice)
-#        slice2[slice2 == 1] = 255
-#        savedebug(slice2, filename, 'darklight')
-
-#    if filename:
-#        debugimage = image
-
     rect = findExtents(slice)
-#    centerlines = []
-#    for ss in range(sliceL, sliceR, int(sliceW/5)):
-#        vstrip = slice[:,ss:ss+int(sliceW/10)]
-#
-#        # rect x0,y0,x1,y1
-#        rect = findExtents(vstrip)
-#        if SprocketS8.h < (rect[3] - rect[1]):
-#            rect = tupleAdd((ss, 0, ss, 0), rect)
-#            centerlines.append(int(rect[1] + (rect[3]-rect[1])/2))
-
-#    if config.showwork:
-#        savedebug(np.asarray(debugimage), filename, 'strips')
-#    centerlines = [x for x in centerlines if x]
-#    if len(centerlines):
-#        yCenter = int(st.median(centerlines))
-#    else:
-#        yCenter = image.shape[0]/2
-
-
-    # Now we have a Y-axis sprocket hole yCenter, find the X-axis sprocket hole yCenter
-#    hstrip = slice[yCenter - 50 : yCenter + 50]
-	# (x0, y0, x1, y1)
-    #rect = findExtents(hstrip.transpose())
-#    pdb.set_trace()
     yCenter = rect[1] + (rect[3] - rect[1])/2
     delta = abs(yCenter-image.size[1]/2)
     threshold =  int(image.size[1]/20)
@@ -223,54 +179,94 @@ def findSprocketsS8(image, debug = False):
             draw.line(line, fill=255, width=2)
 
     # Reject if above threshold
-#    global last_delta
     if delta > threshold:
-        logger.debug('rejecting frame')
-#        last_delta = delta
-        return None
-    # Reject if below threshold but so was the last image
-#    elif last_delta < threshold:
-#        logger.debug('reject duplicate crop match')
-#        last_delta = delta
-#        return None
-    # Use this image
-#    last_delta = delta
+        if debug:
+            return image
+        else:
+            logger.debug('rejecting frame')
+            return None
 
     xCenter = image.size[1]/2
     yofs = image.size[1]/2 - yCenter
     (ix, iy) = image.size
     # x0, y0, x1, y1
     cropRect = (0, int(iy/20 - yofs), ix, int(iy*.95-yofs))
-#    cropRect = (xclip := int(ix/10),    # x0
-#        yclip := int(iy/20 - yofs),     # y0
-#        int(ix*.95),                    # x1
-#        int(iy*.95-yofs))
     logger.debug(f'yofs {yofs} rect {cropRect[0]} {cropRect[1]} {cropRect[2]} {cropRect[3]}')
-
-#    if config.showwork:
-#        open('{}/{}/centerline.dat'.format(config.root,config.project), 'a').write("{}\n".format(yCenter + sliceY))
-#    sprocketRect = (int(xCenter - SprocketS8.w/2), int(yCenter - SprocketS8.h/2),
-#        int(xCenter + SprocketS8.w/2), int(yCenter + SprocketS8.h/2))
-#    cropRect = (int(xCenter + SprocketS8.w/2), int(yCenter - FrameS8.h/2),
-#        int(xCenter + SprocketS8.w/2 + FrameS8.w), int(yCenter + FrameS8.h/2))
 
     if debug:
         def tupleAdd(t0, t1):
             return tuple(map(sum, (zip(t0, t1))))
         draw = ImageDraw.Draw(image)
-#        # sprocket
-#        draw.rectangle(sprocketRect, outline='#ffff00', width=1)
-#        draw.rectangle(tupleAdd(sprocketRect, (1,1,-1,-1)), outline='#000000', width=1)
-#
-#
         draw.rectangle(cropRect, outline='#ff0000', width=1)
         draw.rectangle(tupleAdd(cropRect, (1,1,-1,-1)), outline='#ffffff', width=1)
-##        savedebug(np.asarray(image), filename, 'cropboxes')
+        return image
     else:
         image = image.crop(cropRect)
 
+    return image
+
+def dw(name, data):
+    cv2.imwrite(f'{config.framesto}/{name}.png', np.asarray(data))
+
+
+def findSprockets8mm(image, debug = False):
+    logger = logging.getLogger('hqcap')
+    grey = image.convert('L')
+    #pdb.set_trace()
+    flattened = np.asarray(grey, dtype=np.uint8)
+    eroded = ndimage.grey_erosion(flattened, size=(5,5))
+    sliceL = 0
+    sliceR = int(image.size[0]/40)
+    slice = eroded[:,sliceL:sliceR]
+    # get the darkest and lightest values, their midpoint is the threshold
+    darkest = ndimage.minimum(slice)
+    lightest = ndimage.maximum(slice)
+
+#    threshold=205
+    threshold = int(np.average([darkest, lightest]))
+    slice[slice < threshold] = 0
+    slice[slice >= threshold] = 1
+    slice ^= 1
+
+    rect = findExtents(slice)
+    yCenter = rect[1] + (rect[3] - rect[1])/2
+    delta = abs(yCenter-image.size[1]/2)
+    threshold =  int(image.size[1]/20)
+    logger.debug(f'yCenter {yCenter} delta {delta} threshold {threshold}')
+
+    if debug:
+        draw = ImageDraw.Draw(image)
+        for line in [(0, image.size[1]/2, image.size[0]/2, image.size[1]/2),
+            (0, image.size[1]/2-threshold, image.size[0]/2, image.size[1]/2-threshold),
+            (0, image.size[1]/2+threshold, image.size[0]/2, image.size[1]/2+threshold),
+            (0, yCenter, image.size[0]-1, yCenter)]:
+            draw.line(line, fill=255, width=2)
+
+    # Reject if above threshold
+    if delta > threshold:
+        logger.debug('rejecting frame')
+        return None
+
+#    pdb.set_trace()
+    xCenter = image.size[1]/2
+    yofs = image.size[1]/2 - yCenter
+    (ix, iy) = image.size
+    # x0, y0, x1, y1
+    cropRect = (0, int(iy/20 - yofs), ix, int(iy*.95-yofs))
+    logger.debug(f'yofs {yofs} rect {cropRect[0]} {cropRect[1]} {cropRect[2]} {cropRect[3]}')
+
+    if debug:
+        def tupleAdd(t0, t1):
+            return tuple(map(sum, (zip(t0, t1))))
+        draw = ImageDraw.Draw(image)
+        draw.rectangle(cropRect, outline='#ff0000', width=1)
+        draw.rectangle(tupleAdd(cropRect, (1,1,-1,-1)), outline='#ffffff', width=1)
+        return image
+    else:
+        image = image.crop(cropRect)
 
     return image
+
 
 def fakecap(config):
     logger = logging.getLogger('hqcap')
@@ -330,41 +326,52 @@ def write_frame(config, framenum, frame):
     logger = logging.getLogger('hqcap')
     filename = f'{config.framesto}/{framenum:>08}.png'
     logger.info(f'Saving to {filename}')
-    cv2.imwrite(filename, np.asarray(frame))
+    try:
+        cv2.imwrite(filename, np.asarray(frame))
+    except:
+        logger.error("cv2 rejects frame")
+#        pdb.set_trace()
+#        open(f'{config.framesto}/rejected_{framenum:>08}','wb').write(frame)
+
 
 def framecap(config):
     logger = logging.getLogger('hqcap')
     framenum = get_most_recent_frame(config)
     cap = cv2.VideoCapture(config.camindex)
-#    cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[config.res][0])
-#    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[config.res][1])
     frame_count = 0
     usecrop = True
+
+#    pdb.set_trace()
     while frame_count < config.frames:
         (_, frame) = capture_n(config, cap, framenum, 0, 1, False)
-        cropped = findSprocketsS8(Image.fromarray(frame), True)
-        if cropped is not None and usecrop == True:
-            (framenum, frame) = capture_n(config, cap, framenum, config.res, 1)
-            write_frame(config, framenum, findSprocketsS8(Image.fromarray(frame), False))
-            frame_count += 1
-            serwrite(f'c{config.optocount * config.fastforward}emn'.encode())
-            usecrop = False
+        if 'super8' == config.film:
+            cropped = findSprocketsS8(Image.fromarray(frame), False)
         else:
-            usecrop = True
-            serwrite(f'c{config.optocount}emn'.encode())
+            cropped = findSprockets8mm(Image.fromarray(frame), False)
+        if config.debug:
+            write_frame(config, framenum, cropped)
+            frame_count += 1
+            framenum += 1
+        else:
+            if cropped is not None and usecrop == True:
+                (framenum, frame) = capture_n(config, cap, framenum, config.res, 1)
+                if frame is None:
+                    logger.error('Full res capture_n rejected {framenum} even though low ress passed')
+                    usecrop = True
+                else:
+                    write_frame(config, framenum, findSprocketsS8(Image.fromarray(frame), True))
+                    frame_count += 1
+#                    framenum += 1
+                    usecrop = False
+            else:
+                usecrop = True
+                serwrite(f'c{config.optocount}emn'.encode())
 
-#        framenum += 1
+        serwrite(f'c{config.optocount * config.fastforward}emn'.encode())
         wait = serwaitfor(b'{HDONE}', b'{NTO}')
         if wait[0]:
             logger.error(wait[2])
             return
-#        serwrite(b'l')
-#        time.sleep(2)
-#        if cropped is not None:
-#            save10(config, cap, framenum)
-#        serwrite(b'?')
-#        details = serwaitfor(b'End Config', b'xxx')
-#        logger.debug(details[2])
         time.sleep(0.6)
     cap.release()
 
@@ -397,6 +404,7 @@ def alternate(config):
     cap.release()
 
 def main():
+    global config
     config = proc_commandline()
     setlogging(config)
     init(config)
