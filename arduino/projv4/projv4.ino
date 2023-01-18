@@ -249,7 +249,7 @@ void buttonPoll()
     {
         if (buttonState[1])
         {
-            rewindMotor(255); 
+            rewindMotor(192); 
             fan(1); 
         }
         buttonState[1] = !buttonState[1];
