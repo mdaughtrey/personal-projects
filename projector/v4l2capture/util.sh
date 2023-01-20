@@ -6,6 +6,9 @@ SHAREDIR=/home/mattd/share
 #VIDEOSIZE=640x480
 VIDEOSIZE=1280x720
 
+#exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
+exec > >(tee -a usb_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
+
 getdev()
 {
     mapfile devices<<<$(v4l2-ctl --list-devices)
@@ -21,8 +24,8 @@ clip()
 
 usbcap()
 {
-    #./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 3500 --logfile usbcap.log --fastforward 8 --res 1 framecap
-    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 3500 --logfile usbcap.log --fastforward 1 --res 1 framecap --film 8mm 
+#    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 10 --logfile usbcap.log --fastforward 1 --res 1 framecap --film 8mm 
+    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 5000 --logfile usbcap.log --fastforward 9 --res 1 alternate --film 8mm 
 }
 
 preview()
@@ -31,7 +34,7 @@ preview()
     	#-quiet -mf fps=10 -benchmark -nosound -noframedrop -noautosub 
     # mplayer \ # -msglevel all=6 -lavdopts threads=`nproc` \
     ls ${SHAREDIR}/*.png > /tmp/filelist.txt
-    mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=video.mp4
+    mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=preview.mp4
 #    mv video.mp4 ~/share
 }
 
