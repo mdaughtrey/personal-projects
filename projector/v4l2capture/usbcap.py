@@ -4,6 +4,7 @@
 import  argparse
 import cProfile
 import  cv2
+from functools import partial
 from    glob import glob, iglob
 from    itertools import groupby
 import  logging
@@ -77,7 +78,7 @@ def init(config):
     t = Tension()
     global numframes
     (filmlength, numframes, tension) = t.feedstats(config.startdia, config.enddia)
-    tension = np.multiply(np.array(tension), 3)
+    tension = np.multiply(np.array(tension), 9)
     numframes += 1000
     logger = logging.getLogger('hqcap')
     logger.debug("Length {}m, {} Frames".format(math.floor(filmlength/1000), numframes))
@@ -96,7 +97,8 @@ def init(config):
 #    if b'{State:Ready}' != portWaitFor(serPort, b'{State:Ready}'):
 #        logger.debug("Init failed")
 #        sys.exit(1)
-    message = f'{lastTension}t1dl{config.optocount}e0E6000o'.encode()
+    message = f'cv{lastTension}tl{config.optocount}ecE6000oCc500Ic2000ic25DUx'.encode()          
+    #message = f'{lastTension}t2dl{config.optocount}e0E6000oCc1iIDUx'.encode()
     logger.info(message)
     serwrite(message)
     #serdev.write(str.encode(f'{lastTension}tl1d2D{interval}e0E6000o'))
@@ -109,7 +111,7 @@ def init(config):
 #    portWaitFor(serPort, b'{pt:')
 
 def get_most_recent_frame(config):
-    files = sorted(glob("{0}/????????.bmp".format(config.framesto)))
+    files = sorted(glob("{0}/????????.png".format(config.framesto)))
     if len(files):
         frames =  [int(os.path.basename(os.path.splitext(f)[0])) for f in files]
         frame = 1+ sorted(frames)[::-1][0]
@@ -149,65 +151,21 @@ def findExtents(matrix):
 def findSprocketsS8(image, debug = False):
     logger = logging.getLogger('hqcap')
     grey = image.convert('L')
-    #image = image.convert('L')
     flattened = np.asarray(grey, dtype=np.uint8)
-    #savedebug(flattened, filename, 'flattened')
-
     eroded = ndimage.grey_erosion(flattened, size=(5,5))
-    #savedebug(eroded, filename, 'eroded')
-
     sliceL = 0
     sliceR = int(image.size[0]/40)
-#    sliceR = int(PxPerMmS8 * (0.51 + 0.91))
-#    sliceW = sliceR - sliceL
-    # Slice runs down the left, vertically clipped 1/2 vertical frame size top and bottom
-    #sliceY = int(FrameS8.h/2)
     slice = eroded[:,sliceL:sliceR]
-
-    #savedebug(slice, filename, 'slice')
-
     # get the darkest and lightest values, their midpoint is the threshold
     darkest = ndimage.minimum(slice)
     lightest = ndimage.maximum(slice)
+#    pdb.set_trace()
 
-#    threshold = darkest + (lightest - darkest)/2
     threshold=205
     slice[slice < threshold] = 0
     slice[slice >= threshold] = 1
 
-#    if config.showwork:
-#        slice2 = np.copy(slice)
-#        slice2[slice2 == 1] = 255
-#        savedebug(slice2, filename, 'darklight')
-
-#    if filename:
-#        debugimage = image
-
     rect = findExtents(slice)
-#    centerlines = []
-#    for ss in range(sliceL, sliceR, int(sliceW/5)):
-#        vstrip = slice[:,ss:ss+int(sliceW/10)]
-#
-#        # rect x0,y0,x1,y1
-#        rect = findExtents(vstrip)
-#        if SprocketS8.h < (rect[3] - rect[1]):
-#            rect = tupleAdd((ss, 0, ss, 0), rect)
-#            centerlines.append(int(rect[1] + (rect[3]-rect[1])/2))
-
-#    if config.showwork:
-#        savedebug(np.asarray(debugimage), filename, 'strips')
-#    centerlines = [x for x in centerlines if x]
-#    if len(centerlines):
-#        yCenter = int(st.median(centerlines))
-#    else:
-#        yCenter = image.shape[0]/2
-
-
-    # Now we have a Y-axis sprocket hole yCenter, find the X-axis sprocket hole yCenter
-#    hstrip = slice[yCenter - 50 : yCenter + 50]
-	# (x0, y0, x1, y1)
-    #rect = findExtents(hstrip.transpose())
-#    pdb.set_trace()
     yCenter = rect[1] + (rect[3] - rect[1])/2
     delta = abs(yCenter-image.size[1]/2)
     threshold =  int(image.size[1]/20)
@@ -222,54 +180,94 @@ def findSprocketsS8(image, debug = False):
             draw.line(line, fill=255, width=2)
 
     # Reject if above threshold
-    global last_delta
     if delta > threshold:
-        logger.debug('rejecting frame')
-        last_delta = delta
-        return None
-    # Reject if below threshold but so was the last image
-    elif last_delta < threshold:
-        logger.debug('reject duplicate crop match')
-        last_delta = delta
-        return None
-    # Use this image
-    last_delta = delta
+        if debug:
+            return image
+        else:
+            logger.debug('rejecting frame')
+            return None
 
     xCenter = image.size[1]/2
     yofs = image.size[1]/2 - yCenter
     (ix, iy) = image.size
     # x0, y0, x1, y1
     cropRect = (0, int(iy/20 - yofs), ix, int(iy*.95-yofs))
-#    cropRect = (xclip := int(ix/10),    # x0
-#        yclip := int(iy/20 - yofs),     # y0
-#        int(ix*.95),                    # x1
-#        int(iy*.95-yofs))
     logger.debug(f'yofs {yofs} rect {cropRect[0]} {cropRect[1]} {cropRect[2]} {cropRect[3]}')
-
-#    if config.showwork:
-#        open('{}/{}/centerline.dat'.format(config.root,config.project), 'a').write("{}\n".format(yCenter + sliceY))
-#    sprocketRect = (int(xCenter - SprocketS8.w/2), int(yCenter - SprocketS8.h/2),
-#        int(xCenter + SprocketS8.w/2), int(yCenter + SprocketS8.h/2))
-#    cropRect = (int(xCenter + SprocketS8.w/2), int(yCenter - FrameS8.h/2),
-#        int(xCenter + SprocketS8.w/2 + FrameS8.w), int(yCenter + FrameS8.h/2))
 
     if debug:
         def tupleAdd(t0, t1):
             return tuple(map(sum, (zip(t0, t1))))
         draw = ImageDraw.Draw(image)
-#        # sprocket
-#        draw.rectangle(sprocketRect, outline='#ffff00', width=1)
-#        draw.rectangle(tupleAdd(sprocketRect, (1,1,-1,-1)), outline='#000000', width=1)
-#
-#
         draw.rectangle(cropRect, outline='#ff0000', width=1)
         draw.rectangle(tupleAdd(cropRect, (1,1,-1,-1)), outline='#ffffff', width=1)
-##        savedebug(np.asarray(image), filename, 'cropboxes')
+        return image
     else:
         image = image.crop(cropRect)
 
+    return image
+
+def dw(name, data):
+    cv2.imwrite(f'{config.framesto}/{name}.png', np.asarray(data))
+
+
+def findSprockets8mm(image, dbg = False):
+    logger = logging.getLogger('hqcap')
+    grey = image.convert('L')
+#    pdb.set_trace()
+    flattened = np.asarray(grey, dtype=np.uint8)
+    eroded = ndimage.grey_erosion(flattened, size=(5,5))
+    sliceL = 0
+    sliceR = int(image.size[0]/40)
+    slice = eroded[:,sliceL:sliceR]
+    # get the darkest and lightest values, their midpoint is the threshold
+    darkest = ndimage.minimum(slice)
+    lightest = ndimage.maximum(slice)
+
+#    threshold=205
+    threshold = int(np.average([darkest, lightest]))
+    slice[slice < threshold] = 0
+    slice[slice >= threshold] = 1
+    slice ^= 1
+
+    rect = findExtents(slice)
+    yCenter = rect[1] + (rect[3] - rect[1])/2
+    delta = abs(yCenter-image.size[1]/2)
+    threshold =  int(image.size[1]/20)
+    logger.debug(f'yCenter {yCenter} delta {delta} threshold {threshold}')
+
+    if dbg:
+        draw = ImageDraw.Draw(image)
+        draw.line((0, image.size[1]/2, image.size[0]/2, image.size[1]/2), fill='#29e8e8', width=2)
+        draw.line((0, image.size[1]/2-threshold, image.size[0]/2, image.size[1]/2-threshold), fill='#29e8e8', width=2)
+        draw.line((0, image.size[1]/2+threshold, image.size[0]/2, image.size[1]/2+threshold), fill='#29e8e8', width=2)
+        draw.line((0, yCenter, image.size[0]-1, yCenter), fill='#ff0000', width=2)
+
+    # Reject if above threshold
+    if delta > threshold:
+        logger.debug('rejecting frame')
+        return None
+
+#    pdb.set_trace()
+    xCenter = image.size[1]/2
+    yofs = image.size[1]/2 - yCenter
+    (ix, iy) = image.size
+    # x0, y0, x1, y1
+    cropRect = (0, int(iy/20 - yofs), ix, int(iy*.95-yofs))
+    #cropRect = (0, int(iy/10 - yofs), ix, int(iy*.90-yofs))
+    logger.debug(f'yofs {yofs} rect {cropRect[0]} {cropRect[1]} {cropRect[2]} {cropRect[3]}')
+
+    if dbg:
+        def tupleAdd(t0, t1):
+            return tuple(map(sum, (zip(t0, t1))))
+        draw = ImageDraw.Draw(image)
+        draw.rectangle(cropRect, outline='#ff0000', width=1)
+        draw.rectangle(tupleAdd(cropRect, (1,1,-1,-1)), outline='#ffffff', width=1)
+        return image
+    else:
+        image = image.crop(cropRect)
 
     return image
+
 
 def fakecap(config):
     logger = logging.getLogger('hqcap')
@@ -291,7 +289,7 @@ def save10(config, cap, framenum):
     logger = logging.getLogger('hqcap')
     for ii in range(0, 10):
         ret, frame = cap.read()
-        filename = "{}/{:>08}_{}.bmp".format(config.framesto, framenum, ii)
+        filename = "{}/{:>08}_{}.png".format(config.framesto, framenum, ii)
         logger.debug(f'Captured {filename}')
         cv2.imwrite(filename, frame)
         time.sleep(0.5)
@@ -304,7 +302,7 @@ def capture_hd(config, cap, framenum):
     if not ret:
         logger.error(f'HD Cap framenum {framenum} failed')
         sys.exit(1)
-    filename = "{}/{:>08}_cropped.bmp".format(config.framesto, framenum)
+    filename = "{}/{:>08}_cropped.png".format(config.framesto, framenum)
     logger.info(f'Saving to {filename}')
     cv2.imwrite(filename, np.asarray(frame))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[0][0])
@@ -320,80 +318,124 @@ def capture_n(config, cap, framenum, ires, count, write=True):
             logger.error(f'cap.read {framenum} failed')
             sys.exit(1)
         framenum += 1
-        filename = f'{config.framesto}/{framenum:>08}.bmp'
-        logger.info(f'Saving to {filename}')
-        cv2.imwrite(filename, np.asarray(frame))
-        time.sleep(0.1)
+        if write:
+            write_frame(config, framenum, frame)
+            time.sleep(0.1)
     return(framenum, frame)
+
+def write_frame(config, framenum, frame):
+    logger = logging.getLogger('hqcap')
+    filename = f'{config.framesto}/{framenum:>08}.png'
+    logger.info(f'Saving to {filename}')
+    try:
+        cv2.imwrite(filename, np.asarray(frame))
+    except:
+        logger.error("cv2 rejects frame")
+#        pdb.set_trace()
+#        open(f'{config.framesto}/rejected_{framenum:>08}','wb').write(frame)
 
 
 def framecap(config):
     logger = logging.getLogger('hqcap')
     framenum = get_most_recent_frame(config)
     cap = cv2.VideoCapture(config.camindex)
-#    cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[config.res][0])
-#    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[config.res][1])
     frame_count = 0
+    usecrop = True
+
+#    pdb.set_trace()
     while frame_count < config.frames:
-        (framenum, frame) = capture_n(config, cap, framenum, 0, 1, False)
-        cropped = findSprocketsS8(Image.fromarray(frame), True)
+        (_, frame) = capture_n(config, cap, framenum, 0, 1, False)
+        if 'super8' == config.film:
+            cropped = findSprocketsS8(Image.fromarray(frame), False)
+        else:
+            cropped = findSprockets8mm(Image.fromarray(frame), False)
+        if config.debug:
+            write_frame(config, framenum, cropped)
+            frame_count += 1
+            framenum += 1
+        else:
+            if cropped is not None and usecrop == True:
+                (framenum, frame) = capture_n(config, cap, framenum, config.res, 1)
+                if frame is None:
+                    logger.error('Full res capture_n rejected {framenum} even though low ress passed')
+                    usecrop = True
+                else:
+                    if 'super8' == config.film:
+                        write_frame(config, framenum, findSprocketsS8(Image.fromarray(frame), False))
+                    else:
+                        write_frame(config, framenum, findSprockets8mm(Image.fromarray(frame), False))
+                    frame_count += 1
+#                    framenum += 1
+                    usecrop = False
+            else:
+                usecrop = True
+                serwrite(f'c{config.optocount}emn'.encode())
+
+        serwrite(f'c{config.optocount * config.fastforward}emn'.encode())
+        wait = serwaitfor(b'{HDONE}', b'{NTO}')
+        if wait[0]:
+            logger.error(wait[2])
+            return
+#        time.sleep(0.6)
+    cap.release()
+
+
+def framegen(config, logger):
+    def setres(cap, i):
+        if cap is None or not cap.isOpened():
+            cap = cv2.VideoCapture(config.camindex)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[i][0])
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[i][1])
+        return cap
+
+    stepsPerFrame = config.optocount * config.fastforward
+    cap = setres(None, 0)
+    count = 0
+    while count < config.frames:
+        cap = setres(cap, 0)
+        ret, frame = cap.read()
+        if not ret:
+            logger.error(f'cap.read {count} failed')
+            sys.exit(1)
+        cropped = findSprockets8mm(Image.fromarray(frame), False)
         if cropped is not None:
-            (framenum, frame) = capture_n(config, cap, framenum, config.res, 1)
-            serwrite(f'c{config.optocount * config.fastforward}emn'.encode())
+            cap = setres(cap, 1)
+            ret, frame = cap.read()
+            cropped = findSprockets8mm(Image.fromarray(frame), False)
+            count += 1
+            serwrite(f'c{stepsPerFrame}emn'.encode())
+            yield cropped
         else:
             serwrite(f'c{config.optocount}emn'.encode())
-
-#        framenum += 1
         wait = serwaitfor(b'{HDONE}', b'{NTO}')
-#        serwrite(b'l')
-#        time.sleep(2)
-#        if cropped is not None:
-#            save10(config, cap, framenum)
-#        serwrite(b'?')
-#        details = serwaitfor(b'End Config', b'xxx')
-#        logger.debug(details[2])
-#        if wait[0]:
-#            logger.error(wait[2])
-#            sys.exit(1)
-        time.sleep(0.6)
+        if wait[0]:
+            logger.error(wait[2])
+            return
     cap.release()
+
 
 def alternate(config):
     logger = logging.getLogger('hqcap')
     framenum = get_most_recent_frame(config)
-    cap = cv2.VideoCapture(config.camindex)
-    frame_count = 0
-    while frame_count < config.frames:
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[0][0])
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[0][1])
-        ret, frame = cap.read()
-        logger.info(f'ret {ret}')
-        filename = "{}/{:>08}_res0.bmp".format(config.framesto, framenum)
-        logger.info(f'Saving to {filename}')
-        cv2.imwrite(filename, frame)
+#    cap = cv2.VideoCapture(config.camindex)
+#    cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[0][0])
+#    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[0][1])
 
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, res[config.res][0])
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[config.res][1])
-        ret, frame = cap.read()
-        logger.info(f'ret {ret}')
-        filename = "{}/{:>08}_res{}.bmp".format(config.framesto, framenum, config.res)
-        logger.info(f'Saving to {filename}')
-        cv2.imwrite(filename, frame)
-        serwrite(f'c{config.optocount}emn'.encode())
-        framenum += 1
-        frame_count += 1
-        wait = serwaitfor(b'{HDONE}', b'{NTO}')
-        time.sleep(0.6)
-    cap.release()
+    for index,frame in enumerate(framegen(config, logger)):
+        write_frame(config, framenum+index, frame)
+
+#    cap.release()
+
 
 def main():
+    global config
     config = proc_commandline()
     setlogging(config)
     init(config)
-    with cProfile.Profile() as pr:
-        if 'framecap' == config.do: framecap(config)
-        if 'alternate' == config.do: alternate(config)
-    pr.print_stats()
+#    with cProfile.Profile() as pr:
+    if 'framecap' == config.do: framecap(config)
+    if 'alternate' == config.do: alternate(config)
+#    pr.print_stats()
     serwrite(b' ')
 
 main()

@@ -6,6 +6,9 @@ SHAREDIR=/home/mattd/share
 #VIDEOSIZE=640x480
 VIDEOSIZE=1280x720
 
+#exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
+exec > >(tee -a usb_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
+
 getdev()
 {
     mapfile devices<<<$(v4l2-ctl --list-devices)
@@ -21,22 +24,18 @@ clip()
 
 usbcap()
 {
-    rm usbcap.log ~/share/*.bmp
-    #./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 100 --logfile usbcap.log --fastforward 5 --res 1 alternate
-    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 1500 --logfile usbcap.log --fastforward 5 --res 1 framecap
-#    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}/opto4  --frames 200 --optocount 4 --logfile opto4.log
-#    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}/opto8  --frames 200 --optocount 8 --logfile opto8.log
-#    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}/opto4_pcd_2  --frames 200 --optocount 4 --logfile opto4_pcd_2.log --postcropdelay 2
+#    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 10 --logfile usbcap.log --fastforward 1 --res 1 framecap --film 8mm 
+    ./usbcap.py --camindex $(getdev) --framesto ${SHAREDIR}  --frames 5000 --logfile usbcap.log --fastforward 9 --res 1 alternate --film 8mm 
 }
 
-tovideo()
+preview()
 {
 
-    ls ${SHAREDIR}/*.bmp > /tmp/filelist.txt
-    mplayer -msglevel all=6 -lavdopts threads=`nproc` \
-	    mf://@/tmp/filelist.txt \
-    	-quiet -mf fps=30 -benchmark -nosound -noframedrop -noautosub \
-        -vo yuv4mpeg:file=${SHAREDIR}/vdeo.mp4
+    	#-quiet -mf fps=10 -benchmark -nosound -noframedrop -noautosub 
+    # mplayer \ # -msglevel all=6 -lavdopts threads=`nproc` \
+    ls ${SHAREDIR}/*.png > /tmp/filelist.txt
+    mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=preview.mp4
+#    mv video.mp4 ~/share
 }
 
 
@@ -55,7 +54,7 @@ case "$1" in
     getdev) getdev ;;
     clip) clip ;;
     usbcap) usbcap ;;
-    tovideo) tovideo ;;
+    preview) preview ;;
     *) echo what?
 esac
 

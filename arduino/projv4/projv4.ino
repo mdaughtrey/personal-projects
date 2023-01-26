@@ -1,21 +1,16 @@
-#define TB6600
+#include "defs.h"
 #include <stdarg.h>
 #include <pico/stdlib.h>
+#include <hardware/pwm.h>
+//#include "serialout.h"
 #include "stepper.h"
 #include <AsyncTimer.h>
 
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
 
-#ifdef TB6600
 const uint8_t stepperEnable = 20;
 const uint8_t stepperDir = 19;
 const uint8_t stepperPulse = 18;
-#else
-const int stepperPin4 = 18;
-const int stepperPin3 = 19;
-const int stepperPin2 = 20;
-const int stepperPin1 = 21;
-#endif // TB600
 
 typedef enum
 {
@@ -50,6 +45,8 @@ struct {
     uint16_t encoderTO;
     uint32_t encoderTime;
     uint8_t state;
+    uint8_t pwmslice;
+    uint8_t pwmpin;
 } config;
 
 AsyncTimer at;
@@ -77,11 +74,17 @@ Command * commandset;
 void help();
 extern Command commands_stepper[];
 extern Command commands_main[];
+extern Command commands_pwm[];
 //StreamEx serout = Serial;
 
 void fan(uint8_t val) { digitalWrite(OutputPin0, val); }
 void lamp(uint8_t val) { digitalWrite(OutputPin1, val); }
-void rewindMotor(uint8_t val) { analogWrite(OutputPin3, val); }
+
+void rewindMotor(uint8_t val) { 
+    pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, val);
+    pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
+}
+//analogWrite(OutputPin3, val); }
 void encoderStart() { config.encoderTime = millis(); }
 void encoderTO() { config.encoderTO = config.param; config.param = 0; }
 
@@ -92,21 +95,28 @@ void handleCommand();
 void coilControl();
 //void (*commandHandler)() = handleCommand;
 
-#ifdef TB6600
 Stepper stepper(stepperEnable, stepperDir, stepperPulse);
-#else
-Stepper stepper(stepperPin1, stepperPin2, stepperPin3, stepperPin4);
-#endif // TB600
 
-void verbose(uint8_t threshold, const char * fmt, ...)
+//void serialout(uint8_t threshold, const char * fmt, ...)
+//{
+//    if (threshold > config.verbose) return;
+//    char buffer[256];
+//    va_list args;
+//    va_start(args, fmt);
+//    vsprintf(buffer, fmt, args);
+//    va_end(args);
+//    Serial.print(buffer);
+//}
+
+void initPWM()
 {
-    if (threshold > config.verbose) return;
-    char buffer[256];
-    va_list args;
-    va_start(args, fmt);
-    vsprintf(buffer, fmt, args);
-    va_end(args);
-    Serial.print(buffer);
+    Serial.printf("initPWM\r\n");
+    config.pwmpin = 0;
+    gpio_set_function(config.pwmpin, GPIO_FUNC_PWM);
+    config.pwmslice = pwm_gpio_to_slice_num(config.pwmpin);
+    Serial.printf("slice is %d\r\n", config.pwmslice);
+    pwm_set_wrap(config.pwmslice, 256);
+    pwm_set_chan_level(config.pwmslice, PWM_CHAN_A,0);
 }
 
 void setFrameReady()
@@ -116,7 +126,7 @@ void setFrameReady()
 //    stepcount(0);
 //    stepper::stop(); 
 #endif // ACCELSTEPPER
-    verbose(1, "setFrameReady\r\n");
+    Serial.printf("setFrameReady\r\n");
 }
 
 void isr1()
@@ -190,18 +200,19 @@ void outputInit()
 void setup ()
 { 
     Serial.begin(115200);
+
     memset(&config, sizeof(config), 0);
-//    commandHandler = handleCommand;
     stepper.enable();
-    stepper.minInterval(1);
-    stepper.maxInterval(6);
-    stepper.rampUpSteps(10);
-    stepper.rampDownSteps(10);
+    stepper.m_minInterval64 = 1;
+    stepper.m_maxInterval64 = 6;
+    stepper.m_rampUpSteps = 10;
+    stepper.m_rampDownSteps = 10;
 
     stepper.cw(); 
     buttonInit();
     encoder_init();
     outputInit();
+    initPWM();
     ledState = 0;
     config.isrEdge = OPTO_BOTH;
     fan(0);
@@ -209,7 +220,6 @@ void setup ()
     isr1count = 0;
     isr2count = 0;
     pinMode(LedPin, OUTPUT);
-
 
     attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, CHANGE);
     attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, CHANGE);
@@ -239,7 +249,7 @@ void buttonPoll()
     {
         if (buttonState[1])
         {
-            rewindMotor(99); 
+            rewindMotor(192); 
             fan(1); 
         }
         buttonState[1] = !buttonState[1];
@@ -248,7 +258,7 @@ void buttonPoll()
     {
         if (buttonState[2])
         {
-            rewindMotor(33);
+            rewindMotor(110);
         }
         buttonState[2] = !buttonState[2];
     } 
@@ -264,8 +274,8 @@ void buttonPoll()
 
 void dumpConfig(uint8_t th)
 {
-    verbose(th, "-------------------------------\r\n");
-    verbose(th, "encoderLimit: %u\r\nencoderSlowThreshold: %u\r\n"
+    Serial.printf("-------------------------------\r\n");
+    Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u\r\n"
         "param: %d\r\nisr1count: %u\r\nisr2count: %u\r\n",
         config.encoderLimit,
         config.slowEncoderThreshold,
@@ -273,7 +283,7 @@ void dumpConfig(uint8_t th)
         isr1count,
         isr2count);
 
-    verbose(th, "encoderPos: %d\r\ntension: %d\r\nisrEdge: %d\r\nencoderTO: %d\r\nencoderTime: %d\r\nstate: %d\r\n",
+    Serial.printf("encoderPos: %d\r\ntension: %d\r\nisrEdge: %d\r\nencoderTO: %d\r\nencoderTime: %d\r\nstate: %d\r\n",
         encoderPos,
         config.tension,
         config.isrEdge,
@@ -281,33 +291,27 @@ void dumpConfig(uint8_t th)
         config.encoderTime,
         config.state);
 
-    verbose(th, "verbose: %d\r\n", config.verbose);
+    Serial.printf("verbose: %d\r\n", config.verbose);
+    Serial.printf("stepper.minInterval %u stepper.maxInterval %u\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
 
-    verbose(th, "End Config\r\n");
+    Serial.printf("End Config\r\n");
 }
 
 const char stepperTitle[] PROGMEM = "--------Stepper Config ---------\r\n";
 void dumpStepperConfig()
 {
     Serial.printf("%s",FSH(stepperTitle));
-#ifdef TB6600
-    Serial.printf("config.param %d\r\ncurrentInterval %u\r\nrunning %u\r\n",
-        config.param, stepper.m_currentInterval, stepper.m_running);
-#else
-    Serial.printf("config.param %d\r\ncurrentInterval %u\r\nrunning %u\r\nindex %u\r\n",
-        config.param, stepper.m_currentInterval, stepper.m_running, stepper.m_stepIndex);
-#endif // TB600
-    Serial.printf("minInterval: %u\r\nmaxInterval: %u\r\nrampUpSteps: %u\r\nrampDownSteps: %u\r\nenabled: %u\r\nencoderPos: %u\r\n",
-        stepper.minInterval(), stepper.maxInterval(), stepper.rampUpSteps(), stepper.rampDownSteps(), stepper.enabled(),
-        encoderPos);
-    Serial.printf("m_stepCount %u\r\n  m_targetSteps %u\r\n m_stepsPerMove %u\r\n",
-        stepper.m_stepCount,
-        stepper.m_targetSteps,
-        stepper.m_stepsPerMove);
-#ifdef TB6600
-#else
-    Serial.printf("Pins: %u %u %u %u\r\n", digitalRead(stepperPin1), digitalRead(stepperPin2), digitalRead(stepperPin3), digitalRead(stepperPin4));
-#endif // TB600
+    Serial.printf("param %u\r\n", config.param);
+    Serial.printf("m_rampUpSteps %u m_rampDownSteps %u\r\n", stepper.m_rampUpSteps, stepper.m_rampDownSteps);
+    Serial.printf("m_minInterval64 %llu m_maxInterval64 %llu\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
+    Serial.printf("m_stepCount %u m_targetSteps %u m_stepsPerMove %u m_running %u\r\n",
+        stepper.m_stepCount, stepper.m_targetSteps, stepper.m_stepsPerMove, stepper.m_running);
+}
+
+void dumpPWMConfig()
+{
+    Serial.printf("param %u\r\n", config.param);
+    Serial.printf("PWM pin %d PWM slice %d\r\n", config.pwmpin, config.pwmslice);
 }
 
 void do_next()
@@ -365,6 +369,7 @@ const char help_isr[] PROGMEM="ISR on rising/falling edge (param 0=off, 1=rising
 const char help_tension[] PROGMEM="tension (param)";
 const char help_tension0[] PROGMEM="tension 0";
 const char help_verbose[] PROGMEM="verbose 0-1 (param)";
+const char help_pwmmenu[] PROGMEM="PWM menu";
 const char empty[] PROGMEM="";
 
 Command commands_main[] = {
@@ -387,6 +392,7 @@ Command commands_main[] = {
 {'m',FSH(help_encpos0), [](){ encoderPos = 0;}},
 {'n',FSH(help_next),[](){ do_next(); }},
 {'o',FSH(help_nextimeout), [](){encoderTO();}},
+{'p',FSH(help_pwmmenu), [](){commandset = commands_pwm;}},
 {'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
     config.tension = config.param;
@@ -394,7 +400,7 @@ Command commands_main[] = {
     rewindMotor(config.tension); 
     fan(1); }},
 {'T',FSH(help_tension0), [](){ rewindMotor(0); fan(0);}},
-{'v',FSH(help_verbose), [](){ stepper.verbose(config.param);}},
+{'v',FSH(help_verbose), [](){ config.verbose = stepper.m_verbose = config.param;}},
 {'&', FSH(empty), [](){} }
 };
 
@@ -414,21 +420,45 @@ const char help_pulse[] PROGMEM = "pulse (param 0=lh 1=hl)";
 
 Command commands_stepper[] = {
     {'c',FSH(help_param0), [](){config.param = 0;}},
-    {'D', FSH(help_rdown), [](){ stepper.rampDownSteps(config.param);} },
+    {'D', FSH(help_rdown), [](){ stepper.m_rampDownSteps = config.param;} },
     {'d', FSH(help_sdisable), [](){ stepper.disable();} },
     {'e', FSH(help_senable), [](){ stepper.enable();} },
-    {'h',FSH(help_help), [](){ help();}},
-    {'i', FSH(help_imax), [](){ stepper.maxInterval(config.param);} },
-    {'I', FSH(help_imin), [](){ stepper.minInterval(config.param);} },
+    {'h', FSH(help_help), [](){ help();}},
+    {'i', FSH(help_imax), [](){ stepper.m_maxInterval64 = config.param;} },
+    {'I', FSH(help_imin), [](){ stepper.m_minInterval64 = config.param;} },
     {'p', FSH(help_pulse), [](){ stepper.pulse(config.param);} },
     {'r', FSH(help_run), [](){ stepper.run();} },
     {'s', FSH(help_start), [](){ stepper.start(config.param); }},
-    {'U', FSH(help_rup), [](){ stepper.rampUpSteps(config.param);} },
+    {'U', FSH(help_rup), [](){ stepper.m_rampUpSteps = config.param;} },
     {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
     {'?', FSH(help_sconfig), [](){ dumpStepperConfig(); }},
     {' ', FSH(help_stop), [](){ setup(); }},
     {'&', FSH(empty), [](){}}
 };
+
+
+const char help_initpwm[] PROGMEM = "Init pwm";
+const char help_wrap[] PROGMEM = "pwm cycle wrap = config.param";
+const char help_level[] PROGMEM = "pwm level = config.param";
+const char help_enable[] PROGMEM = "enable pwm";
+const char help_disable[] PROGMEM = "disable pwm";
+const char help_clkdiv[] PROGMEM = "clock div = config.param";
+const char help_pwmpin[] PROGMEM = "PWM pin = config.param";
+
+
+Command commands_pwm[] = {
+    {'c',FSH(help_param0), [](){config.param = 0;}},
+    {'d', FSH(help_disable), [](){ pwm_set_enabled(config.pwmslice, false);}},
+    {'e', FSH(help_enable), [](){ pwm_set_enabled(config.pwmslice, true);}},
+    {'h', FSH(help_help), [](){ help();}},
+    {'p', FSH(help_pwmpin), [](){ config.pwmpin = config.param;}},
+    {'i', FSH(help_initpwm), [](){ initPWM(); }},
+    {'l', FSH(help_level), [](){ pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, config.param);}},
+//    {'v', FSH(help_clkdiv), [](){ pwm_config_set_clkdiv_int( pwm_config c = {0, hhset_enable(config.pwmslice, true);}},
+    {'w', FSH(help_wrap), [](){ pwm_set_wrap(config.pwmslice, config.param);}},
+    {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
+    {'?', FSH(help_sconfig), [](){ dumpPWMConfig(); }},
+    {'&', FSH(empty), [](){}}};
 
 const char dashes[] PROGMEM="-------------------------------------------------------\r\n";
 void help()
@@ -472,13 +502,19 @@ void handleCommand()
 void stepperPoll()
 {
     if (NONE == config.state) return;
-    verbose(2, "state %u\r\n", config.state);
+    if (config.verbose)
+    {
+        Serial.printf("state %u\r\n", config.state);
+    }
 
     if (NEXT != config.state)
     {
         return;
     }
-    verbose(2, "stepperPoll %d\r\n", millis() - config.encoderTime);
+    if (config.verbose)
+    {
+        Serial.printf("stepperPoll %d\r\n", millis() - config.encoderTime);
+    }
     if ((millis() - config.encoderTime) > config.encoderTO)
     {
         stepper.stop();
