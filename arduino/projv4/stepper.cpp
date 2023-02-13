@@ -1,114 +1,208 @@
+#include "defs.h"
 #include <stdint.h>
 #include <Arduino.h>
+#include "stepper.h"
+//#include "qserialout.h"
+#ifdef SIGMOID
+#include "sigmoid.h"
+#endif // SIGMOID
 
-namespace stepper
+
+Stepper::Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse)
+    : m_stepperEnable(stepperEnable), m_stepperDir(stepperDir), m_stepperPulse(stepperPulse), m_running(false),
+    //m_minInterval(0), m_maxInterval(0), m_rampUpSteps(0.0), m_rampDownSteps(0.0), m_enabled(false),
+#ifdef SIGMOID
+    m_minInterval64(0), m_maxInterval64(0), m_rampUpSteps(0), m_rampDownSteps(0.0), m_enabled(false),
+#else
+    m_minInterval64(0), m_maxInterval64(0), m_rampUpSteps(0), m_rampDownSteps(0.0), m_enabled(false),
+#endif // SIGMOID
+    m_stepsPerMove(25.0) 
 {
+    pinMode(m_stepperPulse, INPUT_PULLUP);
+    pinMode(m_stepperDir, INPUT_PULLUP);
+    pinMode(m_stepperEnable, INPUT_PULLUP);
+    digitalWrite(m_stepperPulse, 0);
+    digitalWrite(m_stepperDir, 0);
+    digitalWrite(m_stepperEnable, 0);
+    cw();
+}
 
-const uint8_t pinControl[] = { // Halfstep
-0b0000,
-0b1010,
-0b0010,
-0b0110,
-0b0100,
-0b0101,
-0b0001,
-0b1001,
-0b1000};
-
-const uint8_t numControl = sizeof(pinControl)/sizeof(pinControl[0]);
-
-const int motorPin4 = 18;
-const int motorPin3 = 19;
-const int motorPin2 = 20;
-const int motorPin1 = 21;
-int8_t delta;
-uint8_t stepIndex;
-uint32_t lastMove;
-
-int8_t getdelta() { return delta; }
-uint8_t getstepindex() { return stepIndex; }
-uint32_t getlastmove() { return lastMove; }
-
-uint8_t poll(uint8_t stepDelay)
+void Stepper::run()
 {
-    if (((millis() - lastMove) < (uint32_t)stepDelay) | !stepIndex)
+    if (!m_running)
     {
-        return 0;
+        return;
+    }
+    if (m_verbose) 
+    {
+        //Serial.printf("m_lastStepTime64 %lu delta %u\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
+        Serial.printf("m_lastStepTime64 %llu delta %llu\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
+    }
+//    if ((millis() - m_lastStepTime) < (uint32_t)m_currentInterval)
+//    {
+//        return;
+//    }
+    if ((time_us_64() - m_lastStepTime64) < m_currentInterval64)
+    {
+        return;
     }
 
-    lastMove = millis();
-    digitalWrite(motorPin1, pinControl[stepIndex] & 0b0001);
-    digitalWrite(motorPin2, pinControl[stepIndex] & 0b0010);
-    digitalWrite(motorPin3, pinControl[stepIndex] & 0b0100);
-    digitalWrite(motorPin4, pinControl[stepIndex] & 0b1000);
-    stepIndex += delta;
-    if (stepIndex == numControl)
+    pinMode(m_stepperPulse, OUTPUT);
+//    digitalWrite(m_stepperPulse, 0);
+    delayMicroseconds(10);
+    pinMode(m_stepperPulse, INPUT_PULLUP);
+    //digitalWrite(m_stepperPulse, 1);
+    m_stepCount++;
+    m_lastStepTime64 = time_us_64();
+    m_currentInterval64 = getNextInterval64(m_stepCount);
+    if (m_verbose) 
     {
-        stepIndex = 1;
+        Serial.printf("m_stepcount %4u m_stepsPerMove %4f m_targetSteps %4u m_currentInterval64 %llu\r\n",
+                m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval64);
     }
-    else if (stepIndex == 0)
+}
+
+void Stepper::start(uint16_t moves)
+{
+    if (0 == m_minInterval64 || !m_enabled)
     {
-        stepIndex = numControl -1;
+        return;
     }
-    return 1;
+    m_stepCount = 0;
+    m_running = true;
+    m_targetSteps = static_cast<int>(round(moves * m_stepsPerMove));
+    m_currentInterval64 = getNextInterval64(0);
 }
 
-void stop(void)
+void Stepper::cw()
 {
-    digitalWrite(motorPin1, 0);
-    digitalWrite(motorPin2, 0);
-    digitalWrite(motorPin3, 0);
-    digitalWrite(motorPin4, 0);
-    delta = 0;
-    stepIndex = 0;
+    pinMode(m_stepperDir, INPUT_PULLUP);
 }
 
-void init()
+void Stepper::ccw()
 {
-    pinMode(motorPin1, OUTPUT);
-    pinMode(motorPin2, OUTPUT);
-    pinMode(motorPin3, OUTPUT);
-    pinMode(motorPin4, OUTPUT);
-    stop();
-    lastMove = millis();
-    stepIndex = 1;
+    pinMode(m_stepperDir, OUTPUT);
 }
 
-void cw()
+#ifdef SIGMOID
+uint64_t Stepper::getNextInterval64(uint16_t position)
 {
-    delta = -1;
-//    stepIndex = numControl - 1;
-}
-
-void coilCtrl(uint8_t a, uint8_t l)
-{
-    if (0 == a)
+    uint64_t intervalRange = m_maxInterval64 - m_minInterval64;
+    if (m_verbose)
     {
-        digitalWrite(motorPin1, l);
-        digitalWrite(motorPin2, !l);
+        Serial.printf("GNI: position %u m_rampUpSteps %u m_rampDownSteps %u m_targetSteps %u\r\n",
+                position, m_rampUpSteps, m_rampDownSteps, m_targetSteps);
+    }
+    if (position > m_targetSteps)
+    {
+        if (m_verbose) { Serial.printf("GNI0:"); }
+        return m_maxInterval64;
+    }
+    if (position < m_rampUpSteps)
+    {
+        uint16_t sigIndex = NUM_SIGMOID - 1 - (position * static_cast<int>((NUM_SIGMOID/m_rampUpSteps)));
+        float m = sigmoid[sigIndex];
+        float n = intervalRange * m;
+        uint64_t o = m_minInterval64 + static_cast<int>(n);
+        if (m_verbose)
+        {
+            Serial.printf("GNI1: position %u sigIndex %u m %f n %f o %u\r\n", position, sigIndex, m, n, o);
+        }
+        return o;
+    }
+    if (position < (m_targetSteps - m_rampDownSteps))
+    {
+        if (m_verbose) { Serial.printf("GNI2:"); }
+        return m_minInterval64;
+    }
+    uint16_t sigIndex = (position % (m_targetSteps - m_rampDownSteps)) * static_cast<int>(NUM_SIGMOID/m_rampDownSteps);
+    float m = sigmoid[sigIndex];
+    float n = intervalRange * m;
+    uint64_t o = m_minInterval64 + static_cast<int>(n);
+    if (m_verbose)
+    {
+        Serial.printf("GNI3: position %u sigIndex %u m %f n %f o %u\r\n", position, sigIndex, m, n, o);
+    }
+    return o;
+
+//    return r;
+}
+#else // SIGMOID
+uint64_t Stepper::getNextInterval64(uint16_t position)
+{
+    uint64_t intervalRange = m_maxInterval64 - m_minInterval64;
+    if (position > m_targetSteps)
+    {
+        if (m_verbose) { Serial.printf("gni 0 "); }
+        return m_maxInterval64;
+    }
+    if (position < m_rampUpSteps)
+    {
+        float m = (m_rampUpSteps - position) / m_rampUpSteps;
+        float n = intervalRange * m;
+        uint8_t o = m_minInterval64 + static_cast<int>(n);
+        if (m_verbose)
+        {
+            Serial.printf("GNI Clause 1: m %f n %f o %u\r\n", m, n, o);
+        }
+        return o;
+    }
+    if (position < (m_targetSteps - m_rampDownSteps))
+    {
+        if (m_verbose) { Serial.printf("gni 2 "); }
+        return m_minInterval64;
+    }
+
+    float p = 1.0 - (m_targetSteps - position) / m_rampDownSteps;
+    float q = intervalRange * p;
+    uint8_t r = m_minInterval64 + static_cast<int>(q);
+    if (m_verbose)
+    {
+        Serial.printf("GNI Clause 3: p %f q %f r %u\r\n", p, q, r);
+    }
+    return r;
+}
+#endif // SIGMOID
+
+void Stepper::pulse(bool v)
+{
+    if (v)
+    {
+        pinMode(m_stepperPulse, INPUT_PULLUP);
+        delayMicroseconds(10);
+        pinMode(m_stepperPulse, OUTPUT);
     }
     else
     {
-        digitalWrite(motorPin3, l);
-        digitalWrite(motorPin4, !l);
+        pinMode(m_stepperPulse, OUTPUT);
+        delayMicroseconds(10);
+        pinMode(m_stepperPulse, INPUT_PULLUP);
     }
 }
 
-void coilAPos()
+void Stepper::enable()
 {
-    digitalWrite(motorPin1, 1);
-    digitalWrite(motorPin2, 0);
+    pinMode(m_stepperEnable, INPUT_PULLUP);
+    m_enabled = true;
 }
 
-void ccw()
+void Stepper::disable()
 {
-    delta = 1;
-//    stepIndex = 1;
+    stop();
+    m_enabled = false;
+    pinMode(m_stepperEnable, OUTPUT);
 }
 
-// void stepperGo()
-// {
-//     stepIndex = numControl - 1;
-// }
-//
-} // namespace stepper
+void Stepper::stop(uint16_t move)
+{
+    m_running = false;
+    if (move)
+    {
+        m_stepsPerMove = m_stepCount / move * 1.0;
+        if (m_verbose)
+        {
+            Serial.printf("m_stepsPerMove %f\r\n", m_stepsPerMove);
+        }
+    }
+}
+

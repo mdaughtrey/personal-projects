@@ -9,7 +9,9 @@ import json
 import logging
 import pdb
 import platform
+import signal
 import sys
+import threading as th
 import time
 
 import base64
@@ -22,6 +24,16 @@ cmdline = None
 logger = None
 pageCache = {}
 app = Flask(__name__)
+lock = th.Lock()
+
+def handler(signum, frame):
+    print("Ctrl-C: Acquiring Lock")
+    lock.acquire()
+    print("Ctrl-C: Releasing Lock")
+    lock.release()
+    print("Ctrl-C: Exit")
+    sys.exit(1)
+
 
 def setLogging():
     global logger
@@ -41,7 +53,10 @@ def setLogging():
 def parseCommandLine():
     parser = argparse.ArgumentParser()
     parser.add_argument('--nosend', dest='nosend', action='store_true', help='no HID reports')
-    parser.add_argument('--configfile', dest='configfile', required=True, help='config file location')
+#    parser.add_argument('--jigglemin', dest='jigglemin', type=int, help='set jiggle period (mins)')
+#    parser.add_argument('--jigglekey', dest='jigglekey', help='set jiggle key (from hidmap.py)')
+    parser.add_argument('--noenc', dest='noenc', action='store_true', help='config file is not encrypted')
+    parser.add_argument('--configfile', dest='configfile', help='config file location', default='config.json')
     parser.add_argument('--enc', dest='enc', action='store_true', help='encrypt')
     parser.add_argument('--dec', dest='dec', action='store_true', help='decrypt')
     return parser.parse_args()
@@ -97,7 +112,17 @@ def procConfigChunk(chunk):
 
 def loadConfig(file, password):
     while True:
-        config = json.loads(dec(file, password))
+        if '' == password:
+            config = json.loads(open(file, 'rb').read())
+        else:
+            config = json.loads(dec(file, password))
+
+        if 'jiggle' in config:
+            report = []
+            report.extend(procConfigChunk(config['jiggle']['emit']))
+            report.append([0] * 8)
+            config['jiggle']['report'] = report
+
         for page in config['pages']:
             for ii in range(len(page['buttons'])):
                 logger.debug(page['buttons'][ii]['label'])
@@ -178,12 +203,16 @@ def procButtonPress(pageid, id):
     button = config[pageid]['buttons'][id]
     if 'page' in button.keys():
         return genpage(button['page'])
-    writeHid(button['report'])
+    try:
+        writeHid(button['report'])
+    except:
+        pass
     return ""
 
 
 def writeHid(report):
     logger.debug('writeHid {}'.format(report))
+    lock.acquire()
 #    if cmdLine.nosend: return
     with open('/dev/hidg0', 'wb+') as hid:
         for buf in report:
@@ -199,7 +228,9 @@ def writeHid(report):
 
                 except BrokenPipeError as ee:
                     logger.error(ee)
+                    lock.release()
                     return
+    lock.release()
 
 def genkey(provided):
     password = provided.encode()
@@ -238,11 +269,29 @@ def page(pageid):
 def buttonPress(pageid, id):
     return procButtonPress(pageid, int(id) )
     
+def jiggle():
+    print('Jiggle!\n')
+    writeHid(config['jiggle']['report'])
+    t = th.Timer(config['jiggle']['emit']['mins'] * 60, jiggle)
+    t.start()
 
 def main():
-    password = getpass.getpass()
     global cmdLine
+    signal.signal(signal.SIGINT, handler)
     cmdline = parseCommandLine()
+#    if (None, None) != (cmdline.jigglekey, cmdline.jigglemin):
+#        if (cmdline.jigglemin != cmdline.jigglekey) and None in (cmdline.jigglemin, cmdline.jigglekey):
+#            print('jigglekey and jigglemin must both be specified')
+#            sys.exit(1)
+#
+#        if cmdline.jigglekey not in hidmap.keys():
+#            print('jigglekey {} is unknown'.format(cmdline.jigglekey))
+#            sys.exit(1)
+
+    if cmdline.noenc:
+        password = ''
+    else:
+        password = getpass.getpass()
 
     if cmdline.dec:
         data = dec(cmdline.configfile, password)
@@ -255,6 +304,9 @@ def main():
     global config
     setLogging()
     config = loadConfig(cmdline.configfile, password)
+    if 'jiggle' in config:
+        t = th.Timer(config['jiggle']['emit']['mins'], jiggle)
+        t.start()
     app.run(host='0.0.0.0', port=8000)
 
 main()

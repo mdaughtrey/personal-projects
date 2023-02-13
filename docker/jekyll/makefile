@@ -1,13 +1,22 @@
 TAG=jekyll
 DOCKER=docker.exe
 
+ifeq ($(shell hostname),md)
+PPHOME='\\wsl\$\Ubuntu\home\matt\personal-projects'
+else
+PPHOME='\\wsl$$\Ubuntu\home\mattd\personal-projects'
+endif
+
+all:
+	echo PPHONE ${PPHOME}
+
 run:
-	${DOCKER} run --rm -h ${TAG} --name ${TAG} \
+	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
 	--publish 4000:4000  \
-	--publish 35729:35729  \
-    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects:/personal-projects \
-    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects\\jekyll:/home/mattd/sites \
-    -w /home/mattd ${TAG}:latest /home/mattd/runserver.sh
+    --volume ${PPHOME}:/personal-projects \
+    --volume ${PPHOME}\\jekyll:/home/mattd/sites \
+    -w /home/mattd \
+	${TAG}:latest /home/mattd/runserver.sh
 
 runi0:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
@@ -21,8 +30,8 @@ runi0:
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
 	--publish 4000:4000  \
-    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects:/personal-projects \
-    --volume \\\\wsl\$\\Ubuntu\\home\\mattd\\personal-projects\\jekyll:/home/mattd/sites \
+    --volume ${PPHOME}:/personal-projects \
+    --volume ${PPHOME}\\jekyll:/home/mattd/sites \
     -w /home/mattd \
 	${TAG}:latest /bin/bash 
 
@@ -46,7 +55,7 @@ make:
 	cp ~/.vimrc .
 	cp ~/.tmux.conf .
 	cp ~/.bashrc .
-	${DOCKER} build -f ${TAG}.Dockerfile . --tag=${TAG}
+	${DOCKER} build --no-cache -f ${TAG}.Dockerfile . --tag=${TAG}
 
 push:	
 	${DOCKER} push mdaughtrey/projects:${TAG}
