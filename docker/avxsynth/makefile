@@ -1,9 +1,7 @@
 NAME=avxsynth
 
 run:
-	docker run -dh ${NAME} --name ${NAME} -ti ${NAME}:latest
-	#docker run -dh ${TAG} -it --expose 22 -v /c/scratch:/scratch --cap-add=SYS_PTRACE --security-opt seccomp=unconfined gcc:latest 
-	#docker run -dh vproj --expose 5000 -it  -v /p/vproj:/media/sf_vproj vproj:latest 
+	docker run --rm -h ${NAME} --name ${NAME} -ti -v ${PWD}:/frames ${NAME}:latest 
 
 attach:
 	docker attach ${NAME}
