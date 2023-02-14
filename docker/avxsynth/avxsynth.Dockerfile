@@ -42,11 +42,11 @@ RUN cmake -B build -S .
 RUN cmake --build build
 
 #https://github.com/pinterf/mvtools
-#WORKDIR /
-#RUN git clone https://github.com/pinterf/mvtools
-#WORKDIR /mvtools
-#RUN cmake -B build -S .
-#RUN cmake --build build
+WORKDIR /
+RUN git clone https://github.com/pinterf/mvtools
+WORKDIR /mvtools
+RUN cmake -B build -S .
+RUN cmake --build build
 
 
 WORKDIR /
