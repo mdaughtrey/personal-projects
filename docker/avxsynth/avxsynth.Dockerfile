@@ -57,11 +57,11 @@ RUN ./configure --prefix=$HOME/ffmpeg_build --enable-gpl --enable-version3 \
     make -j$(nproc) && \
     make install
 
-ARG USER=mattd
-RUN groupadd -g 1000 ${USER}
-RUN useradd -r -u 1000 -g 1000 ${USER}
-RUN usermod -a -G dialout mattd
-USER ${USER}
+#ARG USER=mattd
+#RUN groupadd -g 1000 ${USER}
+#RUN useradd -r -u 1000 -g 1000 ${USER}
+#RUN usermod -a -G dialout mattd
+#USER ${USER}
 
 #
 #
