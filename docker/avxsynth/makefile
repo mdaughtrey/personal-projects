@@ -1,7 +1,7 @@
 NAME=avxsynth
 
-run:
-	docker run --rm -h ${NAME} --name ${NAME} -ti -v ${PWD}:/frames ${NAME}:latest 
+runi:
+	docker run --rm -h ${NAME} --name ${NAME} -ti -v ${HOME}/share:/frames -v ${PWD}:/local ${NAME}:latest
 
 attach:
 	docker attach ${NAME}
