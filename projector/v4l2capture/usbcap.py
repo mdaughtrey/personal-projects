@@ -28,7 +28,7 @@ last_delta = 0
 def proc_commandline():
     parser = argparse.ArgumentParser()
     parser.add_argument('--camindex', dest='camindex', help='Camera Index (/dev/videoX)', default=0)
-    parser.add_argument(dest='do', default='framecap', choices=['framecap', 'alternate'])
+    parser.add_argument(dest='do', default='framecap', choices=['framecap', 'alternate','sertest'])
     parser.add_argument('--debug', dest='debug', action='store_true', help='debug (no crop, show lines)')
     parser.add_argument('--enddia', dest='enddia', type=int, default=35, help='Feed spool ending diameter (mm)')
     parser.add_argument('--fastforward', dest='fastforward', type=int, help='fast forward multiplier', default=8)
@@ -97,7 +97,7 @@ def init(config):
 #    if b'{State:Ready}' != portWaitFor(serPort, b'{State:Ready}'):
 #        logger.debug("Init failed")
 #        sys.exit(1)
-    message = f'cv{lastTension}tl{config.optocount}ecE6000oCc500Ic2000ic25DUx'.encode()          
+    message = f'kcv{lastTension}tl{config.optocount}ecE8000oCc500Ic2000ic25D25Ux'.encode()          
     #message = f'{lastTension}t2dl{config.optocount}e0E6000oCc1iIDUx'.encode()
     logger.info(message)
     serwrite(message)
@@ -148,7 +148,7 @@ def findExtents(matrix):
 	# (x0, y0, x1, y1)
 	return rect
 
-def findSprocketsS8(image, debug = False):
+def findSprocketsS8(image, dbg = False):
     logger = logging.getLogger('hqcap')
     grey = image.convert('L')
     flattened = np.asarray(grey, dtype=np.uint8)
@@ -161,7 +161,8 @@ def findSprocketsS8(image, debug = False):
     lightest = ndimage.maximum(slice)
 #    pdb.set_trace()
 
-    threshold=205
+    #threshold=205
+    threshold = int(np.average([darkest, lightest]))
     slice[slice < threshold] = 0
     slice[slice >= threshold] = 1
 
@@ -171,7 +172,7 @@ def findSprocketsS8(image, debug = False):
     threshold =  int(image.size[1]/20)
     logger.debug(f'yCenter {yCenter} delta {delta} threshold {threshold}')
 
-    if debug:
+    if dbg:
         draw = ImageDraw.Draw(image)
         for line in [(0, image.size[1]/2, image.size[0]/2, image.size[1]/2),
             (0, image.size[1]/2-threshold, image.size[0]/2, image.size[1]/2-threshold),
@@ -181,7 +182,7 @@ def findSprocketsS8(image, debug = False):
 
     # Reject if above threshold
     if delta > threshold:
-        if debug:
+        if dbg:
             return image
         else:
             logger.debug('rejecting frame')
@@ -194,7 +195,7 @@ def findSprocketsS8(image, debug = False):
     cropRect = (0, int(iy/20 - yofs), ix, int(iy*.95-yofs))
     logger.debug(f'yofs {yofs} rect {cropRect[0]} {cropRect[1]} {cropRect[2]} {cropRect[3]}')
 
-    if debug:
+    if dbg:
         def tupleAdd(t0, t1):
             return tuple(map(sum, (zip(t0, t1))))
         draw = ImageDraw.Draw(image)
@@ -268,31 +269,6 @@ def findSprockets8mm(image, dbg = False):
 
     return image
 
-
-def fakecap(config):
-    logger = logging.getLogger('hqcap')
-    framenum = 0
-    for x in range(1, config.frames):
-        if 0 == (framenum % 8):
-            serwrite(f'c{config.optocount * config.fastforward}emn'.encode())
-        else:
-            serwrite(f'c{config.optocount}emn'.encode())
-
-        framenum += 1
-        wait = serwaitfor(b'{HDONE}', b'{NTO}')
-        serwrite(b'?')
-        wait = serwaitfor(b'End Config', b'xxx')
-        logger.debug(wait[2])
-        time.sleep(0.5)
-
-def save10(config, cap, framenum):
-    logger = logging.getLogger('hqcap')
-    for ii in range(0, 10):
-        ret, frame = cap.read()
-        filename = "{}/{:>08}_{}.png".format(config.framesto, framenum, ii)
-        logger.debug(f'Captured {filename}')
-        cv2.imwrite(filename, frame)
-        time.sleep(0.5)
 
 def capture_hd(config, cap, framenum):
     logger = logging.getLogger('hqcap')
@@ -388,6 +364,7 @@ def framegen(config, logger):
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, res[i][1])
         return cap
 
+    finder = {'super8':findSprocketsS8, '8mm': findSprockets8mm}[config.film]
     stepsPerFrame = config.optocount * config.fastforward
     cap = setres(None, 0)
     count = 0
@@ -397,11 +374,11 @@ def framegen(config, logger):
         if not ret:
             logger.error(f'cap.read {count} failed')
             sys.exit(1)
-        cropped = findSprockets8mm(Image.fromarray(frame), False)
+        cropped = finder(Image.fromarray(frame), False)
         if cropped is not None:
             cap = setres(cap, 1)
             ret, frame = cap.read()
-            cropped = findSprockets8mm(Image.fromarray(frame), False)
+            cropped = finder(Image.fromarray(frame), False)
             count += 1
             serwrite(f'c{stepsPerFrame}emn'.encode())
             yield cropped
@@ -427,15 +404,34 @@ def alternate(config):
 #    cap.release()
 
 
+def sertest(config):
+    serwrite(b'?')
+    time.sleep(1.0)
+    yy=[]
+    while True:
+        xx = serdev.read()
+        if 0 == xx: break
+        yy.append(xx)
+    pdb.set_trace()
+#    logger.debug(serdev.read().encode())
+    sys.exit(0)
+
+
 def main():
     global config
+    logger = logging.getLogger('hqcap')
     config = proc_commandline()
     setlogging(config)
     init(config)
 #    with cProfile.Profile() as pr:
     if 'framecap' == config.do: framecap(config)
     if 'alternate' == config.do: alternate(config)
+    if 'sertest' == config.do: sertest(config)
 #    pr.print_stats()
+    serwrite(b'M')
+    serwrite(b' ')
+    wait = serwaitfor(b'{State:Ready}', b'No')
+    logger.debug(wait[2])
     serwrite(b' ')
 
 main()
