@@ -11,7 +11,7 @@ def dw(name, data):
     cv.imwrite(f'{name}.png', np.asarray(data))
 
 def main():
-    frames = 'frames/outside'
+    frames = 'frames/outside/capture'
     if not os.path.exists(frames):
         print('{} not found'.format(frames))
         sys.exit(1)
@@ -20,14 +20,15 @@ def main():
     if not os.path.exists(graded):
         os.mkdir(graded)
 
-    reference = cv.imread('reference.png').astype(np.float32)
+    reference = cv.imread('frames/outside/capture/00000002.png').astype(np.float32)
     gray = np.array([128.0,128.0,128.0])
     ref0 = np.clip(reference / gray, 0, 255)
     cv.imwrite(f'graderef.png', np.asarray(ref0))
 
+    pdb.set_trace()
     for file in glob.glob('{}/????????.png'.format(frames)):
         image=cv.imread(file).astype(np.float32)
         image=np.clip(image / ref0, 0, 255)
-        cv.imwrite('{}/{file}'.format(graded, os.path.basename(file)), np.asarray(image))
+        cv.imwrite('{}/{}'.format(graded, os.path.basename(file)), np.asarray(image))
 
 main()
