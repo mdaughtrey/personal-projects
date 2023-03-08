@@ -53,7 +53,7 @@ getdev()
 
 s8()
 {
-    ./usbcap.py framecap --camindex $(getdev) --framesto ${FP}/capture  --frames 10 --logfile usbcap.log \
+    ./usbcap.py framecap --camindex $(getdev) --framesto ${FP}/capture  --frames 99999 --logfile usbcap.log \
         --fastforward 9 --res 1 --film super8 ${EDR}
 }
 

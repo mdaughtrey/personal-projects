@@ -379,9 +379,9 @@ def framegen_edr(config, logger):
             sys.exit(1)
         cropped = finder(Image.fromarray(frame))
         if cropped is not None:
-            setres(cap, 1)
             frames = []
             for exp in config.exposure.split(','):
+                setres(cap, 1)
                 cap.set(cv2.CAP_PROP_EXPOSURE, int(exp))
                 logger.debug(f'Exposure {cap.get(cv2.CAP_PROP_EXPOSURE)}')
                 ret, frame = cap.read()
@@ -428,7 +428,6 @@ def framecap(config):
     logger = logging.getLogger('hqcap')
     framenum = get_most_recent_frame(config)
 
-    pdb.set_trace()
     if config.exposure:
         for index, frame in enumerate(framegen_edr(config, logger)):
             fname = f'{config.framesto}/{framenum+index:>08}'
