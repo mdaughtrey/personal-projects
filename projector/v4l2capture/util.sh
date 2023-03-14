@@ -2,7 +2,7 @@
 # kill a screen 
 # screen -S session -X quit
 
-PROJECT=edrtest
+PROJECT=outside
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -10,12 +10,12 @@ DEVICE=/dev/video0
 #VIDEOSIZE=640x480
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
-EDR="--exposure 700,1400"
+#EDR="--exposure 700,1400"
 
 #exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
 exec > >(tee -a usb_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
 
-for sd in capture graded descratch; do
+for sd in capture graded descratch work; do
     if [[ ! -d "${FP}/${sd}" ]]; then mkdir -p ${FP}/${sd}; fi
 done
 
@@ -54,7 +54,7 @@ getdev()
 s8()
 {
     ./usbcap.py framecap --camindex $(getdev) --framesto ${FP}/capture  --frames 99999 --logfile usbcap.log \
-        --fastforward 9 --res 1 --film super8 ${EDR}
+        --fastforward 9 --res 1 --film super8 ${EDR} 
 }
 
 sertest()
@@ -112,7 +112,7 @@ function RemoveDirt(clip input, bool "_grey", int "repmode")
     corrected=RestoreMotionBlocks(clensed, restore, neighbour=input, alternative=alt, gmthreshold=70, dist=1, dmode=2, debug=false, noise=10, noisy=12, grey=_grey)
     return RemoveGrain(corrected, mode=clmode, modeU = _grey ? -1 : clmode )
 }	
-RemoveDirt(ImageReader("/frames/graded/%08d.png", fps=18.0, end=${NUMFRAMES}).converttoYV12())
+RemoveDirt(ImageReader("/frames/capture/%08d.png", fps=18.0, end=${NUMFRAMES}).converttoYV12())
 AVS
 )  > ${SCRIPT}
 
@@ -124,6 +124,17 @@ exptest()
 {
     if [[ ! -d "${FP}/exptest" ]]; then mkdir ${FP}/exptest; fi
     ./usbcap.py exptest --camindex $(getdev) --framesto ${FP}/exptest --logfile exptest.log 
+}
+
+tonefuse()
+{
+    ./usbcap.py tonefuse --framesfrom ${FP}/capture --framesto ${FP}
+}
+
+oneshot()
+{
+    ./usbcap.py oneshot --camindex $(getdev) --framesto ${FP}/capture --logfile usbcap.log 
+        
 }
 
 
@@ -152,6 +163,8 @@ case "$1" in
     previews) preview capture; preview descratch; preview graded ;;
     all) s8; ./colorgrade.py; descratch; previews ;;
     exptest) exptest ;;
+    tonefuse) tonefuse ;;
+    oneshoe) oneshot ;;
     *) echo what?
 esac
 
