@@ -44,7 +44,7 @@ def setLogging():
     fileHandler = logging.FileHandler(filename = './macrokey.log')
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
     fileHandler.setLevel(logging.DEBUG)
-#    logger.addHandler(fileHandler)
+    logger.addHandler(fileHandler)
     soutHandler = logging.StreamHandler(stream=sys.stdout)
     soutHandler.setFormatter(logging.Formatter(fmt=FormatString))
     soutHandler.setLevel(logging.DEBUG)
@@ -271,7 +271,11 @@ def buttonPress(pageid, id):
     
 def jiggle():
     print('Jiggle!\n')
-    writeHid(config['jiggle']['report'])
+    try:
+        writeHid(config['jiggle']['report'])
+    except:
+        pass
+
     t = th.Timer(config['jiggle']['emit']['mins'] * 60, jiggle)
     t.start()
 
