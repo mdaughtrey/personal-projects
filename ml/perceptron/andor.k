@@ -1,4 +1,4 @@
-#!/home/matt/personal-projects/bin/k.exe
+#!/bin/env k.exe
 . "\\r ",$-__t%1000
 
 / perceptron
