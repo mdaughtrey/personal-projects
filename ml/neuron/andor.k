@@ -2,6 +2,7 @@
 / https://realpython.com/python-ai-neural-network/#the-process-to-train-a-neural-network
 
 . "\\r ",$-__t%1000
+/p 12
 
 / Sigmoid Activation
 a:{1%1+_exp -x}
@@ -10,7 +11,7 @@ ad:{:a[x]*(1-a[x])}
 / perceptron
 /p:{[i;w;t] : :[t>+/i*w;0;1]}
 n:{[i;w;b]
-    :a b+ _dot[i;.k.w]
+    :b+a'_dot[.k.w]'i
 }
 /
 // is non-negative
@@ -35,7 +36,8 @@ train:{[d;iter]
     do[iter
 	`0: ,"---------------"
     `0: ,/$(".k.w [";5:.k.w;"]")
-    p: a'_dot[.k.w]'d[;0]
+    /p: a'_dot[.k.w]'d[;0]
+    p: n[d[;0];.k.w;.k.b]
 	/ pp: a'+/'.k.w*/:d[;0]
     /`0: ,,/$(" p [";5:p;"] pp [";5:pp;" x [";5:d[;1];"]")
     `0: ,,/$(" p [";5:p;"] x [";5:d[;1];"]")
@@ -66,10 +68,10 @@ test_and:{
     `0: ,"train and"
     data_and:(((0;0);0);((0;1);0);((1;0);0);((1;1);1))
     train[data_and;1000]
-    `0: ,,/$("0,0 ";n[(0;0);.k.w;.k.b])
-    `0: ,,/$("0,1 ";n[(0;1);.k.w;.k.b])
-    `0: ,,/$("1,0 ";n[(1;0);.k.w;.k.b])
-    `0: ,,/$("1,1 ";n[(1;1);.k.w;.k.b])
+    `0: ,,/$("0,0 ";5:n[,(0;0);.k.w;.k.b])
+    `0: ,,/$("0,1 ";5:n[,(0;1);.k.w;.k.b])
+    `0: ,,/$("1,0 ";5:n[,(1;0);.k.w;.k.b])
+    `0: ,,/$("1,1 ";5:n[,(1;1);.k.w;.k.b])
     `0: ,"test_and"
 }
 
