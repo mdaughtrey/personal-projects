@@ -39,8 +39,8 @@ class NeuralNetwork():
         # Number of iterations we want to
         # perform for this set of input.
         for iteration in range(num_train_iterations):
-            pdb.set_trace()
             output = self.forward_propagation(train_inputs)
+            pdb.set_trace()                                
  
             # Calculate the error in the output.
             error = train_outputs - output
@@ -65,7 +65,8 @@ if __name__ == "__main__":
     train_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
     train_outputs = array([[0, 1, 1, 0]]).T
  
-    neural_network.train(train_inputs, train_outputs, 10000)
+    # neural_network.train(train_inputs, train_outputs, 10000)
+    neural_network.train(train_inputs, train_outputs, 1000)
  
     print ('New weights after training')
     print (neural_network.weight_matrix)
