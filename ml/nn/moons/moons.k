@@ -1,10 +1,7 @@
 #!/bin/env k.exe
 / https://stackabuse.com/creating-a-neural-network-from-scratch-in-python/
-/\d .nn
-/\l "../nnlib"
-/\d .k
-/
-\e 1
+/ https://towardsdatascience.com/coding-a-neural-network-from-scratch-in-numpy-31f04e4d605
+
 /train: -1 784 # _ic 16_ 6: "t10k-images-idx3-ubyte"
 /labels: _ic 8_ 6: "t10k-labels-idx1-ubyte"
 /.nn.init[#*train; 10; #*labels; 4000]
@@ -16,6 +13,7 @@
 
 . "\\r ",$-__t%1000
 /p 12
+\e 1
 
 / Sigmoid Activation and derivative
 act:{1%1+_exp -x}
@@ -25,53 +23,75 @@ ad:{:act[x]*(1-act[x])}
 /ad:{1.0 - _tanh[x]^2}
 /dotp:{+|+/''x*\:/:|+y}
 
-n:{[w;b;i]
-    :a@b++/w*i
+n:{[w;b;x]
+    :a@b++/w*x
 }
 
-n0:{[w;b;i] :b++/w*i }
+.k.sigmoid.Z:{[w;b;x] :b++/w*x }
+.k.sigmoid.A: {1%1+_exp -x}
+.k.sigmoid.AD: {:.k.sigmoid.A[x]*(1-.k.sigmoid.A[x])}
+
+/ X = inputs
+/ y = labels
+/ W = weights
+/ b = bias
+/ Z = dot product (X*W) + b
+/ A = activation(Z)
+/ k = number of classes
+/ lower case vector, upper case matrix
 
 
 train:{[d;iter]
-    ni:#**d / number of inputs
-    nh: 4 / number of hidden layer neurons
-    no: 1 / number of output neurons
-    /`0: ,,/$("num inputs ";ni)
+    AD: .k.sigmoid.AD
+    A: .k.sigmoid.A
+    Z: .k.sigmoid.Z
+
+    X:d[;0]
+    y:d[;1]
+
+    nX:#**x / number of inputs
+    nH: 4 / number of hidden layer neurons
+    nO: 1 / number of output neurons
     r:1000000
-    .k.hw: (nh;-1)#(2*((ni*nh) _draw r)%r)-1    / hidden weights
-    .k.hb: (nh _draw r)%r                       / hidden bias
-    .k.ow: *(no;-1)#(2*((no*nh) _draw r)%r)-1   / output weights
-    .k.ob: (no _draw r)%r                       / output bias
-    .k.lr:0.5
-	`0: ,,/$("Init .k.hw: ";5:.k.hw;".k.hb: ";5:.k.hb)
-	`0: ,,/$("Init .k.ow: ";5:.k.ow;".k.ob: ";5:.k.ob)
+
+    .k.hW: *:'(nH;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
+    .k.hb: ((nX*nH) _draw r)%r                       / hidden bias
+    .k.oW: (nO;-1)#(2*((nO*nH) _draw r)%r)-1   / weights for hidden->output
+    .k.ob: ((nO*nH) _draw r)%r                       / output bias
+    .k.lr: 0.5
+	`0: ,,/$("Init .k.hW: ";5:.k.hW;".k.hB: ";5:.k.hB)
+	`0: ,,/$("Init .k.oW: ";5:.k.oW;".k.oB: ";5:.k.oB)
 
     do[iter
-        {[d]
+        {[x;y]
             / Feedforward
-            ha: act'hdp:n0 .' (+.k[`hw`hb]),\:,*d / hdp = hidden dot product, ha = hidden activation
-            `0: ,,/$("hdp ";5:hdp;" ha ";5:ha)
-            oa: act'odp:*n0[.k.ow;.k.ob;ha]       / odp = output dot product, oa = output activation
-            mse:(d[1]-oa)^2
-            `0: ,,/$("Output activation ";5:oa;" expected ";d[1];" MSE ";mse)
-            / Back propogation for the output layer
-            c: oa-d[1]        / cost
-            dodp: ad odp       / derivative odp
-            cow: +/ha*(c*dodp) / cost for output weight
-            `0: ,,/$("c ";c;" dodp ";5:dodp;" cow ";5:cow)
+            hA: A'hZ:Z .' (+.k[`hW`hb]),\:,x  / hZ = hidden dot product, hA = hidden activation
+            `0: ,,/$("hZ ";5:hZ;" hA ";5:hA)
+            1/0
+            oA: A'oZ:Z .' (+.k[`oW`ob]),\:hA
 
-            / Back propogation for the hidden layer
-            l:c*ad odp
-            k:+/l*.k.ow
-            j:(ad hdp)*k
-            i:+/d[0]*j
 
-            chw: +/d[0]*a
+/            oa: act'odp:*n0[.k.ow;.k.ob;ha]       / odp = output dot product, oa = output activation
+/            mse:(d[1]-oa)^2
+/            `0: ,,/$("Output activation ";5:oa;" expected ";d[1];" MSE ";mse)
+/            / Back propogation for the output layer
+/            c: oa-d[1]        / cost
+/            dodp: ad odp       / derivative odp
+/            cow: +/ha*(c*dodp) / cost for output weight
+/            `0: ,,/$("c ";c;" dodp ";5:dodp;" cow ";5:cow)
+/
+/            / Back propogation for the hidden layer
+/            l:c*ad odp
+/            k:+/l*.k.ow
+/            j:(ad hdp)*k
+/            i:+/d[0]*j
+/
+/            chw: +/d[0]*a
+/
+/            .k.hw-:chw*.k.lr
+/            .k.ow-:cow*.k.lr
 
-            .k.hw-:chw*.k.lr
-            .k.ow-:cow*.k.lr
-
-        }',*d
+        } .' ,(*X;*y)
     ]
     _exit 0
 
