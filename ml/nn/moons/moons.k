@@ -56,7 +56,7 @@ train:{[d;iter]
 
     .k.hW: *:'(nH;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
     .k.hb: ((nX*nH) _draw r)%r                       / hidden bias
-    .k.oW: (nO;-1)#(2*((nO*nH) _draw r)%r)-1   / weights for hidden->output
+    .k.oW: *(nO;-1)#(2*((nO*nH) _draw r)%r)-1   / weights for hidden->output
     .k.ob: ((nO*nH) _draw r)%r                       / output bias
     .k.lr: 0.5
 	`0: ,,/$("Init .k.hW: ";5:.k.hW;".k.hB: ";5:.k.hB)
@@ -67,8 +67,13 @@ train:{[d;iter]
             / Feedforward
             hA: A'hZ:Z .' (+.k[`hW`hb]),\:,x  / hZ = hidden dot product, hA = hidden activation
             `0: ,,/$("hZ ";5:hZ;" hA ";5:hA)
+            oA: A'oZ:+/Z .' +.k[`oW`ob],,hA
+            `0: ,,/$("MSE ";(oA-y)^2)
+
+            dcost: +/hA*(oA-y)*AD oZ    / Backprop phase 1
+            ,,/$("dcost ";5:dcost)
+
             1/0
-            oA: A'oZ:Z .' (+.k[`oW`ob]),\:hA
 
 
 /            oa: act'odp:*n0[.k.ow;.k.ob;ha]       / odp = output dot product, oa = output activation
