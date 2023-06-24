@@ -46,6 +46,7 @@ train:{[d;iter]
     A: .k.sigmoid.A
     Z: .k.sigmoid.Z
 
+    .k.d:d
     X:d[;0]
     y:d[;1]
 
@@ -62,6 +63,7 @@ train:{[d;iter]
 	`0: ,,/$("Init .k.hW: ";5:.k.hW;".k.hB: ";5:.k.hB)
 	`0: ,,/$("Init .k.oW: ";5:.k.oW;".k.oB: ";5:.k.oB)
 
+    TODO remove iter, operate on array
     do[iter
         {[x;y]
             / Feedforward
@@ -70,9 +72,11 @@ train:{[d;iter]
             oA: A'oZ:+/Z .' +.k[`oW`ob],,hA
             `0: ,,/$("MSE ";(oA-y)^2)
 
-            dcost: +/hA*(oA-y)*AD oZ    / Backprop phase 1
-            ,,/$("dcost ";5:dcost)
-
+            dcostO: +/hA*(oA-y)*AD oZ    / Backprop phase 1
+            `0: ,,/$("dcostO ";5:dcostO)
+/            dcostH: +/x*(AD hZ)*+/(oA-y)*.k.oW
+            dcostH:+/x*(AD hZ)*+/((oA-y)*(AD oZ))*.k.oW
+            ,,/$("dcostH ";5:dcostH)
             1/0
 
 
