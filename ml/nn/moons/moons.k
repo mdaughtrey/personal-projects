@@ -12,7 +12,7 @@
 / https://realpython.com/python-ai-neural-network/#the-process-to-train-a-neural-network
 
 . "\\r ",$-__t%1000
-/p 12
+\p 15
 \e 1
 
 / Sigmoid Activation and derivative
@@ -48,45 +48,48 @@ train:{[d;iter]
     Z: .k.sigmoid.Z
     Z: {[w;b;x] :+/''w*\:/:x}
 
-
     .k.d:d
     X:d[;0]
-    y:d[;1]
+    y:,:'d[;1]
 
     nX:#*X / number of inputs
     nH: 4 / number of hidden layer neurons
     nO: 1 / number of output neurons
-    r:1000000
+    r:_1e9
 
-    .k.hW: (nX;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
+   .k.hW:((0.78854551 0.05684808 0.69699724 0.7786954)
+       (0.77740756 0.25942256 0.37381314 0.58759964))
+    .k.oW:(,0.2728219;,0.3708528;,0.19705428;,0.45985588)
+
+    /.k.hW: (nX;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
+    .k.hW2: (nX;-1)#((nX*nH) _draw r)%r    / weights for input->hidden
+    1/0
     .k.hb: ((nX*nH) _draw r)%r                       / hidden bias
-    .k.oW: (nH;-1)#(2*((nO*nH) _draw r)%r)-1   / weights for hidden->output
+/    .k.oW: (nH;-1)#((nO*nH) _draw r)%r   / weights for hidden->output
     .k.ob: ((nO*nH) _draw r)%r                       / output bias
     .k.lr: 0.5
 	`0: ,,/$("Init .k.hW: ";5:.k.hW;".k.hB: ";5:.k.hB)
 	`0: ,,/$("Init .k.oW: ";5:.k.oW;".k.oB: ";5:.k.oB)
 
-    TODO remove iter, operate on array
     do[iter
 		/ Feedforward
 		hA: A'hZ:{_dot[x]'+.k.hW}'X
-        `0: ,,/$("hZ ";5:hZ;" hA ";5:hA)
 		oA: A'oZ:{_dot[x]'+.k.oW}'hA
-        `0: ,,/$("oZ ";5:oZ;" oA ";5:oA)
-        `0: ,,/$("MSE ";5:(oA-y)^2)
+        `0: ,,/$("MSE ";5:+/(oA-y)^2)
+        / Backprop phase 1
 		dcostO:_dot[(oA-y)*AD oZ]'+hA
-		m: _dot[(oA-y)*AD oZ]'+.k.oW
-		dcostH:_dot[+X]'(AD hZ)*m
-		1/0
-/
-/            .k.hw-:chw*.k.lr
-/            .k.ow-:cow*.k.lr
+        / Backprop phase 2
+		m: _dot[+.k.oW]'(oA-y)*AD oZ
+        dcostH:_dot[(AD hZ)*m]'+X
+       .k.hW-:dcostH*.k.lr
+       .k.oW-:dcostO*.k.lr
     ]
-    _exit 0
 }
 
 train_and_test:{[d]
-    train[d;10]
+    train[d;200000]
+
+    1/0
 /    p:n[.k.w;.k.b;*x]
     errors:_abs'(n[.k.hw;.k.hb]'d[;0])-d[;1]
     `0: ,,/$("minerr ";*errors@<errors;" maxerr ";*errors@>errors;" avgerr ";(+/errors)%#errors)
