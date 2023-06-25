@@ -27,6 +27,7 @@ n:{[w;b;x]
     :a@b++/w*x
 }
 
+/.k.dotp:{[x;y] :{_dot[x]'y}'x}
 .k.sigmoid.Z:{[w;b;x] :b++/w*x }
 .k.sigmoid.A: {1%1+_exp -x}
 .k.sigmoid.AD: {:.k.sigmoid.A[x]*(1-.k.sigmoid.A[x])}
@@ -45,19 +46,21 @@ train:{[d;iter]
     AD: .k.sigmoid.AD
     A: .k.sigmoid.A
     Z: .k.sigmoid.Z
+    Z: {[w;b;x] :+/''w*\:/:x}
+
 
     .k.d:d
     X:d[;0]
     y:d[;1]
 
-    nX:#**x / number of inputs
+    nX:#*X / number of inputs
     nH: 4 / number of hidden layer neurons
     nO: 1 / number of output neurons
     r:1000000
 
-    .k.hW: *:'(nH;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
+    .k.hW: (nX;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
     .k.hb: ((nX*nH) _draw r)%r                       / hidden bias
-    .k.oW: *(nO;-1)#(2*((nO*nH) _draw r)%r)-1   / weights for hidden->output
+    .k.oW: (nH;-1)#(2*((nO*nH) _draw r)%r)-1   / weights for hidden->output
     .k.ob: ((nO*nH) _draw r)%r                       / output bias
     .k.lr: 0.5
 	`0: ,,/$("Init .k.hW: ";5:.k.hW;".k.hB: ";5:.k.hB)
@@ -65,59 +68,21 @@ train:{[d;iter]
 
     TODO remove iter, operate on array
     do[iter
-        {[x;y]
-            / Feedforward
-            hA: A'hZ:Z .' (+.k[`hW`hb]),\:,x  / hZ = hidden dot product, hA = hidden activation
-            `0: ,,/$("hZ ";5:hZ;" hA ";5:hA)
-            oA: A'oZ:+/Z .' +.k[`oW`ob],,hA
-            `0: ,,/$("MSE ";(oA-y)^2)
-
-            dcostO: +/hA*(oA-y)*AD oZ    / Backprop phase 1
-            `0: ,,/$("dcostO ";5:dcostO)
-/            dcostH: +/x*(AD hZ)*+/(oA-y)*.k.oW
-            dcostH:+/x*(AD hZ)*+/((oA-y)*(AD oZ))*.k.oW
-            ,,/$("dcostH ";5:dcostH)
-            1/0
-
-
-/            oa: act'odp:*n0[.k.ow;.k.ob;ha]       / odp = output dot product, oa = output activation
-/            mse:(d[1]-oa)^2
-/            `0: ,,/$("Output activation ";5:oa;" expected ";d[1];" MSE ";mse)
-/            / Back propogation for the output layer
-/            c: oa-d[1]        / cost
-/            dodp: ad odp       / derivative odp
-/            cow: +/ha*(c*dodp) / cost for output weight
-/            `0: ,,/$("c ";c;" dodp ";5:dodp;" cow ";5:cow)
-/
-/            / Back propogation for the hidden layer
-/            l:c*ad odp
-/            k:+/l*.k.ow
-/            j:(ad hdp)*k
-/            i:+/d[0]*j
-/
-/            chw: +/d[0]*a
+		/ Feedforward
+		hA: A'hZ:{_dot[x]'+.k.hW}'X
+        `0: ,,/$("hZ ";5:hZ;" hA ";5:hA)
+		oA: A'oZ:{_dot[x]'+.k.oW}'hA
+        `0: ,,/$("oZ ";5:oZ;" oA ";5:oA)
+        `0: ,,/$("MSE ";5:(oA-y)^2)
+		dcostO:_dot[(oA-y)*AD oZ]'+hA
+		m: _dot[(oA-y)*AD oZ]'+.k.oW
+		dcostH:_dot[+X]'(AD hZ)*m
+		1/0
 /
 /            .k.hw-:chw*.k.lr
 /            .k.ow-:cow*.k.lr
-
-        } .' ,(*X;*y)
     ]
     _exit 0
-
-/    do[iter
-/    {[d]
-/        / Feedforward
-/        p: n[.k.w;.k.b;*d]                          
-/        /`0: ,/$(" p [";5:p;"] x [";5:d[1];"]")
-/        / Backprop 1
-/        e: p-d[1]
-/        /`0: ,/$(" mse [";e*e;"]")
-/        / Backprop 2
-/        adj: +/'(*d)*zd:e*ad p                     
-/        /`0: ,,/$(" adj [";5:adj;"]")
-/        .k.w-:adj*.k.lr
-/        .k.b-:zd}'d
-/    ]
 }
 
 train_and_test:{[d]
