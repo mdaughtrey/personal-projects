@@ -11,9 +11,9 @@
 
 / https://realpython.com/python-ai-neural-network/#the-process-to-train-a-neural-network
 
-. "\\r ",$-__t%1000
-\p 15
 \e 1
+. "\\r ",$-_t
+\p 15
 
 / Sigmoid Activation and derivative
 act:{1%1+_exp -x}
@@ -57,13 +57,13 @@ train:{[d;iter]
     nO: 1 / number of output neurons
     r:_1e9
 
-   .k.hW:((0.78854551 0.05684808 0.69699724 0.7786954)
-       (0.77740756 0.25942256 0.37381314 0.58759964))
+/   .k.hW:((0.78854551 0.05684808 0.69699724 0.7786954)
+/       (0.77740756 0.25942256 0.37381314 0.58759964))
     .k.oW:(,0.2728219;,0.3708528;,0.19705428;,0.45985588)
 
     /.k.hW: (nX;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
-    .k.hW2: (nX;-1)#((nX*nH) _draw r)%r    / weights for input->hidden
-    1/0
+    .k.hW: (nX;-1)#((nX*nH) _draw r)%r    / weights for input->hidden
+    /f:{ (nX;-1)#((nX*nH) _draw r)%r}    / weights for input->hidden
     .k.hb: ((nX*nH) _draw r)%r                       / hidden bias
 /    .k.oW: (nH;-1)#((nO*nH) _draw r)%r   / weights for hidden->output
     .k.ob: ((nO*nH) _draw r)%r                       / output bias
@@ -88,12 +88,9 @@ train:{[d;iter]
 
 train_and_test:{[d]
     train[d;200000]
-
-    1/0
 /    p:n[.k.w;.k.b;*x]
-    errors:_abs'(n[.k.hw;.k.hb]'d[;0])-d[;1]
-    `0: ,,/$("minerr ";*errors@<errors;" maxerr ";*errors@>errors;" avgerr ";(+/errors)%#errors)
-
+/    errors:_abs'(n[.k.hw;.k.hb]'d[;0])-d[;1]
+/    `0: ,,/$("minerr ";*errors@<errors;" maxerr ";*errors@>errors;" avgerr ";(+/errors)%#errors)
 /    {`0: ,,/$("input ";5:*x;" predicted ";5:p;" expected ";x 1;" error ";p:n[.k.w;.k.b;*x]-x 1)}'d
 }
 
