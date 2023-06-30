@@ -54,6 +54,7 @@ def load():
     train_labels_1hot = [] # np.empty((len(train_labels), len(lr)))
     for tr in train_labels:
         train_labels_1hot.append(lr == tr)
+    pdb.set_trace()
 
     test_labels_1hot = [] # np.empty((len(train_labels), len(lr)))
     for tr in test_labels:
