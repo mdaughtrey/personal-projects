@@ -11,6 +11,7 @@
 
 / https://realpython.com/python-ai-neural-network/#the-process-to-train-a-neural-network
 
+.k.args: _i
 \e 1
 . "\\r ",$-_t
 \p 15
@@ -27,10 +28,11 @@ n:{[w;b;x]
     :a@b++/w*x
 }
 
-/.k.dotp:{[x;y] :{_dot[x]'y}'x}
-.k.sigmoid.Z:{[w;b;x] :b++/w*x }
 .k.sigmoid.A: {1%1+_exp -x}
 .k.sigmoid.AD: {:.k.sigmoid.A[x]*(1-.k.sigmoid.A[x])}
+.k.relu.A: {[x] 0|x@*&>x}
+.k.relu.AD: {[x] 
+.k.softmax.A: {[x] _exp[x]%+/_exp x }
 
 / X = inputs
 / y = labels
@@ -45,8 +47,6 @@ n:{[w;b;x]
 train:{[d;iter]
     AD: .k.sigmoid.AD
     A: .k.sigmoid.A
-    Z: .k.sigmoid.Z
-    Z: {[w;b;x] :+/''w*\:/:x}
 
     .k.d:d
     X:d[;0]
@@ -57,15 +57,12 @@ train:{[d;iter]
     nO: 1 / number of output neurons
     r:_1e9
 
-/   .k.hW:((0.78854551 0.05684808 0.69699724 0.7786954)
-/       (0.77740756 0.25942256 0.37381314 0.58759964))
-    .k.oW:(,0.2728219;,0.3708528;,0.19705428;,0.45985588)
-
-    /.k.hW: (nX;-1)#(2*((nX*nH) _draw r)%r)-1    / weights for input->hidden
     .k.hW: (nX;-1)#((nX*nH) _draw r)%r    / weights for input->hidden
-    /f:{ (nX;-1)#((nX*nH) _draw r)%r}    / weights for input->hidden
+    `0: ,,/$(".k.hW ";5:.k.hW)
+    `0: ,,/$(".k.hW2 ";5:.k.hW2)
+    
     .k.hb: ((nX*nH) _draw r)%r                       / hidden bias
-/    .k.oW: (nH;-1)#((nO*nH) _draw r)%r   / weights for hidden->output
+    .k.oW: (nH;-1)#((nO*nH) _draw r)%r   / weights for hidden->output
     .k.ob: ((nO*nH) _draw r)%r                       / output bias
     .k.lr: 0.5
 	`0: ,,/$("Init .k.hW: ";5:.k.hW;".k.hB: ";5:.k.hB)
