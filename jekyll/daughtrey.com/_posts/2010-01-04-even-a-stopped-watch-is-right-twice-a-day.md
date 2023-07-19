@@ -4,7 +4,7 @@ date: '2010-01-04T18:34:10-05:00'
 author: mdaughtrey
 layout: post
 categories:
-    - 'New York'
+    - New York
 ---
 
 This is an arty clock in Union Square. The left half tells you the time to 10ths of a second and the right side shows you how much time is left in the day. You can tell it’s art because  

@@ -1,13 +1,12 @@
 ---
-id: 475
 title: 'Test Measurements'
 date: '2012-03-24T23:36:48-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=475'
-permalink: '/?p=475'
 categories:
-    - 'Time Lapse Video Throwie'
+    - Projects
+    - timelapse
+    - Time Lapse Video Throwie
 ---
 
 | Test Point | Off | On | Shutter Pressed |

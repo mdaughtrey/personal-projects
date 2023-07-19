@@ -1,11 +1,8 @@
 ---
-id: 878
 title: 'This guy delivers parcels'
 date: '2013-07-01T18:24:14-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=878'
-permalink: '/?p=878'
 categories:
     - 'New York'
 ---

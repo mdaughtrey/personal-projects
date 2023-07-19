@@ -1,2 +1,3 @@
 #!/usr/bin/env bash
-k.exe nn0
+K3HOME=~/personal-projects/bin
+~/personal-projects/bin/k.exe nn0

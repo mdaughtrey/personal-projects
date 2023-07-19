@@ -13,7 +13,7 @@ all:
 run:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
     --volume ${PPHOME}:/personal-projects \
-    -w /home/mattd 
+    -w /personal-projects/ml/nn/mnist
 
 runi0:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \

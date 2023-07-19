@@ -4,6 +4,7 @@ date: '2010-07-29T19:37:49-04:00'
 author: mdaughtrey
 layout: post
 categories:
+    - Projects
     - 'Light Saber Sound Module'
 ---
 

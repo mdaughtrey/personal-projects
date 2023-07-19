@@ -171,6 +171,7 @@ def findSprockets8mm(image):
     return image
 
 def findSprocketsS80(image): # backup
+#    pdb.set_trace()
     grey = image.convert('L')
     savedebug(grey, 'grey')
     flattened = np.asarray(grey, dtype=np.uint8)
@@ -283,7 +284,8 @@ def findSprocketsS8(image, filename=None):
     if len(centerlines):
         yCenter = int(st.median(centerlines))
     else:
-        yCenter = image.shape[0]/2
+        yCenter = int(image.height/2)
+        #yCenter = image.shape[0]/2
 
 
     # Now we have a Y-axis sprocket hole yCenter, find the X-axis sprocket hole yCenter
@@ -320,7 +322,10 @@ def main():
     dirnum = 0
     while True:
         fromdir = f'{config.root}/{config.project}/{dirnum:03d}/'
-        todir = '{}/{}/{}_cropped'.format(config.root, config.project, config.format)
+        todir = '{root}/{proj}/{format}_{croptype}'.format(root = config.root,
+            proj = config.project, 
+            format = config.format,
+            croptype = {True: "_showcrop", False: "cropped"}[config.showcrop])
         print(f'Dir {fromdir}', end='\n')
         if not os.path.exists(fromdir):
             return 0
@@ -343,6 +348,7 @@ def main():
             image.save(outfile)
 
 def threadrun(fromdir, todir, file):
+    pdb.set_trace()
     outfilename='{:06d}a.{}'.format(int(os.path.basename(file)[:-5])+200, config.format)
     outfile = '{dir}/{filename}'.format(dir=todir, filename = outfilename)
     if os.path.exists(outfile) and (False == config.nowrite) and (False == config.overwrite):
@@ -369,7 +375,12 @@ def mainthreaded():
     dirnum = 0
     while True:
         fromdir = f'{config.root}/{config.project}/{dirnum:03d}/'
-        todir = '{}/{}/cropped_{}'.format(config.root, config.project, config.res)
+        todir = '{root}/{proj}/{format}_{croptype}_{res}'.format(root = config.root,
+            proj = config.project, 
+            format = config.format,
+            croptype = {True: "showcrop", False: "cropped"}[config.showcrop],
+            res=config.res)
+        #todir = '{}/{}/cropped_{}'.format(config.root, config.project, config.res)
         print(f'Dir {fromdir}', end='\n')
         if not os.path.exists(fromdir):
             return 0

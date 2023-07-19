@@ -4,6 +4,7 @@ date: '2010-02-25T12:24:21-05:00'
 author: mdaughtrey
 layout: post
 categories:
+    - Projects
     - bioplastic
 ---
 

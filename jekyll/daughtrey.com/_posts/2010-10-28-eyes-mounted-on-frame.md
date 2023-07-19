@@ -4,6 +4,7 @@ date: '2010-10-28T23:27:04-04:00'
 author: mdaughtrey
 layout: post
 categories:
+    - Projects
     - Blink
 ---
 

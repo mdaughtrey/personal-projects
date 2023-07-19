@@ -4,7 +4,8 @@ date: '2010-06-01T11:22:21-04:00'
 author: mdaughtrey
 layout: post
 categories:
-    - 'One Handed Keyboard'
+    - Projects
+    - One Handed Keyboard
 ---
 
 Not bad. I’m typing this post using the mod and although I have a way to go, I am touch typing. I added some Shapelock to stabilize the buttons on my finger.

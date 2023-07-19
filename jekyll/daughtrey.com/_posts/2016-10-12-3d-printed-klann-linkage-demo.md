@@ -1,18 +1,8 @@
 ---
-id: 918
 title: '3D Printed Klann Linkage Demo'
 date: '2016-10-12T23:07:44-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=918'
-permalink: '/?p=918'
-enclosure:
-    - "http://daughtrey.com/wp-content/uploads/2020/10/VID_20170721_160032.mp4\n3284298\nvideo/mp4\n"
-    - "http://daughtrey.com/wp-content/uploads/2020/10/VID_20170924_203341.mp4\n12333076\nvideo/mp4\n"
-    - "http://daughtrey.com/wp-content/uploads/2020/10/VID_20170721_160049.mp4\n6033015\nvideo/mp4\n"
-    - "http://daughtrey.com/wp-content/uploads/2020/10/VID_20170721_155950.mp4\n915133\nvideo/mp4\n"
-    - "http://daughtrey.com/wp-content/uploads/2020/10/VID_20170924_203620.mp4\n4053399\nvideo/mp4\n"
-    - "http://daughtrey.com/wp-content/uploads/2020/10/VID_20180306_234954.mp4\n1495330\nvideo/mp4\n"
 categories:
     - Projects
     - 'Walking Robots'

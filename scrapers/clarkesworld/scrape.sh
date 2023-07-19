@@ -49,9 +49,10 @@ do_rtf()
 do_scrape()
 {
     URL=https://clarkesworldmagazine.com/prior/?y=
-    for (( YEAR=2007; YEAR<2022; YEAR++)); do
+#    for (( YEAR=2007; YEAR<2022; YEAR++)); do
+    YEAR=2023
         ./scrape.py ${URL}${YEAR}
-    done
+#    done
 }
 
 case "$1" in 

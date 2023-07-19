@@ -19,6 +19,15 @@ fi
 #fi
 
 RES=hd
+while getopts 'p:r:' arg; do
+    case "${arg}" in
+    p) PROJECT=${OPTARG} ;;
+    r) RES=${OPTARG} ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
 #while getopts 'dw:p:' arg; do
 #    case ${arg} in
 #        d) RES=draft ;;
@@ -27,7 +36,6 @@ RES=hd
 #        *) echo What?; exit 1;;
 #    esac
 #done
-#shift $((OPTIND-1))
 #WP=${W}/${P}
 #echo Working project is ${WP}, ${RES}
 
@@ -178,11 +186,11 @@ stitch()
 peek()
 {
     case "${RES}" in
-        draft) scale=640 ;;
-        hd) scale=1080 ;;
+        draft) scale=640; croptype=showcrop ;;
+        hd) scale=1080; croptype=cropped ;;
         *) echo Unknown res [${RES}]; exit 1;;
     esac
-    ls ${WP}/cropped_${RES}/??????a.png  > /tmp/filelist.txt
+    ls ${WP}/png_${croptype}_${RES}/??????a.png  > /tmp/filelist.txt
 
 	mplayer -msglevel all=6 -lavdopts threads=`nproc` \
 		mf://@/tmp/filelist.txt \
@@ -266,11 +274,16 @@ processavi()
 
 pngcrop()
 {
-    ./hqtest.py --project ${PROJECT} --root ${WORKING} --format png --overwrite --res hd $1
+    if [[ "draft" == "${RES}" ]]; then
+        ./hqtest.py --project ${PROJECT} --root ${WORKING} --format png --overwrite --res draft --showcrop --serialize
+    else
+        ./hqtest.py --project ${PROJECT} --root ${WORKING} --format png --overwrite --res hd 
+    fi
 }
 
 case "$1" in 
-    draft) RES=draft; import; pngcrop --showcrop; peek ;;
+    #draft) export RES=draft; import; pngcrop; peek ;;
+    draft) export RES=draft; pngcrop; peek ;;
     title) ../gentitlehq.sh -r ${WORKING} -p ${PROJECT} ;; # -u ac ;;
 #    gen) use=${2:-ac}
 #        bash -x ../gencontenthq.sh -h -r ${WORKING} -p ${PROJECT} -u ${use} ;;

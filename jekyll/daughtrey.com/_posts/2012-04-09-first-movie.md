@@ -1,13 +1,12 @@
 ---
-id: 529
 title: 'First Movie'
 date: '2012-04-09T23:01:43-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=529'
-permalink: '/?p=529'
 categories:
-    - 'Time Lapse Video Throwie'
+    - Projects
+    - timelapse
+    - Time Lapse Video Throwie
 ---
 
 Because the grass was already grown and the paint was already dry, here’s some ice melting.

@@ -7,4 +7,4 @@ categories:
     - Uncategorized
 ---
 
-!)](/assets/uploads/2011/03/20110325-091826.jpg)
+![](/assets/uploads/2011/03/20110325-091826.jpg)
