@@ -2,7 +2,8 @@
 # kill a screen 
 # screen -S session -X quit
 
-PROJECT=outside
+PORT=/dev/ttyACM0
+PROJECT=newconfig0
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -10,10 +11,14 @@ DEVICE=/dev/video0
 #VIDEOSIZE=640x480
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
-#EDR="--exposure 700,1400"
+#EXPOSURES="2500,3000,3500,4000,4500,5000,5500"
+EXPOSURES="4500"
+EDR="--exposure ${EXPOSURES}"
 
 #exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
 exec > >(tee -a usb_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
+
+mkdir -p ${FP}
 
 for sd in capture graded descratch work; do
     if [[ ! -d "${FP}/${sd}" ]]; then mkdir -p ${FP}/${sd}; fi
@@ -53,8 +58,8 @@ getdev()
 
 s8()
 {
-    ./usbcap.py framecap --camindex $(getdev) --framesto ${FP}/capture  --frames 99999 --logfile usbcap.log \
-        --fastforward 9 --res 1 --film super8 ${EDR} 
+    ./usbcap.py framecap --camindex $(getdev) --framesto ${FP}/capture --frames 10000 --logfile usbcap.log \
+        --fastforward 9 --res 0 --film super8 ${EDR} 
 }
 
 sertest()
@@ -63,10 +68,21 @@ sertest()
         --fastforward 12 --res 1 sertest --film super8 --optocount 6 
 }
 
+p2()
+{
+    subdir=${1:-capture}
+    for exp in ${EXPOSURES//,/ }; do
+        ls ${FP}/${subdir}/????????_${exp}.png > /tmp/filelist.txt
+        echo Generating ${FP}/{subdir}_${exp}.mp4
+        mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=${FP}/${subdir}_${exp}.mp4
+    done
+}
+
 preview()
 {
     subdir=${1:-capture}
-    ls ${FP}/${subdir}/????????.png > /tmp/filelist.txt
+    # ls ${FP}/${subdir}/????????.png > /tmp/filelist.txt
+    ls ${FP}/${subdir}/*.png > /tmp/filelist.txt
     mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=${FP}/${subdir}.mp4
 }
 
@@ -123,7 +139,7 @@ AVS
 exptest()
 {
     if [[ ! -d "${FP}/exptest" ]]; then mkdir ${FP}/exptest; fi
-    ./usbcap.py exptest --camindex $(getdev) --framesto ${FP}/exptest --logfile exptest.log 
+    ./usbcap.py exptest --camindex $(getdev) --framesto ${FP}/exptest --logfile exptest.log  --nofilm --res 0
 }
 
 tonefuse()
@@ -133,10 +149,9 @@ tonefuse()
 
 oneshot()
 {
-    ./usbcap.py oneshot --camindex $(getdev) --framesto ${FP}/capture --logfile usbcap.log 
+    ./usbcap.py oneshot --camindex $(getdev) --framesto ${FP} --logfile usbcap.log  --exposure 10000
         
 }
-
 
 case "$1" in 
     avx) ./avx.sh ;;
@@ -156,6 +171,7 @@ case "$1" in
     8mm) do8mm; preview ;;
     s8) s8 ;;
     preview) shift; preview $@ ;;
+    p2) shift; p2 $@ ;;
     sertest) sertest ;;
     getres) getres ;;
     mount) mount ;;
@@ -164,7 +180,8 @@ case "$1" in
     all) s8; ./colorgrade.py; descratch; previews ;;
     exptest) exptest ;;
     tonefuse) tonefuse ;;
-    oneshoe) oneshot ;;
+    oneshot) oneshot ;;
+    screen) screen -L ${PORT} 115200 ;;
     *) echo what?
 esac
 
