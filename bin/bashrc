@@ -112,7 +112,7 @@ if ! shopt -oq posix; then
   fi
 fi
 export PATH=${PATH}:/mnt/c/q/w32:${HOME}/.local/bin:${HOME}/acli/bin:${HOME}/personal-projects/bin:${HOME}/ngnk/k
-export K=${HOME}/ngnk/k
-export KDIR=${HOME}/ngnk
+export K=${HOME}/ngnk/k/k
+export KDIR=${HOME}/ngnk/k
 
 export DOCKER_HOST=tcp://localhost:2375
