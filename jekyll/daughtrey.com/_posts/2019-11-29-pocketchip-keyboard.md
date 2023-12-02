@@ -4,7 +4,8 @@ date: '2019-11-29T23:11:31-05:00'
 author: mdaughtrey
 layout: post
 categories:
-    - 'PocketChip Keyboard'
+    - Projects
+    - PocketChip
 ---
 
 ![Pocket Chip](/assets/uploads/2019/11/IMG_20191129_220911-768x1024.jpg)

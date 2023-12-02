@@ -1,16 +1,15 @@
 ---
-id: 461
 title: 'Time Lapse Video Throwie'
 date: '2012-03-17T21:53:34-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=461'
-permalink: '/?p=461'
 categories:
-    - 'Time Lapse Video Throwie'
+    - Projects
+    - timelapse
+    - Time Lapse Video Throwie
 ---
 
-[![20120317-215250.jpg](http://daughtrey.com/wp-content/uploads/2012/03/20120317-215250.jpg)](http://daughtrey.com/wp-content/uploads/2012/03/20120317-215250.jpg)
+[![20120317-215250.jpg](/assets/uploads/2012/03/20120317-215250.jpg)](/assets/uploads/2012/03/20120317-215250.jpg)
 
 “What’s This?” you ask. It’s a keychain video recorder. Search for “keychain video dvr” on Ebay to see what they can do and how incredibly cheap they are.
 

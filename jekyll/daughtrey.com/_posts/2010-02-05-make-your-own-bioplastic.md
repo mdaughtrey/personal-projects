@@ -3,8 +3,9 @@ title: 'Make your own bioplastic!'
 date: '2010-02-05T17:46:31-05:00'
 author: mdaughtrey
 layout: post
-categories:
-    - bioplastic
+categories: 
+    - Projects
+    - Cool
 ---
 
 This is a really cool link. You can make biodegradable plastic out of household ingredients. There’s also a way to make it out of potato starch but this looks easier. Just wish I had a laser cutter…

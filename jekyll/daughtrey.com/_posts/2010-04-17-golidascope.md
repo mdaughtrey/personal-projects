@@ -3,8 +3,7 @@ title: GOLidascope
 date: '2010-04-17T23:31:16-04:00'
 author: mdaughtrey
 layout: post
-categories:
-    - 'Game of Life'
+categories: Cool
 ---
 
 I’ve decided to go ahead with it. Here are 8 strips of 7 circuit boards, each holding a 10 x 7 array. The strips will be arranged in an octagon, so that’ll mean 56 pixels around the inside and 70 pixels in length.

@@ -4,7 +4,8 @@ date: '2011-03-26T22:56:56-04:00'
 author: mdaughtrey
 layout: post
 categories:
-    - 'All band radio'
+    - Projects
+    - All band radio
 ---
 
 Some time ago I wanted to trace some wiring in the walls of my house. My cheapo metal detector kit wasn’t up to it so I thought an all band radio might work. Basically it’s a radio without the tuner. It uses an an antenna and detector to pick up any radio transmission on any band and play it out through a speaker. I based my design on [this](http://ea4eoz.ure.es/allbandreceiver.html).

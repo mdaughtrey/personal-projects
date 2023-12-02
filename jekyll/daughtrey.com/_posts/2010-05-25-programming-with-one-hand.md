@@ -4,7 +4,8 @@ date: '2010-05-25T23:23:55-04:00'
 author: mdaughtrey
 layout: post
 categories:
-    - 'One Handed Keyboard'
+    - Projects
+    - One Handed Keyboard
 ---
 
 So I’m going to be one-handed for a few weeks (at least). I looked around for some one-handed keyboards that I might persuade my work to buy and came across [the Half Qwerty Keyboard](http://www.half-qwerty.com/). It’s a neat idea; the left side of the keyboard is mirrored onto the right-side keys and the idea is that the muscle memory you developed for your left hand when you learned touch typing maps over to your right hand without too much trouble. You can switch between the normal right side of the keyboard (‘YUIOP’ etc) to the mirrored side (‘QWERTY’ etc) with the click of a designated button. And it works! I tinkered with the keyboard remapper that you can download from Microsoft to get an idea of what a mirrored keyboard would feel like and it worked well. However, it’s almost $600.

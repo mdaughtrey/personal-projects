@@ -3,8 +3,9 @@ title: 'The Webbed Tentacle'
 date: '2016-09-23T22:51:11-04:00'
 author: mdaughtrey
 layout: post
-categories:
-    - 'The Tentacle'
+categories: 
+    - Projects
+    - Tentacle
 ---
 
 Here’s the inspiration:  

@@ -3,8 +3,7 @@ title: 'Mixed Messages'
 date: '2010-01-11T16:41:44-05:00'
 author: mdaughtrey
 layout: post
-categories:
-    - Uncategorized
+categories: Funny
 ---
 
 Simultaneously the happiest and saddest fortune cookie ever.

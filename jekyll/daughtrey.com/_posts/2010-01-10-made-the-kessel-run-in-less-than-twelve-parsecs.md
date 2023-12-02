@@ -1,13 +1,8 @@
 ---
-id: 23
 title: 'Made the Kessel Run in less than twelve parsecs'
 date: '2010-01-10T19:35:44-05:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=23'
-permalink: '/?p=23'
-enclosure:
-    - "http://daughtrey.com/wp-content/uploads/2010/01/NJtoBostonToNJ.wmv\n1223145\nvideo/asf\n"
 categories:
     - timelapse
 ---

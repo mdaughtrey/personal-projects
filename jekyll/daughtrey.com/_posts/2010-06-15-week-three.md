@@ -4,7 +4,8 @@ date: '2010-06-15T11:21:58-04:00'
 author: mdaughtrey
 layout: post
 categories:
-    - 'One Handed Keyboard'
+    - Projects
+    - One Handed Keyboard
 ---
 
 My arm is recovering nicely. I’m still in a brace for a couple of weeks but I can now rotate my wrist enough to almost touch type normally again.

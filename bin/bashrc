@@ -116,3 +116,4 @@ export K=${HOME}/ngnk/k/k
 export KDIR=${HOME}/ngnk/k
 
 export DOCKER_HOST=tcp://localhost:2375
+PATH=${PATH}:${HOME}/personal-projects/bin

@@ -1,22 +1,23 @@
 TAG=icestorm
+DOCKER=docker.exe
 
 run:
-	docker run -dh ${TAG} -it --expose 22 -v /home/mattd/shared:/shared ${TAG}:latest 
+	${DOCKER} run -dh ${TAG} -it --expose 22 -v /home/mattd/shared:/shared ${TAG}:latest 
 
 attach:
-	docker exec -it `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1 ` /bin/bash
+	${DOCKER} exec -it `${DOCKER} ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1 ` /bin/bash
 
 stop:
-	docker stop `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1`
+	${DOCKER} stop `${DOCKER} ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1`
 
 tag:
-	docker tag ${TAG} mdaughtrey/projects:${TAG}
+	${DOCKER} tag ${TAG} mdaughtrey/projects:${TAG}
 
 make:
-	docker build -f ${TAG}.Dockerfile . --tag=${TAG}
+	${DOCKER} build -f ${TAG}.${DOCKER}file . --tag=${TAG}
 
 push:	
-	docker push mdaughtrey/projects:${TAG}
+	${DOCKER} push mdaughtrey/projects:${TAG}
 
 commit:
-	docker commit `docker stop `docker ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1` mdaughtrey/projects:nodejs
+	${DOCKER} commit `${DOCKER} stop `${DOCKER} ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1` mdaughtrey/projects:nodejs

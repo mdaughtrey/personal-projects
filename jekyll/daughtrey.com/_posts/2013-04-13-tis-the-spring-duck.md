@@ -1,11 +1,8 @@
 ---
-id: 849
 title: '&#8216;Tis the Spring Duck'
 date: '2013-04-13T19:16:36-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=849'
-permalink: '/?p=849'
 categories:
     - Uncategorized
 ---
