@@ -117,6 +117,6 @@ export KDIR=${HOME}/ngnk/k
 
 export DOCKER_HOST=tcp://localhost:2375
 if [[ "matt" == "${USER}" ]]; then
-export OPENSCAD=/mnt/c/Users/matt/Documents/openscad
+export OPENSCAD=/mnt/c/Users/mattd/Documents/openscad
 fi
 PATH=${PATH}:${HOME}/personal-projects/bin
