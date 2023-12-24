@@ -216,6 +216,7 @@ def socket_loop():
                 disp_status('Restarting dhcpcd')
                 proc = subprocess.run('systemctl restart dhcpcd'.split())
                 client_sock.send(f'{proc.returncode}\r\n')
+                break
 
             params = re.match(b'WIFI:S:(\w+);T:(\w+);P:(\w+);', data)
             if params is not None:
@@ -308,6 +309,9 @@ def main():
         simple_agent()
         disp_status('Paired\nWaiting for connection')
         socket_loop()
+        ssid = getssid().decode()
+        ipa = subprocess.run('hostname -I'.split(), stdout=subprocess.PIPE).stdout.split()[0].strip().decode()
+        disp_status(f'SSID: {ssid}\n{ipa}\n')
 
 
 #    draw.multiline_text((0,-2), f'SSID: {ssid}\n{ipa}', font=font, fill=255)
