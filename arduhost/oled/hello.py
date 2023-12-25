@@ -226,12 +226,17 @@ def socket_loop():
 #            client_sock.send(data.upper())
         except:
             break
+
+def shutdownHandler():
+    disp.clear()
+    disp_status("Shutdown")
+    sys.exit(0)
     
 
 #if __name__ == '__main__':
 def simple_agent():
     subprocess.run('hciconfig hci0 piscan'.split())
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+#    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     global bus
     bus = dbus.SystemBus()
 
@@ -297,7 +302,9 @@ def main():
     disp_status('init')
     ssid = ''
     ipa = ''
+
     try:
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         ssid = getssid().decode()
         ipa = subprocess.run('hostname -I'.split(), stdout=subprocess.PIPE).stdout.split()[0].strip().decode()
         disp_status(f'SSID: {ssid}\n{ipa}\n')
@@ -313,9 +320,14 @@ def main():
         ipa = subprocess.run('hostname -I'.split(), stdout=subprocess.PIPE).stdout.split()[0].strip().decode()
         disp_status(f'SSID: {ssid}\n{ipa}\n')
 
+    # Connect shutdown handler
+#    bus = dbus.SystemBus()
+#    shutdown_obj = bus.get_object('org.freedesktop.login1', '/org/freedesktop/login1')
+#    iface = dbus.Interface(shutdown_obj, 'org.freedesktop.login1.Manager')
+#    iface.connect_to_signal("PrepareForShutdown", shutdownHandler)
+#    mainloop.run()
 
 #    draw.multiline_text((0,-2), f'SSID: {ssid}\n{ipa}', font=font, fill=255)
 #    disp.image(image)
 #    disp.display()
-
 main()
