@@ -15,4 +15,6 @@ RUN wget https://go.dev/dl/go1.21.5.linux-amd64.tar.gz && tar -C /root -xzvf go1
 #RUN vim -c 'q!'
 RUN curl -fLo /root/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 RUN vim +PlugInstall +GoInstallBinaries +qall
+RUN apt -y install tmux screen
+#RUN vim touch.go +qall && rm touch.go
 
