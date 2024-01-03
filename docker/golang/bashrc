@@ -115,6 +115,5 @@ export PATH=${PATH}:/mnt/c/q/w32:${HOME}/.local/bin:${HOME}/acli/bin:${HOME}/per
 export K=${HOME}/ngnk/k/k
 export KDIR=${HOME}/ngnk/k
 
-export DOCKER_HOST=tcp://localhost:2375
-export OPENSCAD=/mnt/c/Users/matt/Documents/openscad
-PATH=${PATH}:${HOME}/personal-projects/bin
+export PATH=${PATH}:/personal-projects/bin:/root/go/bin
+export GOPATH=/root/go/bin
