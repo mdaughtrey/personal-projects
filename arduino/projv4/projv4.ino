@@ -37,13 +37,17 @@ typedef struct
 
 struct {
     int16_t param;
+#ifdef OPTO_ENCODER
     uint16_t encoderLimit;
     uint16_t slowEncoderThreshold;
+#endif // OPTO_ENCODER
     uint8_t tension;
     uint8_t verbose;
     uint8_t isrEdge;
+#ifdef OPTO_ENCODER
     uint16_t encoderTO;
     uint32_t encoderTime;
+#endif // OPTO_ENCODER
     uint8_t state;
     uint8_t pwmslice;
     uint8_t pwmpin;
@@ -61,8 +65,10 @@ const uint8_t ButtonPin1 = 3;
 const uint8_t ButtonPin2 = 4;
 const uint8_t ButtonPin3 = 5;
 
+#ifdef OPTO_ENCODER
 const uint8_t EncoderPin0 = 14;
 const uint8_t EncoderPin1 = 15;
+#endif // OPTO_ENCODER
 
 const uint8_t OutputPin0 = 10; // fan
 const uint8_t OutputPin1 = 11; // lamp
@@ -84,11 +90,13 @@ void rewindMotor(uint8_t val) {
     pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, val);
     pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
 }
-//analogWrite(OutputPin3, val); }
+
+#ifdef OPTO_ENCODER
 void encoderStart() { config.encoderTime = millis(); }
 void encoderTO() { config.encoderTO = config.param; config.param = 0; }
 
 volatile uint16_t encoderPos = 0;
+#endif // OPTO_ENCODER
 volatile int isr1count = 0;
 volatile int isr2count = 0;
 void handleCommand();
@@ -131,45 +139,29 @@ void setFrameReady()
 
 void isr1()
 {
+#ifdef OPTO_ENCODER
     isr1count++;
     if ((config.isrEdge & OPTO_RISING) || (config.isrEdge & OPTO_FALLING))
     {
         encoderPos++;
     }
 
-//    if (config.slowEncoderThreshold && (encoderPos >= config.slowEncoderThreshold))
-//    {
-//    }
     if (config.encoderLimit && (encoderPos >= config.encoderLimit))
     {
         at.setTimeout(setFrameReady, 10);
     }
-//    if (config.verbose)
-//    {
-//        Serial.println("ISR1: ");
-//        dumpConfig();
-//    }
+#endif // OPTO_ENCODER
 }
 
 void isr2()
 {
+#ifdef OPTO_ENCODER
     isr2count++;
-//    if (config.isrEdge & digitalRead(EncoderPin0))
-//    {
-//        encoderPos++;
-//    }
-//    else
-//    {
-//        encoderPos++;
-//    }
-//    if (config.verbose)
-//    {
-//        Serial.println("ISR2: ");
-//        dumpConfig();
-//    }
+#endif // OPTO_ENCODER
 }
 
 
+#ifdef OPTO_ENCODER
 void encoder_init()
 {
     pinMode(EncoderPin0, INPUT_PULLUP);
@@ -178,6 +170,7 @@ void encoder_init()
     encoderPos = 0;
     config.encoderTO = 4000;
 }
+#endif // OPTO_ENCODER
 
 uint8_t buttonState[4] = { 0 };
 
@@ -210,7 +203,9 @@ void setup ()
 
     stepper.cw(); 
     buttonInit();
+#ifdef OPTO_ENCODER
     encoder_init();
+#endif // OPTO_ENCODER
     outputInit();
     initPWM();
     ledState = 0;
@@ -221,8 +216,10 @@ void setup ()
     isr2count = 0;
     pinMode(LedPin, OUTPUT);
 
+#ifdef OPTO_ENCODER
     attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, CHANGE);
     attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, CHANGE);
+#endif // OPTO_ENCODER
     commandset = commands_main;
 
     for (uint8_t ii = 0; ii < 11; ii++)
@@ -275,6 +272,7 @@ void buttonPoll()
 void dumpConfig(uint8_t th)
 {
     Serial.printf("-------------------------------\r\n");
+#ifdef OPTO_ENCODER
     Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u\r\n"
         "param: %d\r\nisr1count: %u\r\nisr2count: %u\r\n",
         config.encoderLimit,
@@ -290,6 +288,7 @@ void dumpConfig(uint8_t th)
         config.encoderTO,
         config.encoderTime,
         config.state);
+#endif // OPTO_ENCODER
 
     Serial.printf("verbose: %d\r\n", config.verbose);
     Serial.printf("stepper.minInterval %u stepper.maxInterval %u\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
@@ -318,14 +317,17 @@ void do_next()
 {
     config.state = NEXT;
     stepper.start(config.encoderLimit);
+#ifdef OPTO_ENCODER
     encoderStart();
     encoderPos %= config.encoderLimit;
+#endif // OPTO_ENCODER
 }
 
 void do_isr()
 {
     config.isrEdge = config.param % 4;
     config.param = 0;
+#ifdef OPTO_ENCODER
     switch (config.isrEdge)
     {
         case OPTO_RISING:
@@ -348,6 +350,7 @@ void do_isr()
             detachInterrupt(digitalPinToInterrupt(EncoderPin1));
             break;
     }
+#endif // OPTO_ENCODER
 }
 
 const char help_dumpconfig[] PROGMEM="dump config";
@@ -356,14 +359,18 @@ const char help_fanon[] PROGMEM="fan on";
 const char help_fanoff[] PROGMEM="fan off";
 const char help_param0[] PROGMEM="param = 0";
 const char help_steppermenu[] PROGMEM="stepper menu";
+#ifdef OPTO_ENCODER
 const char help_enclimit[] PROGMEM="encoder limit (param)";
 const char help_encthresh[] PROGMEM="slow encoder threshold (param)";
+#endif // OPTO_ENCODER
 const char help_help[] PROGMEM="help";
 const char help_reset[] PROGMEM="reset config";
 const char help_lampon[] PROGMEM="lamp on";
 const char help_lampoff[] PROGMEM="lamp off";
+#ifdef OPTO_ENCODER
 const char help_encpos0[] PROGMEM="encoder pos = 0";
 const char help_next[] PROGMEM="next (until encoderlimit)";
+#endif // OPTO_ENCODER
 const char help_nextimeout[] PROGMEM="next timeout (param)";
 const char help_isr[] PROGMEM="ISR on rising/falling edge (param 0=off, 1=rising, 2=falling, 3=both)";
 const char help_tension[] PROGMEM="tension (param)";
@@ -379,19 +386,25 @@ Command commands_main[] = {
 {'A',FSH(help_fanoff), [](){fan(0);}},
 {'c',FSH(help_param0), [](){config.param = 0;}},
 {'C',FSH(help_steppermenu), [](){ commandset = commands_stepper; }},
+#ifdef OPTO_ENCODER
 {'e',FSH(help_enclimit), [](){
     config.encoderLimit = config.param;
     config.param = 0;}},
 {'E',FSH(help_encthresh), [](){
     config.slowEncoderThreshold = config.param;
     config.param = 0; }},
+#endif // OPTO_ENCODER
 {'h',FSH(help_help), [](){ help();}},
 {' ',FSH(help_reset), [](){ setup();}},
 {'l',FSH(help_lampon), [](){ lamp(1); fan(1);}},
 {'L',FSH(help_lampoff), [](){ lamp(0);}},
+#ifdef OPTO_ENCODER
 {'m',FSH(help_encpos0), [](){ encoderPos = 0;}},
+#endif // OPTO_ENCODER
 {'n',FSH(help_next),[](){ do_next(); }},
+#ifdef OPTO_ENCODER
 {'o',FSH(help_nextimeout), [](){encoderTO();}},
+#endif // OPTO_ENCODER
 {'p',FSH(help_pwmmenu), [](){commandset = commands_pwm;}},
 {'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
@@ -511,6 +524,7 @@ void stepperPoll()
     {
         return;
     }
+#ifdef OPTO_ENCODER
     if (config.verbose)
     {
         Serial.printf("stepperPoll %d\r\n", millis() - config.encoderTime);
@@ -528,6 +542,7 @@ void stepperPoll()
         frameReady = 0;
         Serial.println("{HDONE}");
     }
+#endif // OPTO_ENCODER
     else
     {
         stepper.run();
