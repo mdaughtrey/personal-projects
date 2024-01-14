@@ -9,10 +9,10 @@ endif
 
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it  -v ${HOMEDIR}:/personal-projects \
-	${TAG}:latest  /bin/bash
+		-p 5000:5000 ${TAG}:latest /bin/bash
 
 run:
-	${DOCKER} run -dh ${TAG} --name ${TAG} -v ${HOMEDIR}:/personal-projects ${TAG}:latest /home/mattd/demo.sh
+	${DOCKER} run -h ${TAG} --name ${TAG} -p5000:5000 -v ${HOMEDIR}:/personal-projects ${TAG}:latest /bin/bash -c gdbgui --args gk -c test/test069
 
 
 attach:
