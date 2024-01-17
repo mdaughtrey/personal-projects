@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <pico/stdlib.h>
 #include <hardware/pwm.h>
+#include <bitset>
 //#include "serialout.h"
 #include "stepper.h"
 #include <AsyncTimer.h>
@@ -15,17 +16,24 @@ const uint8_t stepperPulse = 18;
 typedef enum
 {
     NONE = 0,
-    HUNT,
-    NEXT
-} State;
+    HUNT_GAP,
+    HUNT_FRAME
+} HuntState;
 
 typedef enum
 {
-    OPTO_NONE = 0,
-    OPTO_RISING,
-    OPTO_FALLING,
-    OPTO_BOTH
-} OptoEdge;
+    NONE = 0,
+    FOUND_FRAME,
+    FOUND_GAP
+} FilmState;
+
+//typedef enum
+//{
+//    OPTO_NONE = 0,
+//    OPTO_RISING,
+//    OPTO_FALLING,
+//    OPTO_BOTH
+//} OptoEdge;
 
 typedef struct
 {
@@ -48,9 +56,11 @@ struct {
     uint16_t encoderTO;
     uint32_t encoderTime;
 #endif // OPTO_ENCODER
-    uint8_t state;
     uint8_t pwmslice;
     uint8_t pwmpin;
+    uint8_t pwmchan;
+    HuntState huntState;
+    FilmState filmState;
 } config;
 
 AsyncTimer at;
@@ -59,6 +69,8 @@ uint8_t frameReady = 0;
 uint8_t lastCommand;
 uint8_t ledState;
 uint32_t ledTime = 0;
+uint8_t mon = 0;
+uint8_t pinpoll = 100;
 
 const uint8_t ButtonPin0 = 2;
 const uint8_t ButtonPin1 = 3;
@@ -97,9 +109,12 @@ void encoderTO() { config.encoderTO = config.param; config.param = 0; }
 
 volatile uint16_t encoderPos = 0;
 #endif // OPTO_ENCODER
-volatile int isr1count = 0;
-volatile int isr2count = 0;
-void handleCommand();
+//volatile int isr1count = 0;
+//volatile int isr2count = 0;
+
+uint32_t encoder00, encoder01 = 0;
+uint32_t encoder10, encoder11 = 0;
+void handleCommand(uint8_t command);
 void coilControl();
 //void (*commandHandler)() = handleCommand;
 
@@ -118,14 +133,16 @@ Stepper stepper(stepperEnable, stepperDir, stepperPulse);
 
 void initPWM()
 {
-    Serial.printf("initPWM\r\n");
     config.pwmpin = 0;
+    Serial.printf("initPWM\r\n");
     gpio_set_function(config.pwmpin, GPIO_FUNC_PWM);
     config.pwmslice = pwm_gpio_to_slice_num(config.pwmpin);
+    config.pwmchan = pwm_gpio_to_channel(config.pwmpin);
     Serial.printf("slice is %d\r\n", config.pwmslice);
-    pwm_set_wrap(config.pwmslice, 256);
-    pwm_set_chan_level(config.pwmslice, PWM_CHAN_A,0);
+    pwm_set_wrap(config.pwmslice, 255);
+    pwm_set_chan_level(config.pwmslice, config.pwmchan,0);
 }
+
 
 void setFrameReady()
 {
@@ -137,19 +154,20 @@ void setFrameReady()
     Serial.printf("setFrameReady\r\n");
 }
 
+#if 0
 void isr1()
 {
 #ifdef OPTO_ENCODER
     isr1count++;
-    if ((config.isrEdge & OPTO_RISING) || (config.isrEdge & OPTO_FALLING))
-    {
-        encoderPos++;
-    }
-
-    if (config.encoderLimit && (encoderPos >= config.encoderLimit))
-    {
-        at.setTimeout(setFrameReady, 10);
-    }
+//    if ((config.isrEdge & OPTO_RISING) || (config.isrEdge & OPTO_FALLING))
+//    {
+//        encoderPos++;
+//    }
+//
+//    if (config.encoderLimit && (encoderPos >= config.encoderLimit))
+//    {
+//        at.setTimeout(setFrameReady, 10);
+//    }
 #endif // OPTO_ENCODER
 }
 
@@ -158,6 +176,24 @@ void isr2()
 #ifdef OPTO_ENCODER
     isr2count++;
 #endif // OPTO_ENCODER
+}
+#endif // 0
+
+void readFilmSensor()
+{
+    encoder00 <<= 1;
+    encoder00 |= encoder01 >> 31;
+    encoder01 <<= 1 ;
+    if (!digitalRead(EncoderPin0)) encoder01 |= 1;
+
+    encoder10 <<= 1;
+    encoder10 |= encoder11 >> 31;
+    encoder11 <<= 1 ;
+    if (!digitalRead(EncoderPin1)) encoder11 |= 1;
+
+    if (pinpoll && NONE != huntState) at.setTimeout(readFilmSensor, pinpoll);
+    if (0 == encoder01 || 0 == encoder11) config.filmState = FOUND_GAP;
+    if (0xffffffff == encoder01 || 0xffffffff == encoder11) config.filmState = FOUND_FRAME;
 }
 
 
@@ -209,17 +245,17 @@ void setup ()
     outputInit();
     initPWM();
     ledState = 0;
-    config.isrEdge = OPTO_BOTH;
+//    config.isrEdge = OPTO_BOTH;
     fan(0);
     rewindMotor(0);
-    isr1count = 0;
-    isr2count = 0;
+//    isr1count = 0;
+//    isr2count = 0;
     pinMode(LedPin, OUTPUT);
 
-#ifdef OPTO_ENCODER
-    attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, CHANGE);
-    attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, CHANGE);
-#endif // OPTO_ENCODER
+//#ifdef OPTO_ENCODER
+//    attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, RISING);
+//    attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, RISING);
+//#endif // OPTO_ENCODER
     commandset = commands_main;
 
     for (uint8_t ii = 0; ii < 11; ii++)
@@ -273,21 +309,22 @@ void dumpConfig(uint8_t th)
 {
     Serial.printf("-------------------------------\r\n");
 #ifdef OPTO_ENCODER
-    Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u\r\n"
-        "param: %d\r\nisr1count: %u\r\nisr2count: %u\r\n",
+    Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u param %u pinpoll %u\r\n",
+//        "param: %d\r\nisr1count: %u\r\nisr2count: %u\r\n",
         config.encoderLimit,
         config.slowEncoderThreshold,
         config.param,
-        isr1count,
-        isr2count);
+        pinpoll);
+//        isr1count,
+//        isr2count);
 
-    Serial.printf("encoderPos: %d\r\ntension: %d\r\nisrEdge: %d\r\nencoderTO: %d\r\nencoderTime: %d\r\nstate: %d\r\n",
+    Serial.printf("encoderPos: %d\r\ntension: %d\r\nisrEdge: %d\r\nencoderTO: %d\r\nencoderTime: %d\r\nhuntState: %d\r\n",
         encoderPos,
         config.tension,
         config.isrEdge,
         config.encoderTO,
         config.encoderTime,
-        config.state);
+        config.huntState);
 #endif // OPTO_ENCODER
 
     Serial.printf("verbose: %d\r\n", config.verbose);
@@ -315,42 +352,52 @@ void dumpPWMConfig()
 
 void do_next()
 {
-    config.state = NEXT;
-    stepper.start(config.encoderLimit);
-#ifdef OPTO_ENCODER
+    config.huntState = HUNT_GAP;
+    at.setTimeout(readFilmSensor, pinpoll);
+//#ifdef OPTO_ENCODER
+//    stepper.start(config.encoderLimit);
     encoderStart();
-    encoderPos %= config.encoderLimit;
-#endif // OPTO_ENCODER
+//    encoderPos %= config.encoderLimit;
+//#endif // OPTO_ENCODER
 }
 
-void do_isr()
+//void do_isr()
+//{
+//    config.isrEdge = config.param % 4;
+//    config.param = 0;
+//#ifdef OPTO_ENCODER
+//    switch (config.isrEdge)
+//    {
+//        case OPTO_RISING:
+//            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, RISING);
+//            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, RISING);
+//            break;
+//
+//        case OPTO_FALLING:
+//            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, FALLING);
+//            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, FALLING);
+//            break;
+//
+//        case OPTO_BOTH:
+//            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, CHANGE);
+//            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, CHANGE);
+//            break;
+//
+//        default:
+//            detachInterrupt(digitalPinToInterrupt(EncoderPin0));
+//            detachInterrupt(digitalPinToInterrupt(EncoderPin1));
+//            break;
+//    }
+//#endif // OPTO_ENCODER
+//}
+
+void initialize()
 {
-    config.isrEdge = config.param % 4;
-    config.param = 0;
-#ifdef OPTO_ENCODER
-    switch (config.isrEdge)
+    const char initstr[] = "kcv50tl30ecE8000oCc500Ic2000ic25D25Ux";
+    for (int ii = 0; ii < strlen(initstr); ii++)
     {
-        case OPTO_RISING:
-            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, RISING);
-            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, RISING);
-            break;
-
-        case OPTO_FALLING:
-            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, FALLING);
-            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, FALLING);
-            break;
-
-        case OPTO_BOTH:
-            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, CHANGE);
-            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, CHANGE);
-            break;
-
-        default:
-            detachInterrupt(digitalPinToInterrupt(EncoderPin0));
-            detachInterrupt(digitalPinToInterrupt(EncoderPin1));
-            break;
+        handleCommand(initstr[ii]);
     }
-#endif // OPTO_ENCODER
 }
 
 const char help_dumpconfig[] PROGMEM="dump config";
@@ -370,14 +417,19 @@ const char help_lampoff[] PROGMEM="lamp off";
 #ifdef OPTO_ENCODER
 const char help_encpos0[] PROGMEM="encoder pos = 0";
 const char help_next[] PROGMEM="next (until encoderlimit)";
-#endif // OPTO_ENCODER
 const char help_nextimeout[] PROGMEM="next timeout (param)";
+#endif // OPTO_ENCODER
 const char help_isr[] PROGMEM="ISR on rising/falling edge (param 0=off, 1=rising, 2=falling, 3=both)";
 const char help_tension[] PROGMEM="tension (param)";
 const char help_tension0[] PROGMEM="tension 0";
 const char help_verbose[] PROGMEM="verbose 0-1 (param)";
 const char help_pwmmenu[] PROGMEM="PWM menu";
+const char help_init[] PROGMEM="Initialize with string";
 const char empty[] PROGMEM="";
+const char help_mon[] PROGMEM="monitoring on)";
+const char help_moff[] PROGMEM="monitoring off)";
+const char help_pon[] PROGMEM="set pin polling (ms,param))";
+const char help_poff[] PROGMEM="polling off)";
 
 Command commands_main[] = {
 {'?',FSH(help_dumpconfig), [](){ dumpConfig(0);}},
@@ -385,7 +437,9 @@ Command commands_main[] = {
 {'a',FSH(help_fanon), [](){ fan(1);}},
 {'A',FSH(help_fanoff), [](){fan(0);}},
 {'c',FSH(help_param0), [](){config.param = 0;}},
+#ifdef SIMPLEINTERVAL
 {'C',FSH(help_steppermenu), [](){ commandset = commands_stepper; }},
+#endif //  SIMPLEINTERVAL
 #ifdef OPTO_ENCODER
 {'e',FSH(help_enclimit), [](){
     config.encoderLimit = config.param;
@@ -395,18 +449,17 @@ Command commands_main[] = {
     config.param = 0; }},
 #endif // OPTO_ENCODER
 {'h',FSH(help_help), [](){ help();}},
+{'i',FSH(help_init), [](){ initialize(); }},
 {' ',FSH(help_reset), [](){ setup();}},
 {'l',FSH(help_lampon), [](){ lamp(1); fan(1);}},
 {'L',FSH(help_lampoff), [](){ lamp(0);}},
 #ifdef OPTO_ENCODER
 {'m',FSH(help_encpos0), [](){ encoderPos = 0;}},
-#endif // OPTO_ENCODER
 {'n',FSH(help_next),[](){ do_next(); }},
-#ifdef OPTO_ENCODER
 {'o',FSH(help_nextimeout), [](){encoderTO();}},
 #endif // OPTO_ENCODER
 {'p',FSH(help_pwmmenu), [](){commandset = commands_pwm;}},
-{'r',FSH(help_isr), [](){ do_isr();}},
+//{'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
     config.tension = config.param;
     config.param = 0;
@@ -414,6 +467,10 @@ Command commands_main[] = {
     fan(1); }},
 {'T',FSH(help_tension0), [](){ rewindMotor(0); fan(0);}},
 {'v',FSH(help_verbose), [](){ config.verbose = stepper.m_verbose = config.param;}},
+{'w',FSH(help_mon), [](){ mon = 1; at.setTimeout(monitor,1);}},
+{'W',FSH(help_moff), [](){ mon = 0;}},
+{'x',FSH(help_pon), [](){ pinpoll = config.param; at.setTimeout(readFilmSensor, pinpoll); config.param = 0; }},
+{'X',FSH(help_poff), [](){ pinpoll = 0;}},
 {'&', FSH(empty), [](){} }
 };
 
@@ -440,7 +497,9 @@ Command commands_stepper[] = {
     {'i', FSH(help_imax), [](){ stepper.m_maxInterval64 = config.param;} },
     {'I', FSH(help_imin), [](){ stepper.m_minInterval64 = config.param;} },
     {'p', FSH(help_pulse), [](){ stepper.pulse(config.param);} },
-    {'r', FSH(help_run), [](){ stepper.run();} },
+#ifdef OPTO_ENCODER
+    {'r', FSH(help_run), [](){ stepper.run(encoderPos);} },
+#endif //  OPTO_ENCODER
     {'s', FSH(help_start), [](){ stepper.start(config.param); }},
     {'U', FSH(help_rup), [](){ stepper.m_rampUpSteps = config.param;} },
     {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
@@ -483,14 +542,13 @@ void help()
     }
 }
 
-
-void handleCommand()
+void handleCommand(uint8_t command)
 {
-	uint8_t lastCommand;
-    lastCommand = Serial.read();
+//	uint8_t lastCommand;
+//    lastCommand = Serial.read();
     for (Command * iter = commandset; iter->key != '&'; iter++)
     {
-        if (iter->key == lastCommand)
+        if (iter->key == command)
         {
             iter->fun();
             return;
@@ -505,48 +563,59 @@ void handleCommand()
 //        }
 //    }
 
-    if (lastCommand >= '0' & lastCommand <= '9')
+    if (command >= '0' & command <= '9')
     {
         config.param *= 10;
-        config.param += lastCommand - '0';
+        config.param += command - '0';
     }
 }
 
 void stepperPoll()
 {
-    if (NONE == config.state) return;
+    if (NONE == config.huntState) return;
     if (config.verbose)
     {
-        Serial.printf("state %u\r\n", config.state);
+        Serial.printf("huntState %u\r\n", config.huntState);
     }
 
-    if (NEXT != config.state)
+//    if (NEXT != config.state)
+//    {
+//        return;
+//    }
+
+    if (HUNT_GAP == config.huntState && FOUND_GAP == config.filmState)
     {
-        return;
-    }
-#ifdef OPTO_ENCODER
-    if (config.verbose)
-    {
-        Serial.printf("stepperPoll %d\r\n", millis() - config.encoderTime);
-    }
-    if ((millis() - config.encoderTime) > config.encoderTO)
+        config.huntState = HUNT_FRAME;
+    } 
+    else if (HUNT_FRAME == config.huntState && FOUND_FRAME == config.filmState)
     {
         stepper.stop();
-        config.state = NONE;
-        Serial.println("{NTO}");
-    }
-    else if (encoderPos >= config.encoderLimit && frameReady)
-    {
-        stepper.stop(encoderPos);
-        config.state = NONE;
-        frameReady = 0;
+        config.huntState = NONE;
         Serial.println("{HDONE}");
     }
-#endif // OPTO_ENCODER
-    else
-    {
-        stepper.run();
-    }
+// #ifdef OPTO_ENCODER
+//     if (config.verbose)
+//     {
+//         Serial.printf("stepperPoll %d\r\n", millis() - config.encoderTime);
+//     }
+     if ((millis() - config.encoderTime) > config.encoderTO)
+     {
+         stepper.stop();
+         config.huntState = NONE;
+         Serial.println("{NTO}");
+     }
+//     else if (encoderPos >= config.encoderLimit && frameReady)
+//     {
+//         stepper.stop(encoderPos);
+//         config.state = NONE;
+//         frameReady = 0;
+//         Serial.println("{HDONE}");
+//     }
+//     else
+//     {
+//         stepper.run(encoderPos);
+//     }
+// #endif // OPTO_ENCODER
 }
 
 void ledPoll()
@@ -559,15 +628,29 @@ void ledPoll()
     }
 }
 
+void monitor(void)
+{
+    if (!mon) return;
+
+//    std::bitset<32> d3(encoder00);
+//    std::bitset<32> d2(encoder01);
+//    std::bitset<32> d1(encoder10);
+    std::bitset<32> d0(encoder11);
+    if (d0.count() == 0 | d0.count() == 32) Serial.printf("%u ", d0.count());
+//    Serial.printf("%d %d %d %d\r\n", d3.count(),d2.count(),d1.count(),d0.count());
+    if (mon) at.setTimeout(monitor, 1);
+} 
+
 void loop ()
 {
     at.handle();
 //    dumpConfig(3);
     if (Serial.available())
     {
-        handleCommand();
+        handleCommand(Serial.read());
     }
     buttonPoll();
     ledPoll();
     stepperPoll();
+
 }
