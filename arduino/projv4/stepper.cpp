@@ -69,6 +69,25 @@ void Stepper::run(uint16_t encoderPos)
     }
 }
 
+void Stepper::run(void)
+{
+    if (!m_running)
+    {
+        return;
+    }
+
+    if ((time_us_64() - m_lastStepTime64) < m_currentInterval64)
+    {
+        return;
+    }
+
+    pinMode(m_stepperPulse, OUTPUT);
+    delayMicroseconds(100);
+    pinMode(m_stepperPulse, INPUT_PULLUP);
+    m_lastStepTime64 = time_us_64();
+}
+
+
 void Stepper::start(uint16_t moves)
 {
     if (0 == m_minInterval64 || !m_enabled)
@@ -88,6 +107,29 @@ void Stepper::start(uint16_t moves)
                 m_targetSteps, moves, m_stepsPerMove);
     }
     saveMemo(moves);
+}
+
+void Stepper::start(void)
+{
+    if (!m_enabled)
+    {
+        return;
+    }
+//    m_stepCount = 0;
+//    m_targetMove = moves;
+//    m_stepCountAtLastPos = 0;
+//    m_lastEncoderPos = 0;
+    m_lastStepTime64 = time_us_64();
+    m_running = true;
+    m_currentInterval64 = 500;
+//    m_targetSteps = moves * m_stepsPerMove;
+//    m_currentInterval64 = getNextInterval64(0);
+//    if (m_verbose)
+//    {
+//        Serial.printf("Stepper::start m_targetSteps %u moves %u m_stepsPerMove %u\r\n",
+//                m_targetSteps, moves, m_stepsPerMove);
+//    }
+//    saveMemo(moves);
 }
 
 void Stepper::cw()

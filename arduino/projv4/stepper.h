@@ -59,7 +59,9 @@ class Stepper
     public:
         Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse);
         void run(uint16_t pos);
+        void run(void);
         void start(uint16_t moves);
+        void start(void);
         void stop(uint16_t move = 0);
         void cw();
         void ccw();

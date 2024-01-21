@@ -50,6 +50,7 @@ a:
 	docker attach acli
 
 s:
+	-rm screenlog.0
 	screen -L ${PORT} 115200
 
 c:
