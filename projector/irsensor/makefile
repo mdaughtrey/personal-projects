@@ -1,5 +1,6 @@
-PROJ=projv4
-PROJDIR=/personal-projects/arduino/projv4
+# git fetch git@github.com:Gerriko/PicoCapSense.git
+PROJ=irsensor
+PROJDIR=/home/mattd/personal-projects/projector/irsensor
 PORT=/dev/ttyACM0
 #PORT=/dev/ttyS0
 PLATFORM=rp2040:rp2040:generic
@@ -29,9 +30,7 @@ br:
 	
 # Build
 b:
-	${DOCKER} run --rm -v ~/personal-projects:/personal-projects \
-        --entrypoint /home/mattd/acli/bin/arduino-cli \
-		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
+	${ACLI} compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
 
 # Upload remote
 #ur: 
@@ -50,7 +49,6 @@ a:
 	docker attach acli
 
 s:
-	-rm screenlog.0
 	screen -L ${PORT} 115200
 
 c:

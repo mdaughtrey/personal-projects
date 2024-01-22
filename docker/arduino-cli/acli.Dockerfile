@@ -1,9 +1,10 @@
-FROM debian:buster
+FROM debian:latest
 ARG USER=mattd
 RUN apt-get  update -y
 RUN apt-get -y install vim tmux curl git make wget python3 python3-pip 
-RUN apt-get -y install unzip screen exuberant-ctags avrdude
-RUN pip3 install pyserial
+RUN apt-get -y install unzip screen exuberant-ctags avrdude openocd python3-serial yq
+RUN apt-get -y install gdb
+#RUN pip3 install pyserial
 #RUN arduino-cli core update-index
 #RUN mkdir -p  /root/Arduino/libraries
 RUN ln -s /usr/bin/python3 /usr/bin/python
@@ -26,8 +27,9 @@ RUN cd ~/acli && wget https://github.com/ZinggJM/GxEPD/archive/master.zip && unz
 #COPY ${PWD}/arduino-cli.yaml /home/${USER}/.arduino15
 #RUN export PATH=${PATH}:/usr/local/arduino-cli
 RUN ~/acli/bin/arduino-cli config init
-COPY arduino-cli.patch0 /tmp/arduino-cli.patch0
-RUN cd ~/.arduino15 && patch -p0 arduino-cli.yaml /tmp/arduino-cli.patch0
+RUN yq -yi '.board_manager.additional_urls=["https://arduino.esp8266.com/stable/package_esp8266com_index.json","https://dl.espressif.com/dl/package_esp32_index.json","https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json"]' ~/.arduino15/arduino-cli.yaml
+#COPY arduino-cli.patch0 /tmp/arduino-cli.patch0
+#RUN cd ~/.arduino15 && patch -p0 arduino-cli.yaml /tmp/arduino-cli.patch0
 RUN ~/acli/bin/arduino-cli core update-index
 RUN ~/acli/bin/arduino-cli core install esp8266:esp8266
 RUN ~/acli/bin/arduino-cli core install esp32:esp32
@@ -45,6 +47,8 @@ RUN ~/acli/bin/arduino-cli lib install HID-Project printex asynctimer TM1638plus
 RUN ~/acli/bin/arduino-cli lib install 'SparkFun APDS9960 RGB and Gesture Sensor'
 RUN ~/acli/bin/arduino-cli lib install 'RevEng PAJ7620'
 RUN ~/acli/bin/arduino-cli lib install 'AccelStepper'
+
+
 # https://roboticsbackend.com/arduino-stl-library/
 #ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
 #COPY ~/personal-projects/bin/vimrc ~/.vimrc
