@@ -13,6 +13,7 @@ USER ${USER}
 RUN ln -s /personal-projects/bin/vimrc ~/.vimrc
 RUN pip install nikola
 ENV PATH="${PATH}:/home/mattd/.local/bin"
-COPY demo.sh /home/mattd
+WORKDIR /home/mattd
+#COPY demo.sh /home/mattd
 #RUN cd /home/mattd && nikola init -q --demo daughtrey.com && cd daughtrey.com && nikola build && nikola serve
 # RUN cd daughtrey.com && nikola build && nikola serve

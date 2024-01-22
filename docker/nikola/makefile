@@ -1,11 +1,13 @@
 TAG=nikola
 DOCKER=docker.exe
+PUB=--publish 8000:8000
+VOL=-v .:/home/mattd/
 
 run:
-	${DOCKER} run -dh ${TAG} --name ${TAG} --publish 8000:8000 -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects ${TAG}:latest /home/mattd/demo.sh
+	${DOCKER} run -dh ${TAG} --name ${TAG} ${PUB} ${VOL} /home/mattd/demo.sh
 
 runi:
-	${DOCKER} run -dh ${TAG} --name ${TAG} -it  -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects ${TAG}:latest  /bin/bash
+	${DOCKER} run --rm -h ${TAG} --name ${TAG} ${PUB} -it ${VOL} ${TAG}:latest  /bin/bash
 
 attach:
 	${DOCKER} attach ${TAG}
@@ -21,7 +23,7 @@ tag:
 	${DOCKER} tag ${TAG} mdaughtrey/projects:${TAG}
 
 make:
-	${DOCKER} build -f ${TAG}.Dockerfile . --tag=${TAG}
+	${DOCKER} build --no-cache -f ${TAG}.Dockerfile . --tag=${TAG}
 
 push:	
 	${DOCKER} push mdaughtrey/projects:${TAG}
