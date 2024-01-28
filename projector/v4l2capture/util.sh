@@ -1,9 +1,12 @@
 #!/bin/bash
 # kill a screen 
 # screen -S session -X quit
+# 1. Run setres
+# 2. startVLC
+# 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=newconfig0
+PROJECT=20240104_test1
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -12,7 +15,7 @@ DEVICE=/dev/video0
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
 #EXPOSURES="2500,3000,3500,4000,4500,5000,5500"
-EXPOSURES="4500"
+EXPOSURES="5000"
 EDR="--exposure ${EXPOSURES}"
 
 #exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
@@ -59,7 +62,7 @@ getdev()
 s8()
 {
     ./usbcap.py framecap --camindex $(getdev) --framesto ${FP}/capture --frames 10000 --logfile usbcap.log \
-        --fastforward 9 --res 0 --film super8 ${EDR} 
+        --fastforward 9 --res 0 --film super8 --telnet localhost:4212:abc ${EDR} 
 }
 
 sertest()
@@ -96,7 +99,9 @@ mount()
 #    sudo mount.cifs //NAS-36-FE-22/imageinput /media/nas -o user=nobody,password=nobody,rw,file_mode=077r_mode=07777
 #    ln -s frames /media/nas/frames 
     sudo mount /dev/sda1 /media/frames -o user=nobody,password=nobody,rw,file_mode=077r_mode=07777
-    ln -s frames /media/frames 
+    if [[ "$?" ]]; then
+        ln -s frames /media/frames 
+    fi
 }
 
 descratch()
@@ -153,6 +158,11 @@ oneshot()
         
 }
 
+setres()
+{
+    v4l2-ctl --device $(getdev)  --set-fmt-video=width=2592,height=1944
+}
+
 case "$1" in 
     avx) ./avx.sh ;;
     dev) ffmpeg -devices ;;
@@ -182,6 +192,8 @@ case "$1" in
     tonefuse) tonefuse ;;
     oneshot) oneshot ;;
     screen) screen -L ${PORT} 115200 ;;
+    setres) setres ;;
+    startvlc) screen -dmS vlc vlc --intf qt --extraintf telnet --telnet-password abc ;;
     *) echo what?
 esac
 

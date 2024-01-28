@@ -4,6 +4,8 @@
 import  argparse
 import cProfile
 import  cv2 as cv
+from Exscript.util.interact import read_login
+from Exscript.protocols import Telnet
 from functools import partial
 from    glob import glob, iglob
 from    itertools import groupby
@@ -86,7 +88,7 @@ class SerDev():
 class Camera():
     res = [(640,480),(3264,2448),(2592,1944),(1920,1080),(1600,1200),(1280,720),(960,540),(848,480),(640,360),(424,240),(320,240),(320,180),(640,480)]
     def __init__(self, *args):
-        self.res = {'lo': Camera.res[0], 'hi': Camera.res[1]}
+        self.res = {'lo': Camera.res[0], 'hi': Camera.res[2]}
         if args[0] is None: 
             return
         self.config = args[0]
@@ -132,6 +134,7 @@ def pcl_framecap():
     parser.add_argument('--serdev', dest='serdev', default='/dev/ttyACM0', help='Serial device')
     parser.add_argument('--exposure', dest='exposure', help='EDR exposure a,b,[c,..]')
     parser.add_argument('--startdia', dest='startdia', type=int, default=62, help='Feed spool starting diameter (mm)')
+    parser.add_argument('--telnet', dest='telnet', type=str,  help='host:port:pswd', required=True)
     return parser.parse_args()
 
 def pcl_exptest():
@@ -217,7 +220,26 @@ def init_framecap(config):
     serdev.open()
     serwrite(b' ')
     wait = serwaitfor(b'{State:Ready}', b'No')
-    message = f'kcv{lastTension}tl{config.optocount}ecE8000oCc500Ic2000ic25D25Ux'.encode()          
+    # k - echo
+    # c - clear
+    # v - verbose
+    # t - tension
+    # l - lamp
+    # e - encoder limit
+    # c - clear param
+    # E - encodeer slow threshold 8000
+    # o - timeout
+    # C - stepper menu
+    # - c - clear param
+    # - I - min interval 500
+    # - c - clear param
+    # - i - max interval 2000
+    # - c - clear param
+    # - D - ramp down 25
+    # - U - ramp up 25
+    # - x - return to main
+    #message = f'kcv{lastTension}tl{config.optocount}ecE8000oCc500Ic2000ic25D25Ux'.encode()          
+    message = f'kcvl'.encode()          
     logger.info(message)
     serwrite(message)
 
@@ -560,7 +582,7 @@ def exptest(config):
             write_frame(config, exp, frame)
 
 
-def framecap(config):
+def framecap0(config):
     logger = logging.getLogger('hqcap')
     framenum = get_most_recent_frame(config)
 
@@ -569,13 +591,6 @@ def framecap(config):
             [f.save(f'{config.framesto}/{framenum:>08}_{e}.png') for f,e in zip(frames,exposures)]
             logger.info(f'Saving to {config.framesto}/{framenum}_*.png')
             framenum += 1
-#            pdb.set_trace()
-#            fname = f'{config.framesto}/{framenum:>08}_{exposure}'
-#            logger.info(f'Saving to {fname}')
-#            try:
-#                cv.imwrite(f'{fname}.png', np.asarray(frame[1]))
-#            except:
-#                logger.error("cv rejects frame")
     else:
         for index,frame in enumerate(framegen(config, logger)):
             write_frame(config, framenum+index, frame)
@@ -585,6 +600,29 @@ def framecap(config):
     wait = serwaitfor(b'{State:Ready}', b'No')
     logger.debug(wait[2])
 #    serwrite(b' ')
+#
+def framecap(config):
+    pdb.set_trace()
+    logger = logging.getLogger('framcap')
+    count = 0
+    # Start telnet
+    params = config.telnet.split(":")
+    conn = Telnet()
+    conn.connect('localhost',4212)
+    conn.waitfor(conn.get_password_prompt())
+    conn.send('abc\r\n')
+
+    while count < config.frames:
+        # telnet
+        conn.send('snapshot\r\n')
+        time.sleep(0.1)
+        serwrite(f'n'.encode())
+        wait = serwaitfor(b'{HDONE}', b'{NTO}')
+        time.sleep(1.0)
+        if wait[0]:
+            logger.error(wait[2])
+            return
+
 
 def tonefuse(config):
     pdb.set_trace()
