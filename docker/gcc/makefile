@@ -1,22 +1,38 @@
-NAME=gcc
+TAG=gcc
+ifeq ($(shell hostname),md)
+DOCKER=docker
+HOMEDIR=/home/matt/personal-projects/
+else
+DOCKER=docker
+HOMEDIR=/home/mattd/personal-projects/
+endif
+
+runi:
+	${DOCKER} run --rm -h ${TAG} -p 5000:5000 --name ${TAG} -it  -v ${HOMEDIR}:/personal-projects \
+	${TAG}:latest  /bin/bash
 
 run:
-	docker run -dh ${NAME} --name ${NAME} -ti ${NAME}:latest
-	#docker run -dh ${TAG} -it --expose 22 -v /c/scratch:/scratch --cap-add=SYS_PTRACE --security-opt seccomp=unconfined gcc:latest 
-	#docker run -dh vproj --expose 5000 -it  -v /p/vproj:/media/sf_vproj vproj:latest 
+	${DOCKER} run -dh ${TAG} --name ${TAG} -v ${HOMEDIR}:/personal-projects ${TAG}:latest /home/mattd/demo.sh
+
 
 attach:
-	docker attach ${NAME}
+	${DOCKER} attach ${TAG}
+
+#	${DOCKER} exec -it `${DOCKER} ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1 ` /bin/bash
 
 stop:
-	docker stop ${NAME}
-	docker rm ${NAME}
+	${DOCKER} stop ${TAG}
+	${DOCKER} rm ${TAG}
+#	${DOCKER} stop `${DOCKER} ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1`
 
 tag:
-	docker tag ${IMAGE} mdaughtrey/projects:${TAG}
+	${DOCKER} tag ${TAG} mdaughtrey/projects:${TAG}
 
-push:
-	docker push mdaughtrey/projects:${TAG}
+make:
+	${DOCKER} build -f ${TAG}.Dockerfile . --tag=${TAG}
 
-build:
-	docker build -f ${NAME}.Dockerfile . --tag=${NAME}
+push:	
+	${DOCKER} push mdaughtrey/projects:${TAG}
+
+commit:
+	${DOCKER} commit `${DOCKER} stop `${DOCKER} ps -a | grep ${TAG}:latest | grep -v Exited | cut -d' ' -f1` mdaughtrey/projects:${TAG}

@@ -1,8 +1,14 @@
 TAG=debian
 DOCKER=docker.exe
 
-run:
-	${DOCKER} run -dh ${TAG} --name ${TAG} -it  -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects ${TAG}:latest 
+#run:
+#	${DOCKER} run -dh ${TAG} --name ${TAG} -it  -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects ${TAG}:latest 
+
+runi:
+	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it ${TAG}:latest  /bin/bash
+
+#run:
+#	${DOCKER} run -dh ${TAG} --name ${TAG} --publish 8000:8000 -v ${HOMEDIR}:/personal-projects ${TAG}:latest /home/mattd/demo.sh
 
 attach:
 	${DOCKER} attach ${TAG}
@@ -18,7 +24,7 @@ tag:
 	${DOCKER} tag ${TAG} mdaughtrey/projects:${TAG}
 
 make:
-	${DOCKER} build -f ${TAG}.${DOCKER}file . --tag=${TAG}
+	${DOCKER} build  -f ${TAG}.Dockerfile . --tag=${TAG}
 
 push:	
 	${DOCKER} push mdaughtrey/projects:${TAG}

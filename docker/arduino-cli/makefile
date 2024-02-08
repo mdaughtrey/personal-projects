@@ -7,6 +7,9 @@ all:
 run:
 	${DOCKER} run -dh ${NAME} -v ~/personal-projects:/personal-projects --name ${NAME} -it ${NAME}:latest 
 
+runi:
+	${DOCKER} run --rm -h ${NAME} -v ~/personal-projects:/personal-projects --name ${NAME} -it ${NAME}:latest  /bin/bash
+
 runb:
 	${DOCKER} run --rm -v ~/personal-projects:/personal-projects --name ${NAME} ${NAME}:latest 
 

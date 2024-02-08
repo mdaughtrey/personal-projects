@@ -1,2 +1,3 @@
-#define SIGMOID
-//#define OPTO_ENCODER
+//#define SIGMOID
+#define SIMPLEINTERVAL
+#define OPTO_ENCODER

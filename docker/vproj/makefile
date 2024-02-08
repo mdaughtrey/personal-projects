@@ -1,5 +1,7 @@
 IMAGE=b163ddd353c9
 NAME=vproj
+
+ifeq ($(HOST),md)
 DOCKER=docker.exe
 HOST=$(shell hostname)
 
