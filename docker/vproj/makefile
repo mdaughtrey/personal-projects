@@ -1,6 +1,10 @@
 IMAGE=b163ddd353c9
 NAME=vproj
+ifeq ($(shell uname),Linux)
+DOCKER=docker
+else
 DOCKER=docker.exe
+endif
 HOST=$(shell hostname)
 
 h:
