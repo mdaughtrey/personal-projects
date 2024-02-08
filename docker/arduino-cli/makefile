@@ -23,10 +23,10 @@ stop:
 push:
 	${DOCKER} push mdaughtrey/projects:${TAG}
 
-build:
+b:
 	${DOCKER} build -f ${NAME}.Dockerfile . --tag=${NAME}
 
-buildclean:
+c:
 	${DOCKER} build --no-cache -f ${NAME}.Dockerfile . --tag=${NAME}
 
 tag:

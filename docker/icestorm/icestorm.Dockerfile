@@ -3,7 +3,7 @@ RUN apt-get update -y
 RUN apt-get install vim git python3 nodejs udev -y 
 RUN git config --global user.email "matt@daughtrey.com"
 RUN git config --global user.name "mdaughtrey"
-RUN git clone --depth 1 https://github.com/mdaughtrey/personal-projects --branch master --single-branch icestorm
+#RUN git clone --depth 1 https://github.com/mdaughtrey/personal-projects --branch master --single-branch icestorm
 #RUN cp /personal-projects/bin/vimrc ~/.vimrc
 #RUN cp /personal-projects/bin/tmux.conf ~/.tmux.conf
 RUN apt-get update -y

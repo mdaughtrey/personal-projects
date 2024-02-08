@@ -1,0 +1,309 @@
+#!/bin/bash
+
+ADID=1010CORP\\\\matt.daughtrey
+AZURE=azure.1010data.cloud
+CORP=corp.1010data.com
+AWS=aws.1010data.cloud
+
+declare -a bastions
+
+bastions=("pazbastion/,dt,allegiance,partycity,fourwinds,savemart,devembsprod,"
+    "pukbastion/,mccolls,"
+    "azue1bastion/,wegmans,pg,"
+    "dazbastion/,mattdtest,playground,"
+    "pawsbastion/,shell,")
+
+addwindow()
+{
+    set -o xtrace
+    WNAME=$1
+    tmux list-windows | grep "\ ${WNAME}\ "
+    if [[ "0" ==  "$?" ]]; then WNAME="${WNAME}_"; fi
+    tmux new-window -n $WNAME bash
+    tmux send-keys -t:$(tmux list-windows | grep "\ ${WNAME}\ " | cut -d: -f1) "${CMD}" 'C-m'
+}
+
+common ()
+{
+    label=$1
+    shift
+    if [[ ! "$(tmux ls)" =~ ^${label}: ]]; then
+        tmux new -ds $label
+        let ii=0
+        for nn in "$@"; do
+            if [[ "$nn" =~ \/ ]]; then
+                title=`expr match "$nn" '\([^\/]*\)'`
+                cmd=${nn#${title}/}
+                tmux new-window -t $label:$ii -n $title 
+                #${TMUX} send-keys -lt $label:$ii "$cmd" 'C-m'
+                tmux send-keys -t $label:$ii "$cmd" 'C-m'
+            else
+                tmux new-window -t $label:$ii -n $nn
+            fi
+            ((ii+=1))
+        done
+    fi
+    tmux a -t $label
+}
+
+
+ha()
+{
+    for host in $@; do
+        case "$host" in 
+#        az1010) CMD="ssh -p 2222 ${ADID}@azue2d2213.${AZURE}" addwindow az1010  ;;
+        bash) CMD="bash" addwindow bash ;;
+        code) CMD="code" addwindow code ;;
+        config) CMD="config" addwindow config ;;
+        *) CMD="ssh $host" addwindow ${host}  ;;
+        esac
+    done
+}
+
+h()
+{
+    for host in $@; do
+        case "$host" in 
+#        az1010) ssh ${ADID}@azue2d2213.${AZURE} ;;
+        bash) CMD="bash" addwindow bash ;;
+        code) CMD="code" addwindow code ;;
+        config) CMD="config" addwindow config ;;
+        #*) if [[ "" != "${hostmap[$host]}" ]]; then ssh ${hostmap[$host]}; return; fi
+        *) ssh $host ;;
+        esac
+    done
+}
+
+remotecommands=',azversions,'
+
+rc_azversions()
+{
+    echo "'curl -k http://localhost:9975/controller && curl -k http://localhost:9975/log2elk'"
+}
+
+# remote command
+rc() 
+{
+    if [[ "" == "$2" ]]; then
+        echo No command?
+        exit 1
+    fi
+    nodenum=
+    if (($1)); then
+        node=am1ecompute$(printf "%03u" $1)
+        nodenum=$1
+        shift
+    else
+        node=am1egw
+    fi
+    OP=${2}
+    if [[ ${remotecommands} == *,${OP},* ]]; then
+        OP=$(eval rc_$OP)
+        POST=post_${OP}
+    fi
+    for b in ${bastions[@]}; do
+        if [[ ${b} == *,${1},* ]]; then
+            CMD="ssh -qt ${b/\/*/} ssh -qt sysdev@${node}.${1} ${OP}"
+            ${CMD} 
+            return
+        fi
+    done
+
+#    CMD="ssh -t ${1} ${S2}"
+#    $CMD
+}
+
+s() # env screen 
+{
+    nodenum=
+    if (($1)); then
+        node=am1ecompute$(printf "%03u" $1)
+        nodenum=$1
+        shift
+    else
+        node=am1egw
+    fi
+    [[ "" == "${2}" ]] && S2="bash" || S2="screen -r ${2}"
+    for b in ${bastions[@]}; do
+        if [[ ${b} == *,${1},* ]]; then
+            CMD="ssh -t ${b/\/*/} ssh -t sysdev@${node}.${1} ${S2}"
+            if [[ "1" == "${NEWWINDOW}" ]]; then
+                addwindow ${1}${nodenum}
+                return
+            else
+                $CMD
+            fi
+        fi
+    done
+
+    CMD="ssh -t ${1} ${S2}"
+    if [[ "1" == "${NEWWINDOW}" ]]; then
+        addwindow ${1}${2}
+    else
+        $CMD
+    fi
+}
+
+scpfrom()
+{
+    if [[ "3" -gt $(echo $@ | wc -w) ]]; then 
+        echo "Usage: scpfrom remotenode remotefile localfile"
+        return
+    fi
+    read -r REMOTENODE REMOTEFILE LOCALFILE<<< ${@}
+
+    for b in ${bastions[@]}; do
+        if [[ ${b} == *,${REMOTENODE/*./},* ]]; then
+            CMD="scp sysdev@${REMOTENODE}:/${REMOTEFILE} /tmp/$(basename $REMOTEFILE)"
+            ssh -t ${b/\/*/} $CMD
+            scp ${b/\/*/}:/tmp/$(basename $REMOTEFILE) $LOCALFILE
+            ssh -t ${b/\/*/} "rm /tmp/$(basename ${REMOTEFILE})"
+            exit 0
+        fi
+    done
+}
+
+scpto()
+{
+    if [[ "3" -gt $(echo $@ | wc -w) ]]; then 
+        echo "Usage: scpto localfile remotenode remotefile"
+        return
+    fi
+    read -r LOCALFILE REMOTENODE REMOTEFILE<<< ${@}
+
+    for b in ${bastions[@]}; do
+        if [[ ${b} == *,${REMOTENODE/*./},* ]]; then
+            scp ${LOCALFILE} ${b/\/*/}:/tmp/$(basename $LOCALFILE)
+            CMD="scp /tmp/$(basename $LOCALFILE) sysdev@${REMOTENODE}:/${REMOTEFILE}"
+            ssh -t ${b/\/*/} $CMD
+            ssh -t ${b/\/*/} "rm /tmp/$(basename ${LOCALFILE})"
+            exit 0
+        fi
+    done
+}
+
+sa()
+{
+    NEWWINDOW=1 s $@
+}
+
+session()
+{
+    label=$1
+    shift
+    if [[ ! "$(tmux ls)" =~ ^${label}: ]]; then
+        tmux new -ds $label
+    else
+        tmux a -t $label
+    fi 
+    ha $@
+    tmux a -t $label
+}
+
+daws()
+{
+    session daws code 
+    common daws dummy code bastion/dbastion \
+    webserver/dbastion \
+    'deploy/ddeploy' \
+    kops/dkops 
+#    'webdata/cd /mnt/c/Users/matt.daughtrey/dev/git/k8s-edge-webdata' 
+}
+
+saws()
+{
+    common saws dummy code bastion/sbastion \
+    'deploy/sdeploy' \
+    kops/skops 
+}
+
+paws()
+{
+    common paws dummy code bastion/pbastion \
+    'deploy/pdeploy' \
+    kops/pkops 
+}
+
+daz()
+{
+    session daz code dazbastion dazkops dazdeploy 
+#    common daz dummy code 'bastion/ssh 1010corp\\matt.daughtrey@aks.dev.azure.1010data.cloud' \
+#    'kops/ssh sysdev@azue2d1021.azure.1010data.cloud' \
+#    'deploy/ssh sysdev@azue2d1021.azure.1010data.cloud'
+}
+
+saz()
+{
+    common saz dummy code 'bastion/ssh 1010corp\\matt.daughtrey@aks.stage.azure.1010data.cloud' \
+    kops/skops
+}
+
+paz()
+{
+    session paz code pazbastion pazkops pazdeploy
+##    common paz dummy code 'bastion/ssh sysdev@aks-prod.azure.1010data.cloud' 
+#    'kops/ssh 1010corp\\matt.daughtrey@azue2p1021.azure.1010data.cloud' 
+#    'deploy/ssh sysdev@azue2p1021.azure.1010data.cloud' 
+}
+
+puk()
+{
+    common puk dummy code 'bastion/ssh sysdev@aks-uk.azure.1010data.cloud' \
+    'kops/ssh 1010corp\\matt.daughtrey@azuksp0021.azure.1010data.cloud' \
+    'deploy/ssh 1010corp\\matt.daughtrey@azuksp0021.azure.1010data.cloud'
+}
+
+xp()
+{
+    case "$1" in 
+    njdmz) xpanes -C1  -c "ssh sysdev@{}" njdmz025.corp.1010data.com njdmz026.corp.1010data.com njdmz027.corp.1010data.com;;
+    vadmz) xpanes -C1  -c "ssh sysdev@{}" vadmz025.corp.1010data.com vadmz026.corp.1010data.com vadmz027.corp.1010data.com;;
+
+    *) echo What? ;;
+    esac
+}
+
+
+addmach()
+{
+#    tmux display-message -p '#S'
+    label=$(tmux display-message -p '#S')
+    echo $label
+    let ii=$(tmux ls | cut -d' ' -f2)
+    tmux new-window -t ${label}:${ii} -n $1
+    tmux send-keys -t ${label}:${ii} "ssh sysdev@$1" 'C-m'
+}
+
+case "$1" in 
+    h) shift; h $@ ;; # hostalias
+    ha) shift; ha $@ ;; # hostalias
+    cc) shift; rc $@ ;;
+    s) shift; s $@ ;;
+    sa) shift; sa $@ ;;
+    scpfrom) shift; scpfrom $@ ;;
+    scpto) shift; scpto $@ ;;
+    m) addmach $2 ;;
+    xp) shift; xp $@ ;;
+    daws) daws ;;
+    saws) saws ;;
+    paws) paws ;;
+    puk) puk ;;
+    daz) daz ;;
+    saz) saz ;;
+    paz) paz ;;
+    p) shift; session $@ ;;
+    cloud) if [[ "" == "$2" ]]; then echo Name That Cloud.; exit; fi
+        common $2 dummy dev am1egw/bastion \
+        'deploy/ssh sysdev@amue1d1021.aws.1010data.cloud' \ 
+        am1ecompute001/bastion \
+        skops;;
+    dmz) if [[ "" == "$2" ]]; then echo Which DMZ?; exit; fi
+        dmz $2 ;;
+#    gmail) common gmail dummy dev am1egw deploy am1ecompute001 ;;
+    dev) common dev dummy code '214060/ssh '${ADID}'@njdev214060' '2213/ssh 1010CORP\\matt.daughtrey@azue2d2213.azure.1010data.cloud' ;;
+    ls) tmux ls ;;
+    j) tmux a -t $2 ;;
+    cat) cat `which tm` ;;
+    *) if [[ "$(tmux ls | cut -d' ' -f1 | tr '\n' ' ')" =~ ${1}: ]]; then ${tmux} a -t $1 
+        else echo what?; fi ;;
+esac

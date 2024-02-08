@@ -1,17 +1,18 @@
 TAG=golang
 ifeq ($(shell hostname),md)
 DOCKER=docker
-else
-DOCKER=docker.exe
-endif
 HOMEDIR=/home/matt/personal-projects/
-
-run:
-	${DOCKER} run -dh ${TAG} --name ${TAG} --publish 8000:8000 -v /c/Users/matt/Documents/dev/personal-projects:/personal-projects ${TAG}:latest /home/mattd/demo.sh
+else
+DOCKER=docker
+HOMEDIR=/home/mattd/personal-projects/
+endif
 
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it  -v ${HOMEDIR}:/personal-projects \
 		--publish 8080:8080 ${TAG}:latest  /bin/bash
+
+run:
+	${DOCKER} run -dh ${TAG} --name ${TAG} --publish 8000:8000 -v ${HOMEDIR}:/personal-projects ${TAG}:latest /home/mattd/demo.sh
 
 
 attach:

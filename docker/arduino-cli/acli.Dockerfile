@@ -48,11 +48,3 @@ RUN ~/acli/bin/arduino-cli lib install 'SparkFun APDS9960 RGB and Gesture Sensor
 RUN ~/acli/bin/arduino-cli lib install 'RevEng PAJ7620'
 RUN ~/acli/bin/arduino-cli lib install 'AccelStepper'
 
-
-# https://roboticsbackend.com/arduino-stl-library/
-#ENTRYPOINT ["/home/mattd/acli/bin/arduino-cli"]
-#COPY ~/personal-projects/bin/vimrc ~/.vimrc
-#COPY ~/personal-projects/bin/tmux.conf ~/.tmux.conf
-## https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-80-g6c4433a-5.2.0.tar.gz
-## https://docs.espressif.com/projects/esp-idf/en/release-v3.0/get-started/linux-setup.html
-##[https://arduino.esp8266.com/stable/package_esp8266com_index.json]
