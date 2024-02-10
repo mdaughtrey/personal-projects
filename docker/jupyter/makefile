@@ -1,18 +1,24 @@
 TAG=jupyter
+ifeq ($(shell uname),Linux)
+DOCKER=docker
+else
 DOCKER=docker.exe
+endif
 
 ifeq ($(shell hostname),md)
 PPHOME='\\wsl\$\Ubuntu\home\matt\personal-projects'
 else
-PPHOME='\\wsl$$\Ubuntu\home\mattd\personal-projects'
+#PPHOME='\\wsl$$\Ubuntu\home\mattd\personal-projects'
+PPHOME=/home/mattd/personal-projects
 endif
 
 all:
 	echo PPHONE ${PPHOME}
 
 run:
-	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it -p 8888:8888 ${TAG} jupyter-lab --ip 0.0.0.0 --allow-root \
-        --volume /media/frames:/frames ${PPHOME}:/personal-projects:/personal-projects ${TAG}:latest
+	${DOCKER} run --rm -h ${TAG} --name ${TAG} -p 8888:8888 \
+		--volume /media/frames:/frames --volume ${PPHOME}/personal-projects:/personal-projects ${TAG}:latest \
+		jupyter notebook --ip 0.0.0.0 --allow-root 
 
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} -it \
