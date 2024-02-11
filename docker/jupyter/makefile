@@ -16,7 +16,7 @@ all:
 	echo PPHONE ${PPHOME}
 
 run:
-	${DOCKER} run --rm -h ${TAG} --name ${TAG} -p 8888:8888 \
+	${DOCKER} run --rm -th ${TAG} --name ${TAG} -p 8888:8888 \
 		--volume /media/frames:/frames --volume ${PPHOME}/personal-projects:/personal-projects ${TAG}:latest \
 		jupyter notebook --ip 0.0.0.0 --allow-root 
 
