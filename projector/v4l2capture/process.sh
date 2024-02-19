@@ -6,7 +6,7 @@
 # 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=20240104_test1
+PROJECT=20240207_test1
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -15,7 +15,7 @@ DEVICE=/dev/video0
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
 #EXPOSURES="2500,3000,3500,4000,4500,5000,5500"
-EXPOSURES="5000"
+EXPOSURES="2000,5000,7000"
 EDR="--exposure ${EXPOSURES}"
 
 #exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
@@ -62,7 +62,8 @@ getdev()
 s8()
 {
     ./usbcap.py framecap --camindex $(getdev) --framesto ${FP}/capture --frames 10000 --logfile usbcap.log \
-        --fastforward 9 --res 0 --film super8 --telnet localhost:4212:abc ${EDR} 
+        --fastforward 9 --res 0 --film super8 ${EDR}  --startdia 57 --enddia 33
+#        --fastforward 9 --res 0 --film super8 --usevlc localhost:4212:abc ${EDR} 
 }
 
 sertest()
@@ -83,10 +84,14 @@ p2()
 
 preview()
 {
-    subdir=${1:-capture}
+    subdir=${1:-car}
     # ls ${FP}/${subdir}/????????.png > /tmp/filelist.txt
-    ls ${FP}/${subdir}/*.png > /tmp/filelist.txt
-    mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=${FP}/${subdir}.mp4
+    #ls ${FP}/${subdir}/*_5000.png > /tmp/filelist.txt
+    #mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=${FP}/${PROJECT}.mp4
+    IFS=, read -ra exs <<<${EXPOSURES}
+    for ex in $exs; do
+        ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.png -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_${ex}.mp4 
+    done
 }
 
 getres()
@@ -194,6 +199,8 @@ case "$1" in
     screen) screen -L ${PORT} 115200 ;;
     setres) setres ;;
     startvlc) screen -dmS vlc vlc --intf qt --extraintf telnet --telnet-password abc ;;
+    registration) ./00_registration.py --readfrom ${FP}/capture/'*.png' --writeto ${FP}/capture;;
+    car) ./01_crop_and_rotate.py --readfrom ${FP}/capture --writeto ${FP}/car --annotate;;
     *) echo what?
 esac
 
