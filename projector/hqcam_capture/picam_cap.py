@@ -267,20 +267,19 @@ def framecap(config):
         serwrite(b'n')
         wait = serwaitfor(b'{HDONE}', b'{NTO}')
         if wait[0]:
-            break
             logger.error(wait[2])
-            return
+            break
 
         frames = []
         for exp in config.exposure.split(','):
             try:
-                target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.jpg'
-                command=f'rpicam-still --hflip=1 --immediate --width=2304 --height=1296 -e jpg --awb=indoor --shutter {exp} --output {target}'
+                target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
+                command=f'rpicam-still --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
                 logger.debug(command)
                 rc = subprocess.run(command.split())
             except Exception as ee:
                 logger.error(f'capture failed {str(ee)}')
-                return
+                break
     serwrite(b' ')
 
 

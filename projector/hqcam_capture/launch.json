@@ -1,0 +1,8 @@
+"version": "0.2.0"
+"configurations": [
+    {
+        "name": "Launch Shell Script",
+        "type": "shell"
+        "script": "/home/mattd/personal-projects/projects/hqcam_capture/process.sh car"
+    }
+]

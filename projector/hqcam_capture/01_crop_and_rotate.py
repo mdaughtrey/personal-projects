@@ -9,6 +9,7 @@ import numpy as np
 import os
 import pdb
 from PIL import Image,ImageDraw,ImageFilter,ImageOps
+import re
 import sys
 
 logger = None
@@ -19,6 +20,8 @@ def procargs():
     parser.add_argument('--readfrom', dest='readfrom', help='read .reg files from directory', required=True)
     parser.add_argument('--writeto', dest='writeto', help='write rotated/cropped images to directory', required=True)
     parser.add_argument('--annotate', dest='annotate', help='annotate frames', action='store_true', default=False)
+    parser.add_argument('--markonly', dest='markonly', help='mark frames', action='store_true', default=False)
+    parser.add_argument('--exposures', dest='exposures', help='exposures', required=True)
     return parser.parse_args()
 
 def setlogging(logname):
@@ -31,58 +34,73 @@ def setlogging(logname):
     fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
 
-def getRect(regfile):
-    centerX, centerY, rotate = open(regfile.encode(),'rb').read().split(b' ')
+#def getRect(regfile):
+def getRect(centerX, centerY):
+#    centerX, centerY, rotate = open(regfile.encode(),'rb').read().split(b' ')
     boxLeft = int(centerX)
-    boxRight = boxLeft + 1700
-    boxTop = int(centerY) - 630
-    boxBot = int(centerY) + 630
-    return boxLeft,boxRight,boxTop,boxBot,float(rotate)
+    boxRight = boxLeft + 1250
+    boxTop = int(centerY) - 500
+    boxBot = int(centerY) + 500
+    #return boxLeft,boxRight,boxTop,boxBot,float(rotate)
+    return boxLeft,boxRight,boxTop,boxBot
 
-def cropAndRotate(regfile, imagefile):
+#def cropAndRotate(regfile, imagefile):
+def cropAndRotate(centerX, centerY, readfrom, writeto):
     try:
-        image = cv2.imread(imagefile, cv2.IMREAD_ANYCOLOR)
+        image = cv2.imread(readfrom, cv2.IMREAD_ANYCOLOR)
     except Exception as ee:
         logger.error(f'Error reading from {imagefile}: {str(ee)}')
-        return False, None
-    boxTop,boxBot,boxLeft,boxRight,rotate = getRect(regfile)
+
+    boxTop,boxBot,boxLeft,boxRight = getRect(centerX, centerY)
     height, width = image.shape[:2]
 #    rMatrix = cv2.getRotationMatrix2D(center=(width/2,height/2),angle=rotate,scale=1)
 #    rImage = cv2.warpAffine(src=image,M=rMatrix,dsize=(width,height))
-    imageNum = os.path.splitext(os.path.basename(imagefile))[0].split('_')[0]
 
     rImage = image
-    rImage = rImage[boxLeft:boxRight, boxTop:boxBot]
+    if args.markonly:
+#        cv2.circle(original,(int(avgright),int((avgtop+avgbot)/2)),12,(0,255,0),-1)
+        rImage = cv2.rectangle(rImage, (boxTop, boxLeft), (boxBot, boxRight), (0,255,0), 1)
+    else:
+        rImage = rImage[boxLeft:boxRight, boxTop:boxBot]
     if args.annotate:
         org = (50,350)
         # write the text on the input image
+        imageNum = os.path.splitext(os.path.basename(readfrom))[0].split('_')[0]
         cv2.putText(rImage, imageNum, org, fontFace = cv2.FONT_HERSHEY_COMPLEX, fontScale = 1.5, color = (250,225,100))
-    return True, rImage
+    cv2.imwrite(writeto, rImage)
 
 def main():
     global args
     setlogging('01_crop_and_rotate.log')
     args = procargs()
-    if not os.path.exists(os.path.dirname(args.readfrom)):
-        print(f'{args.readfrom} does not exist')
+
+    readpath = os.path.realpath(args.readfrom)
+    if not os.path.exists(os.path.dirname(readpath)):
+        print(f'{readpath} does not exist')
         sys.exit(1)
 
-    realpath = os.path.realpath(args.writeto)
-    if not os.path.exists(realpath):
-        print(f'Creating directory {realpath}')
-        os.mkdir(realpath)
+    writepath = os.path.realpath(args.writeto)
+    if not os.path.exists(writepath):
+        print(f'Creating directory {writepath}')
+        os.mkdir(writepath)
 
-    for regfile in sorted(glob(f'{args.readfrom}/*.reg')):
-        writeto = realpath + '/' +  os.path.splitext(os.path.basename(regfile))[0] + '.jpg'
-        logger.debug(f'Writing to {writeto}')
-        if not os.path.exists(writeto):
-            good, image = cropAndRotate(regfile, regfile.replace('.reg','.jpg'))
-            if not good:
-                continue
-            try:
-                cv2.imwrite(writeto,image)
-            except Exception as ee :
-                logger.error(f'Crapped out writing {writeto}: {str(ee)})')
-
+    exposures = [int(x) for x in args.exposures.split(',')]
+    centerX = None
+    for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
+        cX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
+        if centerX is None:
+            centerX = cX
+        for exposure in exposures:
+            filename = os.path.basename(regfile).split('_')
+            filename = f'{filename[0]}_{exposure}.png'
+            writeto = writepath + '/' + filename
+            readfrom = readpath  + '/' + filename
+            #writeto = realpath + '/' +  os.path.splitext(os.path.basename(regfile))[0] + '.png'
+            logger.debug(f'{readfrom} -> {writeto}')
+            if not os.path.exists(writeto):
+                try:
+                    cropAndRotate(int(centerX), int(centerY), readfrom, writeto)
+                except:
+                    pass
 
 main()

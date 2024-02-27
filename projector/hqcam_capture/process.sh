@@ -6,7 +6,7 @@
 # 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=20240222_test1
+PROJECT=20240225_test1
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -62,7 +62,7 @@ preview()
     #mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=${FP}/${PROJECT}.mp4
     IFS=, read -ra exs <<<${EXPOSURES}
     for ex in $exs; do
-        ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.jpg -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_${ex}.mp4 
+        ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.png -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_${ex}.mp4 
     done
 }
 
@@ -71,7 +71,7 @@ praw()
     subdir=${1:-capture}
     IFS=, read -ra exs <<<${EXPOSURES}
     for ex in $exs; do
-        ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.jpg -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_praw_${ex}.mp4 
+        ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.png -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_praw_${ex}.mp4 
     done
 }
 
@@ -79,9 +79,9 @@ pcar()
 {
     subdir=${1:-car}
     IFS=, read -ra exs <<<${EXPOSURES}
-    for ex in $exs; do
-        ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.jpg -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_pcar_${ex}.mp4 
-    done
+    ls ${FP}/${subdir}/*_${exs[1]}.png > /tmp/filelist.txt
+    mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=${FP}/${PROJECT}_pcar_${exs[1]}.mp4
+#        echo ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.png -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_pcar_${ex}.mp4 
 }
 
 getres()
@@ -150,13 +150,19 @@ tonefuse()
 oneshot()
 {
     ./usbcap.py oneshot --camindex $(getdev) --framesto ${FP} --logfile usbcap.log  --exposure 10000
-        
+}
+
+video()
+{
+    rpicam-hello --timeout 180
 }
 
 #setres()
 #{
 #    v4l2-ctl --device $(getdev)  --set-fmt-video=width=2592,height=1944
 #}
+
+. venv/bin/activate
 
 case "$1" in 
     avx) ./avx.sh ;;
@@ -191,8 +197,11 @@ case "$1" in
     startvlc) screen -dmS vlc vlc --intf qt --extraintf telnet --telnet-password abc ;;
     praw) praw ;;
     pcar) pcar ;;
-    registration) ./00_registration.py --readfrom ${FP}/capture/'*.jpg' --writeto ${FP}/capture;;
-    car) ./01_crop_and_rotate.py --readfrom ${FP}/capture --writeto ${FP}/car --annotate;;
+    registration) ./00_registration.py --readfrom ${FP}/capture/'*.png' --writeto ${FP}/capture ;;
+    car) ./01_crop_and_rotate.py --readfrom ${FP}/capture --writeto ${FP}/car --exp ${EXPOSURES} ;;
+    video) video ;;
     *) echo what?
 esac
+
+deactivate
 

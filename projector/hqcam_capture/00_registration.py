@@ -7,11 +7,13 @@ from    glob import glob, iglob
 import numpy as np
 import os
 from PIL import Image,ImageDraw,ImageFilter,ImageOps
+import pdb
 import sys
 
 def procargs():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--readfrom', dest='readfrom', help='read from glob', required=True)
+    parser.add_argument('--readfrom', dest='readfrom', help='read from glob')
+    parser.add_argument('--onefile', dest='onefile', help='process one file')
     parser.add_argument('--writeto', dest='writeto', help='write to directory', required=True)
     return parser.parse_args()
 
@@ -42,13 +44,24 @@ def findSprocket(filename):
 
 def main():
     args = procargs()
-    if not os.path.exists(os.path.dirname(args.readfrom)):
+    if args.readfrom and not os.path.exists(os.path.dirname(args.readfrom)):
         print(f'{args.readfrom} does not exist')
         sys.exit(1)
+
+    if args.onefile and not os.file.exists(os.path.dirname(args.onefile)):
+        print(f'{args.onefile} does not exist')
+        sys.exit(1)
+
     realpath = os.path.realpath(args.writeto)
     if not os.path.exists(os.path.dirname(realpath)):
         print(f'{args.writeto} does not exist')
         sys.exit(1)
+
+    if args.onefile:
+        (reg,rot) = findSprocket(args.file)
+        writeto = os.path.splitext(os.path.basename(args.onefile))[0]
+        with open(f'{realpath}/{writeto}.reg','wb') as out:
+            out.write(f'{reg[0]} {reg[1]} {rot}'.encode())
 
     for file in sorted(glob(f'{args.readfrom}')):
         (reg,rot) = findSprocket(file)
