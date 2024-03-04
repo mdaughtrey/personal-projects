@@ -8,6 +8,7 @@
 #include <AsyncTimer.h>
 
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
+#define PINPOLL 1
 
 const uint8_t stepperEnable = 20;
 const uint8_t stepperDir = 19;
@@ -61,7 +62,7 @@ struct {
     uint8_t pwmchan;
     HuntState huntState;
     FilmState filmState;
-    uint8_t pinpoll;
+//    uint8_t pinpoll;
 } config;
 
 AsyncTimer at;
@@ -78,8 +79,8 @@ const uint8_t ButtonPin2 = 4;
 const uint8_t ButtonPin3 = 5;
 
 #ifdef OPTO_ENCODER
-const uint8_t EncoderPin0 = 14;
-const uint8_t EncoderPin1 = 15;
+const uint8_t FilmSensorPin8mm = 14;
+const uint8_t FilmSensorPinSuper8 = 15;
 #endif // OPTO_ENCODER
 
 const uint8_t OutputPin0 = 10; // fan
@@ -112,8 +113,8 @@ volatile uint16_t encoderPos = 0;
 //volatile int isr1count = 0;
 //volatile int isr2count = 0;
 
-uint32_t encoder00, encoder01 = 0;
-uint32_t encoder10, encoder11 = 0;
+uint32_t sensor8mm_0, sensor8mm_1 = 0;
+uint32_t sensorSuper8_0, sensorSuper8_1 = 0;
 void handleCommand(uint8_t command);
 void coilControl();
 //void (*commandHandler)() = handleCommand;
@@ -182,27 +183,30 @@ void isr2()
 // 1 == gap 0 == frame
 void readFilmSensor()
 {
-    encoder00 <<= 1;
-    encoder00 |= encoder01 >> 31;
-    encoder01 <<= 1 ;
-    encoder01 |= digitalRead(EncoderPin0);
+    sensor8mm_0 <<= 1;
+    sensor8mm_0 |= sensor8mm_1 >> 31;
+    sensor8mm_1 <<= 1 ;
+    sensor8mm_1 |= digitalRead(FilmSensorPin8mm);
 
-    encoder10 <<= 1;
-    encoder10 |= encoder11 >> 31;
-    encoder11 <<= 1 ;
-    encoder11 |= digitalRead(EncoderPin1);
+    sensorSuper8_0 <<= 1;
+    sensorSuper8_0 |= sensorSuper8_1 >> 31;
+    sensorSuper8_1 <<= 1 ;
+    sensorSuper8_1 |= digitalRead(FilmSensorPinSuper8);
 
-    if (config.pinpoll && HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, config.pinpoll);
-    if (0 == encoder01 || 0 == encoder11) config.filmState = FILM_FRAME;
-    if (0xffffffff == encoder01 || 0xffffffff == encoder11) config.filmState = FILM_GAP;
+    //if (PINPOLL && HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
+    if (HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
+    if (0 == sensorSuper8_1) config.filmState = FILM_FRAME;
+    if (0xffffffff == sensorSuper8_1) config.filmState = FILM_GAP;
+    //if (0 == sensor8mm_1 || 0 == sensorSuper8_1) config.filmState = FILM_FRAME;
+    //if (0xffffffff == sensor8mm_1 || 0xffffffff == sensorSuper8_1) config.filmState = FILM_GAP;
 }
 
 
 #ifdef OPTO_ENCODER
 void encoder_init()
 {
-    pinMode(EncoderPin0, INPUT_PULLUP);
-    pinMode(EncoderPin1, INPUT_PULLUP);
+    pinMode(FilmSensorPin8mm, INPUT_PULLUP);
+    pinMode(FilmSensorPinSuper8, INPUT_PULLUP);
 
     encoderPos = 0;
     config.encoderTO = 4000;
@@ -238,7 +242,6 @@ void setup ()
     stepper.m_rampUpSteps = 10;
     stepper.m_rampDownSteps = 10;
     config.filmState = FILM_NONE;
-    config.pinpoll = 1;
 
     stepper.cw(); 
     buttonInit();
@@ -256,8 +259,8 @@ void setup ()
     pinMode(LedPin, OUTPUT);
 
 //#ifdef OPTO_ENCODER
-//    attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, RISING);
-//    attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, RISING);
+//    attachInterrupt(digitalPinToInterrupt(FilmSensorPin8mm), isr1, RISING);
+//    attachInterrupt(digitalPinToInterrupt(FilmSensorPinSuper8), isr2, RISING);
 //#endif // OPTO_ENCODER
     commandset = commands_main;
 
@@ -312,11 +315,11 @@ void dumpConfig(uint8_t th)
 {
     Serial.printf("-------------------------------\r\n");
 #ifdef OPTO_ENCODER
-    Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u\r\nparam %u\r\nconfig.pinpoll %u\r\ntension %u \r\n",
+    Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u\r\nparam %u\r\nPINPOLL %u\r\ntension %u \r\n",
         config.encoderLimit,
         config.slowEncoderThreshold,
         config.param,
-        config.pinpoll,
+        PINPOLL,
         config.tension);
 
     Serial.printf("encoderTO: %d\r\nencoderTime: %d\r\nhuntState: %d\r\nfilmState: %d\r\n",
@@ -337,10 +340,7 @@ void dumpStepperConfig()
 {
     Serial.printf("%s",FSH(stepperTitle));
     Serial.printf("param %u\r\n", config.param);
-    Serial.printf("m_rampUpSteps %u m_rampDownSteps %u\r\n", stepper.m_rampUpSteps, stepper.m_rampDownSteps);
-    Serial.printf("m_minInterval64 %llu m_maxInterval64 %llu\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
-    Serial.printf("m_stepCount %u m_targetSteps %u m_stepsPerMove %u m_running %u\r\n",
-        stepper.m_stepCount, stepper.m_targetSteps, stepper.m_stepsPerMove, stepper.m_running);
+    Serial.printf("enabled %u\r\nrunning %u\r\n", stepper.m_enabled, stepper.m_running);
 }
 
 void dumpPWMConfig()
@@ -355,8 +355,9 @@ void do_next()
 //#ifdef OPTO_ENCODER
 //    stepper.start(config.encoderLimit);
     encoderStart();
+    stepper.enabled();
     stepper.start();
-    at.setTimeout(readFilmSensor, config.pinpoll);
+    at.setTimeout(readFilmSensor, PINPOLL);
 //    encoderPos %= config.encoderLimit;
 //#endif // OPTO_ENCODER
 }
@@ -369,23 +370,23 @@ void do_next()
 //    switch (config.isrEdge)
 //    {
 //        case OPTO_RISING:
-//            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, RISING);
-//            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, RISING);
+//            attachInterrupt(digitalPinToInterrupt(FilmSensorPin8mm), isr1, RISING);
+//            attachInterrupt(digitalPinToInterrupt(FilmSensorPinSuper8), isr2, RISING);
 //            break;
 //
 //        case OPTO_FALLING:
-//            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, FALLING);
-//            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, FALLING);
+//            attachInterrupt(digitalPinToInterrupt(FilmSensorPin8mm), isr1, FALLING);
+//            attachInterrupt(digitalPinToInterrupt(FilmSensorPinSuper8), isr2, FALLING);
 //            break;
 //
 //        case OPTO_BOTH:
-//            attachInterrupt(digitalPinToInterrupt(EncoderPin0), isr1, CHANGE);
-//            attachInterrupt(digitalPinToInterrupt(EncoderPin1), isr2, CHANGE);
+//            attachInterrupt(digitalPinToInterrupt(FilmSensorPin8mm), isr1, CHANGE);
+//            attachInterrupt(digitalPinToInterrupt(FilmSensorPinSuper8), isr2, CHANGE);
 //            break;
 //
 //        default:
-//            detachInterrupt(digitalPinToInterrupt(EncoderPin0));
-//            detachInterrupt(digitalPinToInterrupt(EncoderPin1));
+//            detachInterrupt(digitalPinToInterrupt(FilmSensorPin8mm));
+//            detachInterrupt(digitalPinToInterrupt(FilmSensorPinSuper8));
 //            break;
 //    }
 //#endif // OPTO_ENCODER
@@ -401,6 +402,20 @@ void initialize()
     }
 }
 
+void runStepper(uint16_t steps)
+{
+    steps = std::min(steps,(uint16_t)2000);
+    stepper.enable();
+    stepper.start();
+    while (steps)
+    {
+        if (!stepper.run()) continue;
+        steps--;
+        if (config.verbose)
+            Serial.printf("%u\r\n",config.param);
+    }
+}
+
 void autotension()
 {
     uint8_t low = 10;
@@ -408,10 +423,14 @@ void autotension()
     uint8_t mid = (low + (high - low))/2;
     uint8_t breaker = 20;
 
-    setTension(0);
+    setTension(1);
+    stepper.ccw();
+    runStepper(2000);
+    stepper.cw();
+    
     delay(1000);
 //    int ii;
-//    for (ii=low; (ii < high) && digitalRead(EncoderPin0); ii++)
+//    for (ii=low; (ii < high) && digitalRead(FilmSensorPin8mm); ii++)
 //    {
 //        setTension(ii);
 //        delay(100);
@@ -422,11 +441,11 @@ void autotension()
     {
         mid = (low + (high - low)/2);
         if (config.verbose)
-            Serial.printf("%u: %u < %u > %u %u %u\r\n", breaker,low, mid, high,digitalRead(EncoderPin0), digitalRead(EncoderPin1));
+            Serial.printf("%u: %u < %u > %u %u %u\r\n", breaker,low, mid, high,digitalRead(FilmSensorPin8mm), digitalRead(FilmSensorPinSuper8));
         setTension(mid);
         delay(1000);
 
-        if (digitalRead(EncoderPin0) & digitalRead(EncoderPin1))
+        if (digitalRead(FilmSensorPin8mm) & digitalRead(FilmSensorPinSuper8))
         {
             low = mid + 1;
         }
@@ -466,9 +485,10 @@ const char help_init[] PROGMEM="Initialize with string";
 const char empty[] PROGMEM="";
 const char help_mon[] PROGMEM="monitoring on";
 const char help_moff[] PROGMEM="monitoring off";
-const char help_pon[] PROGMEM="set pin polling (ms,param))";
-const char help_poff[] PROGMEM="polling off";
+//const char help_pon[] PROGMEM="set pin polling (ms,param))";
+//const char help_poff[] PROGMEM="polling off";
 const char help_autotension[] PROGMEM="Autotension";
+const char help_stepperrun[] PROGMEM = "run (param as steps)";
 
 Command commands_main[] = {
 {'?',FSH(help_dumpconfig), [](){ dumpConfig(0);}},
@@ -499,6 +519,9 @@ Command commands_main[] = {
 {'o',FSH(help_nextimeout), [](){encoderTO();}},
 #endif // OPTO_ENCODER
 {'p',FSH(help_pwmmenu), [](){commandset = commands_pwm;}},
+{'r', FSH(help_stepperrun), [](){ 
+    runStepper((uint16_t)config.param);
+}},
 //{'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
     config.tension = config.param;
@@ -509,8 +532,8 @@ Command commands_main[] = {
 {'v',FSH(help_verbose), [](){ config.verbose = stepper.m_verbose = config.param;}},
 {'w',FSH(help_mon), [](){ mon = 1; at.setTimeout(monitor,100);}},
 {'W',FSH(help_moff), [](){ mon = 0;}},
-{'x',FSH(help_pon), [](){ config.pinpoll = config.param; at.setTimeout(readFilmSensor, config.pinpoll); config.param = 0; }},
-{'X',FSH(help_poff), [](){ config.pinpoll = 0;}},
+//{'x',FSH(help_pon), [](){ PINPOLL = config.param; at.setTimeout(readFilmSensor, PINPOLL); config.param = 0; }},
+//{'X',FSH(help_poff), [](){ PINPOLL = 0;}},
 {'&', FSH(empty), [](){} }
 };
 
@@ -521,30 +544,34 @@ const char help_rup[] PROGMEM = "set ramp up steps (param)";
 const char help_rdown[] PROGMEM = "set ramp down steps (param)";
 const char help_sconfig[] PROGMEM = "dump stepper config";
 const char help_stop[] PROGMEM = "<space> stop";
-const char help_start[] PROGMEM = "start (param as steps)";
-const char help_run[] PROGMEM = "run";
-const char help_stepperrun[] PROGMEM = "stepper run (1 shot)";
+const char help_start[] PROGMEM = "start";
 const char help_sdisable[] PROGMEM = "disable stepper outputs";
 const char help_senable[] PROGMEM = "enable stepper outputs";
 const char help_pulse[] PROGMEM = "pulse (param 0=lh 1=hl)";
+const char help_cw[] PROGMEM = "Clockwise";
+const char help_ccw[] PROGMEM = "Counter-clockwise";
 
 Command commands_stepper[] = {
     {'c',FSH(help_param0), [](){config.param = 0;}},
-    {'D', FSH(help_rdown), [](){ stepper.m_rampDownSteps = config.param;} },
+//    {'D', FSH(help_rdown), [](){ stepper.m_rampDownSteps = config.param;} },
     {'d', FSH(help_sdisable), [](){ stepper.disable();} },
     {'e', FSH(help_senable), [](){ stepper.enable();} },
     {'h', FSH(help_help), [](){ help();}},
-    {'i', FSH(help_imax), [](){ stepper.m_maxInterval64 = config.param;} },
-    {'I', FSH(help_imin), [](){ stepper.m_minInterval64 = config.param;} },
-    {'p', FSH(help_pulse), [](){ stepper.pulse(config.param);} },
+//    {'i', FSH(help_imax), [](){ stepper.m_maxInterval64 = config.param;} },
+//    {'I', FSH(help_imin), [](){ stepper.m_minInterval64 = config.param;} },
+//    {'p', FSH(help_pulse), [](){ stepper.pulse(config.param);} },
 #ifdef OPTO_ENCODER
-    {'r', FSH(help_run), [](){ stepper.run(encoderPos);} },
+    {'r', FSH(help_stepperrun), [](){ 
+        runStepper(config.param);
+    }},
 #endif //  OPTO_ENCODER
-    {'s', FSH(help_start), [](){ stepper.start(config.param); }},
-    {'U', FSH(help_rup), [](){ stepper.m_rampUpSteps = config.param;} },
+    {'s', FSH(help_start), [](){ stepper.start(); }},
+//    {'U', FSH(help_rup), [](){ stepper.m_rampUpSteps = config.param;} },
+    {'w', FSH(help_cw), [](){ stepper.cw(); }},
+    {'W', FSH(help_ccw), [](){ stepper.ccw(); }},
     {'x', FSH(help_tomain), [](){ commandset = commands_main;} },
     {'?', FSH(help_sconfig), [](){ dumpStepperConfig(); }},
-    {' ', FSH(help_stop), [](){ setup(); }},
+    {' ', FSH(help_stop), [](){ stepper.stop(); }},
     {'&', FSH(empty), [](){}}
 };
 
@@ -615,8 +642,8 @@ void stepperPoll()
     if (HUNT_NONE == config.huntState) return;
 //    if (config.verbose)
 //    {
-//        Serial.printf("huntState %u filmState %u encoder01 %s encoder11 %s\r\n",
-//            config.huntState,config.filmState,std::bitset<32>(encoder01).to_string().c_str(), std::bitset<32>(encoder11).to_string().c_str());
+//        Serial.printf("huntState %u filmState %u sensor8mm_1 %s sensorSuper8_1 %s\r\n",
+//            config.huntState,config.filmState,std::bitset<32>(sensor8mm_1).to_string().c_str(), std::bitset<32>(sensorSuper8_1).to_string().c_str());
 //    }
 
 //    if (NEXT != config.state)
@@ -673,15 +700,15 @@ void monitor(void)
 {
     if (!mon) return;
 
-//    std::bitset<32> d3(encoder00);
-//    std::bitset<32> d2(encoder01);
-//    std::bitset<32> d1(encoder10);
-//    std::bitset<32> d0(encoder11);
+//    std::bitset<32> d3(sensor8mm_0);
+//    std::bitset<32> d2(sensor8mm_1);
+//    std::bitset<32> d1(sensorSuper8_0);
+//    std::bitset<32> d0(sensorSuper8_1);
 //    if (d0.count() == 0 | d0.count() == 32) Serial.printf("%u ", d0.count());
 //    Serial.printf("%d %d %d %d\r\n", d3.count(),d2.count(),d1.count(),d0.count());
-    Serial.printf("huntState %u filmState %u encoder01 %s encoder11 %s p14 %u p15 %u\r\n",
-            config.huntState,config.filmState,std::bitset<32>(encoder01).to_string().c_str(), std::bitset<32>(encoder11).to_string().c_str(),
-            digitalRead(EncoderPin0), digitalRead(EncoderPin1));
+    Serial.printf("1G0F huntState %u filmState %u sensor8mm_1 %s sensorSuper8_1 %s 8mm %u S8 %u\r\n",
+            config.huntState,config.filmState,std::bitset<32>(sensor8mm_1).to_string().c_str(), std::bitset<32>(sensorSuper8_1).to_string().c_str(),
+            digitalRead(FilmSensorPin8mm), digitalRead(FilmSensorPinSuper8));
     if (mon) at.setTimeout(monitor, 100);
 } 
 

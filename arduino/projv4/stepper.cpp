@@ -27,11 +27,11 @@ Stepper::Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse
     cw();
 }
 
-void Stepper::run(uint16_t encoderPos)
+uint8_t Stepper::run(uint16_t encoderPos)
 {
     if (!m_running)
     {
-        return;
+        return 0;
     }
 
 //    if (m_verbose) 
@@ -52,7 +52,7 @@ void Stepper::run(uint16_t encoderPos)
     }
     if ((time_us_64() - m_lastStepTime64) < m_currentInterval64)
     {
-        return;
+        return 0;
     }
 
     pinMode(m_stepperPulse, OUTPUT);
@@ -67,24 +67,26 @@ void Stepper::run(uint16_t encoderPos)
         Serial.printf("encoderPos %u m_stepcount %4u m_stepsPerMove %u m_targetSteps %4u m_currentInterval64 %llu\r\n",
                 encoderPos, m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval64);
     }
+    return 0;
 }
 
-void Stepper::run(void)
+uint8_t Stepper::run(void)
 {
     if (!m_running)
     {
-        return;
+        return 0;
     }
 
     if ((time_us_64() - m_lastStepTime64) < m_currentInterval64)
     {
-        return;
+        return 0;
     }
 
     pinMode(m_stepperPulse, OUTPUT);
     delayMicroseconds(100);
     pinMode(m_stepperPulse, INPUT_PULLUP);
     m_lastStepTime64 = time_us_64();
+    return 1;
 }
 
 
