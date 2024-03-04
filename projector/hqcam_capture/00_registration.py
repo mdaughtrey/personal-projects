@@ -10,39 +10,75 @@ from PIL import Image,ImageDraw,ImageFilter,ImageOps
 import pdb
 import sys
 
+args = None
+
 def procargs():
     parser = argparse.ArgumentParser()
     parser.add_argument('--readfrom', dest='readfrom', help='read from glob')
     parser.add_argument('--onefile', dest='onefile', help='process one file')
     parser.add_argument('--writeto', dest='writeto', help='write to directory', required=True)
+    parser.add_argument('--debugto', dest='debugto', help='save intermediary images to directory')
+    parser.add_argument('--webdb', dest='webdb', help='enable web debugger (port 5555)', action='store_true', default=False)
     return parser.parse_args()
 
 def findSprocket(filename):
+#    if args.webdb:
+#        import web_pdb
+#        web_pdb.set_trace()
+    def writeDebugFile(tag, image):
+        outfile = os.path.splitext(os.path.basename(filename))[0]
+        outfile = f'{args.debugto}/{outfile}_{tag}.png'
+        cv2.imwrite(outfile, image)
+
+    debugout = args.debugto #  and -1 != filename.find('36000')
     original=cv2.imread(filename, cv2.IMREAD_ANYCOLOR)
     image = cv2.imread(filename,cv2.IMREAD_GRAYSCALE)
-    image = image[:,0:int(image.shape[1]*0.15)]
+    image = image[:,0:int(image.shape[1]*0.10)]
+
+    if debugout:
+        writeDebugFile('slice', image)
+
     matrix = (3,7)
     sprocket = cv2.GaussianBlur(image,matrix,0)
     _,sprocket = cv2.threshold(sprocket,60,255,cv2.THRESH_BINARY)
+
+    if debugout:
+        writeDebugFile('sprocket', sprocket)
+
     contours, _ = cv2.findContours(sprocket, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
     contour = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[0] 
     area = cv2.contourArea(contour)
     rect = cv2.minAreaRect(contour)
     rotation = rect[2]
     centre = rect[0]
-    colour = (100, 100, 100)
-#    cv2.drawContours(sprocket, [contour], -1,color=colour, thickness=cv2.FILLED)
+    if debugout:
+        color = (100, 100, 100)
+        s2 = sprocket.copy()
+        cv2.drawContours(s2, [contour], -1,color=color, thickness=cv2.FILLED)
+        writeDebugFile('contours', s2)
+
+#
     box = np.intp(cv2.boxPoints(rect))
-#    cv2.drawContours(sprocket, [box], -1,color=colour, thickness=2)
+    if debugout:
+        s2 = sprocket.copy()
+        color = (100, 100, 100)
+        cv2.drawContours(s2, [box], -1,color=color, thickness=2)
+        writeDebugFile('boxed', s2)
+
     avgright = (box[2][0]+box[3][0])/2
     avgleft = (box[0][0]+box[1][0])/2
     avgtop = (box[1][1]+box[2][1])/2
     avgbot = (box[0][1]+box[3][1])/2
     registration = int(avgright),int((avgtop+avgbot)/2)
-#    cv2.circle(original,(int(avgright),int((avgtop+avgbot)/2)),12,(0,255,0),-1)
+    if debugout:
+        o2 = original.copy()
+        cv2.circle(o2,(int(avgright),int((avgtop+avgbot)/2)),12,(0,255,0),-1)
+        writeDebugFile('circle', o2)
     return (registration,rotation)
 
 def main():
+    global args
     args = procargs()
     if args.readfrom and not os.path.exists(os.path.dirname(args.readfrom)):
         print(f'{args.readfrom} does not exist')
@@ -63,7 +99,7 @@ def main():
         with open(f'{realpath}/{writeto}.reg','wb') as out:
             out.write(f'{reg[0]} {reg[1]} {rot}'.encode())
 
-    for file in sorted(glob(f'{args.readfrom}')):
+    for file in sorted(glob(args.readfrom)):
         (reg,rot) = findSprocket(file)
         writeto = os.path.splitext(os.path.basename(file))[0]
         with open(f'{realpath}/{writeto}.reg','wb') as out:

@@ -11,7 +11,7 @@ cd ~/acli && wget https://github.com/ZinggJM/GxEPD/archive/master.zip && unzip m
 ~/acli/bin/arduino-cli lib install gxepd2
 ~/acli/bin/arduino-cli lib install Adafruit_VL53L0X
 ~/acli/bin/arduino-cli lib install AsyncStepperLib
-cp arduino-cli.patch0 /tmp/arduino-cli.patch0
+yq -yi '.board_manager.additional_urls=["https://arduino.esp8266.com/stable/package_esp8266com_index.json","https://dl.espressif.com/dl/package_esp32_index.json","https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json"]' ~/.arduino15/arduino-cli.yaml
 ~/acli/bin/arduino-cli core update-index
 ~/acli/bin/arduino-cli core install esp8266:esp8266
 ~/acli/bin/arduino-cli core install esp32:esp32

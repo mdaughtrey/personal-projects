@@ -74,19 +74,22 @@ def main():
     setlogging('01_crop_and_rotate.log')
     args = procargs()
 
-    readpath = os.path.realpath(args.readfrom)
+#    readpath = os.path.realpath(args.readfrom)
+    readpath = args.readfrom
     if not os.path.exists(os.path.dirname(readpath)):
         print(f'{readpath} does not exist')
         sys.exit(1)
 
-    writepath = os.path.realpath(args.writeto)
+#    writepath = os.path.realpath(args.writeto)
+    writepath = args.writeto
     if not os.path.exists(writepath):
         print(f'Creating directory {writepath}')
         os.mkdir(writepath)
 
     exposures = [int(x) for x in args.exposures.split(',')]
     centerX = None
-    for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
+    #for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
+    for regfile in sorted(glob(readpath)):
         cX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
         if centerX is None:
             centerX = cX
@@ -94,7 +97,7 @@ def main():
             filename = os.path.basename(regfile).split('_')
             filename = f'{filename[0]}_{exposure}.png'
             writeto = writepath + '/' + filename
-            readfrom = readpath  + '/' + filename
+            readfrom = regfile.replace('reg','png')
             #writeto = realpath + '/' +  os.path.splitext(os.path.basename(regfile))[0] + '.png'
             logger.debug(f'{readfrom} -> {writeto}')
             if not os.path.exists(writeto):

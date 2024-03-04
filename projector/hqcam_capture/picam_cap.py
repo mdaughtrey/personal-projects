@@ -274,7 +274,7 @@ def framecap(config):
         for exp in config.exposure.split(','):
             try:
                 target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
-                command=f'rpicam-still --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
+                command=f'rpicam-still -n --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
                 logger.debug(command)
                 rc = subprocess.run(command.split())
             except Exception as ee:

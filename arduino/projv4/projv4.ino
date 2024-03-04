@@ -57,6 +57,7 @@ struct {
     uint16_t encoderTO;
     uint32_t encoderTime;
 #endif // OPTO_ENCODER
+    uint32_t tensionTime;
     uint8_t pwmslice;
     uint8_t pwmpin;
     uint8_t pwmchan;
@@ -102,6 +103,7 @@ void lamp(uint8_t val) { digitalWrite(OutputPin1, val); }
 void setTension(uint8_t val) { 
     pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, val);
     pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
+    config.encoderTime = millis();
 }
 
 #ifdef OPTO_ENCODER
@@ -723,5 +725,11 @@ void loop ()
     buttonPoll();
     ledPoll();
     stepperPoll();
+    if ((millis() - config.tensionTime) > 10000)
+    {
+        setTension(0);
+        if (config.verbose)
+            Serial.print("{TTO}");
+    }
 
 }

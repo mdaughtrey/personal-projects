@@ -6,7 +6,7 @@
 # 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=20240225_test1
+PROJECT=20240301_test1
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -15,7 +15,8 @@ DEVICE=/dev/video0
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
 #EXPOSURES="2500,3000,3500,4000,4500,5000,5500"
-EXPOSURES="36000,66000,105000"
+EXPOSURES="10000,20000,36000,66000,105000"
+IFS=, read -ra EXPOSE <<<${EXPOSURES}
 EDR="--exposure ${EXPOSURES}"
 
 #exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
@@ -23,7 +24,7 @@ exec > >(tee -a usb_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
 
 mkdir -p ${FP}
 
-for sd in capture graded descratch work; do
+for sd in capture graded descratch work capdebug; do
     if [[ ! -d "${FP}/${sd}" ]]; then mkdir -p ${FP}/${sd}; fi
 done
 
@@ -71,7 +72,8 @@ praw()
     subdir=${1:-capture}
     IFS=, read -ra exs <<<${EXPOSURES}
     for ex in $exs; do
-        ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.png -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_praw_${ex}.mp4 
+        ffmpeg -f image2 -r 18 -pattern_type glob -i "${FP}/${subdir}/????????_${ex}.png" \
+            -vcodec libx264 -vf scale=640x480 -y ${FP}/${PROJECT}_praw_${exs[1]}.mp4 
     done
 }
 
@@ -79,9 +81,8 @@ pcar()
 {
     subdir=${1:-car}
     IFS=, read -ra exs <<<${EXPOSURES}
-    ls ${FP}/${subdir}/*_${exs[1]}.png > /tmp/filelist.txt
-    mplayer mf://@/tmp/filelist.txt -vf scale=640:480 -vo yuv4mpeg:file=${FP}/${PROJECT}_pcar_${exs[1]}.mp4
-#        echo ffmpeg -f image2 -r 18 -i ${FP}/${subdir}/%08d_${ex}.png -vcodec libx264 -vf scale=640x480 ${FP}/${PROJECT}_pcar_${ex}.mp4 
+    ffmpeg -f image2 -r 18 -pattern_type glob -i "${FP}/${subdir}/????????_${exs[1]}.png" \
+        -vcodec libx264 -vf scale=640x480 -y ${FP}/${PROJECT}_pcar_${exs[1]}.mp4 
 }
 
 getres()
@@ -152,9 +153,9 @@ oneshot()
     ./usbcap.py oneshot --camindex $(getdev) --framesto ${FP} --logfile usbcap.log  --exposure 10000
 }
 
-video()
+viewcam()
 {
-    rpicam-hello --timeout 180
+    rpicam-hello --timeout 180s
 }
 
 #setres()
@@ -197,8 +198,10 @@ case "$1" in
     startvlc) screen -dmS vlc vlc --intf qt --extraintf telnet --telnet-password abc ;;
     praw) praw ;;
     pcar) pcar ;;
-    registration) ./00_registration.py --readfrom ${FP}/capture/'*.png' --writeto ${FP}/capture ;;
-    car) ./01_crop_and_rotate.py --readfrom ${FP}/capture --writeto ${FP}/car --exp ${EXPOSURES} ;;
+    #registration) ./00_registration.py --readfrom ${FP}/capture/'*.png' --writeto ${FP}/capture \
+    #    --debugto ${FP}/capdebug --imageglob '000000[67]??';;
+    registration) ./00_registration.py --readfrom ${FP}/capture/'????????_'${EXPOSE[1]}'.png' --writeto ${FP}/capture --debugto ${FP}/capdebug;;
+    car) ./01_crop_and_rotate.py --readfrom ${FP}/capture/'????????_'${EXPOSE[1]}'.reg' --writeto ${FP}/car --exp ${EXPOSURES} --annotate ;;
     video) video ;;
     *) echo what?
 esac
