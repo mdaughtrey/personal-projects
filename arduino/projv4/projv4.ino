@@ -103,7 +103,7 @@ void lamp(uint8_t val) { digitalWrite(OutputPin1, val); }
 void setTension(uint8_t val) { 
     pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, val);
     pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
-    config.encoderTime = val ? millis() : 0;
+    config.tensionTime = val ? millis() : 0;
 }
 
 #ifdef OPTO_ENCODER
@@ -331,6 +331,7 @@ void dumpConfig(uint8_t th)
         config.filmState);
 #endif // OPTO_ENCODER
 
+    Serial.printf("tensionTime %d\r\n", config.tensionTime);
     Serial.printf("verbose: %d\r\n", config.verbose);
     Serial.printf("stepper.minInterval %u stepper.maxInterval %u\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
 
