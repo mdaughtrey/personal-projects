@@ -103,7 +103,7 @@ void lamp(uint8_t val) { digitalWrite(OutputPin1, val); }
 void setTension(uint8_t val) { 
     pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, val);
     pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
-    config.encoderTime = millis();
+    config.encoderTime = val ? millis() : 0;
 }
 
 #ifdef OPTO_ENCODER
@@ -725,7 +725,7 @@ void loop ()
     buttonPoll();
     ledPoll();
     stepperPoll();
-    if ((millis() - config.tensionTime) > 10000)
+    if (config.tensionTime && ((millis() - config.tensionTime)) > 10000)
     {
         setTension(0);
         if (config.verbose)
