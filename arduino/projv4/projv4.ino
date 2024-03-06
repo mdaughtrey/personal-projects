@@ -101,9 +101,14 @@ void fan(uint8_t val) { digitalWrite(OutputPin0, val); }
 void lamp(uint8_t val) { digitalWrite(OutputPin1, val); }
 
 void setTension(uint8_t val) { 
-    pwm_set_chan_level(config.pwmslice, PWM_CHAN_A, val);
-    pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
+    pwm_set_chan_level(config.pwmslice, config.pwmchan, val);
+//    pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
+    config.tension = val;
     config.tensionTime = val ? millis() : 0;
+    if (config.verbose)
+    {
+        Serial.printf("tension %d tensionTime %d\r\n", config.tension, config.tensionTime);
+    }
 }
 
 #ifdef OPTO_ENCODER
@@ -144,6 +149,7 @@ void initPWM()
     Serial.printf("slice is %d\r\n", config.pwmslice);
     pwm_set_wrap(config.pwmslice, 255);
     pwm_set_chan_level(config.pwmslice, config.pwmchan,0);
+    pwm_set_enabled(config.pwmslice, true);
 }
 
 
@@ -527,9 +533,8 @@ Command commands_main[] = {
 }},
 //{'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
-    config.tension = config.param;
+    setTension(config.param); 
     config.param = 0;
-    setTension(config.tension); 
     fan(1); }},
 {'T',FSH(help_tension0), [](){ setTension(0); fan(0);}},
 {'v',FSH(help_verbose), [](){ config.verbose = stepper.m_verbose = config.param;}},
@@ -726,7 +731,7 @@ void loop ()
     buttonPoll();
     ledPoll();
     stepperPoll();
-    if (config.tensionTime && ((millis() - config.tensionTime)) > 10000)
+    if (config.tension && ((millis() - config.tensionTime)) > 10000)
     {
         setTension(0);
         if (config.verbose)
