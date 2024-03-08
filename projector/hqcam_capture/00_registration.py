@@ -8,6 +8,7 @@ import numpy as np
 import os
 from PIL import Image,ImageDraw,ImageFilter,ImageOps
 import pdb
+from    scipy import ndimage
 import sys
 
 args = None
@@ -30,10 +31,14 @@ def findSprocket(filename):
         outfile = f'{args.debugto}/{outfile}_{tag}.png'
         cv2.imwrite(outfile, image)
 
+    pdb.set_trace()
     debugout = args.debugto #  and -1 != filename.find('36000')
     original=cv2.imread(filename, cv2.IMREAD_ANYCOLOR)
     image = cv2.imread(filename,cv2.IMREAD_GRAYSCALE)
     image = image[:,0:int(image.shape[1]*0.10)]
+
+    image = np.asarray(image, dtype=np.uint8)
+    image = ndimage.grey_erosion(image, size=(5,5))
 
     if debugout:
         writeDebugFile('slice', image)
