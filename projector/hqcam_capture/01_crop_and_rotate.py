@@ -90,14 +90,15 @@ def main():
     centerX = None
     #for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
     for regfile in sorted(glob(readpath)):
+        pdb.set_trace()
         cX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
         if centerX is None:
             centerX = cX
-        for exposure in exposures:
+        for exposure in exposures[1:]:
             filename = os.path.basename(regfile).split('_')
             filename = f'{filename[0]}_{exposure}.png'
+            readfrom = os.path.dirname(readpath) + '/' + filename
             writeto = writepath + '/' + filename
-            readfrom = regfile.replace('reg','png')
             #writeto = realpath + '/' +  os.path.splitext(os.path.basename(regfile))[0] + '.png'
             logger.debug(f'{readfrom} -> {writeto}')
             if not os.path.exists(writeto):

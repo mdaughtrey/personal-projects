@@ -260,10 +260,9 @@ def framecap(config):
 
     for framenum in range(config.frames):
         global lastTension
-        if tension[framenum+startframe] != lastTension:
-            lastTension = tension[framenum+startframe]
-            logger.info(f'Tension {lastTension}')
-            serwrite(str(lastTension).encode())
+        lastTension = tension[framenum+startframe]
+        logger.info(f'Tension {lastTension}')
+        serwrite(str(lastTension).encode())
         serwrite(b'n')
         wait = serwaitfor(b'{HDONE}', b'{NTO}')
         if wait[0]:
