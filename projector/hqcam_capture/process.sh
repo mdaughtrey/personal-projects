@@ -20,7 +20,7 @@ IFS=, read -ra EXPOSE <<<${EXPOSURES}
 EDR="--exposure ${EXPOSURES}"
 
 #exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
-exec > >(tee -a usb_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
+#exec > >(tee -a process_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
 
 mkdir -p ${FP}
 
@@ -240,7 +240,8 @@ case "$1" in
     ptf) ptf ;;
     #registration) ./00_registration.py --readfrom ${FP}/capture/'*.png' --writeto ${FP}/capture \
     #    --debugto ${FP}/capdebug --imageglob '000000[67]??';;
-    registration) ./00_registration.py --readfrom ${FP}/capture/'????????_'${EXPOSE[0]}'.png' --writeto ${FP}/capture --debugto ${FP}/capdebug --onefile ${FP}/capture/00000185_${EXPOSE[0]}.png ;;
+    registration) ./00_registration.py --readfrom ${FP}/capture/'????????_'${EXPOSE[0]}'.png' --writeto ${FP}/capture ;; #  --debugto ${FP}/capdebug ;;
+#      | tee registration.log ;; #   --onefile ${FP}/capture/00000003_20000.png ;;
     car) ./01_crop_and_rotate.py --readfrom ${FP}/capture/'????????_'${EXPOSE[0]}'.reg' --writeto ${FP}/car --exp ${EXPOSURES} ;;
     tf) tonefuse ;;
     cam) cam ;;

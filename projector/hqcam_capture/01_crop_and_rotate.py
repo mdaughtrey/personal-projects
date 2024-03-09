@@ -87,13 +87,12 @@ def main():
         os.mkdir(writepath)
 
     exposures = [int(x) for x in args.exposures.split(',')]
-    centerX = None
+#    centerX = None
     #for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
     for regfile in sorted(glob(readpath)):
-        pdb.set_trace()
-        cX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
-        if centerX is None:
-            centerX = cX
+        centerX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
+#        if centerX is None:
+#            centerX = cX
         for exposure in exposures[1:]:
             filename = os.path.basename(regfile).split('_')
             filename = f'{filename[0]}_{exposure}.png'

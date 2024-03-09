@@ -31,11 +31,10 @@ def findSprocket(filename):
         outfile = f'{args.debugto}/{outfile}_{tag}.png'
         cv2.imwrite(outfile, image)
 
-    pdb.set_trace()
     debugout = args.debugto #  and -1 != filename.find('36000')
     original=cv2.imread(filename, cv2.IMREAD_ANYCOLOR)
     image = cv2.imread(filename,cv2.IMREAD_GRAYSCALE)
-    image = image[:,0:int(image.shape[1]*0.10)]
+    image = image[:,0:int(image.shape[1]*0.15)]
 
     image = np.asarray(image, dtype=np.uint8)
     image = ndimage.grey_erosion(image, size=(5,5))
@@ -54,7 +53,11 @@ def findSprocket(filename):
 
     contour = sorted(contours, key=lambda x: cv2.contourArea(x), reverse=True)[0] 
     area = cv2.contourArea(contour)
+    # ((centerX, centerY),(dimX,dimY),angle)
     rect = cv2.minAreaRect(contour)
+    print(f'{os.path.basename(filename)}: {rect}')
+    if rect[2] < 10.0:
+        rect = (rect[0], (rect[1][1], rect[1][0]), rect[2] + 90.0)
     rotation = rect[2]
     centre = rect[0]
     if debugout:
@@ -63,7 +66,7 @@ def findSprocket(filename):
         cv2.drawContours(s2, [contour], -1,color=color, thickness=cv2.FILLED)
         writeDebugFile('contours', s2)
 
-#
+    # Top Left (x,y), Top Right (x,y), Bottom Right (x,y), Bottom Left (x,y)
     box = np.intp(cv2.boxPoints(rect))
     if debugout:
         s2 = sprocket.copy()
@@ -71,10 +74,10 @@ def findSprocket(filename):
         cv2.drawContours(s2, [box], -1,color=color, thickness=2)
         writeDebugFile('boxed', s2)
 
-    avgright = (box[2][0]+box[3][0])/2
-    avgleft = (box[0][0]+box[1][0])/2
-    avgtop = (box[1][1]+box[2][1])/2
-    avgbot = (box[0][1]+box[3][1])/2
+    avgright = (box[1][0]+box[2][0])/2
+    avgleft = (box[0][0]+box[3][0])/2
+    avgtop = (box[0][1]+box[1][1])/2
+    avgbot = (box[2][1]+box[3][1])/2
     registration = int(avgright),int((avgtop+avgbot)/2)
     if debugout:
         o2 = original.copy()
@@ -89,7 +92,7 @@ def main():
         print(f'{args.readfrom} does not exist')
         sys.exit(1)
 
-    if args.onefile and not os.file.exists(os.path.dirname(args.onefile)):
+    if args.onefile and not os.path.isfile(args.onefile):
         print(f'{args.onefile} does not exist')
         sys.exit(1)
 
@@ -99,7 +102,7 @@ def main():
         sys.exit(1)
 
     if args.onefile:
-        (reg,rot) = findSprocket(args.file)
+        (reg,rot) = findSprocket(args.onefile)
         writeto = os.path.splitext(os.path.basename(args.onefile))[0]
         with open(f'{realpath}/{writeto}.reg','wb') as out:
             out.write(f'{reg[0]} {reg[1]} {rot}'.encode())
