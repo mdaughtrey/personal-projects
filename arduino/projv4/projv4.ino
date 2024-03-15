@@ -28,14 +28,6 @@ typedef enum
     FILM_FRAME
 } FilmState;
 
-//typedef enum
-//{
-//    OPTO_NONE = 0,
-//    OPTO_RISING,
-//    OPTO_FALLING,
-//    OPTO_BOTH
-//} OptoEdge;
-
 typedef struct
 {
     char key;
@@ -47,12 +39,12 @@ typedef struct
 struct {
     int16_t param;
 #ifdef OPTO_ENCODER
-    uint16_t encoderLimit;
-    uint16_t slowEncoderThreshold;
+//    uint16_t encoderLimit;
+//    uint16_t slowEncoderThreshold;
 #endif // OPTO_ENCODER
     uint8_t tension;
     uint8_t verbose;
-    uint8_t isrEdge;
+//    uint8_t isrEdge;
 #ifdef OPTO_ENCODER
     uint16_t encoderTO;
     uint32_t encoderTime;
@@ -200,6 +192,7 @@ void readFilmSensor()
     sensorSuper8_0 |= sensorSuper8_1 >> 31;
     sensorSuper8_1 <<= 1 ;
     sensorSuper8_1 |= digitalRead(FilmSensorPinSuper8);
+    digitalWrite(LedPin, sensorSuper8_1 & 1);
 
     //if (PINPOLL && HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
     if (HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
@@ -296,7 +289,7 @@ void buttonPoll()
     {
         if (buttonState[1])
         {
-            setTension(192); 
+            setTension(128); 
             fan(1); 
         }
         buttonState[1] = !buttonState[1];
@@ -323,9 +316,7 @@ void dumpConfig(uint8_t th)
 {
     Serial.printf("-------------------------------\r\n");
 #ifdef OPTO_ENCODER
-    Serial.printf("encoderLimit: %u\r\nencoderSlowThreshold: %u\r\nparam %u\r\nPINPOLL %u\r\ntension %u \r\n",
-        config.encoderLimit,
-        config.slowEncoderThreshold,
+    Serial.printf("param %u\r\nPINPOLL %u\r\ntension %u \r\n",
         config.param,
         PINPOLL,
         config.tension);
@@ -473,8 +464,8 @@ const char help_fanoff[] PROGMEM="fan off";
 const char help_param0[] PROGMEM="param = 0";
 const char help_steppermenu[] PROGMEM="stepper menu";
 #ifdef OPTO_ENCODER
-const char help_enclimit[] PROGMEM="encoder limit (param)";
-const char help_encthresh[] PROGMEM="slow encoder threshold (param)";
+//const char help_enclimit[] PROGMEM="encoder limit (param)";
+//const char help_encthresh[] PROGMEM="slow encoder threshold (param)";
 #endif // OPTO_ENCODER
 const char help_help[] PROGMEM="help";
 const char help_reset[] PROGMEM="reset config";
@@ -485,7 +476,7 @@ const char help_encpos0[] PROGMEM="encoder pos = 0";
 const char help_next[] PROGMEM="next (until encoderlimit)";
 const char help_nextimeout[] PROGMEM="next timeout (param)";
 #endif // OPTO_ENCODER
-const char help_isr[] PROGMEM="ISR on rising/falling edge (param 0=off, 1=rising, 2=falling, 3=both)";
+//const char help_isr[] PROGMEM="ISR on rising/falling edge (param 0=off, 1=rising, 2=falling, 3=both)";
 const char help_tension[] PROGMEM="tension (param)";
 const char help_tension0[] PROGMEM="tension 0";
 const char help_verbose[] PROGMEM="verbose 0-1 (param)";
@@ -510,12 +501,12 @@ Command commands_main[] = {
 {'C',FSH(help_steppermenu), [](){ commandset = commands_stepper; }},
 #endif //  SIMPLEINTERVAL
 #ifdef OPTO_ENCODER
-{'e',FSH(help_enclimit), [](){
-    config.encoderLimit = config.param;
-    config.param = 0;}},
-{'E',FSH(help_encthresh), [](){
-    config.slowEncoderThreshold = config.param;
-    config.param = 0; }},
+//{'e',FSH(help_enclimit), [](){
+//    config.encoderLimit = config.param;
+//    config.param = 0;}},
+//{'E',FSH(help_encthresh), [](){
+//    config.slowEncoderThreshold = config.param;
+//    config.param = 0; }},
 #endif // OPTO_ENCODER
 {'h',FSH(help_help), [](){ help();}},
 {'i',FSH(help_init), [](){ initialize(); }},
@@ -694,15 +685,15 @@ void stepperPoll()
 // #endif // OPTO_ENCODER
 }
 
-void ledPoll()
-{
-    if ((millis() - ledTime) > 1000)
-    {
-        ledState = !ledState;
-        digitalWrite(LedPin, ledState);
-        ledTime = millis();
-    }
-}
+//void ledPoll()
+//{
+//    if ((millis() - ledTime) > 1000)
+//    {
+//        ledState = !ledState;
+//        digitalWrite(LedPin, ledState);
+//        ledTime = millis();
+//    }
+//}
 
 void monitor(void)
 {
@@ -729,7 +720,7 @@ void loop ()
         handleCommand(Serial.read());
     }
     buttonPoll();
-    ledPoll();
+//    ledPoll();
     stepperPoll();
     if (config.tension && ((millis() - config.tensionTime)) > 10000)
     {
