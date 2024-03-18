@@ -1,7 +1,7 @@
 #!/bin/bash
 
-cd /home/mattd
-nikola init -q --demo daughtrey.com
+cd /personal-projects/docker/nikola
+#nikola init -q --demo daughtrey.com
 cd daughtrey.com
 nikola build
 nikola serve
