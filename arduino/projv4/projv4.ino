@@ -112,8 +112,9 @@ volatile uint16_t encoderPos = 0;
 //volatile int isr1count = 0;
 //volatile int isr2count = 0;
 
-uint32_t sensor8mm_0, sensor8mm_1 = 0;
-uint32_t sensorSuper8_0, sensorSuper8_1 = 0;
+uint32_t sensor8mm_0 = 0;
+//uint32_t sensorSuper8_0 = 0;
+uint8_t sensorSuper8_0 = 0;
 void handleCommand(uint8_t command);
 void coilControl();
 //void (*commandHandler)() = handleCommand;
@@ -183,21 +184,18 @@ void isr2()
 // 1 == gap 0 == frame
 void readFilmSensor()
 {
-    sensor8mm_0 <<= 1;
-    sensor8mm_0 |= sensor8mm_1 >> 31;
-    sensor8mm_1 <<= 1 ;
-    sensor8mm_1 |= digitalRead(FilmSensorPin8mm);
+    sensor8mm_0 <<= 1 ;
+    sensor8mm_0 |= digitalRead(FilmSensorPin8mm);
 
-    sensorSuper8_0 <<= 1;
-    sensorSuper8_0 |= sensorSuper8_1 >> 31;
-    sensorSuper8_1 <<= 1 ;
-    sensorSuper8_1 |= digitalRead(FilmSensorPinSuper8);
-    digitalWrite(LedPin, sensorSuper8_1 & 1);
+    sensorSuper8_0 <<= 1 ;
+    sensorSuper8_0 |= digitalRead(FilmSensorPinSuper8);
+    digitalWrite(LedPin, sensorSuper8_0 & 1);
 
     //if (PINPOLL && HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
     if (HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
-    if (0 == sensorSuper8_1) config.filmState = FILM_FRAME;
-    if (0xffffffff == sensorSuper8_1) config.filmState = FILM_GAP;
+    if (0 == sensorSuper8_0) config.filmState = FILM_FRAME;
+    //if (0xffffffff == sensorSuper8_0) config.filmState = FILM_GAP;
+    if (0xff == sensorSuper8_0) config.filmState = FILM_GAP;
     //if (0 == sensor8mm_1 || 0 == sensorSuper8_1) config.filmState = FILM_FRAME;
     //if (0xffffffff == sensor8mm_1 || 0xffffffff == sensorSuper8_1) config.filmState = FILM_GAP;
 }
@@ -289,7 +287,7 @@ void buttonPoll()
     {
         if (buttonState[1])
         {
-            setTension(128); 
+            setTension(192); 
             fan(1); 
         }
         buttonState[1] = !buttonState[1];
@@ -706,7 +704,7 @@ void monitor(void)
 //    if (d0.count() == 0 | d0.count() == 32) Serial.printf("%u ", d0.count());
 //    Serial.printf("%d %d %d %d\r\n", d3.count(),d2.count(),d1.count(),d0.count());
     Serial.printf("1G0F huntState %u filmState %u sensor8mm_1 %s sensorSuper8_1 %s 8mm %u S8 %u\r\n",
-            config.huntState,config.filmState,std::bitset<32>(sensor8mm_1).to_string().c_str(), std::bitset<32>(sensorSuper8_1).to_string().c_str(),
+            config.huntState,config.filmState,std::bitset<32>(sensor8mm_0).to_string().c_str(), std::bitset<8>(sensorSuper8_0).to_string().c_str(),
             digitalRead(FilmSensorPin8mm), digitalRead(FilmSensorPinSuper8));
     if (mon) at.setTimeout(monitor, 100);
 } 
