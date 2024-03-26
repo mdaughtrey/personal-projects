@@ -1,10 +1,10 @@
 TAG=nikola
-DOCKER=docker.exe
+DOCKER=docker
 PUB=--publish 8000:8000
-VOL=-v .:/home/mattd/
+VOL=-v ${HOME}/personal-projects:/personal-projects
 
 run:
-	${DOCKER} run -dh ${TAG} --name ${TAG} ${PUB} ${VOL} /home/mattd/demo.sh
+	${DOCKER} run -dh ${TAG} --name ${TAG} ${PUB} ${VOL} ${TAG} /personal-projects/docker/nikola/demo.sh
 
 runi:
 	${DOCKER} run --rm -h ${TAG} --name ${TAG} ${PUB} -it ${VOL} ${TAG}:latest  /bin/bash
