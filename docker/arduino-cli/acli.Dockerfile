@@ -47,4 +47,5 @@ RUN ~/acli/bin/arduino-cli lib install HID-Project printex asynctimer TM1638plus
 RUN ~/acli/bin/arduino-cli lib install 'SparkFun APDS9960 RGB and Gesture Sensor'
 RUN ~/acli/bin/arduino-cli lib install 'RevEng PAJ7620'
 RUN ~/acli/bin/arduino-cli lib install 'AccelStepper'
+RUN ~/acli/bin/arduino-cli lib install 'ArduinoINA219'
 
