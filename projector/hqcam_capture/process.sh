@@ -6,7 +6,7 @@
 # 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=20240306_test1
+PROJECT=20240326_640_480
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -15,16 +15,17 @@ DEVICE=/dev/video0
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
 #EXPOSURES="2500,3000,3500,4000,4500,5000,5500"
-EXPOSURES="20000,36000,66000,105000"
+#EXPOSURES="20000,36000,66000,105000"
+EXPOSURES="5000,16000,22000,28000"
 IFS=, read -ra EXPOSE <<<${EXPOSURES}
 EDR="--exposure ${EXPOSURES}"
 
 #exec > >(tee -a usb_${OP}_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
-#exec > >(tee -a process_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
+exec > >(tee -a process_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
 
 mkdir -p ${FP}
 
-for sd in capture fused graded descratch work capdebug; do
+for sd in car capture fused graded descratch work capdebug; do
     if [[ ! -d "${FP}/${sd}" ]]; then mkdir -p ${FP}/${sd}; fi
 done
 
@@ -145,8 +146,11 @@ AVS
 
 exptest()
 {
-    if [[ ! -d "${FP}/exptest" ]]; then mkdir ${FP}/exptest; fi
-    ./usbcap.py exptest --camindex $(getdev) --framesto ${FP}/exptest --logfile exptest.log  --nofilm --res 0
+    for ((f=1000;f<100000;f+=1000)); do
+        EXPOSURES="${EXPOSURES},$f"
+    done
+    ./picam_cap.py framecap --framesto ${FP}/capture --frames 10 --logfile picam_cap.log \
+        --film super8 --exposure ${EXPOSURES} --startdia 57 --enddia 33 
 }
 
 tonefuse()

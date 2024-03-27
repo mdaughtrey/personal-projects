@@ -35,9 +35,9 @@ def setlogging(logname):
     logger.addHandler(fileHandler)
 
 #def getRect(regfile):
-def getRect(centerX, centerY):
+def getRect(leftX, centerY):
 #    centerX, centerY, rotate = open(regfile.encode(),'rb').read().split(b' ')
-    boxLeft = int(centerX)
+    boxLeft = int(leftX) + 180
     boxRight = boxLeft + 1250
     boxTop = int(centerY) - 500
     boxBot = int(centerY) + 500
@@ -45,13 +45,13 @@ def getRect(centerX, centerY):
     return boxLeft,boxRight,boxTop,boxBot
 
 #def cropAndRotate(regfile, imagefile):
-def cropAndRotate(centerX, centerY, readfrom, writeto):
+def cropAndRotate(leftX, centerY, readfrom, writeto):
     try:
         image = cv2.imread(readfrom, cv2.IMREAD_ANYCOLOR)
     except Exception as ee:
         logger.error(f'Error reading from {imagefile}: {str(ee)}')
 
-    boxTop,boxBot,boxLeft,boxRight = getRect(centerX, centerY)
+    boxTop,boxBot,boxLeft,boxRight = getRect(leftX, centerY)
     height, width = image.shape[:2]
 #    rMatrix = cv2.getRotationMatrix2D(center=(width/2,height/2),angle=rotate,scale=1)
 #    rImage = cv2.warpAffine(src=image,M=rMatrix,dsize=(width,height))
@@ -90,7 +90,8 @@ def main():
 #    centerX = None
     #for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
     for regfile in sorted(glob(readpath)):
-        centerX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
+#        pdb.set_trace()
+        rightX, leftX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
 #        if centerX is None:
 #            centerX = cX
         for exposure in exposures[1:]:
@@ -99,11 +100,11 @@ def main():
             readfrom = os.path.dirname(readpath) + '/' + filename
             writeto = writepath + '/' + filename
             #writeto = realpath + '/' +  os.path.splitext(os.path.basename(regfile))[0] + '.png'
-            logger.debug(f'{readfrom} -> {writeto}')
+            logger.debug(f'{filename}')
             if not os.path.exists(writeto):
                 try:
-                    cropAndRotate(int(centerX), int(centerY), readfrom, writeto)
+                    cropAndRotate(int(leftX), int(centerY), readfrom, writeto)
                 except:
-                    pass
+                    logger.debug(f'Skipping {filename}')
 
 main()

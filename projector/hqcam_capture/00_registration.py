@@ -25,7 +25,6 @@ def procargs():
 def findSprocket(filename):
 #    if args.webdb:
 #        import web_pdb
-#        web_pdb.set_trace()
     def writeDebugFile(tag, image):
         outfile = os.path.splitext(os.path.basename(filename))[0]
         outfile = f'{args.debugto}/{outfile}_{tag}.png'
@@ -78,7 +77,7 @@ def findSprocket(filename):
     avgleft = (box[0][0]+box[3][0])/2
     avgtop = (box[0][1]+box[1][1])/2
     avgbot = (box[2][1]+box[3][1])/2
-    registration = int(avgright),int((avgtop+avgbot)/2)
+    registration = int(avgright),int(avgleft),int((avgtop+avgbot)/2)
     if debugout:
         o2 = original.copy()
         cv2.circle(o2,(int(avgright),int((avgtop+avgbot)/2)),12,(0,255,0),-1)
@@ -111,6 +110,6 @@ def main():
         (reg,rot) = findSprocket(file)
         writeto = os.path.splitext(os.path.basename(file))[0]
         with open(f'{realpath}/{writeto}.reg','wb') as out:
-            out.write(f'{reg[0]} {reg[1]} {rot}'.encode())
+            out.write(f'{reg[0]} {reg[1]} {reg[2]} {rot}'.encode())
 
 main()

@@ -206,8 +206,9 @@ def init_framecap(config):
     # - U - ramp up 25
     # - x - return to main
     #message = f'kcv{lastTension}tl{config.optocount}ecE8000oCc500Ic2000ic25D25Ux'.encode()          
+    serwrite(b'c120t')
+    time.sleep(1.0)
     message = f'Wcv{lastTension}tl'.encode()
-    logger.debug(message)
     serwrite(message)
 
 def init_exptest(config):
@@ -273,7 +274,8 @@ def framecap(config):
         for exp in config.exposure.split(','):
             try:
                 target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
-                command=f'rpicam-still -n --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
+                #command=f'rpicam-still -n --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
+                command=f'rpicam-still -n --hflip=1 --immediate --width=640 --height=480 -e png --awb=indoor --shutter {exp} --output {target}'
                 logger.debug(command)
                 rc = subprocess.run(command.split())
             except Exception as ee:
