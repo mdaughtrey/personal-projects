@@ -20,7 +20,8 @@ typedef enum
 {
     HUNT_NONE = 0,
     HUNT_GAP,
-    HUNT_FRAME
+    HUNT_FRAME,
+    HUNT_FORWARD
 } HuntState;
 
 typedef enum
@@ -514,6 +515,8 @@ const char help_moff[] PROGMEM="monitoring off";
 const char help_autotension[] PROGMEM="Autotension";
 const char help_stepperrun[] PROGMEM = "run (param as steps)";
 const char help_tensionTO[] PROGMEM = "set tension timeout (param)";
+const char help_forward[] PROGMEM = "Forward";
+const char help_stop[] PROGMEM = "Stop".
 
 Command commands_main[] = {
 {'?',FSH(help_dumpconfig), [](){ dumpConfig(0);}},
@@ -533,6 +536,7 @@ Command commands_main[] = {
 //    config.slowEncoderThreshold = config.param;
 //    config.param = 0; }},
 #endif // OPTO_ENCODER
+{'f',FSH(help_forward), [](){ config.HUNTSTATE = HUNT_FORWARD; }},
 {'h',FSH(help_help), [](){ help();}},
 {'i',FSH(help_init), [](){ initialize(); }},
 {' ',FSH(help_reset), [](){ setup();}},
@@ -547,6 +551,11 @@ Command commands_main[] = {
 {'r', FSH(help_stepperrun), [](){ 
     runStepper((uint16_t)config.param);
 }},
+{'s',FSH(help_stop), [](){
+    stepper.stop();
+    config.huntstate = HUNT_NONE:
+}},
+
 //{'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
     setTension(config.param); 
@@ -665,16 +674,7 @@ void handleCommand(uint8_t command)
 void stepperPoll()
 {
     if (HUNT_NONE == config.huntState) return;
-//    if (config.verbose)
-//    {
-//        Serial.printf("huntState %u filmState %u sensor8mm_1 %s sensorSuper8_1 %s\r\n",
-//            config.huntState,config.filmState,std::bitset<32>(sensor8mm_1).to_string().c_str(), std::bitset<32>(sensorSuper8_1).to_string().c_str());
-//    }
-
-//    if (NEXT != config.state)
-//    {
-//        return;
-//    }
+    if (HUNT_FORWARD == config.huntState) stepper.run();
     if ((millis() - config.encoderTime) > config.encoderTO)
     {
         stepper.stop();
@@ -696,19 +696,6 @@ void stepperPoll()
     {
         stepper.run();
     }
-// #ifdef OPTO_ENCODER
-//     if (config.verbose)
-//     {
-//         Serial.printf("stepperPoll %d\r\n", millis() - config.encoderTime);
-//     }
-//     else if (encoderPos >= config.encoderLimit && frameReady)
-//     {
-//         stepper.stop(encoderPos);
-//         config.state = NONE;
-//         frameReady = 0;
-//         Serial.println("{HDONE}");
-//     }
-// #endif // OPTO_ENCODER
 }
 
 void ledPoll()
