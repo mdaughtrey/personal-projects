@@ -1,4 +1,5 @@
-FROM debian:latest
+#FROM debian:latest
+FROM bitnami/minideb:latest
 ARG USER=mattd
 RUN apt-get  update -y
 RUN apt-get -y install vim tmux curl git make wget python3 python3-pip 
@@ -18,14 +19,11 @@ USER ${USER}
 RUN mkdir ~/acli
 RUN mkdir ~/tmp
 WORKDIR ~
-rUN cd ~/acli && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+RUN cd ~/acli && curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 ENV PATH=~/acli/bin:${PATH}
 RUN export PATH=~/acli/bin:${PATH}
 RUN mkdir -p ~/acli/Arduino/libraries
 RUN cd ~/acli && wget https://github.com/ZinggJM/GxEPD/archive/master.zip && unzip master.zip -d ~/acli/Arduino/libraries && rm master.zip
-##COPY ${PWD}/arduino-cli.yaml /root/.arduino15
-#COPY ${PWD}/arduino-cli.yaml /home/${USER}/.arduino15
-#RUN export PATH=${PATH}:/usr/local/arduino-cli
 RUN ~/acli/bin/arduino-cli config init
 RUN yq -yi '.board_manager.additional_urls=["https://arduino.esp8266.com/stable/package_esp8266com_index.json","https://dl.espressif.com/dl/package_esp32_index.json","https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json"]' ~/.arduino15/arduino-cli.yaml
 #COPY arduino-cli.patch0 /tmp/arduino-cli.patch0
@@ -48,4 +46,6 @@ RUN ~/acli/bin/arduino-cli lib install 'SparkFun APDS9960 RGB and Gesture Sensor
 RUN ~/acli/bin/arduino-cli lib install 'RevEng PAJ7620'
 RUN ~/acli/bin/arduino-cli lib install 'AccelStepper'
 RUN ~/acli/bin/arduino-cli lib install 'ArduinoINA219'
-
+USER root
+RUN apt clean
+USER ${USER}
