@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
-#./opencvcap.py --serialport /dev/ttyACM0 --camindex 0 --film s8 --framesto ~/share/opencvcap0 --startdia 140 --enddia 80 --res draft
+#0./opencvcap.py --serialport /dev/ttyACM0 --camindex 0 --film s8 --framesto ~/share/opencvcap0 --startdia 140 --enddia 80 --res draft
+# References:
+# https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf
+# https://github.com/raspberrypi/picamera2/tree/main/picamera2
 
 import  argparse
 #import cProfile
-import  cv2 as cv
+import cv2
 #from Exscript.util.interact import read_login
 #from Exscript.protocols import Telnet
 from functools import partial
 from    glob import glob, iglob
 from    itertools import groupby
+from libcamera import Transform
 import  logging
 from    logging.handlers import RotatingFileHandler
 import  math
+from matplotlib import pyplot as plt
+from scipy import ndimage
 import  numpy as np
 import  os
 import  pdb
+from picamera2 import Picamera2, Preview
 #from    PIL import Image, ImageDraw, ImageFilter, ImageOps
 #from    scipy import ndimage
 import  serial
@@ -60,6 +67,7 @@ steps_per_frame=85
 last_delta = 0
 capmode='RGB'
 logger = None
+picam = None
 
 class SerDev():
     def __init__(self, config):
@@ -110,6 +118,7 @@ def pcl_framecap():
     parser.add_argument('--serdev', dest='serdev', default='/dev/ttyACM0', help='Serial device')
     parser.add_argument('--exposure', dest='exposure', help='EDR exposure a,b,[c,..]')
     parser.add_argument('--startdia', dest='startdia', type=int, default=62, help='Feed spool starting diameter (mm)')
+    parser.add_argument('--camsprocket', dest='camsprocket', action='store_true', help='Use in-camera sprocket detection')
     return parser.parse_args()
 
 def pcl_exptest():
@@ -164,9 +173,24 @@ def serwaitfor(text1, text2):
         return (1, text2, accum)
 
 def init_framecap(config):
-#    pdb.set_trace()
+    if config.camsprocket:
+        global picam
+        main={'size': (2304,1296), "format":"RGB888"}
+        lores={"size":(640,480),"format":"RGB888"}
+        controls={'FrameDurationLimits':(100000,100000), 'ExposureTime': int(config.exposure.split(',')[0])}
+        transform = Transform(hflip=True)
+        picam = Picamera2()
+        cam_config = picam.create_video_configuration(main=main,lores=lores,transform=transform,controls=controls)
+        #cam_config = picam.create_video_configuration(main=main,lores=lores,controls=controls)
+
+        picam.configure(cam_config)
+        picam.align_configuration(cam_config)
+        picam.start()
+
+
     if config.showwork and not os.path.exists(workdir:='{}/work'.format(config.framesto)):
         os.mkdir(workdir)
+
     global tension
     t = Tension()
     global numframes
@@ -247,7 +271,7 @@ def get_most_recent_frame(config):
 #
 #        frames = []
 #        for exp in config.exposure.split(','):
-#            logger.debug(f'Exposure {cap.get(cv.CAP_PROP_EXPOSURE)}')
+#            logger.debug(f'Exposure {cap.get(cv2.CAP_PROP_EXPOSURE)}')
 #            ret, frame = capture.read(exp=exp)
 #            logger.debug(f'ret {ret}')
 #            frames.append(frame)
@@ -274,8 +298,8 @@ def framecap(config):
         for exp in config.exposure.split(','):
             try:
                 target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
-                #command=f'rpicam-still -n --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
-                command=f'rpicam-still -n --hflip=1 --immediate --width=640 --height=480 -e png --awb=indoor --shutter {exp} --output {target}'
+                command=f'rpicam-still -n --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
+                #command=f'rpicam-still -n --hflip=1 --immediate --width=640 --height=480 -e png --awb=indoor --shutter {exp} --output {target}'
                 logger.debug(command)
                 rc = subprocess.run(command.split())
             except Exception as ee:
@@ -283,24 +307,119 @@ def framecap(config):
                 break
     serwrite(b' ')
 
+def findSprocket(image, show=False):
+    pdb.set_trace()
+    y,x = image.shape[:2]
+    if show:
+        plt.imshow(image)
+        plt.title('Input Image')
+        plt.show()
+    image = image[int(y/3):y-int(y/3),0:int(x/4)]
+    if show:
+        plt.imshow(image)
+        plt.title('Sliced')
+        plt.show()
+    image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image3 = np.asarray(image2, dtype=np.uint8)
+    image3 = ndimage.grey_erosion(image3, size=(5,5))
+    _, image3 = cv2.threshold(image3, 100, 255, cv2.THRESH_BINARY)
+    if show:
+        plt.imshow(image3,cmap='gray')
+        plt.title('Eroded')
+        plt.show()
+
+    def whtest(contour):
+        (x,y,w,h) = cv2.boundingRect(contour)
+        return (40 < w < 60) & (60 < h < 90)
+
+    # Find the contours in the thresholded image
+    contours, _ = cv2.findContours(image3, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        print('Contour Area: ' + str(cv2.contourArea(c)))
+        x, y, width, height = cv2.boundingRect(c)
+        print(f'x {x} y {y} width {width} height {height}')
+    contours = list(filter(whtest, contours))
+    logger.debug(f'Found {len(contours)} contours')
+    if 1 != len(contours):
+        return False
+    if show == False:
+        return True
+
+    for c in contours:
+        print('Contour Area: ' + str(cv2.contourArea(c)))
+        x, y, width, height = cv2.boundingRect(c)
+        print(f'x {x} y {y} width {width} height {height}')
+    contour = contours[0]
+
+    # Get the bounding box of the largest contour
+    x, y, width, height = cv2.boundingRect(contour)
+
+    # Print the size and location of the white square
+    print(f'White square size: {width}x{height} pixels')
+    print(f'White square location: ({x}, {y})')
+    cv2.drawContours(image3, [contour], -1, (100,100,100), thickness=cv2.FILLED)
+    plt.imshow(image3,cmap='gray')
+    plt.title('Identified')
+    plt.show()
+
+    return True
+
+def framecap_camsprocket(config):
+    startframe = get_most_recent_frame(config)
+
+    for framenum in range(config.frames):
+        global lastTension
+        lastTension = tension[framenum+startframe]
+        logger.info(f'Tension {lastTension}')
+        serwrite(str(lastTension).encode())
+#        serwrite(b'f') # Forward
+
+        done = False
+        while False == done:
+            buffer = picam.capture_array("lores")
+            done = findSprocket(buffer,show = True)
+            logger.debug(f'findSprocket says {done}')
+
+        serwrite(b's') # Stop
+        return
+
+
+        frames = []
+        pdb.set_trace()
+        for exp in config.exposure.split(',')[1:]:
+            try:
+                target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
+                picam.set_controls({'ExposureTime': int(exp), 'AnalogueGain': 1.0})
+                
+                while metaexp := picam.capture_metadata()['ExposureTime'] != int(exp):
+                    logger.debug(f'{metaexp} -> {exp}')
+                image = picam.capture_array('main')
+                cv2.imwrite(target, image)
+                logger.debug(f'Wrote to {target}')
+            except Exception as ee:
+                logger.error(f'capture failed {str(ee)}')
+                break
+
+    serwrite(b' ')
+
 
 def tonefuse(config):
-    images = [cv.imread(f'{config.framesfrom}/00000000a.png'),
-        cv.imread(f'{config.framesfrom}/00000000b.png')]
+    images = [cv2.imread(f'{config.framesfrom}/00000000a.png'),
+        cv2.imread(f'{config.framesfrom}/00000000b.png')]
     times = np.asarray([.700, 1.4], dtype=np.float32)
 
-    calibrate = cv.createCalibrateDebevec()
+    calibrate = cv2.createCalibrateDebevec()
     response = calibrate.process(images, times)
-    merge_debevec = cv.createMergeDebevec()
+    merge_debevec = cv2.createMergeDebevec()
     hdr = merge_debevec.process(images, times, response)
-    tonemap = cv.createTonemap(2.2)
+    tonemap = cv2.createTonemap(2.2)
     ldr = tonemap.process(hdr)
-    merge_mertens = cv.createMergeMertens()
+    merge_mertens = cv2.createMergeMertens()
     fusion = merge_mertens.process(images)
 
-    cv.imwrite(f'{config.framesto}/fusion.png', fusion * 255)
-    cv.imwrite(f'{config.framesto}/ldr.png', ldr * 255)
-    cv.imwrite(f'{config.framesto}/hdr.png', hdr * 255)
+    cv2.imwrite(f'{config.framesto}/fusion.png', fusion * 255)
+    cv2.imwrite(f'{config.framesto}/ldr.png', ldr * 255)
+    cv2.imwrite(f'{config.framesto}/hdr.png', hdr * 255)
 
     pass
 
@@ -325,7 +444,10 @@ def main():
 
     if 'exptest' == config.do: exptest(config)
     if 'framecap' == config.do:
-        framecap(config)
+        if config.camsprocket:
+            framecap_camsprocket(config)
+        else:
+            framecap(config)
 
     if 'tonefuse' == config.do: tonefuse(config)
 

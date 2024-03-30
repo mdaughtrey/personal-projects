@@ -6,7 +6,7 @@
 # 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=20240326_640_480
+PROJECT=20240328_camsprocket
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -37,7 +37,7 @@ getcamdev()
 s8()
 {
     ./picam_cap.py framecap --framesto ${FP}/capture --frames 10000 --logfile picam_cap.log \
-        --film super8 --exposure ${EXPOSURES} --startdia 57 --enddia 33 
+        --film super8 --exposure ${EXPOSURES} --startdia 57 --enddia 33 --camsprocket
 }
 
 sertest()
