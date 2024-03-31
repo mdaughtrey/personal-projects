@@ -14,8 +14,6 @@ DEVICE=/dev/video0
 #VIDEOSIZE=640x480
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
-#EXPOSURES="2500,3000,3500,4000,4500,5000,5500"
-#EXPOSURES="20000,36000,66000,105000"
 EXPOSURES="5000,16000,22000,28000"
 IFS=, read -ra EXPOSE <<<${EXPOSURES}
 EDR="--exposure ${EXPOSURES}"
@@ -224,7 +222,12 @@ case "$1" in
     clip) clip ;;
     descratch) descratch ;;
     8mm) do8mm; preview ;;
-    s8) s8 ;;
+    s8) 
+        rm frames/20240328_camsprocket/capture/*.png
+        rm *.log
+        s8 
+        mv /tmp/*.png /media/frames/20240328_camsprocket/capture/
+        ;;
     preview) shift; preview $@ ;;
     p2) shift; p2 $@ ;;
     sertest) sertest ;;

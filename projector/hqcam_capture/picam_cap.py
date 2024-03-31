@@ -14,7 +14,7 @@ from    glob import glob, iglob
 from    itertools import groupby
 from libcamera import Transform
 import  logging
-from    logging.handlers import RotatingFileHandler
+from   logging import FileHandler, StreamHandler
 import  math
 from matplotlib import pyplot as plt
 from scipy import ndimage
@@ -145,11 +145,18 @@ def setlogging(config):
     global logger
     FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
     logging.basicConfig(level = logging.DEBUG, format=FormatString)
-    logger = logging.getLogger('usbcap')
-    fileHandler = logging.FileHandler(filename = config.logfile)
+    
+    logger = logging.getLogger('picam')
+    logger.setLevel('DEBUG')
+    fileHandler = FileHandler(filename = config.logfile)
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    fileHandler.setLevel(logging.DEBUG)
+    fileHandler.setLevel('DEBUG')
     logger.addHandler(fileHandler)
+
+    stdioHandler = StreamHandler(sys.stdout)
+    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
+    stdioHandler.setLevel('INFO')
+    logger.addHandler(stdioHandler)
 
 def serwrite(message):
     logger.debug(message)
@@ -177,8 +184,9 @@ def init_framecap(config):
         global picam
         main={'size': (2304,1296), "format":"RGB888"}
         lores={"size":(640,480),"format":"RGB888"}
-        controls={'FrameDurationLimits':(100000,100000), 'ExposureTime': int(config.exposure.split(',')[0])}
+        controls={'FrameDurationLimits':(20000,20000), 'ExposureTime': int(config.exposure.split(',')[0])}
         transform = Transform(hflip=True)
+        Picamera2.set_logging(Picamera2.ERROR)
         picam = Picamera2()
         cam_config = picam.create_video_configuration(main=main,lores=lores,transform=transform,controls=controls)
         #cam_config = picam.create_video_configuration(main=main,lores=lores,controls=controls)
@@ -186,7 +194,6 @@ def init_framecap(config):
         picam.configure(cam_config)
         picam.align_configuration(cam_config)
         picam.start()
-
 
     if config.showwork and not os.path.exists(workdir:='{}/work'.format(config.framesto)):
         os.mkdir(workdir)
@@ -307,18 +314,23 @@ def framecap(config):
                 break
     serwrite(b' ')
 
-def findSprocket(image, show=False):
-    pdb.set_trace()
+def findSprocket(image, count, desired, show=False):
+    save = True
+    logger.debug(count)
     y,x = image.shape[:2]
     if show:
         plt.imshow(image)
         plt.title('Input Image')
         plt.show()
+    if save:
+        cv2.imwrite(f'/tmp/{count}_{str(desired)}_input.png', image)
     image = image[int(y/3):y-int(y/3),0:int(x/4)]
     if show:
         plt.imshow(image)
         plt.title('Sliced')
         plt.show()
+    if save:
+        cv2.imwrite(f'/tmp/{count}_{str(desired)}_sliced.png', image)
     image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image3 = np.asarray(image2, dtype=np.uint8)
     image3 = ndimage.grey_erosion(image3, size=(5,5))
@@ -327,6 +339,8 @@ def findSprocket(image, show=False):
         plt.imshow(image3,cmap='gray')
         plt.title('Eroded')
         plt.show()
+    if save:
+        cv2.imwrite(f'/tmp/{count}_{str(desired)}_eroded.png', image3)
 
     def whtest(contour):
         (x,y,w,h) = cv2.boundingRect(contour)
@@ -335,9 +349,9 @@ def findSprocket(image, show=False):
     # Find the contours in the thresholded image
     contours, _ = cv2.findContours(image3, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     for c in contours:
-        print('Contour Area: ' + str(cv2.contourArea(c)))
+        logger.debug('Pre filter Area: ' + str(cv2.contourArea(c)))
         x, y, width, height = cv2.boundingRect(c)
-        print(f'x {x} y {y} width {width} height {height}')
+        logger.debug(f'x {x} y {y} width {width} height {height}')
     contours = list(filter(whtest, contours))
     logger.debug(f'Found {len(contours)} contours')
     if 1 != len(contours):
@@ -346,53 +360,79 @@ def findSprocket(image, show=False):
         return True
 
     for c in contours:
-        print('Contour Area: ' + str(cv2.contourArea(c)))
+        logger.debug('Post filter Area: ' + str(cv2.contourArea(c)))
         x, y, width, height = cv2.boundingRect(c)
-        print(f'x {x} y {y} width {width} height {height}')
+        logger.debug(f'x {x} y {y} width {width} height {height}')
     contour = contours[0]
 
     # Get the bounding box of the largest contour
     x, y, width, height = cv2.boundingRect(contour)
 
     # Print the size and location of the white square
-    print(f'White square size: {width}x{height} pixels')
-    print(f'White square location: ({x}, {y})')
+    logger.debug(f'White square size: {width}x{height} pixels')
+    logger.debug(f'White square location: ({x}, {y})')
     cv2.drawContours(image3, [contour], -1, (100,100,100), thickness=cv2.FILLED)
     plt.imshow(image3,cmap='gray')
+    if save:
+        cv2.imwrite(f'/tmp/{count}_{str(desired)}_identified.png', image3)
     plt.title('Identified')
     plt.show()
 
     return True
 
+def setExposure(picam, exposure):
+    picam.set_controls({'ExposureTime': exposure, 'AnalogueGain': 1.0})
+    start = time.time()
+    while (time.time() - start) < 1.0:
+        picam.capture_array("lores")
+        camexp = picam.capture_metadata()['ExposureTime'] 
+        if int(exposure * 0.9) < camexp < int(exposure * 1.1):
+            return
+    raise RuntimeError('timeout')
+
+def waitSprocket(picam, count, desired):
+    start = time.time()
+    while (time.time() - start) < 5.0:
+        buffer = picam.capture_array("lores")
+        count += 1
+        logger.debug(str(picam.capture_metadata()))
+        inSprocket = findSprocket(buffer, count, desired, show = False)
+        logger.debug(f'inSprocket {inSprocket}, need {str(desired)}')
+        if desired == inSprocket:
+            return
+    raise RuntimeError('timeout')
+
 def framecap_camsprocket(config):
     startframe = get_most_recent_frame(config)
+    exposures = list(map(int, config.exposure.split(',')))
 
+    count = 0
     for framenum in range(config.frames):
         global lastTension
         lastTension = tension[framenum+startframe]
         logger.info(f'Tension {lastTension}')
-        serwrite(str(lastTension).encode())
-#        serwrite(b'f') # Forward
+        serwrite(str(lastTension).encode() + b't')
+        setExposure(picam, exposures[0])
+        serwrite(b'f') # Forward
 
-        done = False
-        while False == done:
-            buffer = picam.capture_array("lores")
-            done = findSprocket(buffer,show = True)
-            logger.debug(f'findSprocket says {done}')
+        try:
+            waitSprocket(picam, count, False)
+            waitSprocket(picam, count, True)
+
+        except RuntimeError as rte:
+            logger.error(str(rte))
+            serwrite(b's') # Stop
+            return
 
         serwrite(b's') # Stop
-        return
-
+        continue
 
         frames = []
-        pdb.set_trace()
-        for exp in config.exposure.split(',')[1:]:
+        for exp in exposures[1:]:
             try:
                 target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
-                picam.set_controls({'ExposureTime': int(exp), 'AnalogueGain': 1.0})
-                
-                while metaexp := picam.capture_metadata()['ExposureTime'] != int(exp):
-                    logger.debug(f'{metaexp} -> {exp}')
+                setExposure(picam, exp)
+
                 image = picam.capture_array('main')
                 cv2.imwrite(target, image)
                 logger.debug(f'Wrote to {target}')
