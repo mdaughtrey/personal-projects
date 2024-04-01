@@ -6,7 +6,7 @@
 # 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=20240328_camsprocket
+PROJECT=20240401_1
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -223,10 +223,10 @@ case "$1" in
     descratch) descratch ;;
     8mm) do8mm; preview ;;
     s8) 
-        rm frames/20240328_camsprocket/findsprocket/*.png
-        rm *.log
+#        rm frames/20240328_camsprocket/findsprocket/*.png
+#        rm *.log
         s8 
-        mv /tmp/*.png /media/frames/20240328_camsprocket/findsprocket/
+#        mv /tmp/*.png /media/frames/20240328_camsprocket/findsprocket/
         ;;
     preview) shift; preview $@ ;;
     p2) shift; p2 $@ ;;

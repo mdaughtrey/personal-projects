@@ -144,18 +144,18 @@ def pcl_tonefuse():
 def setlogging(config):
     global logger
     FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
-    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+#    logging.basicConfig(level = logging.DEBUG, format=FormatString)
     
     logger = logging.getLogger('picam')
-    logger.setLevel('DEBUG')
+    logger.setLevel(logging.DEBUG)
     fileHandler = FileHandler(filename = config.logfile)
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    fileHandler.setLevel('DEBUG')
+    fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
 
     stdioHandler = StreamHandler(sys.stdout)
     stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    stdioHandler.setLevel('INFO')
+    stdioHandler.setLevel(logging.INFO)
     logger.addHandler(stdioHandler)
 
 def serwrite(message):
@@ -184,11 +184,11 @@ def init_picam():
     main={"size":(2304,1296),"format":"RGB888"}
 
     global picam
-    controls={'FrameDurationLimits':(100000,100000),'ExposureTime': int(config.exposure.split(',')[0]),
+    controls={'FrameDurationLimits':(50000,50000),'ExposureTime': int(config.exposure.split(',')[0]),
               'AeEnable': False, 'AwbEnable': False}
     transform = Transform(hflip=True)
     #Picamera2.set_logging(Picamera2.ERROR)
-    Picamera2.set_logging(Picamera2.DEBUG)
+    Picamera2.set_logging(Picamera2.ERROR)
     picam = Picamera2()
     cam_config = picam.create_video_configuration(queue=False,main=main,lores=lores,transform=transform,controls=controls)
     #cam_config = picam.create_video_configuration()
@@ -322,7 +322,7 @@ def framecap(config):
     serwrite(b' ')
 
 def findSprocket(image, show=False):
-    save = True
+    save = False
     logger.debug(count)
     y,x = image.shape[:2]
     if show:
@@ -451,7 +451,7 @@ def framecap_camsprocket(config):
 
                 image = picam.capture_array('main')
                 cv2.imwrite(target, image)
-                logger.debug(f'Wrote to {target}')
+                logger.info(f'Wrote to {target}')
             except Exception as ee:
                 logger.error(f'capture failed {str(ee)}')
                 break
