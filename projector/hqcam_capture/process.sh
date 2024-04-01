@@ -14,7 +14,7 @@ DEVICE=/dev/video0
 #VIDEOSIZE=640x480
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
-EXPOSURES="5000,16000,22000,28000"
+EXPOSURES="20000,16000,22000,28000"
 IFS=, read -ra EXPOSE <<<${EXPOSURES}
 EDR="--exposure ${EXPOSURES}"
 
@@ -223,10 +223,10 @@ case "$1" in
     descratch) descratch ;;
     8mm) do8mm; preview ;;
     s8) 
-        rm frames/20240328_camsprocket/capture/*.png
+        rm frames/20240328_camsprocket/findsprocket/*.png
         rm *.log
         s8 
-        mv /tmp/*.png /media/frames/20240328_camsprocket/capture/
+        mv /tmp/*.png /media/frames/20240328_camsprocket/findsprocket/
         ;;
     preview) shift; preview $@ ;;
     p2) shift; p2 $@ ;;

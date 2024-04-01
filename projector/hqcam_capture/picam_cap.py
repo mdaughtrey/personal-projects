@@ -179,21 +179,28 @@ def serwaitfor(text1, text2):
         logger.debug("Matched on %s" % text2)
         return (1, text2, accum)
 
+def init_picam():
+    lores={"size":(640,480),"format":"RGB888"}
+    main={"size":(2304,1296),"format":"RGB888"}
+
+    global picam
+    controls={'FrameDurationLimits':(100000,100000),'ExposureTime': int(config.exposure.split(',')[0]),
+              'AeEnable': False, 'AwbEnable': False}
+    transform = Transform(hflip=True)
+    #Picamera2.set_logging(Picamera2.ERROR)
+    Picamera2.set_logging(Picamera2.DEBUG)
+    picam = Picamera2()
+    cam_config = picam.create_video_configuration(queue=False,main=main,lores=lores,transform=transform,controls=controls)
+    #cam_config = picam.create_video_configuration()
+
+    picam.configure(cam_config)
+    picam.align_configuration(cam_config)
+    picam.start()
+#    return picam
+
 def init_framecap(config):
     if config.camsprocket:
-        global picam
-        main={'size': (2304,1296), "format":"RGB888"}
-        lores={"size":(640,480),"format":"RGB888"}
-        controls={'FrameDurationLimits':(20000,20000), 'ExposureTime': int(config.exposure.split(',')[0])}
-        transform = Transform(hflip=True)
-        Picamera2.set_logging(Picamera2.ERROR)
-        picam = Picamera2()
-        cam_config = picam.create_video_configuration(main=main,lores=lores,transform=transform,controls=controls)
-        #cam_config = picam.create_video_configuration(main=main,lores=lores,controls=controls)
-
-        picam.configure(cam_config)
-        picam.align_configuration(cam_config)
-        picam.start()
+        init_picam()
 
     if config.showwork and not os.path.exists(workdir:='{}/work'.format(config.framesto)):
         os.mkdir(workdir)
@@ -314,7 +321,7 @@ def framecap(config):
                 break
     serwrite(b' ')
 
-def findSprocket(image, count, desired, show=False):
+def findSprocket(image, show=False):
     save = True
     logger.debug(count)
     y,x = image.shape[:2]
@@ -323,24 +330,24 @@ def findSprocket(image, count, desired, show=False):
         plt.title('Input Image')
         plt.show()
     if save:
-        cv2.imwrite(f'/tmp/{count}_{str(desired)}_input.png', image)
+        cv2.imwrite(f'/tmp/{count}_input.png', image)
     image = image[int(y/3):y-int(y/3),0:int(x/4)]
     if show:
         plt.imshow(image)
         plt.title('Sliced')
         plt.show()
     if save:
-        cv2.imwrite(f'/tmp/{count}_{str(desired)}_sliced.png', image)
+        cv2.imwrite(f'/tmp/{count}_sliced.png', image)
     image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image3 = np.asarray(image2, dtype=np.uint8)
     image3 = ndimage.grey_erosion(image3, size=(5,5))
-    _, image3 = cv2.threshold(image3, 100, 255, cv2.THRESH_BINARY)
+    _, image3 = cv2.threshold(image3, 200, 255, cv2.THRESH_BINARY)
     if show:
         plt.imshow(image3,cmap='gray')
         plt.title('Eroded')
         plt.show()
     if save:
-        cv2.imwrite(f'/tmp/{count}_{str(desired)}_eroded.png', image3)
+        cv2.imwrite(f'/tmp/{count}_eroded.png', image3)
 
     def whtest(contour):
         (x,y,w,h) = cv2.boundingRect(contour)
@@ -374,29 +381,34 @@ def findSprocket(image, count, desired, show=False):
     cv2.drawContours(image3, [contour], -1, (100,100,100), thickness=cv2.FILLED)
     plt.imshow(image3,cmap='gray')
     if save:
-        cv2.imwrite(f'/tmp/{count}_{str(desired)}_identified.png', image3)
+        cv2.imwrite(f'/tmp/{count}_identified.png', image3)
     plt.title('Identified')
     plt.show()
 
     return True
 
-def setExposure(picam, exposure):
-    picam.set_controls({'ExposureTime': exposure, 'AnalogueGain': 1.0})
+#def setExposure(picam, exposure):
+def setExposure(exposure):
+    global picam
+    picam.set_controls({'ExposureTime': exposure, 'AnalogueGain': 8.0})
     start = time.time()
     while (time.time() - start) < 1.0:
         picam.capture_array("lores")
         camexp = picam.capture_metadata()['ExposureTime'] 
+        logger.debug(f'Got {camexp}, want {exposure}')
         if int(exposure * 0.9) < camexp < int(exposure * 1.1):
             return
     raise RuntimeError('timeout')
 
-def waitSprocket(picam, count, desired):
+def waitSprocket(desired):
+    global picam
+    global count
     start = time.time()
     while (time.time() - start) < 5.0:
         buffer = picam.capture_array("lores")
         count += 1
         logger.debug(str(picam.capture_metadata()))
-        inSprocket = findSprocket(buffer, count, desired, show = False)
+        inSprocket = findSprocket(buffer, show = False)
         logger.debug(f'inSprocket {inSprocket}, need {str(desired)}')
         if desired == inSprocket:
             return
@@ -405,19 +417,23 @@ def waitSprocket(picam, count, desired):
 def framecap_camsprocket(config):
     startframe = get_most_recent_frame(config)
     exposures = list(map(int, config.exposure.split(',')))
+#    init_picam()
 
+    global count
     count = 0
     for framenum in range(config.frames):
         global lastTension
         lastTension = tension[framenum+startframe]
         logger.info(f'Tension {lastTension}')
         serwrite(str(lastTension).encode() + b't')
-        setExposure(picam, exposures[0])
+        #setExposure(picam, exposures[0])
+        setExposure(exposures[0])
         serwrite(b'f') # Forward
 
+    #    picam.switch_mode('exp0')
         try:
-            waitSprocket(picam, count, False)
-            waitSprocket(picam, count, True)
+            waitSprocket(False)
+            waitSprocket(True)
 
         except RuntimeError as rte:
             logger.error(str(rte))
@@ -425,13 +441,13 @@ def framecap_camsprocket(config):
             return
 
         serwrite(b's') # Stop
-        continue
 
         frames = []
         for exp in exposures[1:]:
             try:
                 target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
-                setExposure(picam, exp)
+               # setExposure(picam, exp)
+                setExposure(exp)
 
                 image = picam.capture_array('main')
                 cv2.imwrite(target, image)
@@ -439,6 +455,7 @@ def framecap_camsprocket(config):
             except Exception as ee:
                 logger.error(f'capture failed {str(ee)}')
                 break
+
 
     serwrite(b' ')
 
