@@ -45,7 +45,7 @@ RUN ~/acli/bin/arduino-cli lib install HID-Project printex asynctimer TM1638plus
 RUN ~/acli/bin/arduino-cli lib install 'SparkFun APDS9960 RGB and Gesture Sensor'
 RUN ~/acli/bin/arduino-cli lib install 'RevEng PAJ7620'
 RUN ~/acli/bin/arduino-cli lib install 'AccelStepper'
-RUN ~/acli/bin/arduino-cli lib install 'ArduinoINA219'
+RUN cd /tmp && git clone https://github.com/oznotes/INA219.git && cp -R /tmp/INA219/INA219_driver ~/Arduino/libraries
 USER root
 RUN apt clean
 USER ${USER}
