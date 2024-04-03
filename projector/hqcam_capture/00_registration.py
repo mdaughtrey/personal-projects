@@ -4,6 +4,8 @@
 import  argparse
 import cv2
 from    glob import glob, iglob
+import  logging
+from   logging import FileHandler, StreamHandler
 import numpy as np
 import os
 from PIL import Image,ImageDraw,ImageFilter,ImageOps
@@ -12,6 +14,7 @@ from    scipy import ndimage
 import sys
 
 args = None
+logger = None
 
 def procargs():
     parser = argparse.ArgumentParser()
@@ -21,6 +24,23 @@ def procargs():
     parser.add_argument('--debugto', dest='debugto', help='save intermediary images to directory')
     parser.add_argument('--webdb', dest='webdb', help='enable web debugger (port 5555)', action='store_true', default=False)
     return parser.parse_args()
+
+def setlogging():
+    global logger
+    FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
+#    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+    
+    logger = logging.getLogger('picam')
+    logger.setLevel(logging.DEBUG)
+    fileHandler = FileHandler(filename = 'registration.log')
+    fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
+    fileHandler.setLevel(logging.DEBUG)
+    logger.addHandler(fileHandler)
+
+    stdioHandler = StreamHandler(sys.stdout)
+    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
+    stdioHandler.setLevel(logging.INFO)
+    logger.addHandler(stdioHandler)
 
 def findSprocket(filename):
 #    if args.webdb:
@@ -54,7 +74,7 @@ def findSprocket(filename):
     area = cv2.contourArea(contour)
     # ((centerX, centerY),(dimX,dimY),angle)
     rect = cv2.minAreaRect(contour)
-    print(f'{os.path.basename(filename)}: {rect}')
+    logger.debug(f'{os.path.basename(filename)}: {rect}')
     if rect[2] < 10.0:
         rect = (rect[0], (rect[1][1], rect[1][0]), rect[2] + 90.0)
     rotation = rect[2]
@@ -87,17 +107,18 @@ def findSprocket(filename):
 def main():
     global args
     args = procargs()
+    setlogging()
     if args.readfrom and not os.path.exists(os.path.dirname(args.readfrom)):
-        print(f'{args.readfrom} does not exist')
+        logger.error(f'{args.readfrom} does not exist')
         sys.exit(1)
 
     if args.onefile and not os.path.isfile(args.onefile):
-        print(f'{args.onefile} does not exist')
+        logger.error(f'{args.onefile} does not exist')
         sys.exit(1)
 
     realpath = os.path.realpath(args.writeto)
     if not os.path.exists(os.path.dirname(realpath)):
-        print(f'{args.writeto} does not exist')
+        logger.error(f'{args.writeto} does not exist')
         sys.exit(1)
 
     if args.onefile:

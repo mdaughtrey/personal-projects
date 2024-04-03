@@ -306,7 +306,7 @@ def framecap(config):
         wait = serwaitfor(b'{HDONE}', b'{NTO}')
         if wait[0]:
             logger.error(wait[2])
-            break
+            continue
 
         frames = []
         for exp in config.exposure.split(','):
@@ -331,7 +331,7 @@ def findSprocket(image, show=False):
         plt.show()
     if save:
         cv2.imwrite(f'/tmp/{count}_input.png', image)
-    image = image[int(y/3):y-int(y/3),0:int(x/4)]
+    image = image[int(y/3):y-int(y/3),0:100]
     if show:
         plt.imshow(image)
         plt.title('Sliced')
@@ -341,13 +341,23 @@ def findSprocket(image, show=False):
     image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image3 = np.asarray(image2, dtype=np.uint8)
     image3 = ndimage.grey_erosion(image3, size=(5,5))
-    _, image3 = cv2.threshold(image3, 200, 255, cv2.THRESH_BINARY)
+    if save:
+        cv2.imwrite(f'/tmp/{count}_eroded.png', image3)
+
+#    _, image3 = cv2.threshold(image3, 80, 255, cv2.THRESH_BINARY)
+    logger.debug(str(image3[80]))
+    low, hi = (145,165)
+    image3[image3 < low] = 0
+    image3[(image3 >= low) & (image3 <= hi)] = 255 
+    image3[image3 > hi] = 255
+    if save:
+        cv2.imwrite(f'/tmp/{count}_threshold.png', image3)
+#    image3 = np.where(image3 < 40, 0, np.where(image >= 40, np.where(image3 <= 60, 1, 0), image3))
+#    _, image3 = cv2.t#hreshold(image3, 80, 255, cv2.THRESH_BINARY)
     if show:
         plt.imshow(image3,cmap='gray')
         plt.title('Eroded')
         plt.show()
-    if save:
-        cv2.imwrite(f'/tmp/{count}_eroded.png', image3)
 
     def whtest(contour):
         (x,y,w,h) = cv2.boundingRect(contour)

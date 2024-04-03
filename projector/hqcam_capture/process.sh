@@ -6,7 +6,7 @@
 # 3. 8mm or S8
 
 PORT=/dev/ttyACM0
-PROJECT=20240401_1
+PROJECT=20240402_1
 FRAMES=${PWD}/frames/
 FP=${FRAMES}/${PROJECT}
 DEVICE=/dev/video0
@@ -14,7 +14,7 @@ DEVICE=/dev/video0
 #VIDEOSIZE=640x480
 VIDEOSIZE=1280x720
 # Extended Dynamic Range
-EXPOSURES="20000,16000,22000,28000"
+EXPOSURES="9000,16000,22000,28000"
 IFS=, read -ra EXPOSE <<<${EXPOSURES}
 EDR="--exposure ${EXPOSURES}"
 
@@ -23,7 +23,7 @@ exec > >(tee -a process_$(TZ= date +%Y%m%d%H%M%S).log) 2>&1
 
 mkdir -p ${FP}
 
-for sd in car capture fused graded descratch work capdebug; do
+for sd in car capture fused graded descratch work capdebug findsprocket; do
     if [[ ! -d "${FP}/${sd}" ]]; then mkdir -p ${FP}/${sd}; fi
 done
 
@@ -223,10 +223,11 @@ case "$1" in
     descratch) descratch ;;
     8mm) do8mm; preview ;;
     s8) 
-#        rm frames/20240328_camsprocket/findsprocket/*.png
-#        rm *.log
+        rm frames/${PROJECT}/findsprocket/*.png
+        rm frames/${PROJECT}/capture/*.png
+        rm *.log
         s8 
-#        mv /tmp/*.png /media/frames/20240328_camsprocket/findsprocket/
+        mv /tmp/*.png /media/frames/${PROJECT}/findsprocket/
         ;;
     preview) shift; preview $@ ;;
     p2) shift; p2 $@ ;;
@@ -247,9 +248,9 @@ case "$1" in
     ptf) ptf ;;
     #registration) ./00_registration.py --readfrom ${FP}/capture/'*.png' --writeto ${FP}/capture \
     #    --debugto ${FP}/capdebug --imageglob '000000[67]??';;
-    registration) ./00_registration.py --readfrom ${FP}/capture/'????????_'${EXPOSE[0]}'.png' --writeto ${FP}/capture ;; #  --debugto ${FP}/capdebug ;;
+    registration) ./00_registration.py --readfrom ${FP}/capture/'????????_'${EXPOSE[1]}'.png' --writeto ${FP}/capture ;; #  --debugto ${FP}/capdebug ;;
 #      | tee registration.log ;; #   --onefile ${FP}/capture/00000003_20000.png ;;
-    car) ./01_crop_and_rotate.py --readfrom ${FP}/capture/'????????_'${EXPOSE[0]}'.reg' --writeto ${FP}/car --exp ${EXPOSURES} ;;
+    car) ./01_crop_and_rotate.py --readfrom ${FP}/capture/'????????_'${EXPOSE[1]}'.reg' --writeto ${FP}/car --exp ${EXPOSURES} ;;
     tf) tonefuse ;;
     cam) cam ;;
     ef) doenfuse ;;

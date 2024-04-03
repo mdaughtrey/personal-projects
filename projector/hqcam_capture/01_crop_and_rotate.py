@@ -5,6 +5,7 @@ import argparse
 import cv2
 from glob import glob, iglob
 import logging
+from   logging import FileHandler, StreamHandler
 import numpy as np
 import os
 import pdb
@@ -27,12 +28,19 @@ def procargs():
 def setlogging(logname):
     global logger
     FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
-    logging.basicConfig(level = logging.DEBUG, format=FormatString)
-    logger = logging.getLogger('01_crop_and_rotate')
-    fileHandler = logging.FileHandler(filename = logname)
+#    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+    
+    logger = logging.getLogger('picam')
+    logger.setLevel(logging.DEBUG)
+    fileHandler = FileHandler(filename = logname)
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
     fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
+
+    stdioHandler = StreamHandler(sys.stdout)
+    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
+    stdioHandler.setLevel(logging.INFO)
+    logger.addHandler(stdioHandler)
 
 #def getRect(regfile):
 def getRect(leftX, centerY):
@@ -77,13 +85,13 @@ def main():
 #    readpath = os.path.realpath(args.readfrom)
     readpath = args.readfrom
     if not os.path.exists(os.path.dirname(readpath)):
-        print(f'{readpath} does not exist')
+        logger.error(f'{readpath} does not exist')
         sys.exit(1)
 
 #    writepath = os.path.realpath(args.writeto)
     writepath = args.writeto
     if not os.path.exists(writepath):
-        print(f'Creating directory {writepath}')
+        logger.info(f'Creating directory {writepath}')
         os.mkdir(writepath)
 
     exposures = [int(x) for x in args.exposures.split(',')]
