@@ -6,6 +6,7 @@
 //#include "serialout.h"
 #include "stepper.h"
 #include <AsyncTimer.h>
+#include <INA219.h>
 
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
 #define PINPOLL 1
@@ -13,12 +14,14 @@
 const uint8_t stepperEnable = 20;
 const uint8_t stepperDir = 19;
 const uint8_t stepperPulse = 18;
+const uint16_t TENSION_TIMEOUT = 60000;
 
 typedef enum
 {
     HUNT_NONE = 0,
     HUNT_GAP,
-    HUNT_FRAME
+    HUNT_FRAME,
+    HUNT_FORWARD
 } HuntState;
 
 typedef enum
@@ -49,6 +52,7 @@ struct {
     uint16_t encoderTO;
     uint32_t encoderTime;
 #endif // OPTO_ENCODER
+    uint16_t tensionTO;
     uint32_t tensionTime;
     uint8_t pwmslice;
     uint8_t pwmpin;
@@ -59,6 +63,7 @@ struct {
 } config;
 
 AsyncTimer at;
+INA219 currentSensor(i2c1,0x40);
 
 uint8_t frameReady = 0;
 uint8_t lastCommand;
@@ -82,6 +87,7 @@ const uint8_t OutputPin2 = 12;
 const uint8_t OutputPin3 = 13; // setTension
 
 const uint8_t LedPin = 25;
+const uint8_t RewindCurrentPin = 28;
 Command * commandset;
 void help();
 extern Command commands_stepper[];
@@ -97,11 +103,13 @@ void setTension(uint8_t val) {
 //    pwm_set_enabled(config.pwmslice, val > 0 ? true: false);
     config.tension = val;
     config.tensionTime = val ? millis() : 0;
-    if (config.verbose)
-    {
-        Serial.printf("tension %d tensionTime %d\r\n", config.tension, config.tensionTime);
-    }
+//    if (config.verbose)
+//    {
+//        Serial.printf("tension %d tensionTime %d\r\n", config.tension, config.tensionTime);
+//    }
 }
+
+void tensionTO() { config.tensionTO = config.param; config.param = 0; }
 
 #ifdef OPTO_ENCODER
 void encoderStart() { config.encoderTime = millis(); }
@@ -112,8 +120,10 @@ volatile uint16_t encoderPos = 0;
 //volatile int isr1count = 0;
 //volatile int isr2count = 0;
 
-uint32_t sensor8mm_0, sensor8mm_1 = 0;
-uint32_t sensorSuper8_0, sensorSuper8_1 = 0;
+//uint32_t sensor8mm_0 = 0;
+uint8_t sensor8mm_0 = 0;
+//uint32_t sensorSuper8_0 = 0;
+uint8_t sensorSuper8_0 = 0;
 void handleCommand(uint8_t command);
 void coilControl();
 //void (*commandHandler)() = handleCommand;
@@ -183,21 +193,20 @@ void isr2()
 // 1 == gap 0 == frame
 void readFilmSensor()
 {
-    sensor8mm_0 <<= 1;
-    sensor8mm_0 |= sensor8mm_1 >> 31;
-    sensor8mm_1 <<= 1 ;
-    sensor8mm_1 |= digitalRead(FilmSensorPin8mm);
+    sensor8mm_0 <<= 1 ;
+    sensor8mm_0 |= digitalRead(FilmSensorPin8mm);
 
-    sensorSuper8_0 <<= 1;
-    sensorSuper8_0 |= sensorSuper8_1 >> 31;
-    sensorSuper8_1 <<= 1 ;
-    sensorSuper8_1 |= digitalRead(FilmSensorPinSuper8);
-    digitalWrite(LedPin, sensorSuper8_1 & 1);
+    sensorSuper8_0 <<= 1 ;
+    sensorSuper8_0 |= digitalRead(FilmSensorPinSuper8);
+//    digitalWrite(LedPin, sensorSuper8_0 & 1);
 
     //if (PINPOLL && HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
     if (HUNT_NONE != config.huntState) at.setTimeout(readFilmSensor, PINPOLL);
-    if (0 == sensorSuper8_1) config.filmState = FILM_FRAME;
-    if (0xffffffff == sensorSuper8_1) config.filmState = FILM_GAP;
+    //if (0 == sensorSuper8_0) config.filmState = FILM_FRAME;
+    if (0 == sensor8mm_0) config.filmState = FILM_FRAME;
+    //if (0xffffffff == sensorSuper8_0) config.filmState = FILM_GAP;
+    //if (0xff == sensorSuper8_0) config.filmState = FILM_GAP;
+    if (0xff == sensor8mm_0) config.filmState = FILM_GAP;
     //if (0 == sensor8mm_1 || 0 == sensorSuper8_1) config.filmState = FILM_FRAME;
     //if (0xffffffff == sensor8mm_1 || 0xffffffff == sensorSuper8_1) config.filmState = FILM_GAP;
 }
@@ -210,7 +219,7 @@ void encoder_init()
     pinMode(FilmSensorPinSuper8, INPUT_PULLUP);
 
     encoderPos = 0;
-    config.encoderTO = 4000;
+    config.encoderTO = 30000;
 }
 #endif // OPTO_ENCODER
 
@@ -251,13 +260,21 @@ void setup ()
 #endif // OPTO_ENCODER
     outputInit();
     initPWM();
+    // SDA GP26, SCL GP27, 400kHz)
+    currentSensor.I2C_START(26, 27, 400);
+    currentSensor.calibrate(0.1, 3.2);
     ledState = 0;
+    mon = 0;
 //    config.isrEdge = OPTO_BOTH;
     fan(0);
     setTension(0);
+    config.tensionTO = 60000;
 //    isr1count = 0;
 //    isr2count = 0;
     pinMode(LedPin, OUTPUT);
+    //pinMode(RewindCurrentPin, INPUT_PULLUP);
+    //pinMode(RewindCurrentPin, OUTPUT);
+    pinMode(RewindCurrentPin, INPUT);
 
 //#ifdef OPTO_ENCODER
 //    attachInterrupt(digitalPinToInterrupt(FilmSensorPin8mm), isr1, RISING);
@@ -289,7 +306,7 @@ void buttonPoll()
     {
         if (buttonState[1])
         {
-            setTension(128); 
+            setTension(192); 
             fan(1); 
         }
         buttonState[1] = !buttonState[1];
@@ -316,10 +333,9 @@ void dumpConfig(uint8_t th)
 {
     Serial.printf("-------------------------------\r\n");
 #ifdef OPTO_ENCODER
-    Serial.printf("param %u\r\nPINPOLL %u\r\ntension %u \r\n",
+    Serial.printf("param %u\r\nPINPOLL %u\r\n",
         config.param,
-        PINPOLL,
-        config.tension);
+        PINPOLL);
 
     Serial.printf("encoderTO: %d\r\nencoderTime: %d\r\nhuntState: %d\r\nfilmState: %d\r\n",
         config.encoderTO,
@@ -328,9 +344,18 @@ void dumpConfig(uint8_t th)
         config.filmState);
 #endif // OPTO_ENCODER
 
-    Serial.printf("tensionTime %d\r\n", config.tensionTime);
+    Serial.printf("tension %u tensionTime %u tensionTO%u\r\n",
+        config.tension, config.tensionTime, config.tensionTO);
+
     Serial.printf("verbose: %d\r\n", config.verbose);
     Serial.printf("stepper.minInterval %u stepper.maxInterval %u\r\n", stepper.m_minInterval64, stepper.m_maxInterval64);
+
+    Serial.print("Current Sensor");
+    
+    Serial.printf("Voltage: %.4f V\r\n", currentSensor.read_voltage());
+    Serial.printf("Shunt Voltage: %.4f mV\r\n", currentSensor.read_shunt_voltage());
+    Serial.printf("Current: %.4f A\r\n", currentSensor.read_current());
+    Serial.printf("Power: %.4f W\r\n", currentSensor.read_power());
 
     Serial.printf("End Config\r\n");
 }
@@ -489,6 +514,9 @@ const char help_moff[] PROGMEM="monitoring off";
 //const char help_poff[] PROGMEM="polling off";
 const char help_autotension[] PROGMEM="Autotension";
 const char help_stepperrun[] PROGMEM = "run (param as steps)";
+const char help_tensionTO[] PROGMEM = "set tension timeout (param)";
+const char help_forward[] PROGMEM = "Forward";
+const char help_stop[] PROGMEM = "Stop".
 
 Command commands_main[] = {
 {'?',FSH(help_dumpconfig), [](){ dumpConfig(0);}},
@@ -508,6 +536,7 @@ Command commands_main[] = {
 //    config.slowEncoderThreshold = config.param;
 //    config.param = 0; }},
 #endif // OPTO_ENCODER
+{'f',FSH(help_forward), [](){ config.HUNTSTATE = HUNT_FORWARD; }},
 {'h',FSH(help_help), [](){ help();}},
 {'i',FSH(help_init), [](){ initialize(); }},
 {' ',FSH(help_reset), [](){ setup();}},
@@ -522,6 +551,11 @@ Command commands_main[] = {
 {'r', FSH(help_stepperrun), [](){ 
     runStepper((uint16_t)config.param);
 }},
+{'s',FSH(help_stop), [](){
+    stepper.stop();
+    config.huntstate = HUNT_NONE:
+}},
+
 //{'r',FSH(help_isr), [](){ do_isr();}},
 {'t',FSH(help_tension), [](){
     setTension(config.param); 
@@ -531,6 +565,7 @@ Command commands_main[] = {
 {'v',FSH(help_verbose), [](){ config.verbose = stepper.m_verbose = config.param;}},
 {'w',FSH(help_mon), [](){ mon = 1; at.setTimeout(monitor,100);}},
 {'W',FSH(help_moff), [](){ mon = 0;}},
+{'x',FSH(help_tensionTO),[](){ tensionTO(); }},
 //{'x',FSH(help_pon), [](){ PINPOLL = config.param; at.setTimeout(readFilmSensor, PINPOLL); config.param = 0; }},
 //{'X',FSH(help_poff), [](){ PINPOLL = 0;}},
 {'&', FSH(empty), [](){} }
@@ -639,16 +674,7 @@ void handleCommand(uint8_t command)
 void stepperPoll()
 {
     if (HUNT_NONE == config.huntState) return;
-//    if (config.verbose)
-//    {
-//        Serial.printf("huntState %u filmState %u sensor8mm_1 %s sensorSuper8_1 %s\r\n",
-//            config.huntState,config.filmState,std::bitset<32>(sensor8mm_1).to_string().c_str(), std::bitset<32>(sensorSuper8_1).to_string().c_str());
-//    }
-
-//    if (NEXT != config.state)
-//    {
-//        return;
-//    }
+    if (HUNT_FORWARD == config.huntState) stepper.run();
     if ((millis() - config.encoderTime) > config.encoderTO)
     {
         stepper.stop();
@@ -670,30 +696,18 @@ void stepperPoll()
     {
         stepper.run();
     }
-// #ifdef OPTO_ENCODER
-//     if (config.verbose)
-//     {
-//         Serial.printf("stepperPoll %d\r\n", millis() - config.encoderTime);
-//     }
-//     else if (encoderPos >= config.encoderLimit && frameReady)
-//     {
-//         stepper.stop(encoderPos);
-//         config.state = NONE;
-//         frameReady = 0;
-//         Serial.println("{HDONE}");
-//     }
-// #endif // OPTO_ENCODER
 }
 
-//void ledPoll()
-//{
-//    if ((millis() - ledTime) > 1000)
-//    {
-//        ledState = !ledState;
-//        digitalWrite(LedPin, ledState);
-//        ledTime = millis();
-//    }
-//}
+void ledPoll()
+{
+    if ((millis() - ledTime) > 1000)
+    {
+        ledState = !ledState;
+        digitalWrite(LedPin, ledState);
+//        digitalWrite(RewindCurrentPin, ledState);
+        ledTime = millis();
+    }
+}
 
 void monitor(void)
 {
@@ -706,7 +720,7 @@ void monitor(void)
 //    if (d0.count() == 0 | d0.count() == 32) Serial.printf("%u ", d0.count());
 //    Serial.printf("%d %d %d %d\r\n", d3.count(),d2.count(),d1.count(),d0.count());
     Serial.printf("1G0F huntState %u filmState %u sensor8mm_1 %s sensorSuper8_1 %s 8mm %u S8 %u\r\n",
-            config.huntState,config.filmState,std::bitset<32>(sensor8mm_1).to_string().c_str(), std::bitset<32>(sensorSuper8_1).to_string().c_str(),
+            config.huntState,config.filmState,std::bitset<8>(sensor8mm_0).to_string().c_str(), std::bitset<8>(sensorSuper8_0).to_string().c_str(),
             digitalRead(FilmSensorPin8mm), digitalRead(FilmSensorPinSuper8));
     if (mon) at.setTimeout(monitor, 100);
 } 
@@ -720,9 +734,10 @@ void loop ()
         handleCommand(Serial.read());
     }
     buttonPoll();
-//    ledPoll();
+    ledPoll();
     stepperPoll();
-    if (config.tension && ((millis() - config.tensionTime)) > 10000)
+//    digitalWrite(LedPin, digitalRead(RewindCurrentPin));
+    if (config.tension && ((millis() - config.tensionTime)) > config.tensionTO)
     {
         setTension(0);
         if (config.verbose)

@@ -1,0 +1,4 @@
+*.log
+venv
+frames
+__pycache__

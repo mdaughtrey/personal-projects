@@ -5,6 +5,7 @@ import argparse
 import cv2
 from glob import glob, iglob
 import logging
+from   logging import FileHandler, StreamHandler
 import numpy as np
 import os
 import pdb
@@ -27,17 +28,24 @@ def procargs():
 def setlogging(logname):
     global logger
     FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
-    logging.basicConfig(level = logging.DEBUG, format=FormatString)
-    logger = logging.getLogger('01_crop_and_rotate')
-    fileHandler = logging.FileHandler(filename = logname)
+#    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+    
+    logger = logging.getLogger('picam')
+    logger.setLevel(logging.DEBUG)
+    fileHandler = FileHandler(filename = logname)
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
     fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
 
+    stdioHandler = StreamHandler(sys.stdout)
+    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
+    stdioHandler.setLevel(logging.INFO)
+    logger.addHandler(stdioHandler)
+
 #def getRect(regfile):
-def getRect(centerX, centerY):
+def getRect(leftX, centerY):
 #    centerX, centerY, rotate = open(regfile.encode(),'rb').read().split(b' ')
-    boxLeft = int(centerX)
+    boxLeft = int(leftX) + 180
     boxRight = boxLeft + 1250
     boxTop = int(centerY) - 500
     boxBot = int(centerY) + 500
@@ -45,13 +53,13 @@ def getRect(centerX, centerY):
     return boxLeft,boxRight,boxTop,boxBot
 
 #def cropAndRotate(regfile, imagefile):
-def cropAndRotate(centerX, centerY, readfrom, writeto):
+def cropAndRotate(leftX, centerY, readfrom, writeto):
     try:
         image = cv2.imread(readfrom, cv2.IMREAD_ANYCOLOR)
     except Exception as ee:
         logger.error(f'Error reading from {imagefile}: {str(ee)}')
 
-    boxTop,boxBot,boxLeft,boxRight = getRect(centerX, centerY)
+    boxTop,boxBot,boxLeft,boxRight = getRect(leftX, centerY)
     height, width = image.shape[:2]
 #    rMatrix = cv2.getRotationMatrix2D(center=(width/2,height/2),angle=rotate,scale=1)
 #    rImage = cv2.warpAffine(src=image,M=rMatrix,dsize=(width,height))
@@ -77,20 +85,21 @@ def main():
 #    readpath = os.path.realpath(args.readfrom)
     readpath = args.readfrom
     if not os.path.exists(os.path.dirname(readpath)):
-        print(f'{readpath} does not exist')
+        logger.error(f'{readpath} does not exist')
         sys.exit(1)
 
 #    writepath = os.path.realpath(args.writeto)
     writepath = args.writeto
     if not os.path.exists(writepath):
-        print(f'Creating directory {writepath}')
+        logger.info(f'Creating directory {writepath}')
         os.mkdir(writepath)
 
     exposures = [int(x) for x in args.exposures.split(',')]
 #    centerX = None
     #for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
     for regfile in sorted(glob(readpath)):
-        centerX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
+#        pdb.set_trace()
+        rightX, leftX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
 #        if centerX is None:
 #            centerX = cX
         for exposure in exposures[1:]:
@@ -99,11 +108,11 @@ def main():
             readfrom = os.path.dirname(readpath) + '/' + filename
             writeto = writepath + '/' + filename
             #writeto = realpath + '/' +  os.path.splitext(os.path.basename(regfile))[0] + '.png'
-            logger.debug(f'{readfrom} -> {writeto}')
+            logger.debug(f'{filename}')
             if not os.path.exists(writeto):
                 try:
-                    cropAndRotate(int(centerX), int(centerY), readfrom, writeto)
+                    cropAndRotate(int(leftX), int(centerY), readfrom, writeto)
                 except:
-                    pass
+                    logger.debug(f'Skipping {filename}')
 
 main()

@@ -30,7 +30,10 @@ c:
 	${DOCKER} build --no-cache -f ${NAME}.Dockerfile . --tag=${NAME}
 
 tag:
-	${DOCKER} tag ${IMAGE} mdaughtrey/projects:${NAME}
+	${DOCKER} tag ${NAME} mdaughtrey/${NAME}:latest
+	${DOCKER} push mdaughtrey/${NAME}:latest
+#	${DOCKER} push mdaughtrey/projects/${NAME}:latest
+	
 
 push:
-	${DOCKER} push mdaughtrey/projects:${NAME}
+	${DOCKER} push https:: mdaughtrey/projects:${NAME}

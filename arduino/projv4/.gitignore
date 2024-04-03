@@ -1,0 +1,5 @@
+*.bin
+*.elf
+*.map
+*.uf2
+screenlog*

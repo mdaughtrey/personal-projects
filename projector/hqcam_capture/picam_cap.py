@@ -1,20 +1,27 @@
 #!/usr/bin/env python3
-#./opencvcap.py --serialport /dev/ttyACM0 --camindex 0 --film s8 --framesto ~/share/opencvcap0 --startdia 140 --enddia 80 --res draft
+#0./opencvcap.py --serialport /dev/ttyACM0 --camindex 0 --film s8 --framesto ~/share/opencvcap0 --startdia 140 --enddia 80 --res draft
+# References:
+# https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf
+# https://github.com/raspberrypi/picamera2/tree/main/picamera2
 
 import  argparse
 #import cProfile
-import  cv2 as cv
+import cv2
 #from Exscript.util.interact import read_login
 #from Exscript.protocols import Telnet
 from functools import partial
 from    glob import glob, iglob
 from    itertools import groupby
+from libcamera import Transform
 import  logging
-from    logging.handlers import RotatingFileHandler
+from   logging import FileHandler, StreamHandler
 import  math
+from matplotlib import pyplot as plt
+from scipy import ndimage
 import  numpy as np
 import  os
 import  pdb
+from picamera2 import Picamera2, Preview
 #from    PIL import Image, ImageDraw, ImageFilter, ImageOps
 #from    scipy import ndimage
 import  serial
@@ -60,6 +67,7 @@ steps_per_frame=85
 last_delta = 0
 capmode='RGB'
 logger = None
+picam = None
 
 class SerDev():
     def __init__(self, config):
@@ -110,6 +118,7 @@ def pcl_framecap():
     parser.add_argument('--serdev', dest='serdev', default='/dev/ttyACM0', help='Serial device')
     parser.add_argument('--exposure', dest='exposure', help='EDR exposure a,b,[c,..]')
     parser.add_argument('--startdia', dest='startdia', type=int, default=62, help='Feed spool starting diameter (mm)')
+    parser.add_argument('--camsprocket', dest='camsprocket', action='store_true', help='Use in-camera sprocket detection')
     return parser.parse_args()
 
 def pcl_exptest():
@@ -135,12 +144,19 @@ def pcl_tonefuse():
 def setlogging(config):
     global logger
     FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
-    logging.basicConfig(level = logging.DEBUG, format=FormatString)
-    logger = logging.getLogger('usbcap')
-    fileHandler = logging.FileHandler(filename = config.logfile)
+#    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+    
+    logger = logging.getLogger('picam')
+    logger.setLevel(logging.DEBUG)
+    fileHandler = FileHandler(filename = config.logfile)
     fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
     fileHandler.setLevel(logging.DEBUG)
     logger.addHandler(fileHandler)
+
+    stdioHandler = StreamHandler(sys.stdout)
+    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
+    stdioHandler.setLevel(logging.INFO)
+    logger.addHandler(stdioHandler)
 
 def serwrite(message):
     logger.debug(message)
@@ -163,10 +179,32 @@ def serwaitfor(text1, text2):
         logger.debug("Matched on %s" % text2)
         return (1, text2, accum)
 
+def init_picam():
+    lores={"size":(640,480),"format":"RGB888"}
+    main={"size":(2304,1296),"format":"RGB888"}
+
+    global picam
+    controls={'FrameDurationLimits':(50000,50000),'ExposureTime': int(config.exposure.split(',')[0]),
+              'AeEnable': False, 'AwbEnable': False}
+    transform = Transform(hflip=True)
+    #Picamera2.set_logging(Picamera2.ERROR)
+    Picamera2.set_logging(Picamera2.ERROR)
+    picam = Picamera2()
+    cam_config = picam.create_video_configuration(queue=False,main=main,lores=lores,transform=transform,controls=controls)
+    #cam_config = picam.create_video_configuration()
+
+    picam.configure(cam_config)
+    picam.align_configuration(cam_config)
+    picam.start()
+#    return picam
+
 def init_framecap(config):
-#    pdb.set_trace()
+    if config.camsprocket:
+        init_picam()
+
     if config.showwork and not os.path.exists(workdir:='{}/work'.format(config.framesto)):
         os.mkdir(workdir)
+
     global tension
     t = Tension()
     global numframes
@@ -206,8 +244,9 @@ def init_framecap(config):
     # - U - ramp up 25
     # - x - return to main
     #message = f'kcv{lastTension}tl{config.optocount}ecE8000oCc500Ic2000ic25D25Ux'.encode()          
+    serwrite(b'c120t')
+    time.sleep(1.0)
     message = f'Wcv{lastTension}tl'.encode()
-    logger.debug(message)
     serwrite(message)
 
 def init_exptest(config):
@@ -246,7 +285,7 @@ def get_most_recent_frame(config):
 #
 #        frames = []
 #        for exp in config.exposure.split(','):
-#            logger.debug(f'Exposure {cap.get(cv.CAP_PROP_EXPOSURE)}')
+#            logger.debug(f'Exposure {cap.get(cv2.CAP_PROP_EXPOSURE)}')
 #            ret, frame = capture.read(exp=exp)
 #            logger.debug(f'ret {ret}')
 #            frames.append(frame)
@@ -267,13 +306,14 @@ def framecap(config):
         wait = serwaitfor(b'{HDONE}', b'{NTO}')
         if wait[0]:
             logger.error(wait[2])
-            break
+            continue
 
         frames = []
         for exp in config.exposure.split(','):
             try:
                 target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
                 command=f'rpicam-still -n --hflip=1 --immediate --width=2304 --height=1296 -e png --awb=indoor --shutter {exp} --output {target}'
+                #command=f'rpicam-still -n --hflip=1 --immediate --width=640 --height=480 -e png --awb=indoor --shutter {exp} --output {target}'
                 logger.debug(command)
                 rc = subprocess.run(command.split())
             except Exception as ee:
@@ -281,24 +321,172 @@ def framecap(config):
                 break
     serwrite(b' ')
 
+def findSprocket(image, show=False):
+    save = False
+    logger.debug(count)
+    y,x = image.shape[:2]
+    if show:
+        plt.imshow(image)
+        plt.title('Input Image')
+        plt.show()
+    if save:
+        cv2.imwrite(f'/tmp/{count}_input.png', image)
+    image = image[int(y/3):y-int(y/3),0:100]
+    if show:
+        plt.imshow(image)
+        plt.title('Sliced')
+        plt.show()
+    if save:
+        cv2.imwrite(f'/tmp/{count}_sliced.png', image)
+    image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    image3 = np.asarray(image2, dtype=np.uint8)
+    image3 = ndimage.grey_erosion(image3, size=(5,5))
+    if save:
+        cv2.imwrite(f'/tmp/{count}_eroded.png', image3)
+
+#    _, image3 = cv2.threshold(image3, 80, 255, cv2.THRESH_BINARY)
+    logger.debug(str(image3[80]))
+    low, hi = (145,165)
+    image3[image3 < low] = 0
+    image3[(image3 >= low) & (image3 <= hi)] = 255 
+    image3[image3 > hi] = 255
+    if save:
+        cv2.imwrite(f'/tmp/{count}_threshold.png', image3)
+#    image3 = np.where(image3 < 40, 0, np.where(image >= 40, np.where(image3 <= 60, 1, 0), image3))
+#    _, image3 = cv2.t#hreshold(image3, 80, 255, cv2.THRESH_BINARY)
+    if show:
+        plt.imshow(image3,cmap='gray')
+        plt.title('Eroded')
+        plt.show()
+
+    def whtest(contour):
+        (x,y,w,h) = cv2.boundingRect(contour)
+        return (40 < w < 60) & (60 < h < 90)
+
+    # Find the contours in the thresholded image
+    contours, _ = cv2.findContours(image3, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    for c in contours:
+        logger.debug('Pre filter Area: ' + str(cv2.contourArea(c)))
+        x, y, width, height = cv2.boundingRect(c)
+        logger.debug(f'x {x} y {y} width {width} height {height}')
+    contours = list(filter(whtest, contours))
+    logger.debug(f'Found {len(contours)} contours')
+    if 1 != len(contours):
+        return False
+    if show == False:
+        return True
+
+    for c in contours:
+        logger.debug('Post filter Area: ' + str(cv2.contourArea(c)))
+        x, y, width, height = cv2.boundingRect(c)
+        logger.debug(f'x {x} y {y} width {width} height {height}')
+    contour = contours[0]
+
+    # Get the bounding box of the largest contour
+    x, y, width, height = cv2.boundingRect(contour)
+
+    # Print the size and location of the white square
+    logger.debug(f'White square size: {width}x{height} pixels')
+    logger.debug(f'White square location: ({x}, {y})')
+    cv2.drawContours(image3, [contour], -1, (100,100,100), thickness=cv2.FILLED)
+    plt.imshow(image3,cmap='gray')
+    if save:
+        cv2.imwrite(f'/tmp/{count}_identified.png', image3)
+    plt.title('Identified')
+    plt.show()
+
+    return True
+
+#def setExposure(picam, exposure):
+def setExposure(exposure):
+    global picam
+    picam.set_controls({'ExposureTime': exposure, 'AnalogueGain': 8.0})
+    start = time.time()
+    while (time.time() - start) < 1.0:
+        picam.capture_array("lores")
+        camexp = picam.capture_metadata()['ExposureTime'] 
+        logger.debug(f'Got {camexp}, want {exposure}')
+        if int(exposure * 0.9) < camexp < int(exposure * 1.1):
+            return
+    raise RuntimeError('timeout')
+
+def waitSprocket(desired):
+    global picam
+    global count
+    start = time.time()
+    while (time.time() - start) < 5.0:
+        buffer = picam.capture_array("lores")
+        count += 1
+        logger.debug(str(picam.capture_metadata()))
+        inSprocket = findSprocket(buffer, show = False)
+        logger.debug(f'inSprocket {inSprocket}, need {str(desired)}')
+        if desired == inSprocket:
+            return
+    raise RuntimeError('timeout')
+
+def framecap_camsprocket(config):
+    startframe = get_most_recent_frame(config)
+    exposures = list(map(int, config.exposure.split(',')))
+#    init_picam()
+
+    global count
+    count = 0
+    for framenum in range(config.frames):
+        global lastTension
+        lastTension = tension[framenum+startframe]
+        logger.info(f'Tension {lastTension}')
+        serwrite(str(lastTension).encode() + b't')
+        #setExposure(picam, exposures[0])
+        setExposure(exposures[0])
+        serwrite(b'f') # Forward
+
+    #    picam.switch_mode('exp0')
+        try:
+            waitSprocket(False)
+            waitSprocket(True)
+
+        except RuntimeError as rte:
+            logger.error(str(rte))
+            serwrite(b's') # Stop
+            return
+
+        serwrite(b's') # Stop
+
+        frames = []
+        for exp in exposures[1:]:
+            try:
+                target = f'{config.framesto}/{startframe+framenum:>08}_{exp}.png'
+               # setExposure(picam, exp)
+                setExposure(exp)
+
+                image = picam.capture_array('main')
+                cv2.imwrite(target, image)
+                logger.info(f'Wrote to {target}')
+            except Exception as ee:
+                logger.error(f'capture failed {str(ee)}')
+                break
+
+
+    serwrite(b' ')
+
 
 def tonefuse(config):
-    images = [cv.imread(f'{config.framesfrom}/00000000a.png'),
-        cv.imread(f'{config.framesfrom}/00000000b.png')]
+    images = [cv2.imread(f'{config.framesfrom}/00000000a.png'),
+        cv2.imread(f'{config.framesfrom}/00000000b.png')]
     times = np.asarray([.700, 1.4], dtype=np.float32)
 
-    calibrate = cv.createCalibrateDebevec()
+    calibrate = cv2.createCalibrateDebevec()
     response = calibrate.process(images, times)
-    merge_debevec = cv.createMergeDebevec()
+    merge_debevec = cv2.createMergeDebevec()
     hdr = merge_debevec.process(images, times, response)
-    tonemap = cv.createTonemap(2.2)
+    tonemap = cv2.createTonemap(2.2)
     ldr = tonemap.process(hdr)
-    merge_mertens = cv.createMergeMertens()
+    merge_mertens = cv2.createMergeMertens()
     fusion = merge_mertens.process(images)
 
-    cv.imwrite(f'{config.framesto}/fusion.png', fusion * 255)
-    cv.imwrite(f'{config.framesto}/ldr.png', ldr * 255)
-    cv.imwrite(f'{config.framesto}/hdr.png', hdr * 255)
+    cv2.imwrite(f'{config.framesto}/fusion.png', fusion * 255)
+    cv2.imwrite(f'{config.framesto}/ldr.png', ldr * 255)
+    cv2.imwrite(f'{config.framesto}/hdr.png', hdr * 255)
 
     pass
 
@@ -323,7 +511,10 @@ def main():
 
     if 'exptest' == config.do: exptest(config)
     if 'framecap' == config.do:
-        framecap(config)
+        if config.camsprocket:
+            framecap_camsprocket(config)
+        else:
+            framecap(config)
 
     if 'tonefuse' == config.do: tonefuse(config)
 

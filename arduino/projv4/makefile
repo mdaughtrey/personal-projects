@@ -20,9 +20,11 @@ all:
 #ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/dev/personal-projects:/personal-projects 
 # Build remote
 br:
+	git commit . -m dev
 	ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects  \
 	--entrypoint /home/mattd/acli/bin/arduino-cli \
 		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
+	scp mattd@${DOCKERHOST} ~/personal-projects/arduino/projv4/projv4.ino.* .
 #	ssh mattd@pop-os  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects \
 #        --entrypoint /home/mattd/acli/bin/arduino-cli \
 #		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
