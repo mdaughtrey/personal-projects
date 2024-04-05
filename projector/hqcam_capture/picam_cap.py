@@ -12,16 +12,16 @@ import cv2
 from functools import partial
 from    glob import glob, iglob
 from    itertools import groupby
-from libcamera import Transform
 import  logging
 from   logging import FileHandler, StreamHandler
 import  math
-from matplotlib import pyplot as plt
-from scipy import ndimage
-import  numpy as np
+#from matplotlib import pyplot as plt
+#from scipy import ndimage
+#import  numpy as np
 import  os
 import  pdb
-from picamera2 import Picamera2, Preview
+#from picamera2 import Picamera2, Preview
+from picam_utils import waitSprocket, init_picam
 #from    PIL import Image, ImageDraw, ImageFilter, ImageOps
 #from    scipy import ndimage
 import  serial
@@ -141,22 +141,22 @@ def pcl_tonefuse():
     parser.add_argument('--logfile', dest='logfile', default='usbcap.log', help='Log file')
     return parser.parse_args()
 
-def setlogging(config):
-    global logger
-    FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
-#    logging.basicConfig(level = logging.DEBUG, format=FormatString)
-    
-    logger = logging.getLogger('picam')
-    logger.setLevel(logging.DEBUG)
-    fileHandler = FileHandler(filename = config.logfile)
-    fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    fileHandler.setLevel(logging.DEBUG)
-    logger.addHandler(fileHandler)
-
-    stdioHandler = StreamHandler(sys.stdout)
-    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    stdioHandler.setLevel(logging.INFO)
-    logger.addHandler(stdioHandler)
+#def setlogging(logfilename):
+#    global logger
+#    FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
+##    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+#    
+#    logger = logging.getLogger('picam')
+#    logger.setLevel(logging.DEBUG)
+#    fileHandler = FileHandler(filename = logfilename
+#    fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
+#    fileHandler.setLevel(logging.DEBUG)
+#    logger.addHandler(fileHandler)
+#
+#    stdioHandler = StreamHandler(sys.stdout)
+#    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
+#    stdioHandler.setLevel(logging.INFO)
+#    logger.addHandler(stdioHandler)
 
 def serwrite(message):
     logger.debug(message)
@@ -179,28 +179,28 @@ def serwaitfor(text1, text2):
         logger.debug("Matched on %s" % text2)
         return (1, text2, accum)
 
-def init_picam():
-    lores={"size":(640,480),"format":"RGB888"}
-    main={"size":(2304,1296),"format":"RGB888"}
-
-    global picam
-    controls={'FrameDurationLimits':(50000,50000),'ExposureTime': int(config.exposure.split(',')[0]),
-              'AeEnable': False, 'AwbEnable': False}
-    transform = Transform(hflip=True)
-    #Picamera2.set_logging(Picamera2.ERROR)
-    Picamera2.set_logging(Picamera2.ERROR)
-    picam = Picamera2()
-    cam_config = picam.create_video_configuration(queue=False,main=main,lores=lores,transform=transform,controls=controls)
-    #cam_config = picam.create_video_configuration()
-
-    picam.configure(cam_config)
-    picam.align_configuration(cam_config)
-    picam.start()
+#def init_picam():
+#    lores={"size":(640,480),"format":"RGB888"}
+#    main={"size":(2304,1296),"format":"RGB888"}
+#
+#    global picam
+#    controls={'FrameDurationLimits':(50000,50000),'ExposureTime': int(config.exposure.split(',')[0]),
+#              'AeEnable': False, 'AwbEnable': False}
+#    transform = Transform(hflip=True)
+#    #Picamera2.set_logging(Picamera2.ERROR)
+#    Picamera2.set_logging(Picamera2.ERROR)
+#    picam = Picamera2()
+#    cam_config = picam.create_video_configuration(queue=False,main=main,lores=lores,transform=transform,controls=controls)
+#    #cam_config = picam.create_video_configuration()
+#
+#    picam.configure(cam_config)
+#    picam.align_configuration(cam_config)
+#    picam.start()
 #    return picam
 
 def init_framecap(config):
     if config.camsprocket:
-        init_picam()
+        init_picam(int(config.exposure.split(',')[0]))
 
     if config.showwork and not os.path.exists(workdir:='{}/work'.format(config.framesto)):
         os.mkdir(workdir)
@@ -321,81 +321,82 @@ def framecap(config):
                 break
     serwrite(b' ')
 
-def findSprocket(image, show=False):
-    save = False
-    logger.debug(count)
-    y,x = image.shape[:2]
-    if show:
-        plt.imshow(image)
-        plt.title('Input Image')
-        plt.show()
-    if save:
-        cv2.imwrite(f'/tmp/{count}_input.png', image)
-    image = image[int(y/3):y-int(y/3),0:100]
-    if show:
-        plt.imshow(image)
-        plt.title('Sliced')
-        plt.show()
-    if save:
-        cv2.imwrite(f'/tmp/{count}_sliced.png', image)
-    image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    image3 = np.asarray(image2, dtype=np.uint8)
-    image3 = ndimage.grey_erosion(image3, size=(5,5))
-    if save:
-        cv2.imwrite(f'/tmp/{count}_eroded.png', image3)
-
-#    _, image3 = cv2.threshold(image3, 80, 255, cv2.THRESH_BINARY)
-    logger.debug(str(image3[80]))
-    low, hi = (145,165)
-    image3[image3 < low] = 0
-    image3[(image3 >= low) & (image3 <= hi)] = 255 
-    image3[image3 > hi] = 255
-    if save:
-        cv2.imwrite(f'/tmp/{count}_threshold.png', image3)
-#    image3 = np.where(image3 < 40, 0, np.where(image >= 40, np.where(image3 <= 60, 1, 0), image3))
-#    _, image3 = cv2.t#hreshold(image3, 80, 255, cv2.THRESH_BINARY)
-    if show:
-        plt.imshow(image3,cmap='gray')
-        plt.title('Eroded')
-        plt.show()
-
-    def whtest(contour):
-        (x,y,w,h) = cv2.boundingRect(contour)
-        return (40 < w < 60) & (60 < h < 90)
-
-    # Find the contours in the thresholded image
-    contours, _ = cv2.findContours(image3, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    for c in contours:
-        logger.debug('Pre filter Area: ' + str(cv2.contourArea(c)))
-        x, y, width, height = cv2.boundingRect(c)
-        logger.debug(f'x {x} y {y} width {width} height {height}')
-    contours = list(filter(whtest, contours))
-    logger.debug(f'Found {len(contours)} contours')
-    if 1 != len(contours):
-        return False
-    if show == False:
-        return True
-
-    for c in contours:
-        logger.debug('Post filter Area: ' + str(cv2.contourArea(c)))
-        x, y, width, height = cv2.boundingRect(c)
-        logger.debug(f'x {x} y {y} width {width} height {height}')
-    contour = contours[0]
-
-    # Get the bounding box of the largest contour
-    x, y, width, height = cv2.boundingRect(contour)
-
-    # Print the size and location of the white square
-    logger.debug(f'White square size: {width}x{height} pixels')
-    logger.debug(f'White square location: ({x}, {y})')
-    cv2.drawContours(image3, [contour], -1, (100,100,100), thickness=cv2.FILLED)
-    plt.imshow(image3,cmap='gray')
-    if save:
-        cv2.imwrite(f'/tmp/{count}_identified.png', image3)
-    plt.title('Identified')
-    plt.show()
-
-    return True
+#def findSprocket(image, show=False):
+#    save = True
+#    logger.debug(count)
+#    y,x = image.shape[:2]
+#    if show:
+#        plt.imshow(image)
+#        plt.title('Input Image')
+#        plt.show()
+#    if save:
+#        cv2.imwrite(f'/tmp/{count}_input.png', image)
+#    image = image[int(y/3):y-int(y/3),0:100]
+#    if show:
+#        plt.imshow(image)
+#        plt.title('Sliced')
+#        plt.show()
+#    if save:
+#        cv2.imwrite(f'/tmp/{count}_sliced.png', image)
+#    image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#    image3 = np.asarray(image2, dtype=np.uint8)
+#    image3 = ndimage.grey_erosion(image3, size=(5,5))
+#    if save:
+#        cv2.imwrite(f'/tmp/{count}_eroded.png', image3)
+#
+##    _, image3 = cv2.threshold(image3, 80, 255, cv2.THRESH_BINARY)
+#    logger.debug(str(image3[80]))
+#    low,high = (100,170)
+#    image[image<low] = 255 
+#    image[image>high] = 255
+#    image[image != 255] = 0
+#    image[image == 255] = 1
+#    if save:
+#        cv2.imwrite(f'/tmp/{count}_threshold.png', image3)
+##    image3 = np.where(image3 < 40, 0, np.where(image >= 40, np.where(image3 <= 60, 1, 0), image3))
+##    _, image3 = cv2.t#hreshold(image3, 80, 255, cv2.THRESH_BINARY)
+#    if show:
+#        plt.imshow(image3,cmap='gray')
+#        plt.title('Eroded')
+#        plt.show()
+#
+#    def whtest(contour):
+#        (x,y,w,h) = cv2.boundingRect(contour)
+#        return (40 < w < 60) & (60 < h < 90)
+#
+#    # Find the contours in the thresholded image
+#    contours, _ = cv2.findContours(image3, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+#    for c in contours:
+#        logger.debug('Pre filter Area: ' + str(cv2.contourArea(c)))
+#        x, y, width, height = cv2.boundingRect(c)
+#        logger.debug(f'x {x} y {y} width {width} height {height}')
+#    contours = list(filter(whtest, contours))
+#    logger.debug(f'Found {len(contours)} contours')
+#    if 1 != len(contours):
+#        return False
+#    if show == False:
+#        return True
+#
+#    for c in contours:
+#        logger.debug('Post filter Area: ' + str(cv2.contourArea(c)))
+#        x, y, width, height = cv2.boundingRect(c)
+#        logger.debug(f'x {x} y {y} width {width} height {height}')
+#    contour = contours[0]
+#
+#    # Get the bounding box of the largest contour
+#    x, y, width, height = cv2.boundingRect(contour)
+#
+#    # Print the size and location of the white square
+#    logger.debug(f'White square size: {width}x{height} pixels')
+#    logger.debug(f'White square location: ({x}, {y})')
+#    cv2.drawContours(image3, [contour], -1, (100,100,100), thickness=cv2.FILLED)
+#    plt.imshow(image3,cmap='gray')
+#    if save:
+#        cv2.imwrite(f'/tmp/{count}_identified.png', image3)
+#    plt.title('Identified')
+#    plt.show()
+#
+#    return True
 
 #def setExposure(picam, exposure):
 def setExposure(exposure):
@@ -410,19 +411,19 @@ def setExposure(exposure):
             return
     raise RuntimeError('timeout')
 
-def waitSprocket(desired):
-    global picam
-    global count
-    start = time.time()
-    while (time.time() - start) < 5.0:
-        buffer = picam.capture_array("lores")
-        count += 1
-        logger.debug(str(picam.capture_metadata()))
-        inSprocket = findSprocket(buffer, show = False)
-        logger.debug(f'inSprocket {inSprocket}, need {str(desired)}')
-        if desired == inSprocket:
-            return
-    raise RuntimeError('timeout')
+#def waitSprocket(desired):
+#    global picam
+#    global count
+#    start = time.time()
+#    while (time.time() - start) < 5.0:
+#        buffer = picam.capture_array("lores")
+#        count += 1
+#        logger.debug(str(picam.capture_metadata()))
+#        inSprocket = findSprocket(buffer, show = False)
+#        logger.debug(f'inSprocket {inSprocket}, need {str(desired)}')
+#        if desired == inSprocket:
+#            return
+#    raise RuntimeError('timeout')
 
 def framecap_camsprocket(config):
     startframe = get_most_recent_frame(config)
@@ -442,8 +443,8 @@ def framecap_camsprocket(config):
 
     #    picam.switch_mode('exp0')
         try:
-            waitSprocket(False)
-            waitSprocket(True)
+            waitSprocket(picam, False)
+            waitSprocket(picam, True)
 
         except RuntimeError as rte:
             logger.error(str(rte))

@@ -34,7 +34,7 @@ getcamdev()
 
 s8()
 {
-    ./picam_cap.py framecap --framesto ${FP}/capture --frames 10000 --logfile picam_cap.log \
+    ./picam_cap.py framecap --framesto ${FP}/capture --frames 50 --logfile picam_cap.log \
         --film super8 --exposure ${EXPOSURES} --startdia 57 --enddia 33 --camsprocket
 }
 
@@ -223,7 +223,7 @@ case "$1" in
     descratch) descratch ;;
     8mm) do8mm; preview ;;
     s8) 
-        rm frames/${PROJECT}/findsprocket/*.png
+#        rm frames/${PROJECT}/findsprocket/*.png
         rm frames/${PROJECT}/capture/*.png
         rm *.log
         s8 
