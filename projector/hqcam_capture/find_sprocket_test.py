@@ -7,12 +7,17 @@ import time
 #global picam
 #camera = {'picam': None}
 
-pdb.set_trace()
-logger = setLogging('find_sprocket_test','find_sprocket_test.log')
-camera = init_picam(exposure=9000)
-time.sleep(1.0)
+#pdb.set_trace()
+logger = setLogging('find_sprocket_test','find_sprocket_test.log',logging.DEBUG)['logger']
+camera = init_picam(exposure=1000)['camera']
+
+logger.debug('Sleep 10')
+
+time.sleep(10.0)
 
 for ii in range(10):
     inccount()
-    findSprocket(logger['logger'], camera['picam'].capture_array("lores"), savework=True)
-    time.sleep(1.0)
+    findSprocket(logger, camera.capture_array("lores"), savework=True)
+    logger.info(camera.capture_metadata()['ExposureTime'])
+    logger.info('sleep 4')
+    time.sleep(4.0)

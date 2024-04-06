@@ -7,6 +7,7 @@ import numpy as np
 from picamera2 import Picamera2, Preview
 from scipy import ndimage
 import sys
+import time
 
 count = 0
 
@@ -30,7 +31,7 @@ def init_picam(exposure:int) -> dict:
     camera['picam'].start()
     return camera
 
-def waitSprocket(logger, picam, desired):
+def waitSprocket(logger, picam, desired:bool, savework:bool) -> None:
 #    global picam
     global count
     start = time.time()
@@ -38,7 +39,7 @@ def waitSprocket(logger, picam, desired):
         buffer = picam.capture_array("lores")
         count += 1
         logger.debug(str(picam.capture_metadata()))
-        inSprocket = findSprocket(logger, buffer, show = False)
+        inSprocket = findSprocket(logger, buffer, show = False, savework = savework)
         logger.debug(f'inSprocket {inSprocket}, need {str(desired)}')
         if desired == inSprocket:
             return
@@ -55,15 +56,15 @@ def findSprocket(logger, image, show=False,savework=False):
         plt.imshow(image)
         plt.title('Input Image')
         plt.show()
-    if savework:
-        cv2.imwrite(f'/tmp/{count}_input.png', image)
-    image = image[int(y/3):y-int(y/3),0:100]
+#    if savework:
+#        cv2.imwrite(f'/tmp/{count}_input.png', image)
+    image = image[int(y/3):y-int(y/3),0:130]
     if show:
         plt.imshow(image)
         plt.title('Sliced')
         plt.show()
-    if savework:
-        cv2.imwrite(f'/tmp/{count}_sliced.png', image)
+#    if savework:
+#        cv2.imwrite(f'/tmp/{count}_sliced.png', image)
     image2 = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     image3 = np.asarray(image2, dtype=np.uint8)
     image3 = ndimage.grey_erosion(image3, size=(5,5))
@@ -73,12 +74,12 @@ def findSprocket(logger, image, show=False,savework=False):
 #    _, image3 = cv2.threshold(image3, 80, 255, cv2.THRESH_BINARY)
     logger.debug(str(image3[80]))
     low,high = (100,170)
-    image[image<low] = 255 
-    image[image>high] = 255
-    image[image != 255] = 0
-    image[image == 255] = 1
+    image3[image3<low] = 255 
+    image3[image3>high] = 255
+    image3[image3 != 255] = 0
     if savework:
         cv2.imwrite(f'/tmp/{count}_threshold.png', image3)
+    image3[image3 == 255] = 1
 #    image3 = np.where(image3 < 40, 0, np.where(image >= 40, np.where(image3 <= 60, 1, 0), image3))
 #    _, image3 = cv2.t#hreshold(image3, 80, 255, cv2.THRESH_BINARY)
     if show:
@@ -124,7 +125,7 @@ def findSprocket(logger, image, show=False,savework=False):
 
     return True
 
-def setLogging(name:str,logfilename:str) -> dict:
+def setLogging(name:str,logfilename:str,console_level) -> dict:
     logger = {'logger': None}
     FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
 #    logging.basicConfig(level = logging.DEBUG, format=FormatString)
@@ -138,6 +139,6 @@ def setLogging(name:str,logfilename:str) -> dict:
 
     stdioHandler = StreamHandler(sys.stdout)
     stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    stdioHandler.setLevel(logging.INFO)
+    stdioHandler.setLevel(console_level)
     logger['logger'].addHandler(stdioHandler)
     return logger
