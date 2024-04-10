@@ -1,5 +1,0 @@
-{
-    "image":"myimage",
-    "extensions":["ms-vscode.cpptools"],
-    "forwardPorts": [2345]
-}

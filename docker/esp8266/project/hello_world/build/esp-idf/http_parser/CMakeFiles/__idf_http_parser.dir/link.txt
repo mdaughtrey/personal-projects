@@ -1,2 +1,0 @@
-/tools/toolchain/bin/xtensa-lx106-elf-ar qc libhttp_parser.a  CMakeFiles/__idf_http_parser.dir/src/http_parser.c.obj
-/tools/toolchain/bin/xtensa-lx106-elf-ranlib libhttp_parser.a

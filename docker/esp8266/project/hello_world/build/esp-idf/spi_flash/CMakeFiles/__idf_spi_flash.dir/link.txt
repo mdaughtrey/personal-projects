@@ -1,2 +1,0 @@
-/tools/toolchain/bin/xtensa-lx106-elf-ar qc libspi_flash.a  CMakeFiles/__idf_spi_flash.dir/src/partition.c.obj CMakeFiles/__idf_spi_flash.dir/src/spi_flash_raw.c.obj CMakeFiles/__idf_spi_flash.dir/src/spi_flash.c.obj
-/tools/toolchain/bin/xtensa-lx106-elf-ranlib libspi_flash.a
