@@ -307,8 +307,8 @@ def framecap_camsprocket(config):
 
     #    picam.switch_mode('exp0')
         try:
-            waitSprocket(logger, camera, desired = False, savework = True)
-            waitSprocket(logger, camera, desired = True, savework = True)
+            waitSprocket(logger, camera, desired = False, savework = False)
+            waitSprocket(logger, camera, desired = True, savework = False)
 
         except RuntimeError as rte:
             logger.error(str(rte))

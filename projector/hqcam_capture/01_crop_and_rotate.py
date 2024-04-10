@@ -9,6 +9,7 @@ from   logging import FileHandler, StreamHandler
 import numpy as np
 import os
 import pdb
+from picam_utils import *
 from PIL import Image,ImageDraw,ImageFilter,ImageOps
 import re
 import sys
@@ -25,22 +26,22 @@ def procargs():
     parser.add_argument('--exposures', dest='exposures', help='exposures', required=True)
     return parser.parse_args()
 
-def setlogging(logname):
-    global logger
-    FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
-#    logging.basicConfig(level = logging.DEBUG, format=FormatString)
-    
-    logger = logging.getLogger('picam')
-    logger.setLevel(logging.DEBUG)
-    fileHandler = FileHandler(filename = logname)
-    fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    fileHandler.setLevel(logging.DEBUG)
-    logger.addHandler(fileHandler)
-
-    stdioHandler = StreamHandler(sys.stdout)
-    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
-    stdioHandler.setLevel(logging.INFO)
-    logger.addHandler(stdioHandler)
+#def setlogging(logname):
+#    global logger
+#    FormatString='%(asctime)s %(levelname)s %(funcName)s %(lineno)s %(message)s'
+##    logging.basicConfig(level = logging.DEBUG, format=FormatString)
+#    
+#    logger = logging.getLogger('picam')
+#    logger.setLevel(logging.DEBUG)
+#    fileHandler = FileHandler(filename = logname)
+#    fileHandler.setFormatter(logging.Formatter(fmt=FormatString))
+#    fileHandler.setLevel(logging.DEBUG)
+#    logger.addHandler(fileHandler)
+#
+#    stdioHandler = StreamHandler(sys.stdout)
+#    stdioHandler.setFormatter(logging.Formatter(fmt=FormatString))
+#    stdioHandler.setLevel(logging.INFO)
+#    logger.addHandler(stdioHandler)
 
 #def getRect(regfile):
 def getRect(leftX, centerY):
@@ -79,7 +80,7 @@ def cropAndRotate(leftX, centerY, readfrom, writeto):
 
 def main():
     global args
-    setlogging('01_crop_and_rotate.log')
+    logger = setLogging('car','01_crop_and_rotate.log',logging.INFO)['logger']
     args = procargs()
 
 #    readpath = os.path.realpath(args.readfrom)
@@ -95,11 +96,8 @@ def main():
         os.mkdir(writepath)
 
     exposures = [int(x) for x in args.exposures.split(',')]
-#    centerX = None
-    #for regfile in sorted(glob(f'{readpath}/*_{exposures[1]}.reg')):
     for regfile in sorted(glob(readpath)):
-#        pdb.set_trace()
-        rightX, leftX, centerY, _ = open(regfile.encode(),'rb').read().split(b' ')
+        rightX, leftX, centerY, = map(int, open(regfile.encode(),'rb').read().split(b' '))
 #        if centerX is None:
 #            centerX = cX
         for exposure in exposures[1:]:
@@ -108,11 +106,11 @@ def main():
             readfrom = os.path.dirname(readpath) + '/' + filename
             writeto = writepath + '/' + filename
             #writeto = realpath + '/' +  os.path.splitext(os.path.basename(regfile))[0] + '.png'
-            logger.debug(f'{filename}')
+            logger.info(f'{filename}')
             if not os.path.exists(writeto):
                 try:
-                    cropAndRotate(int(leftX), int(centerY), readfrom, writeto)
-                except:
-                    logger.debug(f'Skipping {filename}')
+                    cropAndRotate(leftX, centerY, readfrom, writeto)
+                except Exception as ee:
+                    logger.warning(f'Skipping {writeto}: {str(ee)}')
 
 main()

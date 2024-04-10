@@ -2,6 +2,7 @@
 import cv2
 from matplotlib import pyplot as plt
 import numpy as np
+from picam_utils import *
 import pdb
 
 
@@ -20,7 +21,7 @@ def examine(filename):
 def find_zero_rectangle(filename):
     pdb.set_trace()
     image = cv2.imread(filename,cv2.IMREAD_GRAYSCALE)
-    low,high = (100,170)
+    low,high = (144,170)
     image[image<low] = 255 
     image[image>high] = 255
     image[image != 255] = 0
@@ -46,6 +47,10 @@ def find_zero_rectangle(filename):
 
     return max_rect
 
-filename='frames/20240402_1/findsprocket/17_eroded.png'
+filename='frames/20240402_1/findsprocket/clearfilm/198_eroded.png'
 #examine(filename)
-print(find_zero_rectangle(filename))
+logger = FakeLogger()
+#print(find_zero_rectangle(filename))
+image = cv2.imread(filename,cv2.IMREAD_GRAYSCALE)
+pdb.set_trace()
+findSprocket(logger, image, show=False,savework=True)
