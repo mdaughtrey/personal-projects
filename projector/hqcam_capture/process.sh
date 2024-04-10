@@ -34,7 +34,7 @@ getcamdev()
 
 s8()
 {
-    ./picam_cap.py framecap --framesto ${FP}/capture --frames 10000 --logfile picam_cap.log \
+    ./picam_cap.py framecap --framesto ${FP}/capture --frames 10 --logfile picam_cap.log \
         --film super8 --exposure ${EXPOSURES} --startdia 57 --enddia 33 --camsprocket
 }
 
@@ -181,7 +181,7 @@ oneshot()
 
 cam()
 {
-    rpicam-hello --timeout 180s
+    rpicam-hello --timeout=180s --shutter=9000us --awb 
 }
 
 doenfuse()
@@ -224,9 +224,10 @@ case "$1" in
     8mm) do8mm; preview ;;
     s8) 
         rm frames/${PROJECT}/findsprocket/*.png
-        rm frames/${PROJECT}/capture/*.png
+#        rm frames/${PROJECT}/capture/*.png
         rm *.log
         s8 
+        echo s > ${PORT}
         mv /tmp/*.png /media/frames/${PROJECT}/findsprocket/
         ;;
     preview) shift; preview $@ ;;
