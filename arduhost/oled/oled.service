@@ -1,0 +1,13 @@
+# https://unix.stackexchange.com/questions/126009/cause-a-script-to-execute-after-networking-has-started
+# Copy to /etc/systemd/system/oled.service
+
+[Unit]
+Description=OLED 
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+ExecStart=/home/mattd/personal-projects/arduhost/oled/hello.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,2 +1,0 @@
-/tools/toolchain/bin/xtensa-lx106-elf-ar qc libnewlib.a  CMakeFiles/__idf_newlib.dir/newlib/port/time.c.obj CMakeFiles/__idf_newlib.dir/newlib/port/select.c.obj CMakeFiles/__idf_newlib.dir/newlib/port/termios.c.obj CMakeFiles/__idf_newlib.dir/newlib/port/locks.c.obj CMakeFiles/__idf_newlib.dir/newlib/port/esp_newlib.c.obj CMakeFiles/__idf_newlib.dir/newlib/port/syscall.c.obj CMakeFiles/__idf_newlib.dir/newlib/port/esp_malloc.c.obj
-/tools/toolchain/bin/xtensa-lx106-elf-ranlib libnewlib.a

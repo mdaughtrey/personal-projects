@@ -1,0 +1,30 @@
+#!/usr/bin/expect -f
+
+#hciconfig hci0 sspmode 1
+
+set prompt "#"
+#timeout 10
+
+spawn /usr/bin/bluetoothctl
+send -- "power on\n"
+expect succeeded
+sleep 1
+send -- "agent off\n"
+expect unregistered
+sleep 1
+send -- "default-agent\n"
+expect registered
+sleep 1
+send -- "pairable on\n"
+expect succeeded
+sleep 1
+send -- "discoverable on\n"
+expect succeeded
+sleep 4
+expect "Confirm passkey"
+send -- "yes\r"
+sleep 1
+expect yes/no
+send -- "yes\r"
+sleep 1
+expect eof

@@ -16,7 +16,7 @@ Stepper::Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse
 #else
     m_minInterval64(0), m_maxInterval64(0), m_rampUpSteps(0), m_rampDownSteps(0.0), m_enabled(false),
 #endif // SIGMOID
-    m_stepsPerMove(25.0) 
+    m_stepsPerMove(25) 
 {
     pinMode(m_stepperPulse, INPUT_PULLUP);
     pinMode(m_stepperDir, INPUT_PULLUP);
@@ -27,29 +27,36 @@ Stepper::Stepper(uint8_t stepperEnable, uint8_t stepperDir, uint8_t stepperPulse
     cw();
 }
 
-void Stepper::run()
+uint8_t Stepper::run(uint16_t encoderPos)
 {
     if (!m_running)
     {
-        return;
+        return 0;
     }
-    if (m_verbose) 
-    {
-        //Serial.printf("m_lastStepTime64 %lu delta %u\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
-        Serial.printf("m_lastStepTime64 %llu delta %llu\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
-    }
+
+//    if (m_verbose) 
+//    {
+//        //Serial.printf("m_lastStepTime64 %lu delta %u\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
+//        Serial.printf("m_lastStepTime64 %llu delta %llu\r\n", m_lastStepTime64, time_us_64() - m_lastStepTime64);
+//    }
 //    if ((millis() - m_lastStepTime) < (uint32_t)m_currentInterval)
 //    {
 //        return;
 //    }
+    if (encoderPos != m_lastEncoderPos)
+    {
+        m_stepsPerMove = m_stepCount -  m_stepCountAtLastPos;
+        m_targetSteps = m_stepsPerMove * m_targetMove;
+        m_lastEncoderPos = encoderPos;
+        m_stepCountAtLastPos = m_stepCount;
+    }
     if ((time_us_64() - m_lastStepTime64) < m_currentInterval64)
     {
-        return;
+        return 0;
     }
 
     pinMode(m_stepperPulse, OUTPUT);
-//    digitalWrite(m_stepperPulse, 0);
-    delayMicroseconds(10);
+    delayMicroseconds(100);
     pinMode(m_stepperPulse, INPUT_PULLUP);
     //digitalWrite(m_stepperPulse, 1);
     m_stepCount++;
@@ -57,10 +64,31 @@ void Stepper::run()
     m_currentInterval64 = getNextInterval64(m_stepCount);
     if (m_verbose) 
     {
-        Serial.printf("m_stepcount %4u m_stepsPerMove %4f m_targetSteps %4u m_currentInterval64 %llu\r\n",
-                m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval64);
+        Serial.printf("encoderPos %u m_stepcount %4u m_stepsPerMove %u m_targetSteps %4u m_currentInterval64 %llu\r\n",
+                encoderPos, m_stepCount, m_stepsPerMove, m_targetSteps, m_currentInterval64);
     }
+    return 0;
 }
+
+uint8_t Stepper::run(void)
+{
+    if (!m_running)
+    {
+        return 0;
+    }
+
+    if ((time_us_64() - m_lastStepTime64) < m_currentInterval64)
+    {
+        return 0;
+    }
+
+    pinMode(m_stepperPulse, OUTPUT);
+    delayMicroseconds(100);
+    pinMode(m_stepperPulse, INPUT_PULLUP);
+    m_lastStepTime64 = time_us_64();
+    return 1;
+}
+
 
 void Stepper::start(uint16_t moves)
 {
@@ -69,9 +97,41 @@ void Stepper::start(uint16_t moves)
         return;
     }
     m_stepCount = 0;
+    m_targetMove = moves;
+    m_stepCountAtLastPos = 0;
+    m_lastEncoderPos = 0;
     m_running = true;
-    m_targetSteps = static_cast<int>(round(moves * m_stepsPerMove));
+    m_targetSteps = moves * m_stepsPerMove;
     m_currentInterval64 = getNextInterval64(0);
+    if (m_verbose)
+    {
+        Serial.printf("Stepper::start m_targetSteps %u moves %u m_stepsPerMove %u\r\n",
+                m_targetSteps, moves, m_stepsPerMove);
+    }
+    saveMemo(moves);
+}
+
+void Stepper::start(void)
+{
+    if (!m_enabled)
+    {
+        return;
+    }
+//    m_stepCount = 0;
+//    m_targetMove = moves;
+//    m_stepCountAtLastPos = 0;
+//    m_lastEncoderPos = 0;
+    m_lastStepTime64 = time_us_64();
+    m_running = true;
+    m_currentInterval64 = 500;
+//    m_targetSteps = moves * m_stepsPerMove;
+//    m_currentInterval64 = getNextInterval64(0);
+//    if (m_verbose)
+//    {
+//        Serial.printf("Stepper::start m_targetSteps %u moves %u m_stepsPerMove %u\r\n",
+//                m_targetSteps, moves, m_stepsPerMove);
+//    }
+//    saveMemo(moves);
 }
 
 void Stepper::cw()
@@ -84,6 +144,18 @@ void Stepper::ccw()
     pinMode(m_stepperDir, OUTPUT);
 }
 
+#ifdef MEMO
+void Stepper::saveMemo(uint16_t requestedmoves)
+{
+    Memo memo = {requestedmoves, m_targetSteps, m_stepCount, m_currentInterval64, m_stepsPerMove, m_minInterval64, m_maxInterval64};
+    m_memo.push_back(memo);
+    //m_memo.push_back({m_targetSteps, m_stepCount, m_currentInterval64, m_stepsPerMove});
+    while(m_memo.size() > 4000)
+    {
+        m_memo.pop_front();
+    }
+}
+#endif // MEMO
 #ifdef SIGMOID
 uint64_t Stepper::getNextInterval64(uint16_t position)
 {
@@ -128,6 +200,13 @@ uint64_t Stepper::getNextInterval64(uint16_t position)
 //    return r;
 }
 #else // SIGMOID
+#ifdef SIMPLEINTERVAL
+uint64_t Stepper::getNextInterval64(uint16_t position)
+{
+    return m_minInterval64;
+}
+
+#else // SIMPLEINTERVAL
 uint64_t Stepper::getNextInterval64(uint16_t position)
 {
     uint64_t intervalRange = m_maxInterval64 - m_minInterval64;
@@ -162,6 +241,7 @@ uint64_t Stepper::getNextInterval64(uint16_t position)
     }
     return r;
 }
+#endif // SIMPLEINTERVAL
 #endif // SIGMOID
 
 void Stepper::pulse(bool v)
@@ -196,13 +276,37 @@ void Stepper::disable()
 void Stepper::stop(uint16_t move)
 {
     m_running = false;
-    if (move)
+    if (m_verbose)
     {
-        m_stepsPerMove = m_stepCount / move * 1.0;
-        if (m_verbose)
-        {
-            Serial.printf("m_stepsPerMove %f\r\n", m_stepsPerMove);
-        }
+        Serial.printf("Stepper::stop m_stepCount %u move %u m_stepsPerMove %u\r\n", m_stepCount, move, m_stepsPerMove);
     }
+//    if (move)
+//    {
+//        m_stepsPerMove = m_stepCount / (float)move;
+//    }
 }
 
+//void Stepper::reset()
+//{
+//    m_minInterval64 = 100;
+//    m_maxInterval64 = 1000;
+//    m_rampUpSteps = 10;
+//    m_rampDownSteps = 10;
+//    m_stepCount = 0;
+//    cw(); 
+//}
+
+#ifdef MEMO
+void Stepper::dumpMemo()
+{
+    std::deque<Memo>::iterator iter;
+
+    for (iter = m_memo.begin(); iter != m_memo.end(); iter++)
+    {
+        Serial.printf("requestedmoves %u, target %4u count %4u interval %llu permove %u mini %llu maxi %llu\r\n",
+                iter->requestedmoves, iter->targetsteps, iter->stepcount, iter->currentinterval, iter->stepspermove,
+                    iter->m_minInterval64, iter->m_maxInterval64);
+    }
+
+}
+#endif // MEMO
