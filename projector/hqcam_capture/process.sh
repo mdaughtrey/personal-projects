@@ -34,7 +34,7 @@ getcamdev()
 
 s8()
 {
-    ./picam_cap.py framecap --framesto ${FP}/capture --frames 10000 --logfile picam_cap.log \
+    ./picam_cap.py framecap --framesto ${FP}/capture --frames 3500 --logfile picam_cap.log \
         --film super8 --exposure ${EXPOSURES} --startdia 57 --enddia 33 --camsprocket
 }
 
@@ -181,7 +181,7 @@ oneshot()
 
 cam()
 {
-    rpicam-hello --timeout 180s
+    rpicam-hello --timeout=180s --shutter=9000us --awb 
 }
 
 doenfuse()
@@ -223,11 +223,12 @@ case "$1" in
     descratch) descratch ;;
     8mm) do8mm; preview ;;
     s8) 
-        rm frames/${PROJECT}/findsprocket/*.png
-        rm frames/${PROJECT}/capture/*.png
+#        rm frames/${PROJECT}/findsprocket/*.png
+#        rm frames/${PROJECT}/capture/*.png
         rm *.log
         s8 
-        mv /tmp/*.png /media/frames/${PROJECT}/findsprocket/
+        echo s > ${PORT}
+#        mv /tmp/*.png /media/frames/${PROJECT}/findsprocket/
         ;;
     preview) shift; preview $@ ;;
     p2) shift; p2 $@ ;;
@@ -248,8 +249,8 @@ case "$1" in
     ptf) ptf ;;
     #registration) ./00_registration.py --readfrom ${FP}/capture/'*.png' --writeto ${FP}/capture \
     #    --debugto ${FP}/capdebug --imageglob '000000[67]??';;
-    registration) ./00_registration.py --readfrom ${FP}/capture/'????????_'${EXPOSE[1]}'.png' --writeto ${FP}/capture ;; #  --debugto ${FP}/capdebug ;;
-#      | tee registration.log ;; #   --onefile ${FP}/capture/00000003_20000.png ;;
+    registration) ./00_registration.py --readfrom ${FP}/capture/'????????_'${EXPOSE[1]}'.png' --writeto ${FP}/capture ;;
+#        --onefile frames/20240402_1/capture/00000011_16000.png ;;
     car) ./01_crop_and_rotate.py --readfrom ${FP}/capture/'????????_'${EXPOSE[1]}'.reg' --writeto ${FP}/car --exp ${EXPOSURES} ;;
     tf) tonefuse ;;
     cam) cam ;;

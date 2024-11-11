@@ -1,2 +1,0 @@
-/tools/toolchain/bin/xtensa-lx106-elf-ar qc libesp_http_client.a  CMakeFiles/__idf_esp_http_client.dir/esp_http_client.c.obj CMakeFiles/__idf_esp_http_client.dir/lib/http_auth.c.obj CMakeFiles/__idf_esp_http_client.dir/lib/http_header.c.obj CMakeFiles/__idf_esp_http_client.dir/lib/http_utils.c.obj
-/tools/toolchain/bin/xtensa-lx106-elf-ranlib libesp_http_client.a
