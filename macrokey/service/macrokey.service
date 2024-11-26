@@ -1,0 +1,13 @@
+[Unit]
+Description=Macrokey Service
+After=network.target
+
+[Service]
+ExecStart=/home/mattd/personal-projects/macrokey/macrokey.sh
+Restart=always
+User=mattd
+Group=mattd
+#Environment=VAR_NAME=var_value
+
+[Install]
+WantedBy=default.target

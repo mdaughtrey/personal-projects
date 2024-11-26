@@ -1,0 +1,13 @@
+"version": "0.2.0"
+"configurations": [
+    {
+        "name": "Launch Crop And Rotate",
+        "type": "shell"
+        "script": "/home/mattd/personal-projects/projects/hqcam_capture/process.sh car"
+    }
+    {
+        "name": "Launch Registration"
+        "type": "shell"
+        "script": "/home/mattd/personal-projects/projects/hqcam_capture/process.sh registration"
+    }
+]
