@@ -4,7 +4,7 @@ date: '2010-03-17T11:54:07-04:00'
 author: mdaughtrey
 layout: post
 categories:
-    - Uncategorized
+    - Cool
 ---
 
 Not “organic” in the sense that they are hand-raised on a farm using no hormones or GMOs, but ‘organic’ in ….some other sense.  

@@ -3,11 +3,9 @@ title: 'Conway&#8217;s Game of Life on a LED Matrix'
 date: '2010-04-06T23:13:26-04:00'
 author: mdaughtrey
 layout: post
-enclosure:
-    - "assets/uploads/2010/04/IMG_0304.mov\r\n1414306\r\nvideo/quicktime\r\n"
-    - "assets/uploads/2010/04/IMG_0304.mov\r\n1414306\r\nvideo/quicktime"
 categories:
-    - 'Game of Life'
+    - Projects
+    - Cool
 ---
 
 Following on from a previous post, here’s Conway’s [Game Of Life](http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) rendered on a 10×7 LED Matrix (the same on as I used [here](http://daughtrey.com/proj/heyes/HalloweenEyes.html)). I haven’t decided if I’m going to do the whole GOLidascope yet.

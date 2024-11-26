@@ -56,7 +56,7 @@ def parseCommandLine():
 #    parser.add_argument('--jigglemin', dest='jigglemin', type=int, help='set jiggle period (mins)')
 #    parser.add_argument('--jigglekey', dest='jigglekey', help='set jiggle key (from hidmap.py)')
     parser.add_argument('--noenc', dest='noenc', action='store_true', help='config file is not encrypted')
-    parser.add_argument('--configfile', dest='configfile', help='config file location', default='config.json')
+    parser.add_argument('--configfile', dest='configfile', help='config file location', default='/etc/macrokey.json')
     parser.add_argument('--enc', dest='enc', action='store_true', help='encrypt')
     parser.add_argument('--dec', dest='dec', action='store_true', help='decrypt')
     return parser.parse_args()
@@ -233,7 +233,7 @@ def writeHid(report):
     lock.release()
 
 def genkey(provided):
-    password = provided.encode()
+    password = provided
     salt = b'adeff'
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
@@ -292,10 +292,12 @@ def main():
 #            print('jigglekey {} is unknown'.format(cmdline.jigglekey))
 #            sys.exit(1)
 
-    if cmdline.noenc:
-        password = ''
-    else:
-        password = getpass.getpass()
+#    if cmdline.noenc:
+#        password = ''
+#    else:
+#        password = getpass.getpass()
+    password = open('/etc/macrokey.secret','rb').read().strip()
+    data = dec(cmdline.configfile,password)
 
     if cmdline.dec:
         data = dec(cmdline.configfile, password)

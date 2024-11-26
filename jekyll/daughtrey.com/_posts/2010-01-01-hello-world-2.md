@@ -1,13 +1,9 @@
 ---
-id: 3
 title: 'Hello World'
 date: '2010-01-01T21:22:47-05:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=3'
-permalink: '/?p=3'
-categories:
-    - Uncategorized
+categories:  Uncategorized
 ---
 
 Let’s see if I’m going to be sufficiently motivated to keep this updated. I’ll be posting updates on my latest projects (the majority of which I will never finish), funny/odd things that I encounter in NYC (with pictures where available) and observations which at least I find hugely entertaining.

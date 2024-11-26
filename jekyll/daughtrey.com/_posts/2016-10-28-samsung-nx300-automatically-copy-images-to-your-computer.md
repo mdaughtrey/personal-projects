@@ -1,15 +1,11 @@
 ---
-id: 926
 title: 'Samsung NX300 Automatically Copy Images to Your Computer'
 date: '2016-10-28T12:41:36-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=926'
-permalink: '/?p=926'
-enclosure:
-    - "http://daughtrey.com/wp-content/uploads/2016/10/nx300_scaled.mp4\n11074891\nvideo/mp4\n"
 categories:
-    - 'nx300 hacking'
+    - Projects
+    - nx300
 ---
 
 I’ve written a python script to act as a server to the Samsung NX300 DSLR so that it will automatically copy photos to your local computer.

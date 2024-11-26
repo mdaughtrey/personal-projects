@@ -1,13 +1,12 @@
 ---
-id: 541
 title: 'Findings, partially solved'
 date: '2012-04-12T23:08:01-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=541'
-permalink: '/?p=541'
 categories:
-    - 'Time Lapse Video Throwie'
+    - Projects
+    - timelapse
+    - Time Lapse Video Throwie
 ---
 
 I’ve modified the code so that the timing is now driven off of the internal counter/timer instead of using a delay loop. This means that the variable image processing time is at least partially resolved, at least while the image processing time  

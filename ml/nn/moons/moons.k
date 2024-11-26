@@ -31,8 +31,10 @@ n:{[w;b;x]
 .k.sigmoid.A: {1%1+_exp -x}
 .k.sigmoid.AD: {:.k.sigmoid.A[x]*(1-.k.sigmoid.A[x])}
 .k.relu.A: {[x] 0|x@*&>x}
-.k.relu.AD: {[x] 
+.k.relu.AD: {[x] a: .k.relu.A x; if[|/b:x<0; a[&b]:0]; :b}
 .k.softmax.A: {[x] _exp[x]%+/_exp x }
+.k.softmax.AD: {[x] :wqa
+
 
 / X = inputs
 / y = labels

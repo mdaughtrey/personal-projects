@@ -1,10 +1,10 @@
 ---
-id: 963
 title: 'A Mask For Every Occasion'
 date: '2020-10-20T23:06:06-04:00'
 author: mdaughtrey
 layout: post
 categories:
+    - Projects
     - BlueMouth
 ---
 

@@ -1,0 +1,308 @@
+Name: "AceMenu"
+  Author: Johny Hoops <johnyhoops@gmail.com>
+  Maintainer: Johny Hoops <johnyhoops@gmail.com>
+  Sentence: A library that makes coding a user Menu a breeze.
+  Paragraph: Uses a simple 3/4 button navigation system
+  Website: https://github.com/StrathbogieBrewing/AceMenu.git
+  Category: Display
+  Architecture: avr
+  Types: Contributed
+  Versions: [0.1.0, 0.1.1, 0.1.2, 0.1.3]
+  Provides includes: AceMenu.h
+Name: "ArduinoMenu library"
+  Author: Rui Azevedo, ruihfazevedo@gmail.com
+  Maintainer: neu-rah, ruihfazevedo@gmail.com
+  Sentence: Generic menu/interactivity system
+  Paragraph: Easy to define menu system with sub-menus and associated function to call. Works from serial to Web depending on the hardware.
+  Website: https://github.com/neu-rah/ArduinoMenu
+  License: LGPL-2.1
+  Category: Display
+  Architecture: *
+  Types: Contributed
+  Versions: [3.0.2, 3.1.11, 3.1.12, 4.0.0, 4.0.1, 4.0.3, 4.0.4, 4.0.5, 4.0.6, 4.0.7, 4.0.8, 4.0.9, 4.0.10, 4.0.11, 4.0.12, 4.0.13, 4.0.14, 4.0.15, 4.0.16, 4.1.2, 4.1.3, 4.1.4, 4.1.5, 4.1.7, 4.1.8, 4.1.10, 4.2.0, 4.3.0, 4.4.1, 4.4.3, 4.4.6, 4.4.7, 4.4.9, 4.5.0, 4.5.2, 4.6.0, 4.6.2, 4.6.3, 4.7.1, 4.7.2, 4.8.0, 4.8.2, 4.10.1, 4.10.3, 4.10.4, 4.11.0, 4.12.0, 4.12.1, 4.12.2, 4.13.0, 4.14.0, 4.14.1, 4.15.0, 4.15.7, 4.15.8, 4.15.11, 4.16.0, 4.17.0, 4.17.1, 4.17.2, 4.17.3, 4.17.4, 4.17.10, 4.17.12, 4.17.15, 4.17.16, 4.17.17, 4.17.18, 4.17.20, 4.17.22, 4.17.23, 4.17.25, 4.17.26, 4.18.0, 4.18.2, 4.18.3, 4.19.0, 4.20.0, 4.20.1, 4.20.2, 4.21.1, 4.21.4]
+  Provides includes: menu.h
+Name: "ArduinoUserInterface"
+  Author: S. Reifel
+  Maintainer: S. Reifel <swr.reifel@gmail>
+  Sentence: A simple LCD user interface for Arduino.
+  Paragraph: Easy to use library for building menu based Arduino applications.  Text and menus are displayed on a Nokia 5110 LCD.  Four push buttons (Up, Down, Select & Back) make the interface very intuitive.
+  Website: https://github.com/Stan-Reifel/ArduinoUserInterface
+  License: MIT
+  Category: Display
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.0]
+Name: "DisplayMenu"
+  Author: guttih <gudjonholm@gmail.com>
+  Maintainer: guttih <gudjonholm@gmail.com>
+  Sentence: This library helps with creating menu pages when using graphical displays supported by the TFT_eSPI library.
+  Paragraph: Create a menu, add pages to that menu and add labels and buttons to the pages.  The library allows you to create an custom onDraw event to link text on buttons and labels to your program variables.
+  Website: https://github.com/guttih/DisplayMenu
+  Category: Display
+  Architecture: *
+  Types: Contributed
+  Versions: [0.0.84, 0.0.85, 0.9.0, 0.9.1, 0.9.2, 1.0.0]
+  Provides includes: DisplayMenu.h
+  Dependencies: TFT_eSPI
+Name: "FastBot"
+  Author: AlexGyver <alex@alexgyver.ru>
+  Maintainer: AlexGyver <alex@alexgyver.ru>
+  Sentence: Fast ESP8266/ESP32 library for Telegram bot (messages, menus, time sync, OTA update + SPIFFS, files upload and download)
+  Paragraph: Fast ESP8266/ESP32 library for Telegram bot (messages, menus, time sync, OTA update + SPIFFS, files upload and download)
+  Website: https://github.com/GyverLibs/FastBot
+  Category: Communication
+  Architecture: esp8266, esp32
+  Types: Contributed
+  Versions: [1.0.0, 1.1.0, 1.2.0, 1.3.0, 1.3.1, 1.4.0, 1.5.0, 1.5.1, 1.6.0, 1.7.0, 2.0.0, 2.1.0, 2.2.0, 2.3.0, 2.4.0, 2.5.0, 2.6.0, 2.7.0, 2.8.0, 2.9.0, 2.10.0, 2.11.0, 2.12.0, 2.13.0, 2.14.0, 2.15.0, 2.16.0, 2.17.0, 2.17.1, 2.18.0, 2.19.0, 2.20.0, 2.21.0, 2.22.0, 2.23.0, 2.24.0, 2.25.0, 2.26.0]
+Name: "GEM"
+  Author: Alexander 'Spirik' Spiridonov <alexander.spirik@gmail.com>
+  Maintainer: Alexander 'Spirik' Spiridonov <alexander.spirik@gmail.com>
+  Sentence: A library for creation of graphic multi-level menu.
+  Paragraph: Features editable menu items, such as variables (supports int, byte, float, double, boolean, char[17] data types) and option selects. User-defined callback function can be specified to invoke when menu item is saved. Supports buttons that can invoke user-defined actions.
+  Website: https://github.com/Spirik/GEM
+  Category: Display
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.0, 1.0.2, 1.0.3, 1.0.4, 1.0.5, 1.0.6, 1.0.7, 1.0.8, 1.1.0, 1.1.1, 1.1.2, 1.1.3, 1.2.0, 1.2.1, 1.2.2, 1.2.3, 1.2.4, 1.2.5, 1.2.6, 1.2.7, 1.3.0, 1.3.1, 1.3.2, 1.3.3, 1.3.4, 1.4.0, 1.4.1, 1.4.2, 1.4.3, 1.4.4]
+  Provides includes: GEM.h, GEM_u8g2.h, GEM_adafruit_gfx.h
+Name: "GuaraTeca_Hardware"
+  Author: Joaquim Flávio Almeida Quirino Gomes (joaquimflavio.quirino@gmail.com), Dêmis Carlos Fonseca Gomes (demis.gomes@ifto.edu.br), Marcos Dias da Conceição (marcos.conceicao@ifto.edu.br) e Diego de Castro Rodrigues
+  Maintainer: Guarabots <guarabots@gmail.com>
+  Sentence: Bibliotecas de controle de diversas plataformas roboticas em baixo nivel.
+  Paragraph: Controle simples e eficiente, priorizando a eficiência do hardware do Arduino! Necessário baixar: GuaraTeca_Menu!!!!
+  Website: https://github.com/JoaquimFlavio/GuaraTeca_Hardware/
+  Category: Device Control
+  Architecture: *
+  Types: Contributed
+  Versions: [1.2.0, 1.5.0, 1.5.2]
+Name: "GuaraTeca_Menu"
+  Author: Joaquim Flávio Almeida Quirino Gomes (joaquimflavio.quirino@yahoo.com.br), Dêmis Carlos Fonseca Gomes (demis.gomes@ifto.edu.br), Marcos Dias da Conceição (marcos.conceicao@ifto.edu.br) e Diego de Castro Rodrigues
+  Maintainer: Guarabots <guarabots@gmail.com>
+  Sentence: Biblioteca de controle de diversas plataformas roboticas.
+  Paragraph: Menu para simplificação do uso da GuaraTeca! Necessário baixar: GuaraTeca_Hardware!!!! recomendamos também GuaraTeca_OBR
+  Website: https://github.com/JoaquimFlavio/GuaraTeca_Menu/
+  Category: Device Control
+  Architecture: *
+  Types: Contributed
+  Versions: [1.2.0, 1.5.0]
+Name: "HC0x_AT_Config"
+  Author: chris miller <miller4@rose-hulman.edu>
+  Maintainer: chris miller <miller4@rose-hulman.edu>
+  Sentence: Simple HC05/HC06 Bluetooth module AT configuration program.
+  Paragraph: Provides user menu for selecting configuration changes. Automatically identifies device (HC-05 or HC-06), firmware version, baud and parity settings. Requires 2nd UART (Serial1) defined.
+  Website: https://github.com/ndroid/HC06_AT_CommandCenter
+  Category: Communication
+  Architecture: *
+  Types: Contributed
+  Versions: [2.0.0, 2.0.1]
+  Provides includes: configureBT.h
+Name: "LCDMenuLib"
+  Author: Nils Feldkaemper <nilsfeld@gmail.com>
+  Maintainer: Nils Feldkaemper <nilsfeld@gmail.com>
+  Sentence: A library with you can generate a menu`s based on the nested set model with multi layers
+  Paragraph: Supports serial monitor, liquidcrystal, i2c, graphic displays (u8glib), ...
+  Website: https://github.com/Jomelo/LCDMenuLib
+  Category: Display
+  Architecture: avr, esp8266, esp32
+  Types: Contributed
+  Versions: [2.1.4, 2.1.5, 2.2.0, 2.3.2, 2.3.3, 2.3.4, 2.3.5]
+  Provides includes: LCDMenuLib.h
+Name: "LCDMenuLib2"
+  Author: Nils Feldkämper
+  Maintainer: Community https://github.com/Jomelo/LCDMenuLib2
+  Sentence: Easy creation of a multi layer tree menu with screensaver and other stuff.
+  Paragraph: Examples for the basic function and different output types [console (serial monitor), lcd displays, glcd displays, gfx displays]
+  Website: https://github.com/Jomelo/LCDMenuLib2
+  Category: Display
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.0, 1.0.1, 1.0.2, 1.0.3, 1.0.4, 1.0.5, 1.0.6, 1.1.0, 1.1.1, 1.2.0, 1.2.2, 1.2.3, 1.2.4, 1.2.5, 1.2.6, 1.2.7, 1.2.8, 1.3.0, 2.0.0, 2.1.0, 2.1.1, 2.1.2, 2.2.0, 2.2.1, 2.2.2, 2.2.3, 2.2.4, 2.2.6, 2.2.7]
+  Provides includes: LCDMenuLib2.h
+Name: "LcdMenu"
+  Author: Forntoh Thomas <thomasforntoh@gmail.com>
+  Maintainer: Forntoh Thomas <thomasforntoh@gmail.com>
+  Sentence: Display navigable menu items on your LCD display with Arduino.
+  Paragraph: LcdMenu is an Arduino library that enables you to create interactive menus and navigation systems for LCD displays. With LcdMenu, you can easily add menus to your projects and navigate through them using buttons or any input device you want. The library supports a wide range of LCD display modules, including character and alphanumeric displays.
+  Website: https://lcdmenu.forntoh.dev
+  Category: Display
+  Architecture: avr
+  Types: Contributed
+  Versions: [1.0.0, 1.0.1, 1.0.2, 1.0.3, 1.0.4, 1.1.0, 1.1.1, 1.2.0, 2.0.0-beta.1, 2.0.0-beta.2, 2.0.0, 2.1.0, 2.1.1, 2.1.2, 2.1.3, 3.0.0, 3.0.1, 3.1.0, 3.1.1, 3.2.0, 3.3.0, 3.3.1, 3.3.2, 3.3.3]
+  Provides includes: LcdMenu.h
+  Dependencies: LiquidCrystal_I2C, LiquidCrystal
+Name: "LiquidMenu"
+  Author: Vasil Kalchev <vase7u@gmail.com>
+  Maintainer: Vasil Kalchev <vase7u@gmail.com>
+  Sentence: Menu creation Arduino library for LCDs, wraps LiquidCrystal.
+  Paragraph: LiquidMenu wraps the Arduino's LiquidCrystal library with the ability to create menus. It simplifies the menu creation process by abstracting the elements of a menu into hierarchically organized classes.
+  Website: https://github.com/VaSe7u/LiquidMenu
+  Category: Display
+  Architecture: avr
+  Types: Contributed
+  Versions: [1.0.1, 1.0.2, 1.1.4, 1.1.5, 1.1.6, 1.2.0, 1.3.0, 1.4.0, 1.5.1, 1.6.0]
+  Provides includes: LiquidMenu.h
+  Dependencies: LiquidCrystal
+Name: "M5Stack-SD-Updater"
+  Author: tobozo <tobozo@noreply.github.com>
+  Maintainer: tobozo <tobozo@noreply.github.com>
+  Sentence: SD Card Loader for M5 Stack
+  Paragraph: Package your apps on an SD card and load them from a menu app, button or MQTT message.
+  Website: https://github.com/tobozo/M5Stack-SD-Updater/
+  Category: Uncategorized
+  Architecture: esp32
+  Types: Contributed
+  Versions: [0.0.2, 0.1.0, 0.2.2, 0.3.0, 0.3.2, 0.4.0, 0.4.1, 0.5.0, 0.5.1, 0.5.2, 1.0.0-alpha, 1.0.1-beta, 1.0.2, 1.0.3, 1.1.0, 1.1.2, 1.1.3, 1.1.4, 1.1.6, 1.1.7, 1.1.8, 1.1.9, 1.2.0, 1.2.1, 1.2.4, 1.2.5, 1.2.7]
+  Dependencies: ESP32-targz, ArduinoJson
+Name: "M5Stack_TreeView"
+  Author: lovyan03
+  Maintainer: Lovyan <42724151+lovyan03@users.noreply.github.com>
+  Sentence: TreeView Menu UI for M5Stack
+  Paragraph: TreeView Menu UI
+  Website: https://github.com/lovyan03/M5Stack_TreeView
+  Category: Uncategorized
+  Architecture: esp32
+  Types: Contributed
+  Versions: [0.2.5, 0.2.6, 0.2.7, 0.2.8, 0.2.9, 0.2.11, 0.2.12, 0.2.13, 0.2.14]
+  Provides includes: M5TreeView.h
+  Dependencies: M5Stack, M5Stack_OnScreenKeyboard
+Name: "MD_Menu"
+  Author: MajicDesigns
+  Maintainer: marco_c <8136821@gmail.com>
+  Sentence: Library for displaying and managing menus on displays with with up to 2 lines.
+  Paragraph: Menus and user input are managed by user code. The library manages the structure and flow of the menu. Minimal RAM impact with extensive use of PROGMEM for static structures.
+  Website: http://github.com/MajicDesigns/MD_Menu
+  License: LGPL-2.1
+  Category: Data Processing
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.0, 1.0.1, 1.1.0, 1.2.0, 1.2.1, 1.2.2, 1.2.3, 2.0.0, 2.0.1, 2.0.2, 2.0.3, 2.1.0, 2.1.1, 2.1.2, 2.1.3]
+Name: "PololuMenu"
+  Author: Pololu
+  Maintainer: Pololu <inbox@pololu.com>
+  Sentence: Pololu library for simple LCD Menus.
+  Paragraph: This library makes it easy to create basic menus with an OLED or 8x2 character LCD, some buttons, and an optional buzzer to beep when the buttons are pressed.  Designed for Pololu products such as the A-Star 32U4 and will work on other Arduino platforms that can use our LCD/OLED, pushbutton, and buzzer libraries.
+  Website: https://github.com/pololu/pololu-menu-arduino
+  Category: Device Control
+  Architecture: avr
+  Types: Contributed
+  Versions: [1.0.0, 1.0.2, 2.0.0]
+  Dependencies: Pushbutton, PololuBuzzer
+Name: "SIKTEC_SdExplore"
+  Author: SIKTEC
+  Maintainer: Shlomo<shlomohassid@gmail.com>
+  Sentence: A light-weight companion library to easily scan / search for files
+  Paragraph: The aim is to perform memory heavy operations in the smallest memory consumption - Those are handy for creating menus, navigating the sd card and searching for specific files or file type on the sd card.
+  Website: https://github.com/siktec-lab/SIKTEC-SdExplore
+  Category: Data Storage
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.2, 1.0.3]
+  Dependencies: SdFat - Adafruit Fork
+Name: "SerialMenuCmd"
+  Author: Armand ROLLAND <armand.rolland71@gmail.com>
+  Maintainer: Armand ROLLAND <armand.rolland71@gmail.com>
+  Sentence: This library constitutes a basic command line interface
+  Paragraph: It's easy to use and memory low consumption
+  Website: https://github.com/ARTS37/SerialMenuCmd
+  Category: Communication
+  Architecture: avr, samd
+  Types: Contributed
+  Versions: [1.0.0, 1.1.0, 1.1.1, 1.1.2, 1.1.3]
+  Provides includes: SerialMenuCmd.h
+Name: "SerialUI"
+  Author: Pat Deegan
+  Maintainer: Pat Deegan <arduino-lib@flyingcarsandstuff.com>
+  Sentence: A user interface through the serial channel (menus, sub-menus and command execution), with support for navigation through the menu hierarchy and online help.
+  Paragraph: With SerialUI, you can create a hierarchy of menus and submenus of arbitrary depth (limited only by ROM/RAM space). Each menu contains a list of menu items, which are either sub-menus (lead you to another level of menu items) or commands (actually perform some type of action). Exactly what happens when a user issues a command is determined by your callbacks.
+  Website: https://devicedruid.com/
+  Category: Communication
+  Architecture: *
+  Types: Contributed
+  Versions: [1.14.0, 2.1.2, 2.1.4, 2.1.6, 2.2.0, 3.1.0]
+Name: "TGP Menu OLED"
+  Author: TechnoPhys, JL, CB
+  Maintainer: Technologie du génie physique <technophys@claurendeau.qc.ca>
+  Sentence: Permet la création d'un menu deroulant sur affichage OLED SSD1306.
+  Paragraph: Cette bibliothèque permet la création d'un menu géré par 5 boutons de navigation. Construit sur la plateforme ProtoTPhys.
+  Website: https://github.com/TechnoPhysCAL/TGP_MenuOLED
+  Category: Device Control
+  Architecture: esp32
+  Types: Contributed
+  Versions: [1.0.0, 1.0.1]
+  Provides includes: MenuOLED.h
+  Dependencies: TGP ProtoTGP
+Name: "TeensyUserInterface"
+  Author: S. Reifel
+  Maintainer: S. Reifel <swr.reifel@gmail.com>
+  Sentence: A simple touchscreen user interface for Teensy.
+  Paragraph: Easy to use library for building Teensy applications with a menu based user interface.
+  Website: https://github.com/Stan-Reifel/TeensyUserInterface
+  License: MIT
+  Category: Display
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.0, 1.3.0]
+Name: "TinyMenu"
+  Author: Yuki Kurosawa <yuki@ksyuki.com>
+  Maintainer: Yuki Kurosawa <yuki@ksyuki.com>
+  Sentence: A Tiny Menu for SuperPico-Compactible Boards (RP2040), based on TFT_eSPI
+  Paragraph: 
+  Website: https://ksyuki.zip/SuperPico-TinyMenu
+  Category: Other
+  Architecture: rp2040
+  Types: Contributed
+  Versions: [1.0.0, 1.0.1, 1.0.2, 1.1.0, 1.1.1]
+  Dependencies: TFT_eSPI (>=2.5.0)
+Name: "TwoButtonsInterface"
+  Author: Tomasz Kulig <tomaszkacperkulig@gmail.com>
+  Maintainer: Tomasz Kulig <tomaszkacperkulig@gmail.com>
+  Sentence: A button library that handles two buttons interface.
+  Paragraph: Library handles events when pressing buttons. It supports single clicks and simultaneous clicks of two buttons. It is useful to create simple projects with graphical interface when buttons are used to navigate through menu.
+  Website: https://github.com/tomasz90/two-buttons-inteface
+  Category: Signal Input/Output
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.0, 1.0.1, 1.0.2, 1.0.3, 1.0.4]
+Name: "arduino-menusystem"
+  Author: Jon Black <jon@jonblack.me>
+  Maintainer: Jon Black <jon@jonblack.me>
+  Sentence: A library for implementing a menu system
+  Paragraph: Supports nesting and tracks the current selected item.
+  Website: https://github.com/jonblack/arduino-menusystem
+  Category: Display
+  Architecture: avr
+  Types: Contributed
+  Versions: [2.0.0, 2.0.1, 2.0.2, 2.1.0, 2.1.1, 3.0.0]
+Name: "slight_DebugMenu"
+  Author: Stefan Krüger (s-light) <git@s-light.eu>
+  Maintainer: Stefan Krüger <git@s-light.eu>
+  Sentence: Helper Library to create Simple Menu.
+  Paragraph: Helper Library to create a Simple Menu on a Stream interface.
+  Website: https://github.com/s-light/slight_DebugMenu
+  Category: Communication
+  Architecture: *
+  Types: Contributed
+  Versions: [1.0.0]
+  Provides includes: slight_DebugMenu.h
+Name: "tcMenu"
+  Author: davetcc
+  Maintainer: www.thecoderscorner.com
+  Sentence: Menu library for Arduino with IoT capabilities that supports many input and display devices with a designer UI, code generator, CLI, and strong remote control capability.
+  Paragraph: Menu library for Arduino with IoT capabilities supporting full multi level navigation. Complete with a designer UI and CLI that can round trip. It has plugins for Adafruit_GFX, U8G2, TFT_eSPI and LiquidCrystalIO. Input is supported from Touch, Rotary Encoder, Digital / Analog joysticks, DfRobot, Keypad and more. Any menu can be remotely using embedCONTROL UI / API over Ethernet2, UIP, STM32 Ethernet and Serial / Bluetooth. Even works with no local display for remote control only.
+  Website: https://github.com/davetcc/tcMenuLib
+  Category: Other
+  Architecture: 
+  Types: Contributed
+  Versions: [1.1.0, 1.3.0, 1.3.1, 1.3.3, 1.3.4, 1.3.5, 1.4.0, 1.4.1, 1.4.2, 1.5.0, 1.5.1, 1.6.0, 1.6.1, 1.7.0, 1.7.1, 2.1.0, 2.1.3, 2.2.3, 2.2.4, 2.2.6, 2.2.7, 2.3.0, 2.3.1, 2.4.0, 2.5.0, 3.0.0, 3.0.1, 3.1.0, 4.0.0, 4.1.1]
+  Dependencies: IoAbstraction, tcUnicodeHelper
+Name: "tcUnicodeHelper"
+  Author: davetcc
+  Maintainer: https://www.thecoderscorner.com
+  Sentence: Adds tcUnicode UTF-8 support to Adafruit_GFX, U8G2, tcMenu, and TFT_eSPI graphics libraries with a graphical font creation utility available. Works with existing libraries
+  Paragraph: Adds tcUnicode UTF-8 support to Adafruit_GFX, U8G2, tcMenu, and TFT_eSPI graphics libraries with a graphical font creation utility available. Works with existing libraries
+  Website: https://github.com/davetcc/tcUnicodeHelper
+  Category: Other
+  Architecture: 
+  Types: Contributed
+  Versions: [0.1.0, 0.2.0, 1.0.0]
+

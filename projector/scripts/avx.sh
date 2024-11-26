@@ -1,8 +1,7 @@
 #!/bin/bash
 NAME=avxsynth
 FRAMES=${PWD}/share
-LOCAL=${PWD}
-SCRIPT=/${LOCAL}/avx.avs
+SCRIPT=/tmp/avx.avs
 OUT='/frames/avxout/%08d.png'
 let NUMFRAMES=$(ls ${FRAMES}/????????.png | wc -l)
 
@@ -31,4 +30,4 @@ RemoveDirt(ImageReader("/frames/%08d.png", fps=18.0, end=${NUMFRAMES}).convertto
 AVS
 )  > $(basename ${SCRIPT})
 
-docker run --rm -h ${NAME} --name ${NAME} -t -v ${PWD}:/local -v ${FRAMES}:/frames --entrypoint /ffmpeg/ffmpeg  ${NAME}:latest  -i ${SCRIPT} -y ${OUT}
+docker run --rm -h ${NAME} --name ${NAME} -t -v ${FRAMES}:/frames --entrypoint /ffmpeg/ffmpeg  ${NAME}:latest  -i ${SCRIPT} -y ${OUT}

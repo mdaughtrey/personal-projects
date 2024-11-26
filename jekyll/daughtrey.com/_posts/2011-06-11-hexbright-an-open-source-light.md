@@ -1,11 +1,8 @@
 ---
-id: 362
 title: 'HexBright, an Open Source Light'
 date: '2011-06-11T10:45:25-04:00'
 author: mdaughtrey
 layout: post
-guid: 'http://daughtrey.com/?p=362'
-permalink: '/?p=362'
 categories:
     - Uncategorized
 ---

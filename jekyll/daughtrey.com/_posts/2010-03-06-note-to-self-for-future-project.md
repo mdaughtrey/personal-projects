@@ -4,7 +4,7 @@ date: '2010-03-06T22:54:10-05:00'
 author: mdaughtrey
 layout: post
 categories:
-    - Future
+    - Projects
 ---
 
 **GOLidascope**  
