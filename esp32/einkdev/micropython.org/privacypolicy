@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head -->
+
+    <link rel="icon" href="/static/img/favicon.ico">
+
+    <title>MicroPython - Python for microcontrollers</title>
+
+    <link href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="/static/css/style.css?v=2" rel="stylesheet">
+
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,800" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://micropython.org/" />
+    <meta property="og:title" content="MicroPython - Python for microcontrollers" />
+    <meta property="og:description" content="MicroPython is a lean and efficient
+        implementation of the Python 3 programming language
+        that includes a small subset of the Python standard library and is
+        optimised to run on microcontrollers and in constrained environments." />
+    <meta property="og:image" content="http://micropython.org/static/img/Mlogo_138wh.png" />
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark" role="navigation">
+    <div class="main-menu">
+        <a class="navbar-brand" href='http://micropython.org'>
+            <span>
+                <img src ="/static/img/Mlogo_138wh.png" width="50px">
+            </span>
+            <span>
+                MicroPython
+            </span>
+        </a>
+
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+
+        <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="http://forum.micropython.org">FORUM</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://docs.micropython.org">DOCS</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://docs.micropython.org/en/latest/pyboard/quickref.html"> QUICK-REF </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/download">DOWNLOAD</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="https://store.micropython.org">STORE</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/contact">CONTACT</a>
+            </li>
+        </ul>
+        </div>
+    </div>
+</nav>
+
+    <div id="sidebar" style="float:right;margin-right:16px;">
+        
+        <!--ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        </ul-->
+        
+    </div>
+
+    <div class="container">
+        
+        <div class="row" style="margin:30px 0;">
+          <div class="col-md-offset-2 col-md-8">
+            
+
+
+
+<h2> Privacy Policy </h2>
+
+<p>
+This Policy applies to all MicroPython websites accessed under the
+micropython.org domain name.  These sites are administered by George Robotics
+Ltd (UK) and George Robotics Pty Ltd (AU).
+</p>
+
+<h3> 1. Personal information that is collect and processed </h3>
+
+<p>
+In order to operate and do business there is certain personal information that
+we collect, process and store:
+
+<ol style='list-style-type: lower-alpha'>
+
+<li>
+Web browsing &ndash;
+When you browse any of our websites we automatically receive your computer's
+internet protocol (IP) address.  We make this address anonymous so it cannot be
+traced back to you, and store it in our web server logs for debugging and
+analytics purposes.  We do not use any third-party service for analytics.
+</li>
+
+<li>
+Newsletter &ndash;
+If you explicitly sign-up to receive our newsletter we will collect your
+email address.  We may use this email address to send you newsletter emails
+including information about new products, offers and other updates regarding
+MicroPython related software and hardware.  You can unsubscribe from the
+newsletter at anytime.  Your email address is never shared with a third
+party.
+</li>
+
+<li>
+Store purchases &ndash;
+When you purchase something from our store (found at
+<a href="https://store.micropython.org">store.micropython.org</a>) we collect
+the personal information that you explicitly give us such as your name, email
+address and shipping address.  This information is used to send you email
+confirmations and notifications about your purchase, as well as to ship you
+your order.  The information is retained offline for seven years for accounting
+purposes.
+</li>
+
+</ol>
+</p>
+
+<h3> 2. Legal basis for collection and processing </h3>
+
+<p>
+Our legal basis for processing your data in order to send your our newsletter
+is that you have consented to our doing so by explicitly providing your
+email address and then responding to the email confirmation.
+</p>
+
+<p>
+Our legal basis for processing your personal details for an order is that you
+have consented by explicitly making a purchase, and the processing is in our
+legitimate interest to enable us to sell our products to you.
+</p>
+
+<h3> 3. Third party data processors </h3>
+
+<p>
+All our website financial transactions are handled through our payment services
+provider, <a href="https://stripe.com">Stripe</a>.  When making a purchase in
+our store you will need to provide certain information directly to Stripe.  We
+share your email address with Stripe just before you make a payment so they can
+identify you.  We do not collect any credit card information from you.
+</p>
+
+<p>
+Our shipping partners are <a href="http://esg-workstation.com/">ESG Workstation (DE)</a>
+and they are responsible for shipping your order to you.  In order to ship your
+order we must share your name, email and shipping address with them.
+</p>
+
+<h3> 4. Cookies </h3>
+
+<p>
+A cookie consists of information sent by a web server (us) to a web browser
+(you), and stored by the browser. The information is then sent back to the
+server (from you to us) each time the browser requests a page from the server.
+This enables the web server to identify and track the web browser.
+</p>
+
+<p>
+We use "session" cookies only on the store website.  They are integral to
+providing the online shopping service: the session cookies keep track of you
+whilst you navigate the store to remember what is in your cart.
+</p>
+
+<p>
+If you do not want to use cookies then you are unable to make purchases on
+the store website.  Instead, send us an email with your order.
+</p>
+
+<h3> 5. Disclosure </h3>
+
+<p>
+We may disclose information about you:
+
+<ol style='list-style-type: lower-alpha'>
+<li> to the extent that we are required to do so by law; </li>
+
+<li> in connection with any legal proceedings or prospective legal proceedings; </li>
+
+<li> to establish, exercise or defend our legal right; and </li>
+
+<li> to the purchaser (or prospective purchaser) of any business or asset which
+we are (or are contemplating) selling. </li>
+</ol>
+</p>
+
+<p>
+Except as provided in this Privacy Policy, we will not provide your
+information to third parties.
+</p>
+
+<h3> 6. Security of data </h3>
+
+<p>
+We will take reasonable technical and organisational precautions to prevent
+the loss or misuse of personal information.  We will store all personal
+information you provide on our secure servers.
+</p>
+
+<h3> 7. Policy amendments </h3>
+
+<p>
+We may update this policy from time-to-time by posting a new version on our
+website.
+</p>
+
+<h3> 8. Third party websites </h3>
+
+<p>
+The website contains links to other websites.  We are not responsible for the
+privacy policies or practices of third party websites.
+</p>
+
+<h3> 9. Your rights </h3>
+
+<p>
+At any time you may ask us to provide you with the personal information we hold
+about you.  At any time you may ask us to update any of your personal
+information, or ask to withdraw your consent for us to hold and use your
+personal information for marketing purposes.  We will respond to your request
+as soon as it is practical to do so.
+</p>
+
+<p>
+If you would like to request information or make changes, or have questions about
+this Privacy Policy, please contact us via email using
+<img src="/static/home/img/emx1.png" style="height:16px; vertical-align:-3px">
+-at-
+<img src="/static/home/img/emx2.png" style="height:16px; vertical-align:-3px">.
+</p>
+
+The Information Commissioner's Office is the UK's independent body set up to
+uphold information rights.  For more information see
+<a href="https://ico.org.uk/">ico.org.uk</a>.
+
+
+          </div>
+        </div>
+    </div>
+
+<footer>
+    <div class="container footercontent">
+        <div class="row">
+            <div class="col-xs-12 col-sm-3 col-md-2 col-md-offset-2">
+                <h3>MicroPython</h3>
+                <ul>
+                    <li> <a href="http://micropython.org">Home</a> </li>
+                    <li> <a href="http://wiki.micropython.org">Wiki</a> </li>
+                    <li> <a href="http://forum.micropython.org">Forum</a> </li>
+                    <li> <a href="http://www.github.com/micropython">GitHub</a> </li>
+                </ul>
+            </div>
+            <div class="col-xs-12 col-sm-3 col-md-2">
+                <h3>Resources</h3>
+                <ul>
+                    <li> <a href="/help">Help!</a> </li>
+                    <li> <a href="http://docs.micropython.org/en/latest/pyboard/tutorial/index.html">Tutorials</a> </li>
+                    <li> <a href="http://docs.micropython.org">Documentation</a> </li>
+                    <li> <a href="/download">Download</a> </li>
+                </ul>
+            </div>
+            <div class="col-xs-12 col-sm-3 col-md-2">
+                <h3>Contact</h3>
+                <ul>
+                    <li> <a href="/contact">Contact us</a> </li>
+                    <li> <a href="irc://freenode/micropython">IRC</a> </li>
+                    <li> <a href="http://twitter.com/micropython">Twitter</a> </li>
+                    <li> <a href="http://www.facebook.com/micropython">Facebook</a> </li>
+                    <li> <a href="/privacypolicy">Privacy Policy</a> </li>
+                    <li> <a href="/termsandconditions">Terms &amp; Conditions</a> </li>
+                </ul>
+            </div>
+            <div class="col-xs-12 col-md-8 col-md-offset-2">
+                <p>A project by <a href="http://dpgeorge.net">Damien George</a></p>
+                <p>&copy; 2014-2018 George Robotics Limited</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <script src="/static/js/jquery-2.1.0.min.js"></script>
+    <script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    
+    
+
+    <!--                        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="site/js/functions.js"></script>
+    -->
+</body>
+</html>

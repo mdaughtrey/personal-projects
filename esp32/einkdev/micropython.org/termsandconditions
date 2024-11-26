@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+
+
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head -->
+
+    <link rel="icon" href="/static/img/favicon.ico">
+
+    <title>MicroPython - Python for microcontrollers</title>
+
+    <link href="/static/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="/static/css/style.css?v=2" rel="stylesheet">
+
+    
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,800" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="http://micropython.org/" />
+    <meta property="og:title" content="MicroPython - Python for microcontrollers" />
+    <meta property="og:description" content="MicroPython is a lean and efficient
+        implementation of the Python 3 programming language
+        that includes a small subset of the Python standard library and is
+        optimised to run on microcontrollers and in constrained environments." />
+    <meta property="og:image" content="http://micropython.org/static/img/Mlogo_138wh.png" />
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark" role="navigation">
+    <div class="main-menu">
+        <a class="navbar-brand" href='http://micropython.org'>
+            <span>
+                <img src ="/static/img/Mlogo_138wh.png" width="50px">
+            </span>
+            <span>
+                MicroPython
+            </span>
+        </a>
+
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </button>
+
+        <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" href="http://forum.micropython.org">FORUM</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://docs.micropython.org">DOCS</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://docs.micropython.org/en/latest/pyboard/quickref.html"> QUICK-REF </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/download">DOWNLOAD</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="https://store.micropython.org">STORE</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/contact">CONTACT</a>
+            </li>
+        </ul>
+        </div>
+    </div>
+</nav>
+
+    <div id="sidebar" style="float:right;margin-right:16px;">
+        
+        <!--ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        </ul-->
+        
+    </div>
+
+    <div class="container">
+        
+        <div class="row" style="margin:30px 0;">
+          <div class="col-md-offset-2 col-md-8">
+            
+
+
+
+<h2> Terms and Conditions of Service </h2>
+
+<h3> 1. About the Website </h3>
+
+<p>
+1.1. Welcome to micropython.org (the "Website"). Parts of the Website provide
+you with an opportunity to browse and purchase various products that have been
+listed for sale through the Website (the "Products"). The Website
+provides this service by way of granting you access to the content on the
+Website (the "Purchase Services").
+</p>
+
+<p>
+1.2. The Website is operated by George Robotics Ltd
+(Registered in England &amp; Wales, Company No. 8861687).
+Access to and use of the Website, or any of its associated Products or Purchase
+Services, is provided by George Robotics Ltd. Please read these terms and
+conditions (the "Terms") carefully. By using, browsing and/or reading the
+Website, this signifies that you have read, understood and agree to be bound by
+the Terms. If you do not agree with the Terms, you must cease usage of the
+Website, or any of the Purchase Services, immediately.
+</p>
+
+<p>
+1.3. George Robotics Ltd reserves the right to review and change any of the
+Terms by updating this page at its sole discretion. Any changes to the Terms
+take immediate effect from the date of their publication. Before you continue,
+we recommend you keep a copy of the Terms for your records.
+</p>
+
+<p>
+1.4 Access to this Website is permitted on a temporary basis, and we reserve
+the right to withdraw or amend the Services without notice. We will not be
+liable if for any reason this Website is unavailable at any time or for any
+period. From time to time, we may restrict access to some parts or all of this
+Website.
+</p>
+
+<h3> 2. Acceptance of the Terms </h3>
+
+<p>
+You accept the Terms by remaining on the Website.
+</p>
+
+<h3> 3. Use of the Purchase Services </h3>
+
+<p>
+3.1. In order to access the Purchase Services you may be required to provide
+personal information about yourself (such as identification or contact
+details), including: (a) an email address; (b) a mailing address.
+</p>
+
+<p>
+3.2. You warrant that any information you give to George Robotics Ltd will
+always be accurate, correct and up to date.
+</p>
+
+<p>
+3.3. You may not use the Purchase Services and may not accept the Terms if:
+(a) you are not of legal age to form a binding contract with George Robotics Ltd; or
+(b) you are a person barred from receiving the Purchase Services under the laws
+of the United Kingdom or other countries including the country in which you are
+resident or from which you use the Purchase Services.
+</p>
+
+<h3> 4. Your obligations as a User </h3>
+
+<p>
+4.1. As a user, you agree to comply with the following:
+(a) you will use the Purchase Services only for purposes that are permitted by:
+(i) the Terms;
+(ii) any applicable law, regulation or generally accepted practices or guidelines in the relevant jurisdictions;
+(b) you have the sole responsibility for protecting the confidentiality of your email address;
+(c) you will not use the Purchase Services or Website for any illegal and/or
+unauthorised use which includes unauthorised framing of or linking to the Website;
+(d) appropriate legal action will be taken by George Robotics Ltd for any illegal or unauthorised use of the Website.
+
+<h3> 5. Purchase of Products and Returns Policy </h3>
+
+<p>
+5.1. In using the Purchase Services to purchase the Product through the Website,
+you will agree to the payment of the purchase price listed on the Website for
+the Product (the "Purchase Price").
+</p>
+
+<p>
+5.2. Payment of the Purchase Price may be made through one of the following third
+party providers:
+(a) Stripe;
+(b) Paypal;
+(c) Direct bank transfer
+(the "Payment Gateway Providers").
+In using the Purchase Services, you warrant that you have familiarised yourself
+with, and agree to be bound by, the applicable Terms and Conditions of Use, Privacy
+Policy and other relevant legal documentation provided by the Payment Gateway Providers.
+</p>
+
+<p>
+5.3 When you place an order, you will receive an acknowledgement e-mail confirming
+receipt of your order. This email will only be an acknowledgement only and will
+not constitute acceptance of your order. A contract between us will not be formed
+until we send you confirmation by e-mail that the goods which you ordered have been
+dispatched to you. Only those goods listed in the confirmation e-mail sent at the
+time of dispatch will be included in the contract formed.
+</p>
+
+<p>
+5.4 Dispatch times may vary according to availability and subject to any delays
+resulting from postal delays or force majeure for which we will not be responsible.
+</p>
+
+<p>
+5.5 Whilst we try and ensure that all details, descriptions and prices which appear
+on this Website are accurate, errors may occur. If we discover an error in the
+price of any goods which you have ordered we will inform you of this as soon as
+possible and give you the option of reconfirming your order at the correct price
+or cancelling it. If we are unable to contact you we will treat the order as
+cancelled. If you cancel and you have already paid for the goods, you will receive
+a full refund.  Delivery costs will be charged in addition; such additional
+charges are clearly displayed where applicable and included in the 'Total Cost'.
+</p>
+
+<p>
+5.6 George Robotics Ltd may, at their sole discretion, provide a refund on the
+return of the Products within 14 days where the Product packaging is unopened and
+remains in a saleable condition. You acknowledge and agree that you are liable
+for any postage and shipping costs associated with any refund pursuant to this
+clause.
+</p>
+
+<h3> 6. Warranty </h3>
+
+<p>
+6.1. George Robotics Ltd's Products come with guarantees that cannot be excluded
+under the Consumer Rights Act 2015. You are entitled to a replacement or refund for
+a major failure of the Product. You are also entitled to have the Products repaired
+or replaced if the Products fail to be of acceptable quality and the failure does
+not amount to a major failure (the "Warranty").
+</p>
+
+<p>
+6.2. You may make a claim under this clause (the "Warranty Claim") for material
+defects and workmanship in the Products within 3 months from the date of purchase
+(the "Warranty Period").
+</p>
+
+<p>
+6.3. In order to make a Warranty Claim during the Warranty Period, you must
+provide proof of purchase to George Robotics Ltd showing the date of purchase
+of the Products, provide a description of the Products and the price paid for
+the Products by sending notice to George Robotics Ltd, which can be done by using
+our contact email.
+</p>
+
+<p>
+6.4. Where the Warranty Claim is accepted then George Robotics Ltd will, at its
+sole discretion, either repair or replace any defective Products or part thereof
+with a new or remanufactured equivalent during the Warranty Period at no charge
+to you for parts or labour. You acknowledge and agree that you will be solely
+liable for any postage or shipping costs incurred in facilitating the Warranty
+Claim.
+</p>
+
+<p>
+6.5. The Warranty shall be the sole and exclusive warranty granted by George
+Robotics Ltd and shall be the sole and exclusive remedy available to you in
+addition to other rights and under a law in relation to the Products to which
+this warranty relates.
+</p>
+
+<p>
+6.6. All implied warranties including the warranties of merchantability and
+fitness for use are limited to the Warranty Period.
+</p>
+
+<p>
+6.7. The Warranty does not apply to any appearance of the supplied Products nor
+to any supplied Products where the exterior of which has been damaged or
+defaced, which has been subjected to misuse, abnormal service or handling, or
+which has been altered or modified in design or construction by other parties.
+</p>
+
+<h3> 7. Delivery </h3>
+
+<p>
+7.1. You acknowledge that the Purchase Services offered by George Robotics Ltd
+integrate delivery (the "Delivery Services") through the use of third party
+delivery companies (the "Delivery Service Providers").
+</p>
+
+<p>
+7.2. In providing the Purchase Services, George Robotics Ltd may provide you
+with a variety of delivery options offered as part of the Delivery Services.
+You acknowledge and agree that George Robotics Ltd is not the provider of these
+delivery options and merely facilitates your interaction with the Delivery
+Service Providers in respect to providing the Delivery Services.
+</p>
+
+<p>
+7.3. In the event that an item is lost or damaged in the course of the Delivery
+Services, George Robotics Ltd asks that you contact us by sending an email to
+our contact address outlining in what way the Products were damaged in transit.
+George Robotics Ltd will contact the Delivery Service Provider to resolve the
+issue.
+</p>
+
+<h3> 8. Copyright and Intellectual Property </h3>
+
+<p>
+8.1. The Website, the Purchase Services and all of the related products of
+George Robotics Ltd are subject to copyright.  The material on the Website is
+protected by copyright under the laws of the United Kingdom and through
+international treaties.  Unless otherwise indicated, all rights (including
+copyright) in the site content and compilation of the website (including text,
+graphics, logos, button icons, video images, audio clips and software)
+(the "Content") are owned or controlled for these purposes, and are reserved
+by George Robotics Ltd or its contributors.
+</p>
+
+<p>
+8.2. George Robotics Ltd retains all rights, title and interest in and to the
+Website and all related content. Nothing you do on or in relation to the
+Website will transfer to you:
+(a) the business name, trading name, domain name, trade mark, industrial design,
+patent, registered design or copyright of George Robotics Ltd; or
+(b) the right to use or exploit a business name, trading name, domain name,
+trade mark or industrial design; or
+(c) a system or process that is the subject of a patent, registered design or
+copyright (or an adaptation or modification of such a system or process).
+</p>
+
+<p>
+8.3. You may not, without the prior written permission of George Robotics Ltd
+and the permission of any other relevant rights owners: broadcast, republish,
+up-load to a third party, transmit, post, distribute, show or play in public,
+adapt or change in any way the Content or third party contact for any purpose.
+This prohibition does not extend to materials on the Website which are freely
+available for re-use or are in the public domain.
+</p>
+
+<h3> 9. Privacy </h3>
+
+<p>
+George Robotics Ltd takes your privacy seriously and any information provided
+through your use of the Website and/or the Purchase Services are subject to
+George Robotics Ltd's <a href="https://micropython.org/privacypolicy">Privacy Policy</a>.
+</p>
+
+<h3> 10. General Disclaimer </h3>
+
+<p>
+10.1. You acknowledge that George Robotics Ltd does not make any terms,
+guarantees, warranties, representations or conditions whatsoever regarding the
+Products other than provided for pursuant to these Terms.
+</p>
+
+<p>
+10.2. George Robotics Ltd will make every effort to ensure a Product is
+accurately depicted on the Website, however, you acknowledge that sizes,
+colours and packaging may differ from what is displayed on the Website.
+</p>
+
+<p>
+10.3. Nothing in these Terms limits or excludes any guarantees, warranties,
+representations or conditions implied or imposed by law, including the
+Consumer Rights Act 2015 (or any liability under them) which by law may not
+be limited or excluded.
+</p>
+
+<p>
+10.4. Subject to this clause, and to the extent permitted by law:
+(a) all terms, guarantees, warranties, representations or conditions which
+are not expressly stated in these Terms are excluded; and
+(b) George Robotics Ltd we will not be liable for any special, indirect or
+consequential loss or damage (unless such loss or damage is reasonably
+foreseeable resulting from our failure to meet an applicable Consumer
+Guarantee), loss of profit or opportunity, or damage to goodwill arising out
+of or in connection with the Purchase Services or these Terms (including as a
+result of not being able to use the Purchase Services or the late supply of
+the Purchase Services), whether at common law, under contract, tort (including
+negligence), in equity, pursuant to statute or otherwise.
+</p>
+
+<p>
+10.5. Use of the Website, the Purchase Services, and any of the products of
+George Robotics Ltd (including the Delivery Services), is at your own risk.
+Everything on the Website, the Purchase Services, and the Products of George
+Robotics Ltd, are provided to you on an "as is" and "as available" basis,
+without warranty or condition of any kind.  None of the affiliates, directors,
+officers, employees, agents, contributors, third party content providers or
+licensors of George Robotics Ltd (including any third party where the Delivery
+Services are made available to you) make any express or implied representation
+or warranty about its Content or any products or Purchase Services (including
+the products or Purchase Services of George Robotics Ltd) referred to on
+the Website. This includes (but is not restricted to) loss or damage you might
+suffer as a result of any of the following:
+(a) failure of performance, error, omission, interruption, deletion, defect,
+failure to correct defects, delay in operation or transmission, computer virus
+or other harmful component, loss of data, communication line failure, unlawful
+third party conduct, or theft, destruction, alteration or unauthorised access
+to records;
+(b) the accuracy, suitability or currency of any information on the Website,
+the Purchase Service, or any of its Content related products (including third
+party material and advertisements on the Website);
+(c) costs incurred as a result of you using the Website, the Purchase Services
+or any of the Products;
+(d) the Content or operation in respect to links which are provided for the
+User's convenience;
+(e) any failure to complete a transaction, or any loss arising from e-commerce
+transacted on the Website; or
+(f) any defamatory, threatening, offensive or unlawful conduct of third parties
+or publication of any materials relating to or constituting such conduct.
+</p>
+
+<h3> 11. Limitation of Liability </h3>
+
+<p>
+11.1. George Robotics Ltd's total liability arising out of or in connection
+with the Purchase Services or these Terms, however arising, including under
+contract, tort (including negligence), in equity, under statute or otherwise,
+will not exceed the most recent Purchase Price paid by you under these Terms
+or where you have not paid the Purchase Price, then the total liability of
+George Robotics Ltd is the resupply of information or Purchase Services to you.
+</p>
+
+<p>
+11.2. You expressly understand and agree that George Robotics Ltd, its
+affiliates, employees, agents, contributors, third party content providers and
+licensors shall not be liable to you for any direct, indirect, incidental,
+special consequential or exemplary damages which may be incurred by you,
+however caused and under any theory of liability. This shall include, but is
+not limited to, any loss of profit (whether incurred directly or indirectly),
+any loss of goodwill or business reputation and any other intangible loss.
+</p>
+
+<p>
+11.3. George Robotics Ltd is not responsible or liable in any manner for any
+site content (including the Content and Third Party Content) posted on the
+Website or in connection with the Purchase Services, whether posted or caused
+by users of the website of George Robotics Ltd, by third parties or by any of
+the Purchase Services offered by George Robotics Ltd.
+</p>
+
+<p>
+11.4. You acknowledge that George Robotics Ltd does not provide the Delivery
+Services to you and you agree that George Robotics Ltd will not be liable to
+you for any special, indirect or consequential loss or damage, loss of profit
+or opportunity, or damage to goodwill arising out of or in connection with the
+Delivery Services.
+</p>
+
+<h3> 12. Termination of Contract </h3>
+
+<p>
+12.1. The Terms will continue to apply until terminated by either you or by
+George Robotics Ltd as set out below.
+</p>
+
+<p>
+12.2. If you want to terminate the Terms, you may do so by:
+(a) notifying George Robotics Ltd at any time; and
+(b) closing your accounts for all of the Purchase Services which you use,
+where George Robotics Ltd has made this option available to you.
+Your notice should be sent, in writing, to George Robotics Ltd via the
+'Contact Us' link on our homepage.
+</p>
+
+<p>
+12.3. George Robotics Ltd may at any time, terminate the Terms with you if:
+(a) you have breached any provision of the Terms or intend to breach any
+provision;
+(b) George Robotics Ltd is required to do so by law;
+(c) the partner with whom George Robotics Ltd offered the Purchase Services to
+you has terminated its relationship with George Robotics Ltd or ceased to
+offer the Purchase Services to you;
+(d) George Robotics Ltd is transitioning to no longer providing the Purchase
+Services to Users in the country in which you are resident or from which you
+use the service; or
+(e) the provision of the Purchase Services to you by George Robotics Ltd is,
+in the opinion of George Robotics Ltd, no longer commercially viable.
+</p>
+
+<p>
+12.4. Subject to local applicable laws, George Robotics Ltd reserves the right
+to at any time suspend or deny, in its sole discretion, your access to all or
+any portion of the Website or the Purchase Services without notice if you
+breach any provision of the Terms or any applicable law or if your conduct
+impacts George Robotics Ltd's name or reputation or violates the rights of
+those of another party.
+</p>
+
+<p>
+12.5. When the Terms come to an end, all of the legal rights, obligations and
+liabilities that you and George Robotics Ltd have benefited from, been subject
+to (or which have accrued over time whilst the Terms have been in force) or
+which are expressed to continue indefinitely, shall be unaffected by this
+cessation, and the provisions of this clause shall continue to apply to such
+rights, obligations and liabilities indefinitely.
+</p>
+
+<h3> 13. Indemnity </h3>
+
+<p>
+13.1. You agree to indemnify George Robotics Ltd, its affiliates, employees,
+agents, contributors, third party content providers and licensors from and
+against:
+(a) all actions, suits, claims, demands, liabilities, costs, expenses,
+loss and damage (including legal fees on a full indemnity basis) incurred,
+suffered or arising out of or in connection with any Content you post through
+the Website;
+(b) any direct or indirect consequences of you accessing, using or transacting
+on the Website or attempts to do so and any breach by you or your agents of
+these Terms; and/or
+(c) any breach of the Terms.
+</p>
+
+<h3> 14. Dispute Resolution </h3>
+
+<p>
+14.1. "Compulsory":
+If a dispute arises out of or relates to the Terms, either party may not
+commence any Tribunal or Court proceedings in relation to the dispute, unless
+the following clauses have been complied with (except where urgent
+interlocutory relief is sought).
+</p>
+
+<p>
+14.2. "Notice":
+A party to the Terms claiming a dispute ("Dispute") has arisen under the Terms,
+must give written notice to the other party detailing the nature of the
+dispute, the desired outcome and the action required to settle the Dispute.
+</p>
+
+<p>
+14.3. "Resolution":
+On receipt of that notice ("Notice") by that other party, the parties to the
+Terms ("Parties") must:
+(a) Within 14 days of the Notice endeavour in good faith to resolve the Dispute
+expeditiously by negotiation or such other means upon which they may mutually
+agree;
+(b) If for any reason whatsoever, 12 days after the date of the Notice, the
+Dispute has not been resolved, the Parties must either agree upon selection of
+a mediator or request that an appropriate mediator be appointed by the
+relevant mediation body;
+(c) The Parties are equally liable for the fees and reasonable expenses of a
+mediator and the cost of the venue of the mediation and without limiting the
+foregoing undertake to pay any amounts requested by the mediator as a
+pre-condition to the mediation commencing. The Parties must each pay their
+own costs associated with the mediation.
+</p>
+
+<p>
+14.4. "Confidential":
+All communications concerning negotiations made by the Parties arising out of
+and in connection with this dispute resolution clause are confidential and to
+the extent possible, must be treated as "without prejudice" negotiations for
+the purpose of applicable laws of evidence.
+</p>
+
+<p>
+14.5. "Termination of Mediation":
+If 3 months have elapsed after the start of a mediation of the Dispute and the
+Dispute has not been resolved, either Party may ask the mediator to terminate
+the mediation and the mediator must do so.
+</p>
+
+<h3> 15. Venue and Jurisdiction </h3>
+
+<p>
+The Purchase Services offered by George Robotics Ltd is intended to be viewed
+by residents of the United Kingdom and Europe. In the event of any dispute
+arising out of or in relation to the Website, you agree that the exclusive
+venue for resolving any dispute shall be in the courts of England and Wales.
+</p>
+
+<h3> 16. Governing Law </h3>
+
+<p>
+The Terms are governed by the laws of England and Wales. Any dispute,
+controversy, proceeding or claim of whatever nature arising out of or in any
+way relating to the Terms and the rights created hereby shall be governed,
+interpreted and construed by, under and pursuant to the laws of England and
+Wales, without reference to conflict of law principles, notwithstanding
+mandatory rules. The validity of this governing law clause is not contested.
+The Terms shall be binding to the benefit of the parties hereto and their
+successors and assigns.
+</p>
+
+<h3> 17. Independent Legal Advice </h3>
+
+<p>
+Both parties confirm and declare that the provisions of the Terms are fair
+and reasonable and both parties having taken the opportunity to obtain
+independent legal advice and declare the Terms are not against public policy
+on the grounds of inequality or bargaining power or general grounds of
+restraint of trade.
+</p>
+
+<h3> 18. Severance </h3>
+
+<p>
+If any part of these Terms is found to be void or unenforceable by a Court of
+competent jurisdiction, that part shall be severed and the rest of the Terms
+shall remain in force.
+</p>
+
+<hr>
+
+<p>
+Please contact us at
+<img src="/static/home/img/emx1.png" style="height:16px; vertical-align:-3px">
+-at-
+<img src="/static/home/img/emx2.png" style="height:16px; vertical-align:-3px">
+if you have questions about the Terms and Conditions of Order and Sale.
+</p>
+
+
+          </div>
+        </div>
+    </div>
+
+<footer>
+    <div class="container footercontent">
+        <div class="row">
+            <div class="col-xs-12 col-sm-3 col-md-2 col-md-offset-2">
+                <h3>MicroPython</h3>
+                <ul>
+                    <li> <a href="http://micropython.org">Home</a> </li>
+                    <li> <a href="http://wiki.micropython.org">Wiki</a> </li>
+                    <li> <a href="http://forum.micropython.org">Forum</a> </li>
+                    <li> <a href="http://www.github.com/micropython">GitHub</a> </li>
+                </ul>
+            </div>
+            <div class="col-xs-12 col-sm-3 col-md-2">
+                <h3>Resources</h3>
+                <ul>
+                    <li> <a href="/help">Help!</a> </li>
+                    <li> <a href="http://docs.micropython.org/en/latest/pyboard/tutorial/index.html">Tutorials</a> </li>
+                    <li> <a href="http://docs.micropython.org">Documentation</a> </li>
+                    <li> <a href="/download">Download</a> </li>
+                </ul>
+            </div>
+            <div class="col-xs-12 col-sm-3 col-md-2">
+                <h3>Contact</h3>
+                <ul>
+                    <li> <a href="/contact">Contact us</a> </li>
+                    <li> <a href="irc://freenode/micropython">IRC</a> </li>
+                    <li> <a href="http://twitter.com/micropython">Twitter</a> </li>
+                    <li> <a href="http://www.facebook.com/micropython">Facebook</a> </li>
+                    <li> <a href="/privacypolicy">Privacy Policy</a> </li>
+                    <li> <a href="/termsandconditions">Terms &amp; Conditions</a> </li>
+                </ul>
+            </div>
+            <div class="col-xs-12 col-md-8 col-md-offset-2">
+                <p>A project by <a href="http://dpgeorge.net">Damien George</a></p>
+                <p>&copy; 2014-2018 George Robotics Limited</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <script src="/static/js/jquery-2.1.0.min.js"></script>
+    <script src="/static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    
+    
+
+    <!--                        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="site/js/functions.js"></script>
+    -->
+</body>
+</html>

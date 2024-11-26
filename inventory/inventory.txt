@@ -1,0 +1,103 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Controlled Camera</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    #imagePreview {
+      margin-top: 20px;
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Voice Controlled Camera</h1>
+  <button id="takePhoto">Take Photo</button>
+  <input type="file" accept="image/*" capture="environment" id="cameraInput" style="display:none;">
+  
+  <div id="output"></div>
+  <img id="imagePreview" src="" alt="Image Preview" hidden>
+  
+  <script src="app.js"></script>
+</body>
+</html>
+```
+
+### JavaScript (app.js)
+```javascript
+document.addEventListener('DOMContentLoaded', () => {
+  const takePhotoButton = document.getElementById('takePhoto');
+  const cameraInput = document.getElementById('cameraInput');
+  const imagePreview = document.getElementById('imagePreview');
+  const output = document.getElementById('output');
+
+  const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+  recognition.lang = 'en-US';
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  takePhotoButton.addEventListener('click', () => {
+    cameraInput.click();
+  });
+
+  cameraInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        imagePreview.src = e.target.result;
+        imagePreview.hidden = false;
+
+        // Start voice recognition to name the picture
+        output.textContent = 'Listening for image name...';
+        recognition.start();
+      };
+
+      reader.readAsDataURL(file);
+    }
+  });
+
+  recognition.onresult = (event) => {
+    const name = event.results[0][0].transcript;
+    output.textContent = `Image named: ${name}`;
+    alert(`You named the image: ${name}`);
+    recognition.stop(); // Stop listening after obtaining a result
+  };
+
+  recognition.onerror = (event) => {
+    output.textContent = `Error occurred in recognition: ${event.error}`;
+  };
+
+  recognition.onspeechend = () => {
+    recognition.stop();
+  };
+});
+```
+
+### Explanation:
+
+1. **HTML**: The web page contains a button to trigger the camera and an input linked to capture images. There is also a placeholder for image preview and status messages.
+
+2. **CSS**: Simple styles to keep the layout neat and responsive.
+
+3. **JavaScript**: 
+   - Event listeners manage button clicks and file input changes.
+   - The Web Speech API is used to listen for voice input and capture what the user says to name the image.
+   - Once a photo is taken, the user is prompted to speak the desired name for the image.
+   - The recognized speech is displayed and optionally stored or used further.
+
+### Testing
+- Open this web app on an Android phone browser that supports the required APIs (Chrome recommended).
+- Ensure microphone permissions are granted for voice recognition to work smoothly.
+- The demo co

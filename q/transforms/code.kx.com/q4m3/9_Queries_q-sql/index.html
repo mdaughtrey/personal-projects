@@ -1,0 +1,3788 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="Q for Mortals">
+      
+      
+        <link rel="canonical" href="../9_Queries_q-sql.1">
+      
+      
+        <meta name="author" content="Jeffry Borror">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../img/favicon.ico">
+      <meta name="generator" content="mkdocs-0.17.3, mkdocs-material-2.7.2">
+    
+    
+      
+        <title>9. Queries – q-sql - Q for Mortals</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.8d40d89b.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-palette.6079476c.css">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.1aa3b519.js"></script>
+    
+    
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+      
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+      <link rel="stylesheet" href="http://code.kx.com/stylesheets/prism.css">
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="blue" data-md-color-accent="deep-orange">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <a href="../9_Queries_q-sql.1#9-queries-q-sql" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="http://code.kx.com/q4m3" title="Q for Mortals" class="md-header-nav__button md-logo">
+          
+            <img src="../img/qfm3.jpg" width="24" height="24">
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            
+              <span class="md-header-nav__topic">
+                Q for Mortals
+              </span>
+              <span class="md-header-nav__topic">
+                9. Queries – q-sql
+              </span>
+            
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+            <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+            
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+        
+      </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    <span class="md-nav__button md-logo">
+      
+        <img src="../img/qfm3.jpg" width="48" height="48">
+      
+    </span>
+    Q for Mortals
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../redirect/index.html" title="code.kx.com" class="md-nav__link">
+      code.kx.com
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../index.html" title="Contents" class="md-nav__link">
+      Contents
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../preface/index.html" title="Preface" class="md-nav__link">
+      Preface
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../0_Overview/index.html" title="0. Overview" class="md-nav__link">
+      0. Overview
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../1_Q_Shock_and_Awe.1" title="1. Q Shock and Awe" class="md-nav__link">
+      1. Q Shock and Awe
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../2_Basic_Data_Types_Atoms/index.html" title="2. Basic Data Types – Atoms" class="md-nav__link">
+      2. Basic Data Types – Atoms
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../3_Lists.1" title="3. Lists" class="md-nav__link">
+      3. Lists
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../4_Operators.1" title="4. Operators" class="md-nav__link">
+      4. Operators
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../5_Dictionaries.1" title="5. Dictionaries" class="md-nav__link">
+      5. Dictionaries
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../6_Functions.1" title="6. Functions" class="md-nav__link">
+      6. Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../7_Transforming_Data/index.html" title="7. Transforming Data" class="md-nav__link">
+      7. Transforming Data
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../8_Tables.1" title="8. Tables" class="md-nav__link">
+      8. Tables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        9. Queries – q-sql
+      </label>
+    
+    <a href="../9_Queries_q-sql.1" title="9. Queries – q-sql" class="md-nav__link md-nav__link--active">
+      9. Queries – q-sql
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#90-overview" title="9.0 Overview" class="md-nav__link">
+    9.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#91-inserting-records" title="9.1 Inserting Records" class="md-nav__link">
+    9.1 Inserting Records
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#910-append-using-amend" title="9.1.0 Append Using Amend" class="md-nav__link">
+    9.1.0 Append Using Amend
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#911-basic-insert" title="9.1.1 Basic insert" class="md-nav__link">
+    9.1.1 Basic insert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#912-bulk-columnar-insert" title="9.1.2 Bulk Columnar Insert" class="md-nav__link">
+    9.1.2 Bulk Columnar Insert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#913-insert-into-empty-tables" title="9.1.3 Insert into Empty Tables" class="md-nav__link">
+    9.1.3 Insert into Empty Tables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#914-insert-and-foreign-keys" title="9.1.4 Insert and Foreign Keys" class="md-nav__link">
+    9.1.4 Insert and Foreign Keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#915-insert-into-keyed-tables" title="9.1.5 Insert into Keyed Tables" class="md-nav__link">
+    9.1.5 Insert into Keyed Tables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#92-upsert" title="9.2 Upsert" class="md-nav__link">
+    9.2 Upsert
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#921-upsert-replacing-insert" title="9.2.1 Upsert Replacing insert" class="md-nav__link">
+    9.2.1 Upsert Replacing insert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#922-upsert-by-name" title="9.2.2 Upsert by Name" class="md-nav__link">
+    9.2.2 Upsert by Name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#923-upsert-on-keyed-tables" title="9.2.3 Upsert on Keyed Tables" class="md-nav__link">
+    9.2.3 Upsert on Keyed Tables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#924-upsert-on-persisted-tables" title="9.2.4 Upsert on Persisted Tables" class="md-nav__link">
+    9.2.4 Upsert on Persisted Tables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#93-the-select-template" title="9.3 The select Template" class="md-nav__link">
+    9.3 The select Template
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#931-syntax" title="9.3.1 Syntax" class="md-nav__link">
+    9.3.1 Syntax
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#932-the-select-phrase" title="9.3.2 The select Phrase" class="md-nav__link">
+    9.3.2 The select Phrase
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9321-result-column-names" title="9.3.2.1 Result Column Names" class="md-nav__link">
+    9.3.2.1 Result Column Names
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9322-the-virtual-column-i" title="9.3.2.2 The Virtual Column i" class="md-nav__link">
+    9.3.2.2 The Virtual Column i
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9323-select-distinct" title="9.3.2.3 select distinct" class="md-nav__link">
+    9.3.2.3 select distinct
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9324-select" title="9.3.2.4 select[]" class="md-nav__link">
+    9.3.2.4 select[]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9325-select-on-nested-columns" title="9.3.2.5 Select on Nested Columns" class="md-nav__link">
+    9.3.2.5 Select on Nested Columns
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#933-filtering-with-where" title="9.3.3 Filtering with where" class="md-nav__link">
+    9.3.3 Filtering with where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9331-basic-where" title="9.3.3.1 Basic where" class="md-nav__link">
+    9.3.3.1 Basic where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9332-the-virtual-column-i-in-where" title="9.3.3.2 The Virtual Column i in where" class="md-nav__link">
+    9.3.3.2 The Virtual Column i in where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9333-multiple-where-subphrases" title="9.3.3.3 Multiple where Subphrases" class="md-nav__link">
+    9.3.3.3 Multiple where Subphrases
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9334-nested-columns-in-where" title="9.3.3.4 Nested Columns in where" class="md-nav__link">
+    9.3.3.4 Nested Columns in where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9335-fby-in-where" title="9.3.3.5 fby in where" class="md-nav__link">
+    9.3.3.5 fby in where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#934-grouping-and-aggregation" title="9.3.4 Grouping and Aggregation" class="md-nav__link">
+    9.3.4 Grouping and Aggregation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9341-aggregation-without-grouping" title="9.3.4.1 Aggregation without Grouping" class="md-nav__link">
+    9.3.4.1 Aggregation without Grouping
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9342-grouping-without-aggregation" title="9.3.4.2 Grouping without Aggregation" class="md-nav__link">
+    9.3.4.2 Grouping without Aggregation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9343-grouping-with-aggregation" title="9.3.4.3 Grouping with Aggregation" class="md-nav__link">
+    9.3.4.3 Grouping with Aggregation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#94-the-exec-template" title="9.4 The exec Template" class="md-nav__link">
+    9.4 The exec Template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#95-the-update-template" title="9.5 The update Template" class="md-nav__link">
+    9.5 The update Template
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#951-basic-update" title="9.5.1 Basic update" class="md-nav__link">
+    9.5.1 Basic update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#952-update-by" title="9.5.2 update-by" class="md-nav__link">
+    9.5.2 update-by
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#96-the-delete-template" title="9.6 The delete Template" class="md-nav__link">
+    9.6 The delete Template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#97-sorting" title="9.7 Sorting" class="md-nav__link">
+    9.7 Sorting
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#971-xasc" title="9.7.1 xasc" class="md-nav__link">
+    9.7.1 xasc
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#972-xdesc" title="9.7.2 xdesc" class="md-nav__link">
+    9.7.2 xdesc
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#973-mixed-sort" title="9.7.3 Mixed Sort" class="md-nav__link">
+    9.7.3 Mixed Sort
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#98-renaming-and-rearranging-columns" title="9.8 Renaming and Rearranging Columns" class="md-nav__link">
+    9.8 Renaming and Rearranging Columns
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#981-xcol" title="9.8.1 xcol" class="md-nav__link">
+    9.8.1 xcol
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#982-xcols" title="9.8.2 xcols" class="md-nav__link">
+    9.8.2 xcols
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#99-joins" title="9.9 Joins" class="md-nav__link">
+    9.9 Joins
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#991-implicit-join" title="9.9.1 Implicit Join" class="md-nav__link">
+    9.9.1 Implicit Join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#992-ad-hoc-left-join-lj" title="9.9.2 Ad hoc Left Join (lj)" class="md-nav__link">
+    9.9.2 Ad hoc Left Join (lj)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#993-column-lookup" title="9.9.3 Column Lookup" class="md-nav__link">
+    9.9.3 Column Lookup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#994-ad-hoc-inner-join-ij" title="9.9.4 Ad Hoc Inner Join (ij)" class="md-nav__link">
+    9.9.4 Ad Hoc Inner Join (ij)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#995-equijoin-ej" title="9.9.5 Equijoin ej" class="md-nav__link">
+    9.9.5 Equijoin ej
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#996-plus-join-pj" title="9.9.6 Plus Join (pj)" class="md-nav__link">
+    9.9.6 Plus Join (pj)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#997-union-join" title="9.9.7 Union Join" class="md-nav__link">
+    9.9.7 Union Join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#998-as-of-joins" title="9.9.8 As-of Joins" class="md-nav__link">
+    9.9.8 As-of Joins
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#999-window-join" title="9.9.9 Window Join" class="md-nav__link">
+    9.9.9 Window Join
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#910-parameterized-queries" title="9.10 Parameterized Queries" class="md-nav__link">
+    9.10 Parameterized Queries
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#911-views" title="9.11 Views" class="md-nav__link">
+    9.11 Views
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#912-functional-forms" title="9.12 Functional Forms" class="md-nav__link">
+    9.12 Functional Forms
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9121-functional-select" title="9.12.1 Functional select" class="md-nav__link">
+    9.12.1 Functional select
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9122-functional-exec" title="9.12.2 Functional exec" class="md-nav__link">
+    9.12.2 Functional exec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9123-functional-update" title="9.12.3 Functional update" class="md-nav__link">
+    9.12.3 Functional update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9124-functional-delete" title="9.12.4 Functional delete" class="md-nav__link">
+    9.12.4 Functional delete
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#913-examples" title="9.13 Examples" class="md-nav__link">
+    9.13 Examples
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9131-the-trades-table" title="9.13.1 The trades Table" class="md-nav__link">
+    9.13.1 The trades Table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9132-the-instrument-table" title="9.13.2 The instrument Table" class="md-nav__link">
+    9.13.2 The instrument Table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9133-basic-queries" title="9.13.3 Basic Queries" class="md-nav__link">
+    9.13.3 Basic Queries
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9134-meaty-queries" title="9.13.4 Meaty Queries" class="md-nav__link">
+    9.13.4 Meaty Queries
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9135-excursion-pivot-table" title="9.13.5 Excursion – Pivot Table" class="md-nav__link">
+    9.13.5 Excursion – Pivot Table
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../10_Execution_Control/index.html" title="10. Execution Control" class="md-nav__link">
+      10. Execution Control
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../11_IO.1" title="11. I/O" class="md-nav__link">
+      11. I/O
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../12_Workspace_Organization.1" title="12. Workspace Organization" class="md-nav__link">
+      12. Workspace Organization
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../13_Commands_and_System_Variables.1" title="13. Commands and System Variables" class="md-nav__link">
+      13. Commands and System Variables
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../14_Introduction_to_Kdb+.1" title="14. Introduction to Kdb+" class="md-nav__link">
+      14. Introduction to Kdb+
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../A_Built-in_Functions.1" title="Appendix A. Built-in Functions" class="md-nav__link">
+      Appendix A. Built-in Functions
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../B_Error_Messages/index.html" title="Appendix B. Error Messages" class="md-nav__link">
+      Appendix B. Error Messages
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../colophon/index.html" title="Colophon" class="md-nav__link">
+      Colophon
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#90-overview" title="9.0 Overview" class="md-nav__link">
+    9.0 Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#91-inserting-records" title="9.1 Inserting Records" class="md-nav__link">
+    9.1 Inserting Records
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#910-append-using-amend" title="9.1.0 Append Using Amend" class="md-nav__link">
+    9.1.0 Append Using Amend
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#911-basic-insert" title="9.1.1 Basic insert" class="md-nav__link">
+    9.1.1 Basic insert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#912-bulk-columnar-insert" title="9.1.2 Bulk Columnar Insert" class="md-nav__link">
+    9.1.2 Bulk Columnar Insert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#913-insert-into-empty-tables" title="9.1.3 Insert into Empty Tables" class="md-nav__link">
+    9.1.3 Insert into Empty Tables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#914-insert-and-foreign-keys" title="9.1.4 Insert and Foreign Keys" class="md-nav__link">
+    9.1.4 Insert and Foreign Keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#915-insert-into-keyed-tables" title="9.1.5 Insert into Keyed Tables" class="md-nav__link">
+    9.1.5 Insert into Keyed Tables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#92-upsert" title="9.2 Upsert" class="md-nav__link">
+    9.2 Upsert
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#921-upsert-replacing-insert" title="9.2.1 Upsert Replacing insert" class="md-nav__link">
+    9.2.1 Upsert Replacing insert
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#922-upsert-by-name" title="9.2.2 Upsert by Name" class="md-nav__link">
+    9.2.2 Upsert by Name
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#923-upsert-on-keyed-tables" title="9.2.3 Upsert on Keyed Tables" class="md-nav__link">
+    9.2.3 Upsert on Keyed Tables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#924-upsert-on-persisted-tables" title="9.2.4 Upsert on Persisted Tables" class="md-nav__link">
+    9.2.4 Upsert on Persisted Tables
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#93-the-select-template" title="9.3 The select Template" class="md-nav__link">
+    9.3 The select Template
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#931-syntax" title="9.3.1 Syntax" class="md-nav__link">
+    9.3.1 Syntax
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#932-the-select-phrase" title="9.3.2 The select Phrase" class="md-nav__link">
+    9.3.2 The select Phrase
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9321-result-column-names" title="9.3.2.1 Result Column Names" class="md-nav__link">
+    9.3.2.1 Result Column Names
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9322-the-virtual-column-i" title="9.3.2.2 The Virtual Column i" class="md-nav__link">
+    9.3.2.2 The Virtual Column i
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9323-select-distinct" title="9.3.2.3 select distinct" class="md-nav__link">
+    9.3.2.3 select distinct
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9324-select" title="9.3.2.4 select[]" class="md-nav__link">
+    9.3.2.4 select[]
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9325-select-on-nested-columns" title="9.3.2.5 Select on Nested Columns" class="md-nav__link">
+    9.3.2.5 Select on Nested Columns
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#933-filtering-with-where" title="9.3.3 Filtering with where" class="md-nav__link">
+    9.3.3 Filtering with where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9331-basic-where" title="9.3.3.1 Basic where" class="md-nav__link">
+    9.3.3.1 Basic where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9332-the-virtual-column-i-in-where" title="9.3.3.2 The Virtual Column i in where" class="md-nav__link">
+    9.3.3.2 The Virtual Column i in where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9333-multiple-where-subphrases" title="9.3.3.3 Multiple where Subphrases" class="md-nav__link">
+    9.3.3.3 Multiple where Subphrases
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9334-nested-columns-in-where" title="9.3.3.4 Nested Columns in where" class="md-nav__link">
+    9.3.3.4 Nested Columns in where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9335-fby-in-where" title="9.3.3.5 fby in where" class="md-nav__link">
+    9.3.3.5 fby in where
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#934-grouping-and-aggregation" title="9.3.4 Grouping and Aggregation" class="md-nav__link">
+    9.3.4 Grouping and Aggregation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9341-aggregation-without-grouping" title="9.3.4.1 Aggregation without Grouping" class="md-nav__link">
+    9.3.4.1 Aggregation without Grouping
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9342-grouping-without-aggregation" title="9.3.4.2 Grouping without Aggregation" class="md-nav__link">
+    9.3.4.2 Grouping without Aggregation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9343-grouping-with-aggregation" title="9.3.4.3 Grouping with Aggregation" class="md-nav__link">
+    9.3.4.3 Grouping with Aggregation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#94-the-exec-template" title="9.4 The exec Template" class="md-nav__link">
+    9.4 The exec Template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#95-the-update-template" title="9.5 The update Template" class="md-nav__link">
+    9.5 The update Template
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#951-basic-update" title="9.5.1 Basic update" class="md-nav__link">
+    9.5.1 Basic update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#952-update-by" title="9.5.2 update-by" class="md-nav__link">
+    9.5.2 update-by
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#96-the-delete-template" title="9.6 The delete Template" class="md-nav__link">
+    9.6 The delete Template
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#97-sorting" title="9.7 Sorting" class="md-nav__link">
+    9.7 Sorting
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#971-xasc" title="9.7.1 xasc" class="md-nav__link">
+    9.7.1 xasc
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#972-xdesc" title="9.7.2 xdesc" class="md-nav__link">
+    9.7.2 xdesc
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#973-mixed-sort" title="9.7.3 Mixed Sort" class="md-nav__link">
+    9.7.3 Mixed Sort
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#98-renaming-and-rearranging-columns" title="9.8 Renaming and Rearranging Columns" class="md-nav__link">
+    9.8 Renaming and Rearranging Columns
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#981-xcol" title="9.8.1 xcol" class="md-nav__link">
+    9.8.1 xcol
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#982-xcols" title="9.8.2 xcols" class="md-nav__link">
+    9.8.2 xcols
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#99-joins" title="9.9 Joins" class="md-nav__link">
+    9.9 Joins
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#991-implicit-join" title="9.9.1 Implicit Join" class="md-nav__link">
+    9.9.1 Implicit Join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#992-ad-hoc-left-join-lj" title="9.9.2 Ad hoc Left Join (lj)" class="md-nav__link">
+    9.9.2 Ad hoc Left Join (lj)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#993-column-lookup" title="9.9.3 Column Lookup" class="md-nav__link">
+    9.9.3 Column Lookup
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#994-ad-hoc-inner-join-ij" title="9.9.4 Ad Hoc Inner Join (ij)" class="md-nav__link">
+    9.9.4 Ad Hoc Inner Join (ij)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#995-equijoin-ej" title="9.9.5 Equijoin ej" class="md-nav__link">
+    9.9.5 Equijoin ej
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#996-plus-join-pj" title="9.9.6 Plus Join (pj)" class="md-nav__link">
+    9.9.6 Plus Join (pj)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#997-union-join" title="9.9.7 Union Join" class="md-nav__link">
+    9.9.7 Union Join
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#998-as-of-joins" title="9.9.8 As-of Joins" class="md-nav__link">
+    9.9.8 As-of Joins
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#999-window-join" title="9.9.9 Window Join" class="md-nav__link">
+    9.9.9 Window Join
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#910-parameterized-queries" title="9.10 Parameterized Queries" class="md-nav__link">
+    9.10 Parameterized Queries
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#911-views" title="9.11 Views" class="md-nav__link">
+    9.11 Views
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#912-functional-forms" title="9.12 Functional Forms" class="md-nav__link">
+    9.12 Functional Forms
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9121-functional-select" title="9.12.1 Functional select" class="md-nav__link">
+    9.12.1 Functional select
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9122-functional-exec" title="9.12.2 Functional exec" class="md-nav__link">
+    9.12.2 Functional exec
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9123-functional-update" title="9.12.3 Functional update" class="md-nav__link">
+    9.12.3 Functional update
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9124-functional-delete" title="9.12.4 Functional delete" class="md-nav__link">
+    9.12.4 Functional delete
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#913-examples" title="9.13 Examples" class="md-nav__link">
+    9.13 Examples
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9131-the-trades-table" title="9.13.1 The trades Table" class="md-nav__link">
+    9.13.1 The trades Table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9132-the-instrument-table" title="9.13.2 The instrument Table" class="md-nav__link">
+    9.13.2 The instrument Table
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9133-basic-queries" title="9.13.3 Basic Queries" class="md-nav__link">
+    9.13.3 Basic Queries
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9134-meaty-queries" title="9.13.4 Meaty Queries" class="md-nav__link">
+    9.13.4 Meaty Queries
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="../9_Queries_q-sql.1#9135-excursion-pivot-table" title="9.13.5 Excursion – Pivot Table" class="md-nav__link">
+    9.13.5 Excursion – Pivot Table
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="9-queries-q-sql">9. Queries: q-sql<a class="headerlink" href="../9_Queries_q-sql.1#9-queries-q-sql" title="Permanent link">&para;</a></h1>
+<h2 id="90-overview">9.0 Overview<a class="headerlink" href="../9_Queries_q-sql.1#90-overview" title="Permanent link">&para;</a></h2>
+<p>We call the collection of functions for manipulating tables <em>q-sql</em>, since many of them resemble their SQL counterparts in form or function. The usual suspects such as <em>insert</em>, <em>select</em>, <em>update</em>, are present, as well as functionality that is not available in traditional SQL. But appearances can be deceiving: there are some significant differences in the syntax and behavior.</p>
+<p>The first important difference is that a q table has ordered rows and columns. This is particularly useful when dealing with the situation where records arrive in time order. Appending them to a table ensures that they enter – and stay – in order. Subsequent select operations always retrieve the records in order without any need for sorting.</p>
+<p>A second difference is that a q table is stored physically as a collection of column lists. This means that operations on column data are vector operations. Moreover, for simple column lists, atomic, aggregate and uniform functions applied to columns are especially simple and fast since they reduce to direct memory addressing.</p>
+<p>A third difference is that q-sql provides upsert semantics. Recall that upsert semantics on a dictionary mean that when a key-value pair is applied with <code>,</code> and the key is present, the value is updated; otherwise the pair is inserted. In the context of tables and keyed tables, which are both dictionaries, this has far-reaching consequences for many common operations, including joins. Upsert semantics permeate q-sql.</p>
+<p>In this chapter, we cover the important features of q-sql, beginning with simple examples for each. Eventually more complex examples are introduced.</p>
+<p>Some examples are based on the <code>sp.q</code> script included in the q installation files. Tables in the script are,</p>
+<pre><code class="q">q)meta s
+c     | t f a
+------| -----
+s     | s
+name  | s
+status| j
+city  | s
+q)meta p
+c     | t f a
+------| -----
+p     | s
+name  | s
+color | s
+weight| j
+city | s
+q)meta sp
+c  | t f a
+---| -----
+s  | s s
+p  | s p
+qty| j
+</code></pre>
+
+<p>You should load and display these tables in your console session now.</p>
+<h2 id="91-inserting-records">9.1 Inserting Records<a class="headerlink" href="../9_Queries_q-sql.1#91-inserting-records" title="Permanent link">&para;</a></h2>
+<p>There are multiple ways to insert – i.e., append – records in q.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The <code>upsert</code> function is superior to <code>insert</code> and is to be preferred. We include <code>insert</code> for nostalgia only.</p>
+</div>
+<h3 id="910-append-using-amend">9.1.0 Append Using Amend<a class="headerlink" href="../9_Queries_q-sql.1#910-append-using-amend" title="Permanent link">&para;</a></h3>
+<p>Since a table is (logically) a list of records, it is possible to append records in place using <code>,:</code>. Type checking on field values is performed.</p>
+<pre><code class="q">q)t:([] name:`symbol$(); iq:`int$())
+q)t,:`name`iq!(`Beeblebrox; 42)
+q)t,:`name`iq!(`Dent; 98.0)
+'type
+</code></pre>
+
+<p><em>Amend</em> can also be used with a row of naked field values provided the fields align exactly with the target columns.</p>
+<pre><code class="q">q)t,:(`Prefect; 126)
+</code></pre>
+
+<p>Applying <em>amend</em> to a table repeatedly with the same argument results in duplicate records.</p>
+<pre><code class="q">q)t,:(`Prefect; 126)
+q)t,:(`Prefect; 126)
+q)t
+_
+</code></pre>
+
+<p>You can use <em>amend</em> to append to a keyed table using the full record form, but you will quickly see why no one does this.</p>
+<pre><code class="q">q)kt:([eid:`long$()] name:`symbol$(); iq:`long$())
+q)kt,:(enlist (enlist `eid)!enlist 1001)!enlist `name`iq!(`Beeblebrox; 42)
+</code></pre>
+
+<p>It is much easier to use naked field values, provided they align exactly with both the key and value columns.</p>
+<pre><code class="q">q)kt,:(1002; `Dent; 98)
+q)kt
+_
+</code></pre>
+
+<p><em>Amend</em> has upsert semantics on keyed tables, so repeated operation on the same key will retain only the last values.</p>
+<pre><code class="q">q)kt,:(1002; `Dent; 101)
+q)kt
+_
+</code></pre>
+
+<h3 id="911-basic-insert">9.1.1 Basic insert<a class="headerlink" href="../9_Queries_q-sql.1#911-basic-insert" title="Permanent link">&para;</a></h3>
+<p>Those who prefer the familiarity of SQL can append records to an existing global table using the dyadic function <code>insert</code> whose left operand is a symbol containing the name of a <strong>global</strong> table (<em>target</em>) and whose right argument is a record, or list of records, conforming to the target. The result is a list of integers representing the row number(s) of the appended record(s).</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Since <code>insert</code> essentially reduces to amend in place, fields are type checked.</p>
+<ul>
+<li>If the target column is simple, the type must match exactly.</li>
+<li>If the target column is an untyped empty list, the result will take the type of the field in the initial <code>insert</code>.</li>
+</ul>
+</div>
+<p>For a regular – i.e., non-keyed – table, the effect of <code>insert</code> is to append a new record with the specified field values. Let's use our simple example.</p>
+<pre><code class="q">q)t:([] name:`Dent`Beeblebrox`Prefect; iq:42 98 126)
+</code></pre>
+
+<p>Here is how to insert a single record or the equivalent row list.</p>
+<pre><code class="q">q)`t insert (`name`iq)!(`Slartibartfast; 134)
+,3
+q)`t insert (`Marvin; 150)
+,4
+q)t
+_
+</code></pre>
+
+<p>Repeatedly applying <code>insert</code> to a table with the same argument results in duplicate records.</p>
+<pre><code class="q">q)`t insert (`Marvin; 150)
+_
+q)`t insert (`Marvin; 150)
+_
+q)
+_
+</code></pre>
+
+<p>Since a list of conforming records is a table, inserting a list of records is the same as inserting a table. Observe that use of <code>3#</code> to truncate the table.</p>
+<pre><code class="q">q)t:3#t
+q)`t insert (`name`iq!(`Slartibartfast; 134); (`name`iq!(`Marvin; 200)))
+_
+q)t
+_
+q)t:3#t
+q)`t insert ([] name:`Slartibartfast`Marvin; iq:134 200)
+_
+</code></pre>
+
+<p>You can also use <code>insert</code> in prefix form, possibly with the table name projected. For example, the previous insert can be written as,</p>
+<pre><code class="q">q)insert[`t; (`Slartibartfast; 134)]
+_
+q)insert[`t;] (`Slartibartfast; 134)
+_
+</code></pre>
+
+<h3 id="912-bulk-columnar-insert">9.1.2 Bulk Columnar Insert<a class="headerlink" href="../9_Queries_q-sql.1#912-bulk-columnar-insert" title="Permanent link">&para;</a></h3>
+<p>We have seen that it is possible to insert a naked list of row values instead of the full record dictionary. We have also seen that it is possible to bulk insert a list of conforming records, which is just a table with the same schema as the target.</p>
+<p>It is also possible to bulk insert naked field values but there is a twist. To bulk insert naked field values, you provide a list of <strong>columns</strong> not a list of rows.</p>
+<pre><code class="q">q)t:([] name:`Dent`Beeblebrox; iq:98 42)
+q)`t insert ((`Prefect; 126); (`Marvin; 200))
+'type
+q)`t insert (`Prefect`Marvin; 126 200)
+8 9
+</code></pre>
+
+<p>After a brief q Zen meditation, you will realize that this is consistent with the previous bulk insert of a table, since a table is a collection of columns. From this perspective, we should view the insertion of a single naked row more correctly as a trivial list of column atoms.</p>
+<h3 id="913-insert-into-empty-tables">9.1.3 Insert into Empty Tables<a class="headerlink" href="../9_Queries_q-sql.1#913-insert-into-empty-tables" title="Permanent link">&para;</a></h3>
+<p>Inserting into a table that has been initialized with empty lists of general type causes the result table to take the type of the first record inserted. In particular, an atomic field in the inserted record results in a simple column with its type.</p>
+<pre><code class="q">q)t:([] name:(); iq:())
+q)`t insert (`Dent;98)
+,0
+q)meta t
+c   | t f a
+----| -----
+name| s
+iq  | j
+</code></pre>
+
+<p>This is fine as long as all the types in the initial record are correct. Should any field have an unintended type, subsequent records of the correct type will all be rejected.</p>
+<pre><code class="q">q)t:([] name:(); iq:())
+q)`t insert (`Dent;98.0)
+,0
+q)`t insert (`Beeblebrox; 42)
+'type
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Recommendation</p>
+<p>It is good practice to type all columns in an empty table. This will ensure that incorrect types are rejected and correct ones accepted.
+<pre><code class="language-q">
+ q)t:([] name:`symbol<span><span class="MathJax_Preview">(); iq:\`int</span><script type="math/tex">(); iq:\`int</script></span>())
+ q)`t insert (`Dent;98.0)
+ 'type
+ q)`t insert (`Beeblebrox; 42)
+ ,0
+</code></pre></p>
+</div>
+<p>It is also possible to insert a <strong>list</strong> of conforming records (i.e., a table) into a table that does not exist. This is the same as assigning the table to a variable of the specified name.</p>
+<pre><code class="q">q)tnew
+'tnew
+q)`tnew insert enlist `c1`c2!(`a; 10)
+_
+q)tnew
+_
+</code></pre>
+
+<h3 id="914-insert-and-foreign-keys">9.1.4 Insert and Foreign Keys<a class="headerlink" href="../9_Queries_q-sql.1#914-insert-and-foreign-keys" title="Permanent link">&para;</a></h3>
+<p>When inserting data into a table that has foreign key(s), the values destined for the foreign key column(s) are checked to ensure that they appear in the primary key column(s) pointed to by the foreign key(s). This is referential integrity (well, half of it).</p>
+<p>Returning to our previous foreign-key example.</p>
+<pre><code class="q">q)kt:([eid:1001 1002 1003] name:`Dent`Beeblebrox`Prefect; iq:98 42 126)
+q)tdetails:([] eid:`kt$1003 1002 1001 1002 1001; sc:126 36 92 39 98)
+</code></pre>
+
+<p>The first insert in the following succeeds but the second fails when trying to enumerate the foreign-key value 1042 that does not appear in <code>kt</code>.</p>
+<pre><code class="q">q)`tdetails insert (1002;42)
+,5
+q)`tdetails insert (1042;150)
+'cast
+</code></pre>
+
+<p>Recall that enumeration is a form of cast.</p>
+<h3 id="915-insert-into-keyed-tables">9.1.5 Insert into Keyed Tables<a class="headerlink" href="../9_Queries_q-sql.1#915-insert-into-keyed-tables" title="Permanent link">&para;</a></h3>
+<p>You can use <code>insert</code> to append data to a keyed table, but this probably does not have the desired semantics. Specifically, you can insert into a keyed table only if the key value is <strong>not</strong> already in the table. For this and other reasons, <code>upsert</code> should normally be preferred over <code>insert</code>.</p>
+<p>Since a keyed table is a dictionary, to use <code>insert</code> we should properly provide a dictionary entry comprising a key record and a value record.</p>
+<pre><code class="q">q)kt:([eid:1001 1002] name:`Dent`Beeblebrox; iq:98 42)
+q)`kt insert (enlist ((enlist `eid)!enlist 1003))!enlist `name`iq!(`W; 21)
+,2
+</code></pre>
+
+<p>Yikes! Nobody does this. Instead, you provide a list of raw field values with the proviso that they align exactly across the key and value columns.</p>
+<pre><code class="q">q)`kt insert (1005; `Marvin; 200)
+,3
+q)`kt insert (1004;`Slartibartfast;158)
+,4
+</code></pre>
+
+<p>Repeating the last insert now fails because the key value 1004 already exists.</p>
+<pre><code class="q">q)`kt insert (1004; `Marvin; 200)
+'insert
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">The records in the keyed table are stored in insert order rather than key order.</p>
+</div>
+<pre><code class="q"> q)kt
+ _
+</code></pre>
+
+<h2 id="92-upsert">9.2 Upsert<a class="headerlink" href="../9_Queries_q-sql.1#92-upsert" title="Permanent link">&para;</a></h2>
+<p>The <code>upsert</code> template is like <code>insert</code>, only better. Except for the last sub-section on keyed tables, all the examples in the previous section all work the same for <code>upsert</code>.</p>
+<h3 id="921-upsert-replacing-insert">9.2.1 Upsert Replacing insert<a class="headerlink" href="../9_Queries_q-sql.1#921-upsert-replacing-insert" title="Permanent link">&para;</a></h3>
+<p>Here we repeat some examples from the previous section to demonstrate that <code>upsert</code> can (and should) be used in place of <code>insert</code> for appending rows to a table.</p>
+<pre><code class="q">q)t:([] name:`Dent`Beeblebrox`Prefect; iq:42 98 126)
+q)`t upsert (`name`iq)!(`Slartibartfast; 134)
+`t
+q)`t upsert (`Marvin; 150)
+_
+q)`t upsert ([] name:`Slartibartfast`Marvin; iq:134 200)
+_
+q)t:3#t
+q)upsert[`t; (`Slartibartfast; 134)]
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>To bulk upsert naked field values, use rows instead of columns.
+<pre><code class="language-q">
+ q)t upsert ((`Prefect; 126); (`Marvin; 200))
+ _
+</code></pre></p>
+</div>
+<h3 id="922-upsert-by-name">9.2.2 Upsert by Name<a class="headerlink" href="../9_Queries_q-sql.1#922-upsert-by-name" title="Permanent link">&para;</a></h3>
+<p>A limitation of <code>insert</code> is that it uses pass-by-name, so it can only operate against global tables. In contrast, <code>upsert</code> supports both pass-by-name and pass-by-value. Thus it can be used with anonymous or local tables.</p>
+<pre><code class="q">q)([] c1:`a`b; c2:10 20) upsert (`c; 30)
+c1 c2
+-----
+a  10
+b  20
+c  30
+q)f:{t:([] c1:`a`b; c2:10 20); t upsert x}
+q)f (`c; 30)
+c1 c2
+-----
+a  10
+b  20
+c  30
+</code></pre>
+
+<h3 id="923-upsert-on-keyed-tables">9.2.3 Upsert on Keyed Tables<a class="headerlink" href="../9_Queries_q-sql.1#923-upsert-on-keyed-tables" title="Permanent link">&para;</a></h3>
+<p>We have seen that <code>insert</code> has undesirable semantics on keyed tables – i.e., it rejects “duplicate” keys. What we really want is, well, upsert semantics.</p>
+<pre><code class="q">q)`kt upsert (1001; `Beeblebrox; 42)
+_
+q)`kt upsert (1001; `Beeblebrox; 43)
+_
+q)kt
+eid | name iq
+----| -------------
+1001| Beeblebrox 43
+</code></pre>
+
+<p>This is the second reason to use <code>upsert</code> instead of <code>insert</code>.</p>
+<h3 id="924-upsert-on-persisted-tables">9.2.4 Upsert on Persisted Tables<a class="headerlink" href="../9_Queries_q-sql.1#924-upsert-on-persisted-tables" title="Permanent link">&para;</a></h3>
+<p>You can use <code>upsert</code> to append records to serialized and splayed tables. Simply pass the handle of the file or splayed directory as the name of the table. This is the final strike against <code>insert</code>, since it cannot do this</p>
+<p>We serialize a table and then append a row to it.</p>
+<pre><code class="q">q)`:/q4m/tser set ([] c1:`a`b; c2:1.1 2.2)
+q)`:/q4m/tser upsert (`c; 3.3)
+`:/q4m/tser
+q)get `:/q4m/tser
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Upserting to a serialized table reads the entire table into memory, updates it and writes out the result.</p>
+</div>
+<p>Next we splay a table and then append a row to it. Observe that we ensure that all symbols are enumerated, as required for splayed tables.</p>
+<pre><code class="q">q)`:/q4m/tsplay/ set ([] c1:`sym?`a`b; c2:1.1 2.2)
+`:/q4m/tsplay/
+q)`:/q4m/tsplay upsert (`sym?`c; 3.3)
+`:/q4m/tsplay
+q)select from `:/q4m/tsplay
+_
+</code></pre>
+
+<p>Upserting to a splayed table does <strong>not</strong> read the persisted image into memory; rather, it appends to the ends of the column files. This allows incremental creation of large splayed (or partitioned) tables by upserting chunks that comfortably fit into memory. See <a href="../11_IO.1#113-splayed-tables">§11.3</a> for more details on splayed tables.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Upserting to a table in either form will destroy any attributes on table columns. You will have to reapply them.</p>
+</div>
+<h2 id="93-the-select-template">9.3 The <code>select</code> Template<a class="headerlink" href="../9_Queries_q-sql.1#93-the-select-template" title="Permanent link">&para;</a></h2>
+<p>In this section we investigate the general form of <code>select</code>, which like all q-sql templates, has required and optional elements. The template elements contain phrases that are expressions (presumably) involving column values of a specified table. The template is converted by the interpreter into a functional form and is applied against the table to produce a result table. While the syntax and behavior of <code>select</code> resemble the analogous SQL statement, the underlying mechanics are quite different.</p>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The result of <code>select</code> is always a table.</p>
+</div>
+<p>We examine each of the constituents of <code>select</code> in detail. We introduce the concepts with illustrative examples using trivial tables so that the basic mechanics are not obscured by large or complex data.</p>
+<h3 id="931-syntax">9.3.1 Syntax<a class="headerlink" href="../9_Queries_q-sql.1#931-syntax" title="Permanent link">&para;</a></h3>
+<p>The <code>select</code> template has the following form, where elements enclosed in matching angle brackets <code>&lt;...&gt;</code> are optional.</p>
+<p><code>select</code> &lt;<em>p<sub>s</sub></em>&gt; &lt;<code>by</code> <em>p<sub>b</sub></em>&gt; <code>from</code> <em>t<sub>exp</sub></em> &lt;<code>where</code> <em>p<sub>w</sub></em>&gt;</p>
+<p>The <code>select</code> and <code>from</code> keywords are required; omission or mistyping either results in an error. The table expression <em>t<sub>exp</sub></em>, which is any q expression whose value is a table or keyed table, is also required. The remaining elements <em>p<sub>s</sub></em>, <em>p<sub>b</sub></em> and <em>p<sub>w</sub></em> are optional. They are called the <em>select</em>, the <em>by</em> and the <em>where</em> phrases, respectively.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If <code>where</code> is present and t<sub>exp</sub> is itself a select expression, the inner expression should be enclosed in parentheses to avoid confusion in the binding of the <code>where</code> phrase.</p>
+</div>
+<p>Each phrase in the select template is a comma-separated list of subphrases. A <em>subphrase</em> is an arbitrary q expression (presumably) involving columns of <em>t<sub>exp</sub></em> or columns of another table accessed via foreign key. The evaluation of subphrases within a phrase is sequenced left-to-right by the commas, but each subphrase expression is evaluated right-to-left, like any q expression.</p>
+<div class="admonition warning">
+<p class="admonition-title">Commas</p>
+<p>The commas separating the subphrases are separators, so it is not necessary to enclose a subphrase in parentheses unless the expression contains the <em>join</em> operator <code>,</code>. Any expression containing the operator <code>,</code> within any template phrase must be enclosed in parentheses or it will be interpreted as the separator. Forgetting this is both easy and painful.</p>
+</div>
+<p>The order of evaluation of the <code>select</code> template is:</p>
+<ol>
+<li>
+<p>from expression <em>t<sub>exp</sub></em></p>
+</li>
+<li>
+<p>where phrase <em>p<sub>w</sub></em></p>
+</li>
+<li>
+<p>by phrase <em>p<sub>b</sub></em></p>
+</li>
+<li>
+<p>select phrase <em>p<sub>s</sub></em></p>
+</li>
+</ol>
+<h3 id="932-the-select-phrase">9.3.2 The select Phrase<a class="headerlink" href="../9_Queries_q-sql.1#932-the-select-phrase" title="Permanent link">&para;</a></h3>
+<p>We begin our examples with the select phrase because it is the easiest. We shall use the following table for our examples.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+</code></pre>
+
+<p>The select phrase specifies the columns in the result table, one per subphrase. If the select phrase <em>p<sub>s</sub></em> is absent, all columns are returned. There is no need for the <code>*</code> wildcard of SQL.</p>
+<pre><code class="q">q)select from t
+_
+q)t~select from t
+1b
+</code></pre>
+
+<p>To specify result columns, list them separated by commas. Whitespace after commas is optional but some think it improves readability, especially for complicated queries.</p>
+<pre><code class="q">q)select c1, c3 from t
+_
+</code></pre>
+
+<h3 id="9321-result-column-names">9.3.2.1 Result Column Names<a class="headerlink" href="../9_Queries_q-sql.1#9321-result-column-names" title="Permanent link">&para;</a></h3>
+<p>To specify names for the result columns, place the name followed by colon before the subphrase.</p>
+<pre><code class="q">q)select c1, res:2*c2 from t
+c1 res
+------
+a  20
+b  40
+c  60
+</code></pre>
+
+<p><strong>Notes</strong></p>
+<ul>
+<li>The colon used to specify a name is <strong>not</strong> assignment; it is simply part of the syntax of the template.</li>
+<li>Just as with the use of colon in a variable assignment, the column name is part of the syntactic sugar. It is not a symbol and <strong>cannot</strong> be parameterized. Use functional form if you need this – see <a href="../9_Queries_q-sql.1#912-functional-forms">§9.12</a>.</li>
+<li>Unlike in SQL, columns in the select phrase do not actually exist until the final result table is returned. Thus a computed column <strong>cannot</strong> be used in other column expressions.</li>
+</ul>
+<p>If you do not provide a name for a computed column, q determines one.</p>
+<ul>
+<li>Normally the name is taken from the left-most term in the column expression.</li>
+<li>When q cannot determine a name it uses ‘x’.</li>
+<li>If q’s chosen name duplicates a previously determined column name, it will suffix it with ‘1’, ‘2’, etc. to make it unique. Recall that columns are sequenced from left to right.</li>
+</ul>
+<pre><code class="q">q)select c1, c1, 2*c2, c2+c3, string c3 from t
+c1 c11 x  c2   c3
+--------------------
+a  a   20 11.1 &quot;1.1&quot;
+b  b   40 22.2 &quot;2.2&quot;
+c  c   60 33.3 &quot;3.3&quot;
+</code></pre>
+
+<h3 id="9322-the-virtual-column-i">9.3.2.2 The Virtual Column i<a class="headerlink" href="../9_Queries_q-sql.1#9322-the-virtual-column-i" title="Permanent link">&para;</a></h3>
+<p>A virtual column <code>i</code> represents the offset of each record in the table – i.e., <code>i</code> is the row number. It is implicitly available in the select phrase.</p>
+<pre><code class="q">q)select i, c1 from t
+x c1
+----
+0 a
+1 b
+2 c
+</code></pre>
+
+<p>Observe that <code>select</code> does not carry the name <code>i</code> into the result.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can name the result column <code>ix</code> to avoid confusion with the always-present virtual column <code>i</code>.
+<pre><code class="language-q">
+ q)select ix:i, c1 from t
+ _
+</code></pre></p>
+</div>
+<h3 id="9323-select-distinct">9.3.2.3 <code>select distinct</code><a class="headerlink" href="../9_Queries_q-sql.1#9323-select-distinct" title="Permanent link">&para;</a></h3>
+<p>The special form <code>select distinct</code> returns only unique records in the result – i.e., it eliminates duplicates.</p>
+<pre><code class="q">q)select distinct from ([] c1:`a`b`a; c2:10 20 10)
+c1 c2
+-----
+a  10
+b  20
+</code></pre>
+
+<h3 id="9324-select">9.3.2.4 <code>select[]</code><a class="headerlink" href="../9_Queries_q-sql.1#9324-select" title="Permanent link">&para;</a></h3>
+<p>You can return the first or last <em>n</em> records in a select by using function parameter syntax after <code>select</code>. A positive integer parameter returns the first records, a negative parameter the last.</p>
+<pre><code class="q">q)select[2] from s where city&lt;&gt;`athens
+s | name status city
+--| -------------------
+s1| smith 20 london
+s2| jones 10 paris
+q)select[-1] from s where city&lt;&gt;`athens
+s | name status city
+--| -------------------
+s4| clark 20 london
+</code></pre>
+
+<p>We could achieve the same result using <code>#</code> after the <code>select</code> (i.e., to its left).</p>
+<pre><code class="q">q)2#select from s where city&lt;&gt;`athens
+_
+q)-1#select from s where city&lt;&gt;`athens
+_
+</code></pre>
+
+<p>The difference is that the <code>#</code> construct requires computing the entire result set and then keeping only the desired rows, whereas <code>select[n]</code> only extracts the desired number of rows. The latter will be faster and consume less memory for large tables.</p>
+<p>This syntax is extended to <code>select[n m]</code> where <code>m</code> is the starting row number and <code>n</code> is the number of rows.</p>
+<pre><code class="q">q)select[1 2] from s where city&lt;&gt;`athens
+_
+</code></pre>
+
+<p>One final extension of the syntax specifies a sorting criterion inside the brackets. For ascending sort, place <code>&lt;</code> before a column name and for descending sort use `&gt;.</p>
+<pre><code class="q">q)select[&gt;name] from s where city&lt;&gt;`athens
+_
+q)select[&lt;city] from s where city&lt;&gt;`athens
+_
+</code></pre>
+
+<p>You can combine the two syntax extensions by separating them with a semicolon.</p>
+<pre><code class="q">q)select[2; &gt;name] from s where city&lt;&gt;`athens
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">The items inside the brackets must be in this order.</p>
+</div>
+<h3 id="9325-select-on-nested-columns">9.3.2.5 Select on Nested Columns<a class="headerlink" href="../9_Queries_q-sql.1#9325-select-on-nested-columns" title="Permanent link">&para;</a></h3>
+<p>You can use <code>select</code> on tables with nested columns but things become more complicated. The rule of thumb is that you will need adverbs… lots of adverbs.</p>
+<p>Let’s take a simple example.</p>
+<pre><code class="q">q)show tnest:([] c1:`a`b`c; c2:(10 20 30; enlist 40; 50 60))
+c1 c2
+-----------
+a  10 20 30
+b  ,40
+c  50 60
+</code></pre>
+
+<p>What can we do with this table? We <strong>cannot</strong> apply an aggregate or uniform operation straight to <code>c2</code> since the fields do not conform.</p>
+<pre><code class="q">q)select avg c2 from tnest
+'length
+</code></pre>
+
+<p>We <strong>can</strong> apply an aggregate or uniform function to each field of c2 in tnest.</p>
+<pre><code class="q">q)select avg each c2 from tnest
+_
+</code></pre>
+
+<p>Similarly we can use <em>each-both</em> to compute a weighted average using two columns.</p>
+<pre><code class="q">q)update c3:(1.1 2.2 3.3; enlist 4.4; 5.5 6.6) from `tnest
+`tnest
+q)select wtavg:c2 wavg' c3 from tnest
+_
+</code></pre>
+
+<h3 id="933-filtering-with-where">9.3.3 Filtering with where<a class="headerlink" href="../9_Queries_q-sql.1#933-filtering-with-where" title="Permanent link">&para;</a></h3>
+<p>The where phrase controls which records of the input table are actually used in the query. The effect of the where phrase is to include only the records that meet its criteria.</p>
+<h3 id="9331-basic-where">9.3.3.1 Basic where<a class="headerlink" href="../9_Queries_q-sql.1#9331-basic-where" title="Permanent link">&para;</a></h3>
+<p>The action generalizes the built-in <code>where</code> function on lists (See <a href="../3_Lists.1#3123-where">§3.12.3</a>). Recall that a table is logically a list of records.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+q)t where t[`c2]&gt;15
+c1 c2 c3
+---------
+b  20 2.2
+c  30 3.3
+q)select from t where c2&gt;15
+_
+</code></pre>
+
+<p>In fact, you can provide a boolean list to <code>where</code>.</p>
+<pre><code class="q">q)select from t where 011b
+_
+</code></pre>
+
+<h3 id="9332-the-virtual-column-i-in-where">9.3.3.2 The Virtual Column i in where<a class="headerlink" href="../9_Queries_q-sql.1#9332-the-virtual-column-i-in-where" title="Permanent link">&para;</a></h3>
+<p>The virtual column <code>i</code> is useful for paginating a table. Use <code>within</code>, which returns a boolean indicating whether the left operand is in the closed interval specified in the right operand, to determine the bounds of the page.</p>
+<pre><code class="q">q)tbig:100#t
+q)select from tbig where i within 50 99
+_
+</code></pre>
+
+<p>To use this construct with non-literal values as the endpoints, you <strong>must</strong> use general-list notation, since simple-list notation cannot be used with variables.</p>
+<pre><code class="q">q)s:50
+q)e:99
+q)select from tbig where i within (s;e)
+_
+</code></pre>
+
+<h3 id="9333-multiple-where-subphrases">9.3.3.3 Multiple <code>where</code> Subphrases<a class="headerlink" href="../9_Queries_q-sql.1#9333-multiple-where-subphrases" title="Permanent link">&para;</a></h3>
+<p>Each where subphrase is a predicate expression that produces a boolean result vector corresponding to records passing or failing a criterion. The <strong>logical</strong> effect of multiple subphrases is to join them with “and”. Note that the parentheses are necessary in the second query.</p>
+<pre><code class="q">q)r1:select from t where c2&gt;15,c3&lt;3.0
+q)r2:select from t where (c2&gt;15)&amp;c3&lt;3.0
+q)r1~r2
+1b
+</code></pre>
+
+<p>However, since the where subphrases are sequenced from left-to-right, their order affects the actual processing. As each subphrase is applied, only the records it passes are tested in the next subphrase. The net effect is a progressively narrowed sublist of rows to consider. There is often an optimal order that significantly narrows in the first one or few subphrases, which in turn reduces the amount of processing.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Place the most limiting <code>where</code> subphrase first, followed by others in decreasing strictness.</p>
+</div>
+<p>Consider the following table comprising a million observations of two variables <code>a</code> and <code>b</code> taken every millisecond starting at midnight. On the author’s laptop, the version of the query that narrows the time interval first executes in under a millisecond whereas the one specifying the variable name first takes 15 milliseconds.</p>
+<pre><code class="q">q)t:([] c1:00:00:00.000+til 1000000;c2:1000000?`a`b;c3:1000000?100.)
+q)\t select from t where c1 within 00:00:01.000 00:00:01.999, c2=`a
+0
+q)\t select from t where c2=`a, c1 within 00:00:01.000 00:00:01.999
+15
+</code></pre>
+
+<h3 id="9334-nested-columns-in-where">9.3.3.4 Nested Columns in <code>where</code><a class="headerlink" href="../9_Queries_q-sql.1#9334-nested-columns-in-where" title="Permanent link">&para;</a></h3>
+<p>Nested columns generally require adverbs, and the where phrase is no different. A common mistake made by qbies is, when trying to find a specific string in a column of strings, they forget that strings are not first-class in q.</p>
+<pre><code class="q">q)t:([] f:1.1 2.2 3.3; s:(&quot;abc&quot;;enlist &quot;d&quot;;&quot;ef&quot;))
+q)select from t where s=&quot;ef&quot;
+'length
+=
+q)select from t where s~&quot;ef&quot;
+f s
+---
+q)select from t where s~\:&quot;ef&quot;
+f s
+--------
+3.3 &quot;ef&quot;
+</code></pre>
+
+<p>The first query is in error because it tests atomic equality between a simple list and a nested list. The second query does not achieve the desired result because it asks if the entire column matches the specified string. The final query works because it tests the specified string for match against each string in the column.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For matching strings, the <code>like</code> operator is more efficient. See <a href="../A_Built-in_Functions.1#a45-like">§A.45</a> for a detailed description but we only need the special case that asks if two strings match exactly – i.e., no wildcards. The fact that <code>like</code> is pseudo-atomic in the left operand makes it suited for comparing against a column. It is actually faster than the above expression with <code>~\:</code> for large lists.
+<pre><code class="language-q">
+ q)select from t where s like "ef"
+ _
+</code></pre>``</p>
+</div>
+<h3 id="9335-fby-in-where">9.3.3.5 <code>fby in where</code><a class="headerlink" href="../9_Queries_q-sql.1#9335-fby-in-where" title="Permanent link">&para;</a></h3>
+<p>A common use case in a query is to filter on groups. For example, in the following example using the table <code>p</code> from the distribution samples, we wish to include only the records having the maximum weight in their respective cities. We could start with a correlated subquery.</p>
+<pre><code class="q">q)select max weight by city from p
+city  | weight
+------| ------
+london| 19
+paris | 17
+rome  | 17
+</code></pre>
+
+<p>But you run into the issue of what to do with the other fields in the subquery. Do without aggregation, which loses the information of where the maximum occurs?</p>
+<pre><code class="q">q)select name, color, max weight by city from p
+city  | name           color        weight
+------| ----------------------------------
+london| `nut`screw`cog `red`red`red 19    
+paris | `bolt`cam      `green`blue  17    
+rome  | ,`screw        ,`blue       17
+</code></pre>
+
+<p>Or do you apply other aggregates that will pick values that are uncorrelated with the original?</p>
+<pre><code class="q">q)select first name, first color, max weight by city from p
+city  | name  color weight
+------| ------------------
+london| nut   red   19    
+paris | bolt  green 17    
+rome  | screw blue  17
+</code></pre>
+
+<p>In SQL you would use <code>HAVING</code>, but q is having none of that. Instead use <code>fby</code> in the where phrase. <!-- – see <a href="#9335-fby-in-where">§9.3.3.5</a>. FIXME --> Since it returns the value of the aggregate across each group, you simply compare the target column to the <code>fby</code> result to get a boolean vector with <code>1b</code> at precisely the records whose fields match the aggregate on the group.</p>
+<p>Used in a where phrase, <code>fby</code> takes the form</p>
+<p>(<em>f<sub>agg</sub></em>;<em>expr<sub>col</sub></em>) <code>fby</code> <em>c</em></p>
+<p>The left operand is a two-item list comprising an aggregate function <em>f<sub>agg</sub></em> and a column expression <em>expr<sub>col</sub></em> on which the function will be applied. The right operand <em>c</em> is the column to be grouped.</p>
+<p>In our example,</p>
+<pre><code class="q">q)select from p where weight=(max;weight) fby city
+p | name  color weight city  
+--| -------------------------
+p2| bolt  green 17     paris 
+p3| screw blue  17     rome  
+p6| cog   red   19     london
+</code></pre>
+
+<p>Now we include another where phrase for the desired result.</p>
+<pre><code class="q">q)select from p where weight=(max;weight) fby city,color=`blue
+p | name  color weight city
+--| -----------------------
+p3| screw blue  17     rome
+</code></pre>
+
+<p>To group on multiple columns, encapsulate them in an anonymous table in the right operand of <code>fby</code>.</p>
+<pre><code class="q">q)t:([]sym:`IBM`IBM`MSFT`IBM`MSFT;
+    ex:`N`O`N`N`N;
+    time:12:10:00 12:30:00 12:45:00 12:50:00 13:30:00;
+    price:82.1 81.95 23.45 82.05 23.40)
+q)select from t where price=(max;price) fby ([]sym;ex)
+sym  ex time     price
+----------------------
+IBM  N  12:10:00 82.1 
+IBM  O  12:30:00 81.95
+MSFT N  12:45:00 23.45
+</code></pre>
+
+<h3 id="934-grouping-and-aggregation">9.3.4 Grouping and Aggregation<a class="headerlink" href="../9_Queries_q-sql.1#934-grouping-and-aggregation" title="Permanent link">&para;</a></h3>
+<p>In contrast to SQL, where grouping and aggregation are performed together, in q-sql they are independent. In this section we use the tables defined in the <code>sp.q</code> script included in the distribution.</p>
+<pre><code class="q">q)p
+p | name  color weight city  
+--| -------------------------
+p1| nut   red   12     london
+p2| bolt  green 17     paris 
+p3| screw blue  17     rome  
+p4| screw red   14     london
+p5| cam   blue  12     paris 
+p6| cog   red   19     london
+q)s
+s | name  status city  
+--| -------------------
+s1| smith 20     london
+s2| jones 10     paris 
+s3| blake 30     paris 
+s4| clark 20     london
+s5| adams 30     athens
+q)sp
+s  p  qty
+---------
+s1 p1 300
+s1 p2 200
+s1 p3 400
+s1 p4 200
+s4 p5 100
+s1 p6 100
+s2 p1 300
+s2 p2 400
+s3 p2 200
+s4 p2 200
+s4 p4 300
+s1 p5 400
+</code></pre>
+
+<h3 id="9341-aggregation-without-grouping">9.3.4.1 Aggregation without Grouping<a class="headerlink" href="../9_Queries_q-sql.1#9341-aggregation-without-grouping" title="Permanent link">&para;</a></h3>
+<p>When an aggregate function is applied against a column of simple type in the select phrase, the result is an atom. If all columns in the select phrase are computed with aggregation and there is no grouping, the result will be a table with a single row – e.g., a summary or rollup. While q has many built-in aggregates, you can also define and use your own.</p>
+<p>Here we calculate the total and mean order quantity using the built-in aggregates <code>sum</code> and <code>avg</code>.</p>
+<pre><code class="q">q)select total:sum qty, mean:avg qty from sp
+total mean    
+--------------
+3100  258.3333
+</code></pre>
+
+<h3 id="9342-grouping-without-aggregation">9.3.4.2 Grouping without Aggregation<a class="headerlink" href="../9_Queries_q-sql.1#9342-grouping-without-aggregation" title="Permanent link">&para;</a></h3>
+<p>The <em>by</em> phrase groups rows having common values in specified column(s), much like <code>GROUP BY</code> in SQL. The result of a query including a by phrase is a keyed table whose key column(s) are those in the by phrase. This is well-defined because the grouping along like values ensures uniqueness of the keys.</p>
+<p>The action of the by phrase is a generalization of the built-in function <code>group</code> on lists (See <a href="../3_Lists.1#3124-group">§3.12.4</a>). A query that groups without aggregation results in nested columns. One way to think of this is that each group of values is folded into a single field in the result.</p>
+<pre><code class="q">q)t:([] c1:`a`b`a`b`c; c2:10 20 30 40 50)
+q)t[`c2] group t[`c1]
+a| 10 30
+b| 20 40
+c| ,50
+q)select c2 by c1 from t
+c1| c2
+--| -----
+a | 10 30
+b | 20 40
+c | ,50
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Grouping without aggregation is the most common way qbies unintentionally create nested columns. Nested columns are slower, more cumbersome to use (they require a heavy dose of adverbs) and are usually unnecessary. And you can’t just cast a nested column to a simple one; you must apply an aggregate or some other operation that flattens a list.</p>
+</div>
+<p>Observe that <code>ungroup</code> can be used to reverse the nested result of grouping without aggregation. It is not quite an inverse since it returns the original records ordered on the by column(s).</p>
+<pre><code class="q">q)ungroup select c2 by c1 from t
+c1 c2
+-----
+a  10
+a  30
+b  20
+b  40
+c  50
+</code></pre>
+
+<p>There are use cases that group on specified column(s) and want <strong>all</strong> the remaining columns to be nested in the result. For this use <code>xgroup</code>, which takes the symbolic column name(s) to be grouped as left operand and a table as right operand. The result is a keyed table that is that same as listing all the non-grouped columns in the equivalent select.</p>
+<p>Using the distribution example,</p>
+<pre><code class="q">q)`p xgroup sp
+p | s               qty            
+--| -------------------------------
+p1| `s$`s1`s2       300 300        
+p2| `s$`s1`s2`s3`s4 200 400 200 200
+p3| `s$,`s1         ,400           
+p4| `s$`s1`s4       200 300        
+p5| `s$`s4`s1       100 400        
+p6| `s$,`s1         ,100 
+</code></pre>
+
+<p>Again <code>ungroup</code> is an inverse up to record order.</p>
+<pre><code class="q">q)ungroup `p xgroup sp
+_
+</code></pre>
+
+<h3 id="9343-grouping-with-aggregation">9.3.4.3 Grouping with Aggregation<a class="headerlink" href="../9_Queries_q-sql.1#9343-grouping-with-aggregation" title="Permanent link">&para;</a></h3>
+<p>Normally you will group using <code>by</code> together with aggregation in the select phrase. The effect is to aggregate along the groups, collapsing each group of rows into a single record. The result is a keyed table whose key columns are the grouped column(s).</p>
+<pre><code class="q">q)select sum c2 by c1 from t
+c1| c2
+--| --
+a | 40
+b | 60
+c | 50
+</code></pre>
+
+<p>To group on multiple columns, specify multiple by subphrases, which results in a compound key in the result.</p>
+<pre><code class="q">q)t:([] desk:`a`b`a`b`a`b; acct:`1`2`3`4`1`4; pnl:1.1 -2.2 3.3 4.4 5.5 -.5)
+q)select ct:count desk, sum pnl by desk,acct from t
+desk acct| ct pnl 
+---------| -------
+a    1   | 2  6.6 
+a    3   | 1  3.3 
+b    2   | 1  -2.2
+b    4   | 2  3.9
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>In contrast to SQL, every column in the by phrase is automatically included in the key column(s) of the result and should not be duplicated in the select phrase.</p>
+</div>
+<p>A by subphrase can be a q expression, meaning that you can group on computed columns. This is very powerful and is not present in SQL. Following is a useful example that averages the observations of our time series in 100 millisecond buckets.</p>
+<pre><code class="q">q)t:([] c1:00:00:00.000+til 1000000;c2:1000000?`a`b;c3:1000000?100.)
+q)select avg c3 by 100 xbar c1, c2 from t
+c1           c2| c3      
+---------------| --------
+00:00:00.000 a | 55.26494
+00:00:00.000 b | 41.81758
+00:00:00.100 a | 48.88826
+00:00:00.100 b | 46.10946
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>In an unexpected special case of implicit grouping with aggregation, specifying a by phrase together with empty select phrase is equivalent to applying <code>last</code> to all columns. A moment’s thought reveals this is quite useful for financial time series, where you often want the most recent value of a group.
+<pre><code class="language-q">
+ q)t:([] desk:`a`b`a`b`a`b; acct:`1`2`3`4`1`4; pnl:1.1 -2.2 3.3 4.4 5.5 -.5)
+ q)select by desk from t
+ desk| acct pnl
+ ----| ---------
+ a   | 1    5.5
+ b   | 4    -0.5 
+ </code></pre></p>
+</div>
+<h2 id="94-the-exec-template">9.4 The <code>exec</code> Template<a class="headerlink" href="../9_Queries_q-sql.1#94-the-exec-template" title="Permanent link">&para;</a></h2>
+<p>The syntax of the <code>exec</code> template is identical to that of <code>select</code>.</p>
+<p><code>exec</code> &lt;<em>p<sub>s</sub></em>&gt; &lt;<code>by</code> <em>p<sub>b</sub></em>&gt; <code>from</code> <em>t<sub>exp</sub></em> &lt;<code>where</code> <em>p<sub>w</sub></em>&gt;</p>
+<p>Whereas <code>select</code> always returns a table, the result type of <code>exec</code> depends on the number of columns in its select phrase. One column yields a list; more than one column yields a dictionary.</p>
+<p>When more than one column is specified the select phrase, the result is a dictionary mapping column names to the column lists produced. The essential difference from <code>select</code> is that the column lists do not have to be rectangular – i.e., they are not required to have the same length – and the resulting dictionary is not flipped into a table. For example, the following query fails with <code>select</code> because the proposed column dictionary is not rectangular but it succeeds with exec.</p>
+<pre><code class="q">q)t:([] name:`a`b`c`d`e; state:`NY`FL`OH`NY`HI)
+q)select name, distinct state from t
+'length
+q)exec name, distinct state from t
+name | `a`b`c`d`e
+state| `NY`FL`OH`HI
+</code></pre>
+
+<p>A common use of <code>exec</code> is when there is only one column in the aggregate phrase and no by phrase. The result is the computed column list devoid of other structure – i.e., not a dictionary or table. This is useful to extract a column dynamically. With t as above,</p>
+<pre><code class="q">q)select name from t
+name
+----
+a
+b
+c
+d
+e
+q)exec name from t
+`a`b`c`d`e
+</code></pre>
+
+<p>When using <code>exec</code> to extract a single column of a table, you can place constraints on other columns.</p>
+<pre><code class="q">q)exec name from t where state in `NY`HI
+`a`d`e
+</code></pre>
+
+<h2 id="95-the-update-template">9.5 The update Template<a class="headerlink" href="../9_Queries_q-sql.1#95-the-update-template" title="Permanent link">&para;</a></h2>
+<h3 id="951-basic-update">9.5.1 Basic update<a class="headerlink" href="../9_Queries_q-sql.1#951-basic-update" title="Permanent link">&para;</a></h3>
+<p>The update template has identical syntax to <code>select</code>.</p>
+<p><code>update</code> &lt;<em>p<sub>u</sub></em>&gt; &lt;<code>by</code> <em>p<sub>b</sub></em>&gt; <code>from</code> <em>t<sub>exp</sub></em> &lt;<code>where</code> <em>p<sub>w</sub></em>&gt;</p>
+<p>The semantic difference is that colons in the update phrase <em>p<sub>u</sub></em> identify modified or new columns instead of simply assigning column names. If the left of a colon is a column that exists in the table, that column is updated with the result of the expression to the right of the colon. If the left of a colon is not a column in the table, a new column of that name with the result of the expression is added to the end of the column list. The original table is not affected.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30)
+q)update c1:`x`y`z from t
+c1 c2
+-----
+x  10
+y  20
+z  30
+q)t
+_
+q)update c3:`x`y`z from t
+c1 c2 c3
+--------
+a  10 x
+b  20 y
+c  30 z
+q)t
+_
+</code></pre>
+
+<p>The implicit naming conventions are the same as in <code>select</code> so you can omit the name and colon for existing columns in many cases. With <code>t</code> as above,</p>
+<pre><code class="q">q)(update c2:c2+100 from t)~update c2+100 from t
+1b
+</code></pre>
+
+<p>In the examples above, the table was passed by value and so the original was not modified. To modify the table in place, pass it by name.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30)
+q)update c1:`x`y`z from `t
+_
+q)t
+_
+q)update c3:`x`y`z from `t
+_
+q)t
+_
+</code></pre>
+
+<p>Qbies coming from DDL may not immediately appreciate how useful it is that <code>update</code> can add new columns dynamically. For example, you can add a “constant” column by taking advantage of the fact that scalars are extended to match vectors. This is <strong>not</strong> a default value for the column in subsequent records.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30)
+q)update c3:42 from t
+_
+</code></pre>
+
+<p>Often you will apply update with a where phrase that limits the scope of the modification.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30)
+q)update c2:c2+100 from t where c1&lt;&gt;`a
+c1 c2
+------
+a  10
+b  120
+c  130
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The actions in the where phrase and the update phrase are vector operations on entire column lists. This is the Zen of <code>update</code>.</p>
+</div>
+<p>If you add a new column in <code>update</code> with a where phrase, the fields in the non-selected rows will have the null value of the appropriate type.</p>
+<pre><code class="q">q)update c3:1b from t where c2&gt;15
+c1 c2 c3
+--------
+a  10 0
+b  20 1
+c  30 1
+</code></pre>
+
+<p>You can use any q expression to the right of the colon providing the size and type match the targeted location.</p>
+<pre><code class="q">q)update c2:42 43 from t where c2&gt;15
+_
+q)update c2:42 43 44 from t where c2&gt;15
+'length
+q)update c2:42.0 43 from t where c2&gt;15
+'type
+</code></pre>
+
+<h3 id="952-update-by">9.5.2 update-by<a class="headerlink" href="../9_Queries_q-sql.1#952-update-by" title="Permanent link">&para;</a></h3>
+<p>When the by phrase is present, the update operation is performed along groups. This is most useful with aggregate and uniform functions. For an aggregate function, the entire group gets the value of the aggregation on the group.</p>
+<pre><code class="q">q)update avg weight by city from p
+p | name  color weight city  
+--| -------------------------
+p1| nut   red   15     london
+p2| bolt  green 14.5   paris 
+p3| screw blue  17     rome  
+p4| screw red   15     london
+p5| cam   blue  14.5   paris 
+p6| cog   red   15     london
+</code></pre>
+
+<p>A uniform function is applied along the group in place. This can be used to compute cumulative volume of orders, for example.</p>
+<pre><code class="q">q)update cumqty:sums qty by s from sp
+_
+</code></pre>
+
+<h2 id="96-the-delete-template">9.6 The delete Template<a class="headerlink" href="../9_Queries_q-sql.1#96-the-delete-template" title="Permanent link">&para;</a></h2>
+<p>The final template, delete, allows either rows or columns to be deleted. Its syntax is a simplified form of select, with the restriction that either <em>p<sub>cols</sub></em> or <em>p<sub>w</sub></em> can be present but not both.</p>
+<p><code>delete</code> &lt;<em>p<sub>cols</sub></em>&gt; <code>from</code> <em>t<sub>exp</sub></em> &lt;<code>where</code> <em>p<sub>w</sub></em>&gt;</p>
+<p>If <em>p<sub>cols</sub></em> is present as a comma-separated list of columns, the result is <em>t<sub>exp</sub></em> with the specified columns removed. If <em>p<sub>w</sub></em> is present, the result is <em>t<sub>exp</sub></em> after records meeting the criteria of <em>p<sub>w</sub></em> are removed. Someone always asks, can you delete rows and column simultaneously? But the rest of us meditating on the Zen of q realize this makes no sense.</p>
+<p>When the table is passed by value, the operation is on a copy. When the table is passed by name, the operation is in place. Deleting from a copy,</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30)
+q)delete c1 from t
+_
+q)delete from t where c2&gt;15
+_
+q)t
+_
+</code></pre>
+
+<p>To delete in place,</p>
+<pre><code class="q">q)delete from `t where c2=30
+_
+q)delete c2 from `t
+_
+q)t
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>When you want to select all but a few columns, it is easier to delete the ones you don’t want than list all the ones you do.
+<pre><code class="language-q">
+ q)t:([] c1:1 2; c2:`a`b; c3:1.1 2.2; c4:2015.01.01 2015.01.02)
+ q)(select c1, c2, c4 from t)~delete c3 from t
+ 1b
+</code></pre></p>
+</div>
+<h2 id="97-sorting">9.7 Sorting<a class="headerlink" href="../9_Queries_q-sql.1#97-sorting" title="Permanent link">&para;</a></h2>
+<p>Recall that tables and keyed tables comprise lists of records and therefore have an inherent order. A table or keyed table can be reordered by sorting on any column(s). In contrast to SQL, there is no equivalent to <code>ORDER BY</code> in the select template. Instead, built-in functions that sort tables are applied after <code>select</code>.</p>
+<h3 id="971-xasc">9.7.1 <code>xasc</code><a class="headerlink" href="../9_Queries_q-sql.1#971-xasc" title="Permanent link">&para;</a></h3>
+<p>The dyadic <code>xasc</code> takes a scalar, or list of, symbolic column name(s) as its left operand and a table or table name as its right operand. It returns the records of the table sorted ascending on the specified column(s). The sort column list is specified in major-to-minor sort order.</p>
+<p>To work on a copy, pass by value.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c`a; c2:20 10 40 30)
+q)`c2 xasc t
+c1 c2
+-----
+b  10
+a  20
+a  30
+c  40
+q)`c1`c2 xasc t
+c1 c2
+-----
+a  20
+a  30
+b  10
+c  40
+q)t
+_
+q)t
+c1 c2
+-----
+20 z
+10 y
+30 x
+20 a
+</code></pre>
+
+<p>To sort in place, pass by name.</p>
+<pre><code class="q">q)`c1`c2 xasc `t
+_
+q)t
+_
+</code></pre>
+
+<h3 id="972-xdesc">9.7.2 <code>xdesc</code><a class="headerlink" href="../9_Queries_q-sql.1#972-xdesc" title="Permanent link">&para;</a></h3>
+<p>The dyadic <code>xdesc</code> behaves exactly as <code>xasc</code>, except that the sort is performed in descending order.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c`a; c2:20 10 40 30)
+q)`c1`c2 xdesc t
+c1 c2
+-----
+c  40
+b  10
+a  30
+a  20
+</code></pre>
+
+<h3 id="973-mixed-sort">9.7.3 Mixed Sort<a class="headerlink" href="../9_Queries_q-sql.1#973-mixed-sort" title="Permanent link">&para;</a></h3>
+<p>We point out that <code>xasc</code> and <code>xdesc</code> are stable sorts, meaning that the order of two records having the same sort key value is preserved in the result. This makes it possible to compose ascending and descending sort to obtain mixed sorts. For example, to sort <code>c2</code> descending within <code>c1</code> ascending in <code>t</code> above,</p>
+<pre><code class="q">q)`c1 xasc `c2 xdesc t
+_
+</code></pre>
+
+<h2 id="98-renaming-and-rearranging-columns">9.8 Renaming and Rearranging Columns<a class="headerlink" href="../9_Queries_q-sql.1#98-renaming-and-rearranging-columns" title="Permanent link">&para;</a></h2>
+<p>Since a table is the flip of a column dictionary, its columns are both named and ordered. There are built-in primitives to rename and reorder columns. Their names are unfortunately chosen and their usage may seem awkward at first since they focus on the left-most columns. Nonetheless, they work well in practice.</p>
+<p>We use the following table in this section.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+</code></pre>
+
+<h3 id="981-xcol">9.8.1 <code>xcol</code><a class="headerlink" href="../9_Queries_q-sql.1#981-xcol" title="Permanent link">&para;</a></h3>
+<p>The dyadic <code>xcol</code> takes a scalar, or list of, symbolic column name(s) as its left operand (<em>names</em>) and a table or keyed table (<em>source</em>) as its right operand. The columns in <em>names</em> must appear in <em>source</em>. The result is a table obtained by renaming the left-most columns of source according to <em>names</em>.</p>
+<pre><code class="q">q)`new1`new2 xcol t
+_
+q)t
+_
+</code></pre>
+
+<p>There is no pass-by-name version of <code>xcol</code>. To modify the source, reassign it.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>You can use constructs such as the following to rename isolated columns if your table has many columns and the targeted columns area not left-most.
+<pre><code class="language-q">
+q)@[cols[t]; where cols[t]=`c2; :; `new2] xcol t
+<em>
+q)@[cols[t]; where cols[t] in `c1`c3; :; `new1`new3] xcol t
+</em> 
+</code></pre></p>
+</div>
+<h3 id="982-xcols">9.8.2 <code>xcols</code><a class="headerlink" href="../9_Queries_q-sql.1#982-xcols" title="Permanent link">&para;</a></h3>
+<p>Now you will see what we mean about the unfortunate naming convention. The dyadic <code>xcols</code> takes a scalar, or list of, symbolic column name(s) as its left argument (<em>names</em>) and a table (<em>source</em>) as its right argument. The output is the result of reordering the columns in <em>names</em> so that those in <em>names</em> occur at the beginning – i.e., left-most in the display. Columns not specified in <em>names</em> are left in original order at the end – i.e., right-most.</p>
+<p>Notes:</p>
+<ul>
+<li>The <em>source</em> operand <strong>cannot</strong> be a keyed table.</li>
+<li>There is no pass-by-name version of <code>xcols</code>. To modify the source, you must reassign it.</li>
+</ul>
+<p>For example,</p>
+<pre><code class="q">q)`c3 xcols t
+_
+q)`c3`c2 xcols t
+_
+q)t
+_
+</code></pre>
+
+<h2 id="99-joins">9.9 Joins<a class="headerlink" href="../9_Queries_q-sql.1#99-joins" title="Permanent link">&para;</a></h2>
+<p>The essence of relational database design is normalizing data using relations and keys and then reassembling with joins. Normalization eliminates duplicate data, which takes up space and is hard to keep consistent. Joins restore the original flat rectangular form that makes data easy to work with (there’s a reason spreadsheets are so popular). Simple use cases include a master-detail relation or a lookup table.</p>
+<p>In SQL the relational structure with primary and foreign keys is static. It must be defined in a separate language (DDL) before the data can be used. Foreign key/primary key relations must be pre-established in order for joins to take place.</p>
+<p>In q, tables are first-class entities in the language. You can define tables and relations statically, but it is easy to create them dynamically. It is even possible to join tables that could have a relation but don’t.</p>
+<p>A join sews back together along a foreign key/primary linkage data that has been factored into normal form. A join can be classified as inner or outer. An <em>inner join</em> pairs <strong>only</strong> records in both operands having matching keys. A <em>left outer</em> <em>join</em> includes <strong>all</strong> records in the left operand, pairing them with records having matching key in the right operand, should such exist. A <em>right outer</em> <em>join</em> reverses left and right in this description.</p>
+<p>In q there are built-in inner and left outer joins; if you need a right join, reverse the operands. There is no operator for a full outer join but you can construct one; be careful what you wish for with large tables.</p>
+<p>Joins can also be classified by how key matching is determined. Most joins are <em>equijoins</em>, meaning that the keys must be equal. In q there are also non-equijoins, called <em>as of</em> joins, in which a key is tested for less-than-or-equal against keys in another table.</p>
+<h3 id="991-implicit-join">9.9.1 Implicit Join<a class="headerlink" href="../9_Queries_q-sql.1#991-implicit-join" title="Permanent link">&para;</a></h3>
+<p>Given a primary key table <em>m</em> with key column(s) <em>k</em> and a table <em>d</em> with a foreign key linking to <em>k</em>, a left join can be expressed in various SQL notations. For example,</p>
+<pre><code class="sql">m LEFT JOIN d ON m.k = d.k
+</code></pre>
+
+<p>A <code>SELECT</code> statement for this join refers to columns in the join by using dot notation based on the constituent tables.</p>
+<p><code>SELECT</code> d.col<sub>d</sub>, m.col<sub>m</sub> <code>FROM</code> m <code>LEFT JOIN</code> d <code>WHERE</code> m.k <code>=</code> d.k</p>
+<p>As we saw in <a href="../8_Tables.1">Chapter 8</a>, a foreign key in q is accomplished with an enumeration over the key column(s) of a keyed table. A left join is implicit in the following query on the detail table.</p>
+<p><code>select</code> col<sub>d</sub>, k.col<sub>m</sub> <code>from</code> d</p>
+<p>For example, in the <code>sp.q</code> distribution script, the table <code>sp</code> has foreign keys to both <code>s</code> and <code>p</code>. We can extract columns from the left join with <code>s</code> by issuing a query against <code>sp</code> and using dot notation on the foreign key to get columns in <code>s</code>.</p>
+<pre><code class="q">q)select sname:s.name, qty from sp
+_
+</code></pre>
+
+<p>This generalizes to the situation where <code>d</code> has multiple foreign keys. For example, in the <code>sp.q</code> distribution script, we can select records from the join of <code>sp</code>, <code>s</code> and <code>p</code> from a query against <code>sp</code>.</p>
+<pre><code class="q">q)select sname:s.name, pname:p.name, qty from sp
+_
+</code></pre>
+
+<p>Implicit joins extend to the situation in which the targeted keyed table itself has a foreign key to another keyed table.</p>
+<pre><code class="q">q)emaster:([eid:1001 1002 1003 1004 1005] currency:`gbp`eur`eur`gbp`eur)
+q)update eid:`emaster$1001 1002 1005 1004 1003 from `s
+q)select s.name, qty, s.eid.currency from sp
+_
+</code></pre>
+
+<h3 id="992-ad-hoc-left-join-lj">9.9.2 Ad hoc Left Join (lj)<a class="headerlink" href="../9_Queries_q-sql.1#992-ad-hoc-left-join-lj" title="Permanent link">&para;</a></h3>
+<p>To create an ad-hoc left outer join between tables that <strong>could</strong> have a foreign-key relationship, use the dyadic <code>lj</code>. When the foreign key exists, that linkage is used; otherwise, the linkage is constructed dynamically. The join is 2-3 times faster if the foreign key already exists.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>If you intend to perform the join more than a few times, it pays to create the foreign key up front.</p>
+</div>
+<p>The right operand is a keyed table (<em>target</em>) and the left operand is a table or keyed table (<em>source</em>) having either a foreign key to target or column(s) that match the key column(s) of target in name and type. The result is all the records and columns of <em>source</em> augmented with the records and columns of <em>target</em> along matching keys. For those records in <em>source</em> having no matching key, the augmented columns contain null values.</p>
+<p>In the following example we see all the records of <code>t</code> in the result, with null values in the <code>kt</code> column(s) where there is no matching key.</p>
+<pre><code class="q">q)t:([] k:1 2 3 4; c:10 20 30 40)
+q)kt:([k:2 3 4 5]; v:200 300 400 500)
+q)t lj kt
+k c  v
+--------
+1 10
+2 20 200
+3 30 300
+4 40 400
+</code></pre>
+
+<p>Observe that when the source table has a foreign key, an ad-hoc left join is equivalent to listing all columns from both tables in an implicit join.</p>
+<pre><code class="q">q)kt:([k:1 2 3 4 5]; v1:10 20 30 40 50; v2:1.1 2.2 3.3 4.4 5.5)
+q)tf:([] k:`kt$1 2 3 4; c:10 20 30 40)
+q)(tf lj kt)~select k,c,k.v1,k.v2 from tf
+1b
+</code></pre>
+
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>When the tables source and target have duplicate non-key columns, the operation has <code>upsert</code> semantics.</p>
+</div>
+<p>That is, the values in the right operand (target) columns prevail over those in the left operand (source). This is different from SQL where the result contains both columns with suffixes to ensure unique names.</p>
+<pre><code class="q">q)t:([] k:1 2 3 4; v:10 20 30 40)
+q)kt:([k:2 3 4 5]; v:200 300 400 500)
+q)t lj kt
+k v
+-----
+1 10
+2 200
+3 300
+4 400
+</code></pre>
+
+<p>You can also use <code>lj</code> with a left operand keyed table.</p>
+<pre><code class="q">q)kt1:([k:1 2 3 4]; v:10 0N 30 40)
+q)kt:([k:2 3 4 5]; v:200 300 400 500)
+q)kt1 lj kt
+_
+</code></pre>
+
+<h3 id="993-column-lookup">9.9.3 Column Lookup<a class="headerlink" href="../9_Queries_q-sql.1#993-column-lookup" title="Permanent link">&para;</a></h3>
+<p>You can perform a column lookup against a keyed table within a query without using a join. The insight is that a keyed table is a dictionary whose key list comprises its key records, so it will perform the lookup provided we put the column in an anonymous table conforming to those key records – see <a href="../8_Tables.1#845-retrieving-multiple-records">§8.4.5</a>. Here we demonstrate the case where the lookup column names do not natively match the key columns, so we rename columns to match in the anonymous table.</p>
+<pre><code class="q">q)t:([] k:1 2 3 4; c:10 20 30 40)
+q)kt:([k1:2 3 4 5]; v:2.2 3.3 4.4 5.5)
+q)select c, v:kt[([] k1:k); `v] from t
+c  v
+------
+10
+20 2.2
+30 3.3
+40 4.4
+</code></pre>
+
+<p>Especially for a single column, this is simpler (and more impressive to your colleagues) than the equivalent join.</p>
+<pre><code class="q">q)select c,v from t lj `k xkey select k:k1,v from kt
+c  v
+------
+10
+20 2.2
+30 3.3
+40 4.4
+</code></pre>
+
+<p>Here is an example using compound keys and column renaming to match the lookup table.</p>
+<pre><code class="q">q)t:([] f:`rocky`bullwinkle; l:`squirrel`moose; c:10 20)
+q)kt:([fn:`rocky`bullwinkle`fearless; ln:`squirrel`moose`leader] v:1.1 2.2 3.3)
+q)select c, v:kt[([] fn:f; ln:l); `v] from t
+c  v
+------
+10 1.1
+20 2.2
+</code></pre>
+
+<h3 id="994-ad-hoc-inner-join-ij">9.9.4 Ad Hoc Inner Join (ij)<a class="headerlink" href="../9_Queries_q-sql.1#994-ad-hoc-inner-join-ij" title="Permanent link">&para;</a></h3>
+<p>Given a primary key table <em>m</em> with key column(s) <em>k</em> and a table <em>d</em> with a foreign key linking to <em>k</em>, an inner join can be expressed in various SQL notations,</p>
+<pre><code class="sql">m,d WHERE m.k = d.k
+
+m INNER JOIN d ON m.k = d.k
+</code></pre>
+
+<p>A <code>SELECT</code> statement for this join refers to columns in the join by using dot notation based on the constituent tables.</p>
+<p><code>SELECT</code> d.col<sub>d</sub>, m.col<sub>m</sub> <code>FROM</code> m,d <code>WHERE</code> m.k <code>=</code> d.k</p>
+<p>The dyadic <em>inner-join</em> operator <code>ij</code> performs an inner join between two tables that <strong>could</strong> have a foreign key relationship.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The same performance observations hold as for <code>lj</code>.</p>
+</div>
+<p>As with <code>lj</code>, the right operand is a keyed table (<em>target</em>) and the left operand is a table or keyed table (<em>source</em>) having column(s) that are either foreign key(s) over <em>target</em> or exactly match the key column(s) of <em>target</em> in name and type. The matching is done via the foreign key or by common column name(s) between <em>source</em> and the key column(s) of <em>target</em> if there is no foreign-key relationship<strong>.</strong> The result contains the columns from source and target joined along common keys.</p>
+<p>The following example shows that <code>ij</code> returns just those records with matching keys in both tables.</p>
+<pre><code class="q">q)t:([] k:1 2 3 4; c:10 20 30 40)
+q)kt:([k:2 3 4 5]; v:2.2 3.3 4.4 5.5)
+q)t ij kt
+k c  v
+--------
+2 20 2.2
+3 30 3.3
+4 40 4.4
+</code></pre>
+
+<p>As with <code>lj</code>, upsert semantics holds for duplicate columns.</p>
+<pre><code class="q">q)t:([] k:1 2 3 4; v:10 20 30 40)
+q)kt:([k:2 3 4 5]; v:200 300 400 500)
+q)t ij kt
+k v
+-----
+2 200
+3 300
+4 400
+</code></pre>
+
+<p>You can also use <code>ij</code> with a left operand keyed table.</p>
+<pre><code class="q">q)kt1:([k:1 2 3 4]; v:10 0N 30 40)
+q)kt:([k:2 3 4 5]; v:200 300 400 500)
+q)kt1 ij kt
+_
+</code></pre>
+
+<h3 id="995-equijoin-ej">9.9.5 Equijoin <code>ej</code><a class="headerlink" href="../9_Queries_q-sql.1#995-equijoin-ej" title="Permanent link">&para;</a></h3>
+<p>The triadic <em>equijoin</em> operator <code>ej</code> corresponds to a SQL inner join between tables in the second and third parameters along specified column names in the first parameter. The right operand does not have to be a keyed table. Unlike <code>ij</code>, <strong>all</strong> matching records in the right table appear in the result. As with any join, upsert semantics holds on duplicate columns.</p>
+<pre><code class="q">q)t1:([] k:1 2 3 4; c:10 20 30 40)
+q)t2:([] k:2 2 3 4 5; c:200 222 300 400 500; v:2.2 22.22 3.3 4.4 5.5)
+q)t1 ij `k xkey t2
+k c   v
+---------
+2 200 2.2
+3 300 3.3
+4 400 4.4
+q)ej[`k;t1;t2]
+k c   v
+-----------
+2 200 2.2
+2 222 22.22
+3 300 3.3
+4 400 4.4
+</code></pre>
+
+<h3 id="996-plus-join-pj">9.9.6 Plus Join (pj)<a class="headerlink" href="../9_Queries_q-sql.1#996-plus-join-pj" title="Permanent link">&para;</a></h3>
+<p><em>Plus join</em> <code>pj</code> is a left join that replaces upsert semantics for duplicate column names with addition. This is useful when you have two tables with identical schemas having all non-key columns numeric. For example, you have an organizational hierarchy and you want to roll up numeric results.</p>
+<p>The operands of <code>pj</code> are the same as for <code>lj</code> with the additional requirement that all non-key columns are numeric. The semantics are that duplicate columns are added along matching keys and missing or null values are treated as zero.</p>
+<p>For example,</p>
+<pre><code class="q">q)t:([] k:`a`b`c; a:100 200 300; b:10. 20. 30.; c:1 2 3)
+q)kt:([k:`a`b] a:10 20; b:1.1 2.2)
+q)t pj kt
+k a   b    c
+------------
+a 110 11.1 1
+b 220 22.2 2
+c 300 30 3
+</code></pre>
+
+<p>Observe that this is the same as,</p>
+<pre><code class="q">q)kt1:([k:`a`b`c] a:10 20 0; b:1.1 2.2 0.0; c:0 0 0)
+q)t pj kt1
+k a   b    c
+------------
+a 110 11.1 1
+b 220 22.2 2
+c 300 30 3
+</code></pre>
+
+<h3 id="997-union-join">9.9.7 Union Join<a class="headerlink" href="../9_Queries_q-sql.1#997-union-join" title="Permanent link">&para;</a></h3>
+<p>The equivalent of an ordinary SQL union on tables with matching schemas is simply <code>,</code>. Indeed, it joins two lists of compatible records.</p>
+<pre><code class="q">q)t1:([] c1:`a`b; c2:1 2)
+q)t2:([] c1:`c`d; c2:3 4)
+q)t1,t2
+c1 c2
+-----
+a  1
+b  2
+c  3
+d  4
+</code></pre>
+
+<p><code>Union join</code> <code>uj</code> is more powerful in that it vertically combines <strong>any</strong> two tables, or keyed tables. The records of the right operand are appended to those of the left operand in the following manner. The result table is widened with new columns of the same name and type for the columns of the right operand that do not appear in the left operand. The initial records in the result come from the left operand and have nulls in the new columns. Records from the right operand have their field values under the appropriate columns. An example is worth a thousand words.</p>
+<pre><code class="q">q)t1:([] c1:`a`b`c; c2: 10 20 30)
+q)t2:([] c1:`x`y; c3:8.8 9.9)
+q)t1 uj t2
+c1 c2 c3 
+---------
+a  10    
+b  20    
+c  30    
+x     8.8
+y     9.9
+</code></pre>
+
+<p>Continuing the previous example, you can use <code>uj/</code> to combine a list of disparate tables.</p>
+<pre><code class="q">q)t3:([] c1:`e`f`g; c2:50 60 70; c3:5.5 6.6 7.7)
+q)(uj/) (t1; t2; t3)
+_
+</code></pre>
+
+<p>You can also apply <code>uj</code> to keyed tables, where upsert semantics hold on both rows and columns.</p>
+<pre><code class="q">q)kt1:([k:1 2 3] v1:`a`b`c; v2:10 20 30)
+q)kt2:([k:3 4] v2:300 400; v3:3.3 4.4)
+q)kt1 uj kt2
+k| v1 v2  v3 
+-| ----------
+1| a  10     
+2| b  20     
+3| c  300 3.3
+4|    400 4.4
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The operation of <code>uj</code> is expensive so it should only be used when necessary; in particular, when the tables conform, use <code>,</code> or <code>raze</code>. Be especially cautious when low latency is paramount.</p>
+</div>
+<h3 id="998-as-of-joins">9.9.8 As-of Joins<a class="headerlink" href="../9_Queries_q-sql.1#998-as-of-joins" title="Permanent link">&para;</a></h3>
+<p>As-of joins are so-named because they most often join tables along time columns to obtain a value in one table that is current as of a time in another table. As-of joins are non-equijoins that match on less-than-or-equal. They are not restricted to time values.</p>
+<p>The fundamental as-of join is the triadic function <code>aj</code>. It joins tables along common columns using most recent values. The syntax of <code>aj</code> is,</p>
+<p><code>aj</code>[`<em>c<sub>1</sub></em>...`<em>c<sub>n</sub></em>;<em>t<sub>1</sub></em>;<em>t<sub>2</sub></em>]</p>
+<p>where <em>`c<sub>1</sub>...`c<sub>n</sub></em> is a simple list of symbol column names common to <em>t<sub>1</sub></em> and <em>t<sub>2</sub></em>, which are the tables to be joined. There is no requirement for any of the join columns to be keys but the join will be faster on keys. The columns of both tables are brought into the result.</p>
+<p>The semantics of <code>aj</code> are as follows. The match on all specified columns <strong>except the last</strong> is by equals. Assuming the records are sequenced by <em>c<sub>n</sub></em> in both tables, for a given <em>c<sub>n</sub></em> value in <em>t<sub>1</sub></em>, the match picks the greatest <em>c<sub>n</sub></em> in <em>t<sub>2</sub></em> less than or equal to the given value in <em>t<sub>1</sub></em>. Specifically, if the <em>c<sub>n</sub></em> columns are sequenced temporal values, for each <em>c<sub>n</sub></em> value in <em>t<sub>1</sub></em> the match picks the <em>t<sub>2</sub></em> row whose <em>c<sub>n</sub></em> value is in effect “as of” the time in <em>t<sub>1</sub></em>.</p>
+<p>The canonical example for <code>aj</code> is matching trades with quotes. To know if a trade represents best execution, you want to compare the trade price to the current quote – i.e., the most recent quote up to and including the time of the trade. When matching the trades and quotes, you clearly want an equi-join and the date and symbol and a non-equijoin on the time.</p>
+<pre><code class="q">q)show t:([] ti:10:01:01 10:01:03 10:01:04;sym:`msft`ibm`ge;qty:100 200 150)
+ti       sym  qty
+-----------------
+10:01:01 msft 100
+10:01:03 ibm  200
+10:01:04 ge   150
+q)show q:([] ti:10:01:00 10:01:01 10:01:01 10:01:02;sym:`ibm`msft`msft`ibm;px:100 99 101 98)
+ti       sym  px 
+-----------------
+10:01:00 ibm  100
+10:01:01 msft 99 
+10:01:01 msft 101
+10:01:02 ibm  98
+q)aj[`sym`ti;t;q]
+ti       sym  qty px 
+---------------------
+10:01:01 msft 100 101
+10:01:03 ibm  200 98 
+10:01:04 ge   150
+</code></pre>
+
+<p>It is worth stepping through this example in detail. We begin with the first record in t. We look for the quote records matching <code>`msft</code> as of the trade time 10:01:01. There are two such records, both stamped 10:01:01 but the last one has price 101, which is reflected in the result. Next we look for the last quote record for <code>`ibm</code> as of 10:01.02, which is the quote record stamped 10:00:02 with price 98. Finally there are no quote records matching <code>`ge</code> at 10:01:04.</p>
+<p>If you want the time of the matching quote in the result instead of the time of the trade, use <code>aj0</code>.</p>
+<pre><code class="q">q)aj0[`sym`ti;t;q]
+ti       sym  qty px 
+---------------------
+10:01:01 msft 100 101
+10:01:02 ibm  200 98 
+10:01:04 ge   150 
+</code></pre>
+
+<p>The simpler function <code>asof</code> performs the same match as <code>aj</code> but with a table against a single record. The result picks out the remaining columns in the matched row of the table.</p>
+<pre><code class="q">q)t:([] ti:10:01:01 10:01:03 10:01:04; sym:`msft`ibm`ge; qty:100 200 150; px:45 160 55)
+q)t
+_
+q)t asof `sym`ti!(`ibm;10:01:03)
+qty| 200
+px | 160
+</code></pre>
+
+<p>A list of such dictionary records conforms – i.e., is a table – and <code>asof</code> matches against each record.</p>
+<pre><code class="q">q)t asof ([] sym:`msft`ibm; ti:10:01:01 10:01:03)
+qty px
+-------
+100 45
+200 160
+</code></pre>
+
+<p>As-of joins are also useful with non-numeric data. Suppose we have a table containing a history of state changes – e.g., employee promotions. An as-of join will determine the state “as of” any point in time.</p>
+<pre><code class="q">q)promotions:([] name:`nuba`devi`nuba`devi`nuba;
+    dt:2000.01.01 2005.02.14 2010.02.01 2012.08.12 2015.11.01;
+    title:`associate`analyst`director`cfo`retired)
+q)promotions asof `name`dt!(`nuba; 2009.07.04)
+title| associate
+q)promotions asof `name`dt!(`devi; 2015.12.01)
+_
+q)events:([] name:`nuba`devi; dt: 2009.07.04 2015.12.01)
+q)aj[`name`dt; events; promotions]
+_
+</code></pre>
+
+<h3 id="999-window-join">9.9.9 Window Join<a class="headerlink" href="../9_Queries_q-sql.1#999-window-join" title="Permanent link">&para;</a></h3>
+<p>Window joins are a generalization of as-of joins and are specifically geared for analyzing the relationship between trades and quotes in finance. The idea is that you want to investigate the behavior of quotes in a neighborhood of each trade. For example, to determine how well a trade was executed, you need to examine the range of bid and ask prices that were prevalent around the trade time.</p>
+<p>Writing such a query manually would be cumbersome. Instead, q provides the built-in window join <code>wj</code> that computes on an interval around each trade. Specifying the set up takes a bit of work but then all the hard work is done for you.</p>
+<p>So that things fit on the page, we use a simple example involving trades for one ticker symbol <code>`aapl</code> and times that are in seconds. The general case is essentially the same. First we create the trades and quotes tables; note that they are required to be unkeyed.</p>
+<pre><code class="q">q)show t:([]sym:3#`aapl;time:09:30:01 09:30:04 09:30:08;price:100 103 101)
+_
+q)show q:([] sym:8#`aapl;
+    time:09:30:01+(til 5),7 8 9;
+    ask:101 103 103 104 104 103 102 100;
+    bid:98 99 102 103 103 100 100 99)
+_
+</code></pre>
+
+<p>We construct fixed-width windows of 2 seconds before and one second after each trade time. (There is no requirement that the windows be of uniform width.)</p>
+<pre><code class="q">q)w:-2 1+\:t `time
+q)w
+_
+</code></pre>
+
+<p>For readability we place the names of the sym and time columns in a variable.</p>
+<pre><code class="q">q)c:`sym`time
+</code></pre>
+
+<p>The actual form for <code>wj</code> is:</p>
+<pre><code class="q">wj[w;c;t;(q;(f0;c0);(f1;c1))]
+</code></pre>
+
+<p>Here <code>w</code> is a list of windows, <code>c</code> is the list of sym and time column names, <code>t</code> is the trades table. The final parameter is a list with the quotes table and a pair of lists, each with an aggregate function and a column name.</p>
+<p>To see all the values in each window, pass the identity function <code>::</code> in place of the aggregates. The result is similar to grouping without aggregate in a query and is helpful to see what is happening within each window.</p>
+<pre><code class="q">q)wj[w;c;t;(q;(::;`ask);(::;`bid))]
+sym  time     price ask             bid           
+--------------------------------------------------
+aapl 09:30:01 100   101 103         98 99         
+aapl 09:30:04 103   103 103 104 104 99 102 103 103
+aapl 09:30:08 101   104 103 102     103 100 100
+</code></pre>
+
+<p>Now we apply <code>wj</code> with actual aggregates for the maximum ask and minimum bid over each window. Here you see the results of the aggregate functions run within each window.</p>
+<pre><code class="q">q)wj[w;c;t;(q;(max;`ask);(min;`bid))]
+sym  time     price ask bid
+---------------------------
+aapl 09:30:01 100   103 98 
+aapl 09:30:04 103   104 99 
+aapl 09:30:08 101   104 100
+</code></pre>
+
+<p>As opposed to the aggregates being run over only the quote values within each window, you can also include the quotes that are current at the beginning of the window. This matters if there is no quote precisely at the beginning time of the window. For this case use <code>wj1</code>, whose syntax is identical to <code>wj</code>.</p>
+<pre><code class="q">q)wj1[w;c;t;(q;(::;`ask);(::;`bid))]
+sym  time     price ask             bid           
+--------------------------------------------------
+aapl 09:30:01 100   101 103         98 99         
+aapl 09:30:04 103   103 103 104 104 99 102 103 103
+aapl 09:30:08 101   103 102         100 100
+</code></pre>
+
+<h2 id="910-parameterized-queries">9.10 Parameterized Queries<a class="headerlink" href="../9_Queries_q-sql.1#910-parameterized-queries" title="Permanent link">&para;</a></h2>
+<p>Relational databases have stored procedures, which are database programs incorporating SQL statements. The programming languages are not part of the SQL standard. They vary significantly across vendors but are generally third-generation imperative languages.</p>
+<p>This situation forces a programmer to make a choice: learn a proprietary language to place functionality close to the data, or extract the data into an application server to perform calculations. Various multi-tier architectures have evolved to address this problem, but they increase system cost and complexity.</p>
+<p>This separation is obviated in kdb+, since q is the stored procedure language and it has the power and performance to process big data. Any q function that operates on a table is effectively a stored procedure. Function parameters can be used to supply specific values for queries.</p>
+<p>In particular, the select, exec, update and delete templates can be invoked within a function with parameters to yield a <em>parameterized query</em>.</p>
+<div class="admonition important">
+<p class="admonition-title">Restrictions</p>
+<p>Parameterized queries with templates have restrictions:</p>
+<ul>
+<li>A column cannot be passed as a parameter since columns are part of the syntactic sugar of the template. They only become symbols under the covers.</li>
+<li>Multiple parameters cannot be implicit – i.e., they must be declared explicitly. Although this seems to work for a single parameter, we recommend making <strong>all</strong> parameters explicit.</li>
+</ul>
+</div>
+<p>We follow our own advice in the following examples.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+q)select from t where c2&gt;15
+_
+q)proc:{[sc] select from t where c2&gt;sc}
+q)proc 15
+_
+q)proc2:{[nms;sc] select from t where c1 in nms, c2&gt;sc}
+q)proc2[`a`c; 15]
+_
+</code></pre>
+
+<p>You <strong>can</strong> pass a table as a parameter to a template, either by value of by name.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+q)proc3:{[t;nms;delta] update c2+delta from t where c1 in nms}
+q)proc3[t;`a`c;100]
+_
+q)t
+_
+q)proc3[`t;`a`c;100]
+_
+q)t
+_
+</code></pre>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>There is no need to restrict stored procs in q to the templates. Any expression that operates on tables can serve.
+<pre><code class="language-q">
+ q)t:([] c1:`a`b`c; c2:10 20 30; c3:1.1 2.2 3.3)
+ q)procf:{[cs] cs#t}
+ q)procf `c1`c2
+ _ 
+</code></pre></p>
+</div>
+<p>You can effectively parameterize column names in two ways, only one of which is good practice. First, you can mimic a common technique from SQL in which the query is created dynamically: build the query text in a string and then invoke the interpreter programmatically using <code>value</code>. This is comparatively slow. Worse, it exposes your application to injection attacks, since any q expression that appears inside the text will be executed.</p>
+<p>The preferred method is to use the functional form for queries – see <a href="../9_Queries_q-sql.1#912-functional-forms">§9.12</a> – which is fast and secure. In functional form, all columns are referred to by symbolic name, so column names can be passed as symbols. In fact, <strong>any</strong> component of a query can be passed as an argument in functional form.</p>
+<h2 id="911-views">9.11 Views<a class="headerlink" href="../9_Queries_q-sql.1#911-views" title="Permanent link">&para;</a></h2>
+<p>A SQL view is effectively a query expression whose result set can be used like a table. Views are useful for encapsulating data – e.g., hiding columns, or simplifying complex queries.</p>
+<p>A q-sql <em>view</em> is a named table expression created as an alias with the double-colon operator <code>::</code>. It is common to use the templates in views but this is not a limitation.</p>
+<p>In the following example, contrast <code>u</code>, which is a q variable that is assigned the result of a query, to the view (alias) <code>v</code> that is the query expression itself.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30)
+q)u:select from t where c2&gt;15
+q)v::select from t where c2&gt;15
+q)u
+_
+q)v
+_
+q)update c2:15 from `t where c1=`b
+`t
+q)u
+c1 c2
+_
+q)v
+c1 c2
+-----
+c  30
+</code></pre>
+
+<p>Observe that when the underlying table changed, <code>u</code> did not change but the next reference to <code>v</code> does reflect the update.</p>
+<p>To find the underlying query of a view, or any alias, apply the function <code>view</code> to the symbol alias name.</p>
+<pre><code class="q">q)view `v
+&quot;select from t where c2&gt;15&quot;
+q)a:42
+q)b::a
+q)view `b
+_
+</code></pre>
+
+<p>To list all the views in a namespace, use the function <code>views</code> with the context name. For example, to list the views in the root,</p>
+<pre><code class="q">q)views `.
+`b`v
+</code></pre>
+
+<h2 id="912-functional-forms">9.12 Functional Forms<a class="headerlink" href="../9_Queries_q-sql.1#912-functional-forms" title="Permanent link">&para;</a></h2>
+<p>In the experience of the author, functional form is the most difficult q topic for most qbies. Among the reasons for this are:</p>
+<ul>
+<li>The high level of abstraction and generalization</li>
+<li>There is nothing like it in SQL or other programming languages</li>
+<li>In vintage Arthurian fashion, information density is maximized</li>
+</ul>
+<p>Full disclosure: functional form is difficult. Along with adverbs and generalized application, it completes the Big Three aspects of q that separate q pretenders from contenders. Fortunately there is a cheat that can be helpful in most situations.</p>
+<p>The function <code>parse</code> can be applied to a string containing a template query to produce a parse tree whose items (nearly) work in the equivalent functional form. A complication is that the operators are displayed in k form instead of q.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The constraint portion of the result of <code>parse</code> applied to a string containing a q-sql query template generally has an extra level of <code>enlist</code> that should be removed for the corresponding functional form. The console display of the parse tree shows the k form of <code>enlist</code> – i.e., <code>,</code> – so you will actually see <code>,,</code>.</p>
+</div>
+<p>The functional forms of the four templates <code>select</code>, <code>exec</code>, <code>update</code> and <code>delete</code> are powerful because they allow all constituents to be parameterized. They can be used for any query but are especially handy for queries that are generated or completed programmatically. The q interpreter parses the syntactic sugar of the templates into their equivalent functional forms, so there is no performance difference.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>We recommend writing table operations in fundamental or template form unless you anticipate needing to parameterize column names. The folks who assume your code will thank you.</p>
+</div>
+<p>There are two functional forms, one for <code>select</code> and <code>exec</code>, the other for <code>update</code> and <code>delete</code>. The types of the arguments passed determine the overload. The forms are,</p>
+<pre><code class="q">?[t;c;b;a] / select and exec
+
+![t;c;b;a] / update and delete
+</code></pre>
+
+<p>where</p>
+<ul>
+<li><code>t</code> is a table or the name of a table</li>
+<li><code>a</code> is a dictionary of aggregates</li>
+<li><code>b</code> is a dictionary of groupbys or a flag controlling other aspects of the query</li>
+<li><code>c</code> is a list of constraints.</li>
+</ul>
+<p>The expressions in <code>a</code>, <code>b</code> and <code>c</code> can involve columns of <code>t</code> and also any variables that are in scope. The rules for expression interpretation are:</p>
+<ul>
+<li>Columns are always represented by their symbolic names</li>
+<li>Consequently, any literal symbols, or lists of symbols, appearing in the expressions must be distinguished. This is done by enlisting them. Really.</li>
+</ul>
+<p>We warned you this wasn’t going to be easy.</p>
+<p>We shall use the following sample tables in our examples.</p>
+<pre><code class="q">q)t:([] c1:`a`b`a`c`a`b`c; c2:10*1+til 7; c3:1.1*1+til 7)
+q)ft:{([] c1:`a`b`a`c`a`b`c; c2:10*1+til 7; c3:1.1*1+til 7)}
+</code></pre>
+
+<h3 id="9121-functional-select">9.12.1 Functional select<a class="headerlink" href="../9_Queries_q-sql.1#9121-functional-select" title="Permanent link">&para;</a></h3>
+<p>We begin with the functional form corresponding to the simplest select query, which uses (yet another) overload of <code>?</code>.</p>
+<pre><code class="q">q)select from t
+_
+q)?[t; (); 0b; ()]
+_
+q)?[t; (); 0b; ()]~select from t
+1b
+</code></pre>
+
+<p>In this degenerate functional form,</p>
+<ul>
+<li>The constraint parameter is the empty list</li>
+<li>The by parameter is the special value <code>0b</code> indicating there is no grouping in a select query</li>
+<li>The aggregate parameter takes the special value of the general empty list, indicating there is no aggregate phrase</li>
+</ul>
+<p>Observe that we can pass the table by name and we can also parameterize the table by substituting any q expression that returns a table or keyed table.</p>
+<pre><code class="q">q)?[`t; (); 0b; ()]
+_
+q)?[ft[]; (); 0b; ()]
+_
+</code></pre>
+
+<p>Now we add a constraint – i.e., a where phrase. The constraint parameter must be a <strong>list</strong> of q parse trees, one item for each subphrase in the where phrase. The parse tree for each subphrase can be obtained by converting the expression fully to prefix form and then transforming each function into a list with it followed by all its arguments. Remember, columns names become symbols and literal symbols get enlisted.</p>
+<pre><code class="q">q)select from t where c2&gt;35,c1 in `b`c
+_
+q)?[t; ((&gt;;`c2;35); (in;`c1;enlist `b`c)); 0b; ()]
+_
+</code></pre>
+
+<p>Next we demonstrate aggregation without grouping. The aggregate parameter is a dictionary whose keys are column names and whose value list is a list of parse trees, one for each subphrase of the aggregate phrase. Again, column names are symbols, and literal symbols get enlisted.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>While q will assign default columns names in the templates, you must explicitly provide all columns names in functional form.</p>
+</div>
+<pre><code class="q">q)select max c2, c2 wavg c3 from t
+_
+q)?[t; (); 0b; `maxc2`wtavg!((max;`c2); (wavg;`c2;`c3))]
+_
+</code></pre>
+
+<p>Next we demonstrate grouping without aggregation. As with the aggregate parameter, we construct a dictionary with column names and parse trees of the by subphrases. In this particular example, we demonstrate how to handle the case of grouping on a single column. Recall that a singleton dictionary requires the key and value to be enlisted – this enlist is separate from enlisting literal symbols in functional form.
+<!-- FIXME Consider recalling the ‘default’ aggregation in which only the last value in each group is returned here. --></p>
+<pre><code class="q">q)select by c1 from t
+_
+q)?[t; (); (enlist `c1)!enlist `c1; ()]
+_
+</code></pre>
+
+<p>Finally we put the pieces together. We find code to be more readable if you separately construct the three parameters as variables and pass these in to the functional form.</p>
+<pre><code class="q">q)select max c2, c2 wavg c3 by c1 from t where c2&gt;35,c1 in `b`c
+_
+q)c:((&gt;;`c2;35); (in;`c1;enlist `b`c))
+q)b:(enlist `c1)!enlist `c1
+q)a:`maxc2`wtavg!((max;`c2); (wavg;`c2;`c3))
+q)?[t;c;b;a]
+_
+</code></pre>
+
+<p>Now that wasn’t so bad, was it? OK, maybe it was.</p>
+<p>Next we show the functional form for the special case <code>select distinct</code>. In this case set the <em>by</em> parameter to <code>1b</code>.</p>
+<pre><code class="q">q)t:([] c1:`a`b`a`c`b`c; c2:1 1 1 2 2 2; c3:10 20 30 40 50 60)
+q)select distinct c1,c2 from t
+_
+q)?[t; (); 1b; `c1`c2!`c1`c2]
+_
+</code></pre>
+
+<p>The extended form <code>select[n]</code> adds a fifth parameter to the functional form.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c; c2:10 20 30)
+q)select[2] from t
+_
+q)?[t;();0b;();2]
+_
+</code></pre>
+
+<p>The extended form <code>select[&gt;<em>c<sub>i</sub></em>]</code> adds two additional parameters to the functional form. The first is the initial value for the comparison and the second is a list with the k form – seriously! – of the comparison operator for the sort along with the column name for the sort.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c`a; c2:10 20 30 40)
+q)select[&gt;c1] c1,c2 from t
+_
+q)?[t;();0b;`c1`c2!`c1`c2; 0W; (&gt;:;`c1)]
+_
+</code></pre>
+
+<h3 id="9122-functional-exec">9.12.2 Functional exec<a class="headerlink" href="../9_Queries_q-sql.1#9122-functional-exec" title="Permanent link">&para;</a></h3>
+<p>The functional form for <code>exec</code> is nearly identical to that of <code>select</code>. Slight variations in the parameters indicate which is intended. Since the constraint parameter carries over unchanged, we omit its discussion in this section.</p>
+<p>The functional form for <code>exec</code> on a single result column depends on whether you want a list or dictionary to be returned. Assuming there is no grouping, use the empty list for the <em>by</em> parameter. For a list result, specify the aggregate as a parse tree; for a dictionary result, specify a dictionary mapping the result name to its parse tree.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c`a; c2:10 20 30 40; c3:1.1 2.2 3.3 4.4)
+q)exec distinct c1 from t
+_
+q)?[t; (); (); (distinct; `c1)]
+_
+q)exec c1:distinct c1 from t
+_
+q)?[t; (); (); (enlist `c1)!enlist (distinct; `c1)]
+_
+</code></pre>
+
+<p>For <code>exec</code> on multiple columns without grouping, specify the <em>by</em> parameter as the general empty list and the aggregate parameter as a dictionary mapping column names to a list of parse trees.</p>
+<pre><code class="q">q)exec distinct c1, c2 from t
+_
+q)?[t; (); (); `c1`c2!((distinct; `c1); `c2)]
+_
+</code></pre>
+
+<p>To group on a single column, specify its symbol name in the <em>by</em> parameter.</p>
+<pre><code class="q">q)exec c2 by c1 from t
+_
+q)?[t; (); `c1; `c2]
+_
+</code></pre>
+
+<p>More complex grouping in an exec seems to revert to the equivalent select.</p>
+<h3 id="9123-functional-update">9.12.3 Functional update<a class="headerlink" href="../9_Queries_q-sql.1#9123-functional-update" title="Permanent link">&para;</a></h3>
+<p>The syntax of functional form of <code>update</code> is identical to that of <code>select</code> except that <code>!</code> is used in place of <code>?</code>. In the following examples you will need to keep track of the different uses of <code>enlist</code>:</p>
+<ul>
+<li>making a list of parse trees from a single parse expression</li>
+<li>creating singleton dictionaries</li>
+<li>distinguishing literal symbols from column names.</li>
+</ul>
+<pre><code class="q">q)t:([] c1:`a`b`c`a`b; c2:10 20 30 40 50)
+q)update c2:100 from t where c1=`a
+_
+q)c:enlist (=;`c1;enlist `a)
+q)b:0b
+q)a:(enlist `c2)!enlist 100
+q)![t;c;b;a]
+_
+q)update c2:sums c2 by c1 from t
+c1 c2
+-----
+a 10
+b 20
+c 30
+a 50
+b 70
+q)![`t; (); (enlist `c1)!enlist `c1; (enlist `c2)!enlist(sums; `c2)]
+_
+q)t
+_
+</code></pre>
+
+<p>Observe that we switched to passing by name in the last functional query.</p>
+<h3 id="9124-functional-delete">9.12.4 Functional delete<a class="headerlink" href="../9_Queries_q-sql.1#9124-functional-delete" title="Permanent link">&para;</a></h3>
+<p>The syntax of functional delete is a simplified form of functional update.</p>
+<p><code>![t;c;0b;a]</code></p>
+<p>where <code>t</code> is a table, or the name of a table, <code>c</code> is a list of parse trees for where subphrases and <code>a</code> is a <strong>list</strong> of column names. Either <code>c</code> or <code>a</code>, but not both, must be present. If <code>c</code> is present, it specifies which rows are to be deleted. If <code>a</code> is present it is a list of symbol column names to be deleted. In the latter case you must specify <code>c</code> as an empty list of symbols.</p>
+<p>As before, distinguish the various uses of <code>enlist</code> in the examples.</p>
+<pre><code class="q">q)t:([] c1:`a`b`c`a`b; c2:10 20 30 40 50)
+q)delete from t where c1=`b
+_
+q)![t;enlist (=;`c1;enlist `b);0b;`symbol$()]
+_
+q)delete c2 from t
+_
+q)![`t;();0b;enlist `c2]
+`t
+q)t
+_
+</code></pre>
+
+<p>Again observe that we switched to call by name in the last query.</p>
+<h2 id="913-examples">9.13 Examples<a class="headerlink" href="../9_Queries_q-sql.1#913-examples" title="Permanent link">&para;</a></h2>
+<p>At this point we know enough about tables to do some damage. You should go back and (re)read <a href="../1_Q_Shock_and_Awe.1">1. Q Shock and Awe</a>. It will now be straightforward.</p>
+<h3 id="9131-the-trades-table">9.13.1 The trades Table<a class="headerlink" href="../9_Queries_q-sql.1#9131-the-trades-table" title="Permanent link">&para;</a></h3>
+<p>We shall demonstrate further examples in this section based on the trades table created there. Here we encapsulate the steps in a function so that it can be run for an arbitrary list of tickers and an arbitrary number of rows. On the author’s two-year-old MacBook Pro, it takes a few seconds to create a table with 10,000,000 rows.</p>
+<pre><code class="q">q)mktrades:{[tickers; sz]
+  dt:2015.01.01+sz?31;
+  tm:sz?24:00:00.000;
+  sym:sz?tickers;
+  qty:10*1+sz?1000;
+  px:90.0+(sz?2001)%100;
+  t:([] dt; tm; sym; qty; px);
+  t:`dt`tm xasc t;
+  t:update px:6*px from t where sym=`goog;
+  t:update px:2*px from t where sym=`ibm;
+  t}
+q)trades:mktrades[`aapl`goog`ibm; 10000000]
+</code></pre>
+
+<div class="admonition warning">
+<p class="admonition-title">No multiline expressions in session</p>
+<p>You can’t actually define multiline functions in the q session like that. But you can in a script. <em>Ed.</em></p>
+</div>
+<h3 id="9132-the-instrument-table">9.13.2 The instrument Table<a class="headerlink" href="../9_Queries_q-sql.1#9132-the-instrument-table" title="Permanent link">&para;</a></h3>
+<p>The <code>instr</code> table is a static keyed table containing basic information about the companies whose financial instruments (stocks in our case) are traded. Its schema has fields for the stock symbol, the name of the company and the industry classification of the company.</p>
+<pre><code class="q">q)instr:([sym:`symbol$()] name:`symbol$(); industry:`symbol$())
+</code></pre>
+
+<p>We populate <code>instr</code> using <code>upsert</code>.</p>
+<pre><code class="q">q)`instr upsert (`ibm; `$&quot;International Business Machines&quot;; `$&quot;Computer Services&quot;)
+`instr
+q)`instr upsert (`msft; `$&quot;Microsoft&quot;; `$&quot;Software&quot;)
+`instr
+q)`instr upsert (`goog; `$&quot;Google&quot;; `$&quot;Search&quot;)
+`instr
+q)`instr upsert (`aapl; `$&quot;Apple&quot;; `$&quot;Electronics&quot;)
+`instr
+q)instr
+_
+</code></pre>
+
+<p>Now we make <code>sym</code> a foreign key to trades.</p>
+<pre><code class="q">q)update `instr$sym from `trades
+`trades
+q)meta trades
+c  | t f a
+---| ---------
+dt | d s
+tm | t
+sym| s instr
+qty| j
+px | f
+</code></pre>
+
+<h3 id="9133-basic-queries">9.13.3 Basic Queries<a class="headerlink" href="../9_Queries_q-sql.1#9133-basic-queries" title="Permanent link">&para;</a></h3>
+<p>Here we demonstrate basic operations against the trades and instrument tables.</p>
+<p>We can count the total number of trades in several ways. The last version causes q to do the most work and should be avoided. Observe that q does not carry the name of its own virtual column <code>i</code> to the result of <code>select</code>.</p>
+<pre><code class="q">q)count trades
+_
+q)exec count i from trades
+10000000
+q)select count i from trades
+x
+-------
+10000000
+q)
+q)count select from trades
+10000000
+</code></pre>
+
+<p>Let’s count the number of trades for an individual symbol.</p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>For splayed and partitioned tables, only the <code>select</code> expression works.
+<pre><code class="language-q">
+q)exec count i from trades where sym=`ibm
+<em>
+q)select count i from trades where sym=`ibm
+</em>
+</code></pre></p>
+</div>
+<p>We can count the number of trades across all symbols. The second version unkeys the result.</p>
+<pre><code class="q">q)select count i by sym from trades
+sym | x
+----| -------
+aapl| 3333498
+goog| 3330409
+ibm | 3336093
+q)() xkey select count i by sym from trades
+_
+</code></pre>
+
+<p>We find one day's trades for AAPL.</p>
+<pre><code class="q">q)select from trades where dt=2015.01.15,sym=`aapl
+_
+</code></pre>
+
+<p>We find all lunch-hour trades for GOOG. Note that <code>within</code> includes both endpoints. Also recall that you must use general-list notation if the endpoints are variables.</p>
+<pre><code class="q">q)select from trades where sym=`goog, tm within 12:00:00 13:00:00
+_
+q)noon:12:00:00
+q)thirteen00:13:00:00
+q)select from trades where sym=`goog, tm within (noon;thirteen00)
+_
+</code></pre>
+
+<p>We find the maximum daily price for AAPL. Due to our uniform distribution, it is statistically constant.</p>
+<pre><code class="q">q)select maxpx:max px by dt from trades where sym=`aapl
+dt        | maxpx
+----------| -----
+2015.01.01| 110
+2015.01.02| 110
+2015.01.03| 110
+2015.01.04| 110
+..
+</code></pre>
+
+<p>We find the minimum and maximum trade price over the trading range for each symbol by company name. We point out that this is actually grouping on a computed column since the foreign key is resolved to the instrument table via an implicit join.</p>
+<pre><code class="q">q)select lo:min px, hi:max px by sym.name from trades
+name                           | lo  hi
+-------------------------------| -------
+Apple                          | 90  110
+Google                         | 540 660
+International Business Machines| 180 220
+</code></pre>
+
+<p>We find the total and average trade volume for specific symbols. Due to our simplistic construction, the volumes are statistically the same.</p>
+<pre><code class="q">q)select totq:sum qty, avgq:avg qty by sym from trades where sym in `ibm`goog
+sym | totq        avgq
+----| --------------------
+goog| 16670706340 5005.603
+ibm | 16702382420 5006.57
+</code></pre>
+
+<p>We find the high, low and close over one-minute intervals for Google.</p>
+<pre><code class="q">q)select hi:max px,lo:min px,open:first px, close:last px by dt,tm.minute from trades where sym=`goog
+dt         minute| hi     lo     open   close
+-----------------| --------------------------
+2015.01.01 00:00 | 658.98 540.72 610.98 561.66
+2015.01.01 00:01 | 659.4  542.82 594.24 595.86
+2015.01.01 00:02 | 652.5  540    625.26 583.5
+..
+</code></pre>
+
+<p>We demonstrate how to use our own functions in queries. Suppose we define a funky average that weights items by their position. Notice that we use intra-line assignment to avoid counting <code>x</code> three times.</p>
+<pre><code class="q">q)favg:{(sum x*1+til ctx)%ctx*ctx:count x}
+</code></pre>
+
+<p>Then we can apply <code>favg</code> just as we did the built-in q function <code>avg</code>.</p>
+<pre><code class="q">q)select favgpx:favg px by sym from trades
+sym | favgpx
+----| --------
+aapl| 49.99748
+goog| 300.0155
+ibm | 100.0009
+</code></pre>
+
+<h3 id="9134-meaty-queries">9.13.4 Meaty Queries<a class="headerlink" href="../9_Queries_q-sql.1#9134-meaty-queries" title="Permanent link">&para;</a></h3>
+<p>In this section, we demonstrate more interesting q-sql examples against the trades table.</p>
+<p>We find volume-weighted average price by day and for 100-millisecond buckets for AAPL. Note that latter takes a few seconds for 10,000,000 trades on the author’s laptop.</p>
+<pre><code class="q">q)select vwap:qty wavg px by dt from trades where sym=`ibm
+dt        | vwap
+----------| --------
+2015.01.01| 200.064
+2015.01.02| 200.0207
+2015.01.03| 200.0109
+..
+q)select vwap:qty wavg px by dt,100 xbar tm from trades where sym=`ibm
+dt         tm          | vwap
+-----------------------| ------
+2015.01.01 00:00:00.700| 194.8
+2015.01.01 00:00:01.300| 200.96
+2015.01.01 00:00:03.900| 215.34
+..
+</code></pre>
+
+<p>We use <code>fby</code> to select records attaining the maximum price each day for each sym.</p>
+<pre><code class="q">q)select from trades where px=(max;px) fby sym
+dt         tm           sym  qty  px
+-------------------------------------
+2015.01.01 00:20:05.835 goog 9750 660
+2015.01.01 00:33:19.125 goog 3150 660
+2015.01.01 00:42:13.379 goog 8790 660
+2015.01.01 00:42:58.623 aapl 6090 110
+..
+</code></pre>
+
+<p>We use <code>favg</code> from the previous section to demonstrate that user functions can appear in any phrase of the query.</p>
+<pre><code class="q">q)select from trades where px&lt;2*(favg;px) fby sym
+dt         tm           sym  qty  px
+----------------------------------------
+2015.01.01 00:00:00.448 goog 6940 540.18
+2015.01.01 00:00:00.602 aapl 540  94.63
+2015.01.01 00:00:00.754 ibm  3100 194.8
+..
+</code></pre>
+
+<p>We find the average daily volume and price for all instruments and store the result for the following example.</p>
+<pre><code class="q">q)show atrades:select avgqty:avg qty, avgpx:avg px by sym, dt from trades
+sym  dt        | avgqty   avgpx
+---------------| -----------------
+aapl 2015.01.01| 4997.978 99.99409
+aapl 2015.01.02| 5006.318 100.0012
+aapl 2015.01.03| 5002.49  100.0019
+aapl 2015.01.04| 5012.752 99.97018
+..
+</code></pre>
+
+<p>We find the days when the average price went up. Note that create our own <code>deltas0</code> to return 0 for the initial item since the behavior of the built-in <code>deltas</code> doesn’t work well for this purpose. Observe that the nested result columns scroll off the page.</p>
+<pre><code class="q">q)deltas0:{first[x] -': x}
+q)select dt, avgpx by sym from atrades where 0&lt;deltas0 avgpx
+sym | dt
+----| ------------------------------------------------------------------
+aapl| 2015.01.02 2015.01.03 2015.01.05 2015.01.07 2015.01.08 2015.01.10..
+goog| 2015.01.01 2015.01.02 2015.01.03 2015.01.05 2015.01.07 2015.01.00..
+ibm | 2015.01.05 2015.01.07 2015.01.08 2015.01.10 2015.01.11 2015.01.13..
+</code></pre>
+
+<p>To compact the display, take only the first few field values.</p>
+<pre><code class="q">q)select 2#dt, 2#avgpx by sym from atrades where 0&lt;deltas0 avgpx
+sym | dt                    avgpx
+----| ---------------------------------------
+aapl| 2015.01.02 2015.01.03 100.0012 100.0019
+goog| 2015.01.01 2015.01.02 599.8873 600.0021
+ibm | 2015.01.05 2015.01.07 200.0634 200.0022
+</code></pre>
+
+<p>In order to demonstrate operations on nested columns, we denormalize <code>trades</code> into a keyed table with one row and complex columns for each symbol. We can do this either by grouping without aggregation using select or by using <code>xgroup</code>. The difference is that <code>xgroup</code> does not automatically sort on the result key column.</p>
+<pre><code class="q">q)dntrades:select dt,tm,qty,px by sym from trades
+q)dntrades~`sym xasc `sym xgroup trades
+1b
+</code></pre>
+
+<p>We display the first two items of each field to make the structure more evident.</p>
+<pre><code class="q">q)select 2#dt,2#tm,2#qty,2#px by sym from trades
+sym | dt                    tm                        qty       px
+----| -----------------------------------------------------------------------
+aapl| 2015.01.01 2015.01.01 00:00:00.602 00:00:00.840 540 1260  94.63 92.87
+goog| 2015.01.01 2015.01.01 00:00:00.448 00:00:01.039 6940 7260 540.18 560.04
+ibm | 2015.01.01 2015.01.01 00:00:00.754 00:00:01.377 3100 5150 194.8 200.96
+</code></pre>
+
+<p>In such a table with compound columns – i.e., lists of simple lists of the same type – you will need adverbs for column operations. Lots of adverbs.</p>
+<pre><code class="q">q)select sym,cnt:count each dt,avgpx:avg each px from dntrades
+sym  cnt     avgpx
+---------------------
+aapl 3333498 99.99694
+goog 3330409 600.02
+ibm  3336093 200.0041
+</code></pre>
+
+<p>We can apply our own monadic <code>favg</code> function.</p>
+<pre><code class="q">q)select sym, favgpx:favg each px from dntrades
+sym  favgpx
+-------------
+aapl 49.99748
+goog 300.0155
+ibm  100.0009
+</code></pre>
+
+<p>To find the volume-weighted average price by we use the <em>each-both</em> adverb <code>'</code> with the dyadic <code>wavg</code>.</p>
+<pre><code class="q">q)select sym,vwap:qty wavg' px from dntrades
+sym  vwap
+-------------
+aapl 99.99915
+goog 600.0493
+ibm  200.0061
+</code></pre>
+
+<p>Note that this adverb generalizes to <em>n</em>-adic functions for any <em>n</em>&gt;1.</p>
+<p>We find the profit of the ideal transaction over the month for each symbol. This is the maximum amount of money that could be made with complete foreknowledge of the market. In other words, find the largest profit obtainable by buying at some traded price and selling at the highest subsequently traded price. To solve this, we reverse the perspective. For each traded price, we look at the minimum of prices that preceded it. The largest such difference is our answer. The maximum draw down is dual.</p>
+<pre><code class="q">q)select max px-mins px by sym from trades
+sym | px
+----| ---
+aapl| 20
+goog| 120
+ibm | 40
+q)select min px-maxs px by sym from trades
+sym | px
+----| ----
+aapl| -20
+goog| -120
+ibm | -40
+</code></pre>
+
+<h3 id="9135-excursion-pivot-table">9.13.5 Excursion – Pivot Table<a class="headerlink" href="../9_Queries_q-sql.1#9135-excursion-pivot-table" title="Permanent link">&para;</a></h3>
+<p>The objective is to pivot a table on a column (or columns) as in Excel. The construct revolves (pun intended) around three columns. The <code>distinct</code> values of the <em>pivot</em> column become the column names in the result. Each field in the <em>value</em> column is placed under the pivot column whose name appears in its original row. The destination row of a value column field is determined by the <em>key</em> column field in its original row. This is a pivot in the sense that the original vertical arrangement is transformed to horizontal and rows transform to columns. As usual, an example is worth a thousand words.</p>
+<p>We begin with the simple table.</p>
+<pre><code class="q">q)show t:([]k:1 2 3 2 3; p:`a1`a2`a1`a3`a2; v:100 200 300 400 500)
+k p  v
+--------
+1 a1 100
+2 a2 200
+3 a1 300
+2 a3 400
+3 a2 500
+</code></pre>
+
+<p>The desired result <code>pvt</code> is as follows. Observe that this is actually a keyed table but it is simple to unkey it with <code>xkey</code>.</p>
+<pre><code class="q">q)pvt
+k| a1  a2  a3 
+-| -----------
+1| 100        
+2|     200 400
+3| 300 500    
+</code></pre>
+
+<p>We break the solution into multiple steps, beginning with our sample table and then successively generalizing to handle a wider class of use cases.</p>
+<ol>
+<li>
+<p>Collect the unique values of the pivot column <code>p</code> into a list <code>P</code>.</p>
+<p><pre><code class="language-q">
+q)P:exec distinct p from t
+</code></pre></p>
+</li>
+<li>
+<p>Write a query that extracts the key-value pairs for <code>p</code> and <code>v</code> grouped by <code>k</code>.</p>
+<p><pre><code class="language-q">
+q)exec p!v by k from t
+_
+</code></pre></p>
+</li>
+<li>
+<p>Enhance the previous query to produce a keyed table by rectangularizing the dictionaries by filling missing values using <code>P#</code>. Magic happens. Observe that we need to name the resulting key column explicitly.</p>
+<p><pre><code class="language-q">
+q)exec P#p!v by k:k from t
+k| a1  a2  a3 
+-| -----------
+1| 100      <br />
+2|     200 400
+3| 300 500  <br />
+</code></pre></p>
+</li>
+<li>
+<p>Write the query to extract the unique values of the pivot column in functional form.</p>
+<p><pre><code class="language-q">
+q)P:?[t; (); (); (distinct; `p)]
+_
+</code></pre></p>
+</li>
+<li>
+<p>Convert the pivot query to functional form.</p>
+<p><pre><code class="language-q">
+q)?[t;(); (1#`k)!1#`k; (#;`P;(!;`p;`v))]
+_
+</code></pre></p>
+</li>
+<li>
+<p>Place the previous functional forms in a function that takes the table and the column names as parameters and returns the pivot result.</p>
+<p><pre><code class="language-q">
+q)dopivot:{[t; kn; pn; vn]
+  P:?[t; (); (); (distinct; pn)];
+  ?[t;(); (1#kn)!1#kn; (#;`P;(!;pn;vn))]}
+q)dopivot[t;`k;`p;`v]
+_
+</code></pre></p>
+</li>
+<li>
+<p>Write an expression that converts the fields of the pivot column to valid names when they are not – e.g., integers. In general, producing unique, valid names is a non-trivial exercise. Find a solution that (at least) works on tn below.</p>
+<p><pre><code class="language-q">
+q)tn:([] k:1 2 3 2 3; p:(`a1;2;`a1;3;2); v:100 200 300 400 500)
+q)mkNames:{
+  x:(::),x;
+  x:1_x:@[x; where not 10h=type each x; string];
+  `$@[x; where not any x[;0] within/: ("AZ";"az"); "X_",]}
+q)dopivot:{[t; kn; pn; vn]
+  t:![t; (); 0b; (1#pn)!enlist (`mkNames; pn)];
+  P:?[t; (); (); (distinct; pn)];
+  ?[t;(); (1#kn)!1#kn; (#;`P;(!;pn;vn))]}
+q)dopivot[tn;`k;`p;`v]
+_
+</code></pre></p>
+</li>
+<li>
+<p>Next, we generalize to the case when there are multiple entries in <code>v</code> for a single key value. For example, applied to <code>tr</code> below, our current <code>dopivot</code> misses the 1000 value in <code>v</code>.</p>
+<p><pre><code class="language-q">
+q)tr:([]k:1 2 3 2 3 1; p:`a1`a2`a1`a3`a2`a1; v:100 200 300 400 500 1000)
+q)dopivot[tr;`k;`p;`v] / misses 1000 value
+k| a1  a2  a3
+-| -----------
+1| 100      <br />
+2|     200 400
+3| 300 500  <br />
+</code></pre></p>
+<p>We would like to apply an aggregate function such as <code>sum</code> to obtain,</p>
+<p><pre><code class="language-q">
+k| a1   a2  a3
+-| ------------
+1| 1100
+2|      200 400
+3| 300  500
+</code></pre></p>
+<p>Modify <code>dopivot</code> to take an aggregate function <code>agg</code> and apply it to <code>v</code> as part of the pivot process. Test it on <code>tr</code> using <code>sum</code>.</p>
+<p><pre><code class="language-q">
+q)dopivot:{[t; agg; kn; pn; vn]
+  t:![t; (); 0b; (1#pn)!enlist (`mkNames; pn)];
+  t:?[t; (); (kn,pn)!kn,pn; (1#vn)!enlist (agg;vn)];
+  P:?[t; (); (); (distinct; pn)];
+  ?[t; (); (1#kn)!1#kn; (#;`P;(!;pn;vn))]}
+q)dopivot[tr;sum;`k;`p;`v]
+_
+</code></pre></p>
+</li>
+<li>
+<p>We would like to handle the case of compound keys – e.g., <code>k1</code> and <code>k2</code> in <code>tk</code> below.</p>
+<p><pre><code class="language-q">
+q)k1:1 2 3 2 3 1 1
+q)k2:10 20 30 40 50 60 10
+q)p:`a1`a2`a1`a3`a2`a1`a1
+q)v:100 200 300 400 500 1000 10000
+q)show tk:([]k1:k1; k2:k2; p:p; v:v)
+k1 k2 p  v
+&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;
+1  10 a1 100
+2  20 a2 200
+3  30 a1 300
+2  40 a3 400
+3  50 a2 500
+1  60 a1 1000
+1  10 a1 10000
+</code></pre></p>
+<p>Modify <code>dopivot</code> to take a list of key column names and test it on <code>tk</code>.</p>
+<p><pre><code class="language-q">
+q)dopivot:{[t; agg; ks; pn; vn]
+  ks,:();
+  t:![t; (); 0b; (1#pn)!enlist (`mkNames; pn)];
+  t:?[t; (); (ks,pn)!ks,pn; (1#vn)!enlist (agg;vn)];
+  P:?[t; (); (); (distinct; pn)];
+  ?[t;(); ks!ks; (#;`P;(!;pn;vn))]}
+q)dopivot[tk;sum;`k1`k2;`p;`v]
+_
+</code></pre></p>
+</li>
+<li>
+<p>Modify <code>dopivot</code> to accept a string argument representing a valid where phrase for the input table and use it to constrain the pivot. Test it against <code>tk</code> with the phrase <code>k1&lt;&gt;2</code>.</p>
+<p><pre><code class="language-q">
+q)dopivot:{[t; agg; wh; ks; pn; vn]
+  ks,:();
+  c:enlist parse wh;
+  t:?[t; c; 0b; (cols t)!cols t];
+  t:![t; (); 0b; (1#pn)!enlist (`mkNames; pn)];
+  t:?[t; (); (ks,pn)!ks,pn; (1#vn)!enlist (agg;vn)];
+  P:?[t; (); (); (distinct; pn)];
+  ?[t; (); ks!ks; (#;`P;(!;pn;vn))]}
+q)dopivot[tk;sum;"k1&lt;&gt;2";`k1`k2;`p;`v]
+_
+</code></pre></p>
+</li>
+<li>
+<p>Finally, modify <code>dopivot</code> to accept an empty list in the aggregate or the where parameters. In the former case, use <code>first</code> as the default aggregate; in the latter, perform no constraint. Test against <code>tk</code> with empty list arguments for both.</p>
+<p><pre><code class="language-q">
+q)dopivot:{[t; agg; wh; ks; pn; vn]
+  ks,:();
+  agg:first agg,first;
+  c:$[count wh; enlist parse wh; ()];
+  t:?[t; c; 0b; (cols t)!cols t];
+  t:![t; (); 0b; (1#pn)!enlist (`mkNames; pn)];
+  t:?[t; (); (ks,pn)!ks,pn; (1#vn)!enlist (agg;vn)];
+  P:?[t; (); (); (distinct; pn)];
+  ?[t; (); ks!ks; (#;`P;(!;pn;vn))]}
+q)dopivot[tk;();"";`k1`k2;`p;`v]
+_
+</code></pre></p>
+</li>
+</ol>
+<p>We test the efficiency of <code>dopivot</code> by applying it to a modestly large table with a million rows of timeseries data. Take that, Excel!</p>
+<pre><code class="q">q)t:`date xasc ([] date:2015.01.01+1000000?10; sym:1000000?`aapl`ibm`intc; qty:1+1000000?100)
+q)dopivot[t; sum; &quot;&quot;; `date; `sym; `qty] / ymmv
+date      | aapl    ibm     intc
+----------| -----------------------
+2015.01.01| 1688672 1666730 1659389
+2015.01.02| 1695257 1688088 1679517
+2015.01.03| 1656634 1692806 1688195
+2015.01.04| 1686011 1708072 1687046
+2015.01.05| 1676870 1683170 1699435
+2015.01.06| 1673952 1676820 1687553
+2015.01.07| 1683041 1680907 1692974
+2015.01.08| 1661363 1688660 1675261
+2015.01.09| 1692126 1693217 1690017
+2015.01.10| 1698429 1699250 1679042
+</code></pre>
+
+<p>It is an instructive exercise to write <code>unpivot</code>, which takes a pivoted table and reverts the columns back to rows.</p>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../8_Tables.1" title="8. Tables" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                8. Tables
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../10_Execution_Control/index.html" title="10. Execution Control" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                10. Execution Control
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            ©2015 Jeffry A. Borror / q4m LLC. Kx® and kdb+ are registered trademarks of Kx Systems, Inc., a subsidiary of First Derivatives plc.
+          </div>
+        
+        powered by
+        <a href="http://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.b438e6c5.js"></script>
+      
+      <script>app.initialize({version:"0.17.3",url:{base:".."}})</script>
+      
+        <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+      
+        <script src="https://tracker.mrpfd.com/tracker.js"></script>
+      
+        <script src="http://code.kx.com/scripts/googleanalytics.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      
+        <script src="https://use.fontawesome.com/3dbf29ed12.js"></script>
+      
+        <script src="http://code.kx.com/scripts/prism.js"></script>
+      
+    
+    
+      
+    
+  </body>
+</html>
