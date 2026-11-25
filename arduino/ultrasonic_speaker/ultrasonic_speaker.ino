@@ -1,41 +1,19 @@
-// 
-// Name: "ESP32_FastPWM"
-//   Author: Khoi Hoang <khoih.prog@gmail.com>
-//   Maintainer: Khoi Hoang <khoih.prog@gmail.com>
-//   Sentence: This library enables you to use Hardware-based PWM channels on ESP32, ESP32_S2, ESP32_S3 or ESP32_C3-based boards to create and output PWM to pins.
-//   Paragraph: The most important feature is they're purely hardware-based PWM channels, supporting very high PWM frequencies. Therefore, their executions are not blocked by bad-behaving functions or tasks. This important feature is absolutely necessary for mission-critical tasks. These hardware-based PWMs, still work even if other software functions are blocking. Moreover, they are much more precise (certainly depending on clock frequency accuracy) than other software-based PWM using ISR, millis() or micros(). That's necessary if you need to control devices requiring high precision. New efficient setPWM_manual function to facilitate waveform creation using PWM
-//   Website: https://github.com/khoih-prog/ESP32_FastPWM
-//   License: MIT
-//   Category: Device Control
-//   Architecture: esp32
-//   Types: Contributed
-//   Versions: [1.0.0, 1.0.1, 1.1.0]
-//   Provides includes: ESP32_FastPWM.h
-
-#define _PWM_LOG_LEVEL 0
-#include <TFT_eSPI.h>
+#include <Arduino.h>
+//#include <TFT_eSPI.h>
 #include <SPI.h>
 //#include "WiFi.h"
 #include <Wire.h>
-#include "ESP32_FastPWM.h"
 #include <AsyncTimer.h>
-//#include "Button2.h"
-//#include <esp_adc_cal.h>
-//#include "bmp.h"
 
 //#include "driver/rtc_io.h"
-#include "driver/gpio.h"
-#include "sinetable.h"
+#include <driver/gpio.h>
+#include <math.h>
+//#include "sinetable.h"
 
 #define _TIMERINTERRUPT_LOGLEVEL_ 0
-#include "ESP32_New_TimerInterrupt.h"
 
-// #define ADC_EN              14  //ADC_EN is the ADC detection enable port
-// #define ADC_PIN             34
-// #define BUTTON_1            35
-// #define BUTTON_2            0
-#define PIN_PWM0 12
-#define PIN_PWM1 17
+#define PIN_PWM0 12 // -> input 3/4
+#define PIN_PWM1 13 // -> input 1/2
 #define FSH(s) reinterpret_cast<const __FlashStringHelper *>(s)
 
 typedef struct
@@ -48,29 +26,113 @@ typedef struct
 
 Command * commandset;
 int16_t param;
-ESP32_FAST_PWM * pwm0;
-ESP32_FAST_PWM * pwm1;
-uint16_t pwmDuty = 0;
-uint16_t sinetable_index = 0;
+float audioFrequency = 500.0f;
+//uint16_t pwmDuty = 0;
+//uint16_t sinetable_index = 0;
 volatile bool isrKick = false;
-//AsyncTimer at;
+AsyncTimer at;
 //ESP32Timer timer0(1);
-hw_timer_t * timer0Cfg = NULL;
+//hw_timer_t * timer0Cfg = NULL;
+uint8_t sineTable[256];
+float envelopeTable[256];
+uint8_t dutyTable[256];
+
+//constexpr float audioFrequency = 400.0f;
+constexpr float MODULATION_DEPTH = 0.85f;
+
+constexpr uint32_t AUDIO_RATE = 16000;
+constexpr uint8_t PWM_BITS = 8;
+constexpr uint32_t CARRIER_FREQ = 40000;
+
+float sweepLow = 1000.0;
+float sweepHigh = 2000.0;
+uint8_t sweepIndex = 0;
+
+hw_timer_t *audioTimer = nullptr;
+
+volatile uint32_t phase = 0;
+volatile uint8_t currentDuty, prevDuty = 0;
+
+//constexpr uint32_t PHASE_INC = (uint32_t)(audioFrequency * 4294967296.0 / AUDIO_RATE);
+volatile uint32_t phaseIncrement = (uint32_t)(audioFrequency * 4294967296.0 / AUDIO_RATE);
+
+void initSineTable()
+{
+    for (int i = 0; i < 256; i++)
+    {
+        float angle = (2.0f * PI * i) / 256.0f;
+        sineTable[i] = (uint8_t)(127.5f + 127.5f * sinf(angle));
+        float audio = ((float)sineTable[i] - 128.0f) / 128.0f;
+        envelopeTable[i] = sqrt(1.0f + MODULATION_DEPTH * audio);
+        dutyTable[i] = (uint8_t)(envelopeTable[i] * 127.0f);
+    }
+}
+
+void IRAM_ATTR onAudioTick()
+{
+    phase += phaseIncrement;
+//    uint8_t index = phase >> 24;
+//    uint8_t duty = dutyTable[index];
+    currentDuty = dutyTable[phase >> 24];
+
+//    ledcWrite(PIN_PWM0, duty);
+//    ledcWrite(PIN_PWM1, duty);
+}
 
 void help();
+
+
+// void cmd_carrier_on()
+// {
+//     printf("Carrier On\r\n");
+//     ledcChangeFrequency(PIN_PWM0, 40000, PWM_BITS);
+//     ledcChangeFrequency(PIN_PWM1, 40000, PWM_BITS);
+// }
+// 
+// void cmd_carrier_off()
+// {
+//     printf("Carrier Off\r\n");
+//     timerEnd(audioTimer);
+//     ledcChangeFrequency(PIN_PWM0, 0, PWM_BITS);
+//     ledcChangeFrequency(PIN_PWM1, 0, PWM_BITS);
+// }
+
+void cmd_frequency()
+{
+    audioFrequency = (float)param;
+
+}
+
+void sweep_callback()
+{
+    sweepIndex++;
+    audioFrequency = sweepLow + (sweepHigh * ((float)sineTable[sweepIndex])/256.0f);
+    at.setTimeout(sweep_callback, 1/audioFrequency);
+}
+
+void cmd_sweep()
+{
+    sweepIndex = 0;
+    audioFrequency = sweepLow;
+    at.setTimeout(sweep_callback, 1000/audioFrequency);
+}
+
 //extern Command commands_stepper[];
- extern Command commands_main[];
+extern Command commands_main[];
 // extern Command commands_pwm[];
 
 // const char help_dumpconfig[] PROGMEM="dump config";
 // const char help_paramneg1[] PROGMEM="param *= -1";
 // const char help_fanon[] PROGMEM="fan on";
 // const char help_fanoff[] PROGMEM="fan off";
-// const char help_param0[] PROGMEM="param = 0";
+const char help_param0[] PROGMEM="param = 0";
 // const char help_steppermenu[] PROGMEM="stepper menu";
 // const char help_enclimit[] PROGMEM="encoder limit (param)";
-// const char help_encthresh[] PROGMEM="slow encoder threshold (param)";
+const char help_carrier_on[] PROGMEM="40kHz Carrier On";
+const char help_carrier_off[] PROGMEM="40kHz Carrier Off";
+const char help_frequency[] PROGMEM="Set Frequency Hz (param)";
 const char help_help[] PROGMEM="help";
+const char help_sweep[] PROGMEM="Frequency Sweep";
 // const char help_reset[] PROGMEM="reset config";
 // const char help_lampon[] PROGMEM="lamp on";
 // const char help_lampoff[] PROGMEM="lamp off";
@@ -82,30 +144,33 @@ const char help_help[] PROGMEM="help";
 // const char help_tension0[] PROGMEM="tension 0";
 // const char help_verbose[] PROGMEM="verbose 0-1 (param)";
 // const char help_pwmmenu[] PROGMEM="PWM menu";
-// const char empty[] PROGMEM="";
+const char empty[] PROGMEM="";
 
 Command commands_main[] = {
 // {'?',FSH(help_dumpconfig), [](){}},
 // {'-',FSH(help_paramneg1), [](){}},
 // {'a',FSH(help_fanon), [](){}},
 // {'A',FSH(help_fanoff), [](){}},
-// {'c',FSH(help_param0), [](){param = 0;}},
+{'c',FSH(help_param0), [](){param = 0;}},
 // {'C',FSH(help_steppermenu), [](){ }},
 // {'e',FSH(help_enclimit), [](){}},
 // {'E',FSH(help_encthresh), [](){}},
-{'h',FSH(help_help), [](){ help();}}
+{'f',FSH(help_frequency), [](){ cmd_frequency();}},
+{'h',FSH(help_help), [](){ help();}},
+{'s',FSH(help_sweep), [](){ cmd_sweep();}},
 // {' ',FSH(help_reset), [](){ setup();}},
 // {'l',FSH(help_lampon), [](){}},
 // {'L',FSH(help_lampoff), [](){}},
 // {'m',FSH(help_encpos0), [](){}},
 // {'n',FSH(help_next),[](){}},
 // {'o',FSH(help_nextimeout), [](){}},
-// {'p',FSH(help_pwmmenu), [](){}},
+//{'r',FSH(help_carrier_on), []{cmd_carrier_on();}},
+//{'R',FSH(help_carrier_off), []{cmd_carrier_off();}},
 // {'r',FSH(help_isr), [](){}},
 // {'t',FSH(help_tension), [](){}},
 // {'T',FSH(help_tension0), [](){}},
 // {'v',FSH(help_verbose), [](){}},
-// {'&', FSH(empty), [](){} }
+ {'&', FSH(empty), [](){} }
 };
 
 //! Long time delay, it is recommended to use shallow sleep, which can effectively reduce the current consumption
@@ -148,6 +213,7 @@ void handleCommand()
 
 void IRAM_ATTR timerISR0()
 {
+
     isrKick = true;
 //    pwm0->setPWM_Int(PIN_PWM0, 40000.0, sinetable[sinetable_index]);
 //    pwm1->setPWM_Int(PIN_PWM1, 40000.0, sinetable[sinetable_index]);
@@ -155,42 +221,60 @@ void IRAM_ATTR timerISR0()
 //    sinetable_index %= NUM_SINETABLE;
 }
 
-// at.setTimeout(setFrameReady, 10);
-
 void setup()
 {
+    delay(1000);
+		initSineTable();
     Serial.begin(115200);
-    Serial.println("Start");
-    espDelay(5000);
+
+//    Serial.println("Start");
     commandset = commands_main;
-    pwm0 = new ESP32_FAST_PWM(PIN_PWM0, 40000.0, 50.0, 10);
-    pwm1 = new ESP32_FAST_PWM(PIN_PWM1, 40000.0, 50.0, 10);
-    GPIO.func_out_sel_cfg[PIN_PWM1].inv_sel = 1;
-    pwm0->setPWM();
-    pwm1->setPWM();
-//    at.setTimeout(setFrameReady, 10);
+
+    ledcAttach(PIN_PWM0, 40000, PWM_BITS);
+    ledcAttach(PIN_PWM1, 40000, PWM_BITS);
+    ledcOutputInvert(PIN_PWM1, true);
+
+//    ledcWrite(PIN_PWM0, 128);
+//    ledcWrite(PIN_PWM1, 128);
+
+    audioTimer = timerBegin(1e6);
+    timerAttachInterrupt(audioTimer, &onAudioTick);
+//    timerAlarm(audioTimer, 1e6/frequency, true, 0);
+    timerAlarm(audioTimer, 1e6/AUDIO_RATE, true, 0);
+
+//    pinMode(PIN_PWM0, OUTPUT); 
+//    pinMode(PIN_PWM1, OUTPUT); 
+//    GPIO.func_out_sel_cfg[PIN_PWM1].inv_sel = 1;
+//    pwm0->setPWM();
+//    pwm1->setPWM();
 //    timer0.attachInterruptInterval(1000, timerISR0);
-    timer0Cfg = timerBegin(0, 80, true);
-    timerAttachInterrupt(timer0Cfg, &timerISR0, true);
-    timerAlarmWrite(timer0Cfg, 125, true);
-    timerAlarmEnable(timer0Cfg);
+//    timer0Cfg = timerBegin(0, 80, true);
+//    timerAttachInterrupt(timer0Cfg, &timerISR0, true);
+//    timerAlarmWrite(timer0Cfg, 125, true);
+//    timerAlarmEnable(timer0Cfg);
     
 }
 
 void loop()
 {
-    //at.handle();
+    if (currentDuty != prevDuty)
+    {
+        ledcWrite(PIN_PWM0, currentDuty);
+        ledcWrite(PIN_PWM1, currentDuty);
+        prevDuty = currentDuty;
+    }
+    at.handle();
     if (Serial.available())
     {
         handleCommand();
     }
-    if (isrKick)
-    {
-        pwm0->setPWM_Int(PIN_PWM0, 40000.0, sinetable[sinetable_index]);
-        pwm1->setPWM_Int(PIN_PWM1, 40000.0, sinetable[sinetable_index]);
-        sinetable_index++;
-        sinetable_index %= NUM_SINETABLE;
-        isrKick = false;
-    }
 
+//    if (isrKick)
+//    {
+//        pwm0->setPWM_Int(PIN_PWM0, 40000.0, sinetable[sinetable_index]);
+//        pwm1->setPWM_Int(PIN_PWM1, 40000.0, sinetable[sinetable_index]);
+//        sinetable_index++;
+//        sinetable_index %= NUM_SINETABLE;
+//        isrKick = false;
+//    }
 }

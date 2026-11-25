@@ -1,6 +1,6 @@
 PROJ=ultrasonic_speaker
 PROJDIR=${PWD}
-PORT=/dev/ttyUSB0
+PORT=/dev/cu.usbserial-01EA920A
 #PORT=/dev/ttyS0
 #PLATFORM=rp2040:rp2040:generic
 #PLATFORM=arduino:avr:micro
@@ -8,15 +8,7 @@ PLATFORM=esp32:esp32:esp32
 IMAGE=${PROJ}.ino.bin
 ACLI=arduino-cli
 
-#ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/dev/personal-projects:/personal-projects 
-# Build remote
-br:
-	ssh mattd@${DOCKERHOST}  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects  \
-	--entrypoint /home/mattd/acli/bin/arduino-cli \
-		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
-#	ssh mattd@pop-os  ${DOCKER} run --rm -v ~/personal-projects:/personal-projects \
-#        --entrypoint /home/mattd/acli/bin/arduino-cli \
-#		--name ${DOCKERNAME} ${DOCKERNAME}:latest compile --clean ${PROJDIR}/${PROJ}.ino -b ${PLATFORM} --output-dir  ${PROJDIR}
+all: b u
 	
 # Build
 b:
