@@ -38,6 +38,4 @@ c:
 	cat ${PORT} > serial.log
 
 ctags:
-	arduino-ctags --recurse *
-	arduino-ctags --append --recurse ~/.arduino15
-	arduino-ctags --append --recurse ~/Arduino
+	ctags -R .  /Users/mattd/Documents/Arduino/libraries
